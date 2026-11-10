@@ -22,6 +22,16 @@ until you learn the new ones. Each skill changes the page, the code you type, an
 - **Stack Overflow copy-paste** as the typing tool: keystrokes paste whole answers, sometimes the wrong one.
 - Like buttons, share counts, infinite scroll, app-install banners ("Get our app!").
 - jQuery everything: `$(document).ready(...)` in the editor.
+- **Masonry tiles**: this era's layout moment. You arrive with the glossy 2005 two-column blog;
+  "Learn the masonry grid" breaks the page into Pinterest-style tiles of different sizes. The editor
+  types `$('.grid').masonry({ itemSelector: '.tile' })`, because back then it was a jQuery plugin.
+- **Parallax scrolling**: the site's background layers drift at different speeds as you scroll
+  inside the browser window. Pure eye candy.
+- **Scroll-jacking one-pagers**: a toggle with a trade-off, like the defenses. On: the site wins
+  "Site of the Day" design awards (more traffic), but scrolling snaps section by section, some
+  visitors leave, and the player has to live with it too while hunting viruses.
+
+This is already a full curriculum (about 9 skills). New 2011 ideas should push something into 2018.
 
 ## 2018 Platform
 
