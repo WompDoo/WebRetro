@@ -24,6 +24,7 @@
   <main class="workbench">
     <section class="editor-column" aria-label="Code editor">
       <p class="column-caption"><span>Write code</span><span>Click or type to earn</span></p>
+      <div class="code-tip" id="code-tip"></div>
       <div class="editor-window" id="editor-window" data-era="1997">
         <div class="editor-titlebar"><span id="editor-title">INDEX.HTM - Text Editor</span><span class="window-buttons" aria-hidden="true"><i></i><i></i><i></i></span></div>
         <div class="editor-menu" id="editor-menu"></div>
@@ -56,10 +57,14 @@
       <div class="browser-statusbar" id="browser-statusbar"><span class="browser-status-text" id="browser-status">Document: Done</span><span class="browser-perf" id="browser-perf"></span><span class="browser-progress" aria-hidden="true"></span></div>
     </section>
 
-    <section class="panel news-panel" aria-label="News">
-      <header class="panel-header"><h2 class="panel-title">News</h2><span class="panel-caption">What just happened</span></header>
-      <div class="news-tip" id="news-tip"></div>
-      <div class="news-body"><ul class="news-list" id="news-list"></ul></div>
+    <section class="panel news-panel" aria-label="Inbox and news">
+      <header class="panel-header"><h2 class="panel-title" id="issue-title">Inbox</h2><span class="panel-caption">Tickets and news</span></header>
+      <div class="news-body">
+        <div class="issues" id="issue-list"></div>
+        <div class="news-tip" id="news-tip"></div>
+        <h3 class="news-heading">News</h3>
+        <ul class="news-list" id="news-list"></ul>
+      </div>
       <div class="save-row">
         <span>Progress saves in this browser.</span>
         <button type="button" class="ghost-button" data-action="open-reset">Start over</button>
@@ -72,6 +77,13 @@
       <div class="shop-body" id="shop-body"></div>
     </section>
   </main>
+
+  <nav class="tabbar" id="tabbar" aria-label="Sections">
+    <button type="button" class="tabbar-button" data-action="mobile-tab" data-id="site"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg><span>Site</span><span class="tabbar-badge is-alert" data-tabbar-badge="site" hidden></span></button>
+    <button type="button" class="tabbar-button" data-action="mobile-tab" data-id="code"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg><span>Code</span><span class="tabbar-badge" data-tabbar-badge="code" hidden></span></button>
+    <button type="button" class="tabbar-button" data-action="mobile-tab" data-id="shop"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span>Shop</span><span class="tabbar-badge" data-tabbar-badge="shop" hidden></span></button>
+    <button type="button" class="tabbar-button" data-action="mobile-tab" data-id="inbox"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3Z"/><path d="m3 7 9 6 9-6"/></svg><span id="tabbar-inbox-label">Inbox</span><span class="tabbar-badge" data-tabbar-badge="inbox" hidden></span></button>
+  </nav>
 </div>
 
 <div class="overlay" id="story-overlay" hidden>

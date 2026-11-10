@@ -29,7 +29,8 @@ import type { ShopTab } from './render-shop';
 import { flashMoneyLoss } from './renderer';
 import type { Renderer } from './renderer';
 import type { MinigameModal } from './minigames/minigame-modal';
-import { pushMessage, startNewGame, store, updateGame } from './store';
+import { MOBILE_TABS, pushMessage, startNewGame, store, updateGame } from './store';
+import type { MobileTab } from './store';
 
 type ActionHandler = (target: HTMLElement) => void;
 
@@ -63,6 +64,10 @@ function isDefenseId(value: string): value is DefenseId {
 
 function isShopTab(value: string): value is ShopTab {
   return (SHOP_TABS as readonly string[]).includes(value);
+}
+
+function isMobileTab(value: string): value is MobileTab {
+  return (MOBILE_TABS as readonly string[]).includes(value);
 }
 
 /** Buttons carry their id as text; only a known id reaches the engine. */
@@ -137,6 +142,17 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'shop-tab': withId(isShopTab, (id) => {
       store.shopTab = id;
     }),
+    /** From a ticket: show the shop tab with the fix, on phones too. */
+    'open-shop-tab': withId(isShopTab, (id) => {
+      store.shopTab = id;
+      store.mobileTab = 'shop';
+    }),
+    'mobile-tab': withId(isMobileTab, (id) => {
+      store.mobileTab = id;
+    }),
+    'toggle-goal': () => {
+      store.isGoalOpen = !store.isGoalOpen;
+    },
     migrate: startMigration,
     'confirm-migration': () => {
       hideOverlay(elements.storyOverlay);

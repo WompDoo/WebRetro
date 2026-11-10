@@ -8,11 +8,20 @@ export interface NewsItem {
   readonly message: string;
 }
 
+/** On phones one section shows at a time, picked from the bottom tab bar. */
+export type MobileTab = 'site' | 'code' | 'shop' | 'inbox';
+export const MOBILE_TABS: readonly MobileTab[] = ['site', 'code', 'shop', 'inbox'];
+
 interface UiStore {
   game: GameState;
   shopTab: ShopTab;
+  mobileTab: MobileTab;
+  /** Phones show the objective as one line until you tap it open. */
+  isGoalOpen: boolean;
   news: readonly NewsItem[];
   newsCounter: number;
+  /** The newest news item seen on the phone's Inbox tab; anything newer counts as unread. */
+  lastSeenNewsId: number;
 }
 
 const MAX_NEWS_ITEMS = 14;
@@ -29,8 +38,11 @@ export function createSeed(): number {
 export const store: UiStore = {
   game: createInitialGameState(createSeed()),
   shopTab: 'learn',
+  mobileTab: 'code',
+  isGoalOpen: false,
   news: [],
   newsCounter: 0,
+  lastSeenNewsId: 0,
 };
 
 export function updateGame(update: (state: GameState) => GameState): void {
@@ -52,7 +64,21 @@ export function applyStep(step: GameStep): void {
   pushNews(step.events);
 }
 
+/** A new game starts where the earning starts: the code editor. A returning player lands on their site. */
+export function pickStartingMobileTab(game: GameState): MobileTab {
+  return game.lifetimeEarnings > 0 ? 'site' : 'code';
+}
+
 export function startNewGame(): void {
   store.game = createInitialGameState(createSeed());
   store.news = [];
+  store.mobileTab = pickStartingMobileTab(store.game);
+}
+
+export function countUnreadNews(): number {
+  return store.news.filter((item) => item.id > store.lastSeenNewsId).length;
+}
+
+export function markNewsRead(): void {
+  store.lastSeenNewsId = store.news[0]?.id ?? store.lastSeenNewsId;
 }

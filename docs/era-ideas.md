@@ -213,6 +213,33 @@ the last; the year is when that step became the usual next move.
 A defense must show what it protects, not only what it costs: the shop lists both lines, and CAPTCHA puts
 a visible CAPTCHA box under the comments. Before that it read as a pure cost.
 
+## The issue tracker (built)
+
+Everything that needs you is a ticket: every infection, an overloaded or downed server, and a traffic spike
+you aren't cached for. Pop-ups stay on the page, where you close them.
+
+- **Era-styled.** 1997 is an email inbox ("From: cooldude97@freemail.example · ur guestbook has a VIRUS!!!");
+  2005 is a bug tracker (#1041 CRITICAL · NEW · assigned to you). 2011 can be a social feed of complaints,
+  2018 a ticket board, 2024 an AI that summarizes your tickets wrongly.
+- **Two buttons.** "Fix it" opens the minigame or the shop tab that fixes it; "Prevent:" points at the passive
+  fix while you don't have it on (Antivirus, CAPTCHA, prepared statements, the page cache).
+- Most urgent first: critical, major, minor. Countdowns and server load update in place, so a button never
+  gets rebuilt under your finger.
+- `listIssues(state)` is a pure function with its own tests; the era styles only render it.
+
+## Phones (built)
+
+- **Money always on top:** a sticky bar with money, visitors and revenue, and the objective as one line
+  ("0 of 4 done") that opens the checklist when tapped. The Launch button shows as soon as it is ready.
+- **One section at a time,** picked from a bottom tab bar: Site, Code, Shop, Inbox (Issues in 2005). Each
+  fills the screen and scrolls on its own; the page itself never scrolls.
+- **Badges:** Site shows open pop-ups and Inbox open tickets (red); with no tickets, Inbox counts unread news
+  (blue). Shop shows a dot when there is a new skill, boost, defense or hosting step to afford. A count of every
+  affordable feature level was always 30-something, which is noise.
+- A new game starts on Code, where the earning starts; a returning player lands on Site. The tip sits above
+  the editor on Code.
+- Safe-area padding for notches and the home indicator. Tablets and desktops keep their layouts.
+
 ## Minigames (built)
 
 Every infection opens a short minigame; winning it fixes the feature. The game is rolled when the infection
