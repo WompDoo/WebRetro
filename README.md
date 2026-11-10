@@ -38,6 +38,14 @@ Each run uploads the built `under-construction.html` as an artifact, so every pu
 Actions are pinned to commit SHAs; Dependabot opens weekly pull requests to keep them and the npm dev dependencies current.
 Work happens on branches; a pull request merges into `main` once CI is green.
 
+## GitHub Pages
+
+`.github/workflows/pages.yml` publishes the game on every push to `main` (and on demand from the Actions
+tab). It type-checks, tests and builds, then deploys `dist/preview.html` as the site's `index.html`.
+
+One-time setup in the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Pages on a private repository needs a paid GitHub plan, and the published site is public either way.
+
 ## Layout
 
 - `src/engine/`: the game itself. Pure TypeScript, no DOM. State in, state out.
