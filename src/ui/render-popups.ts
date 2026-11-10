@@ -1,6 +1,6 @@
 import type { GameState, Popup } from '../engine';
 import { escapeHtml, pickCyclic } from './dom';
-import type { PopupCopy, PopupDesign } from './popup-copy';
+import type { PopupButton, PopupButtonAction, PopupButtonStyle, PopupCopy, PopupDesign } from './popup-copy';
 import { ERA_PRESENTATION } from './presentation';
 
 /** Must match .popup's width in page.html. */
@@ -8,34 +8,50 @@ const POPUP_WIDTH_CSS = 'min(280px, 88%)';
 const POPUP_HEIGHT_ESTIMATE_PX = 260;
 const POPUP_EDGE_GAP_PX = 8;
 const VARIANT_SLOTS = 1_000;
-const FALLBACK_POPUP: PopupCopy = { design: 'dialog', title: 'Ad', headline: 'CLICK HERE', body: '', details: [], dismissLabel: 'Close', acceptLabel: '', scamOutcome: '' };
+const FALLBACK_POPUP: PopupCopy = { design: 'dialog', title: 'Ad', headline: 'CLICK HERE', body: '', details: [], buttons: [], scamOutcome: '' };
 
-type DesignRenderer = (copy: PopupCopy, popupId: number) => string;
+type DesignRenderer = (copy: PopupCopy) => string;
+
+const BUTTON_ACTIONS: Readonly<Record<PopupButtonAction, string>> = { dismiss: 'close-popup', scam: 'accept-popup' };
+const BUTTON_CLASSES: Readonly<Record<PopupButtonStyle, string>> = {
+  button: 'popup-button',
+  primary: 'popup-button is-primary',
+  cta: 'popup-button is-cta',
+  link: 'popup-link',
+};
 
 const text = (value: string, className: string): string => (value === '' ? '' : `<p class="${className}">${escapeHtml(value)}</p>`);
-const dismissButton = (copy: PopupCopy, popupId: number, className = 'popup-dismiss'): string =>
-  `<button type="button" class="${className}" data-action="close-popup" data-id="${popupId}">${escapeHtml(copy.dismissLabel)}</button>`;
-const acceptButton = (copy: PopupCopy, popupId: number, className = 'popup-accept'): string =>
-  copy.acceptLabel === '' ? '' : `<button type="button" class="${className}" data-action="accept-popup" data-id="${popupId}">${escapeHtml(copy.acceptLabel)}</button>`;
 const detailList = (copy: PopupCopy, className: string, mark: string): string =>
   `<ul class="${className}">${copy.details.map((detail) => `<li><span class="popup-mark" aria-hidden="true">${mark}</span>${escapeHtml(detail)}</li>`).join('')}</ul>`;
 
+function renderButton(button: PopupButton, popupId: number): string {
+  return `<button type="button" class="${BUTTON_CLASSES[button.style]}" data-action="${BUTTON_ACTIONS[button.action]}" data-id="${popupId}">${escapeHtml(button.label)}</button>`;
+}
+
+function renderButtons(copy: PopupCopy, popupId: number): string {
+  return copy.buttons.length === 0 ? '' : `<div class="popup-buttons">${copy.buttons.map((button) => renderButton(button, popupId)).join('')}</div>`;
+}
+
+/** Each design draws its own content; the buttons come from the copy, so any design can have any mix. */
 const DESIGN_RENDERERS: Readonly<Record<PopupDesign, DesignRenderer>> = {
-  dialog: (copy, id) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}<div class="popup-buttons">${acceptButton(copy, id)}${dismissButton(copy, id)}</div>`,
-  alert: (copy, id) =>
-    `<div class="popup-alert"><span class="popup-alert-icon" aria-hidden="true">!</span><div>${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}</div></div><div class="popup-buttons">${acceptButton(copy, id)}${dismissButton(copy, id)}</div>`,
-  prize: (copy, id) =>
-    `<span class="popup-starburst" aria-hidden="true">WINNER!</span>${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${acceptButton(copy, id, 'popup-accept is-cta')}${dismissButton(copy, id, 'popup-dismiss-link')}`,
-  download: (copy, id) =>
-    `${text(copy.headline, 'popup-filename')}${text(copy.body, 'popup-text')}<span class="popup-progress" aria-hidden="true"><span></span></span>${copy.details.map((detail) => text(detail, 'popup-stat')).join('')}<div class="popup-buttons">${dismissButton(copy, id)}</div>`,
-  lightbox: (copy, id) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}<div class="popup-buttons">${acceptButton(copy, id, 'popup-accept is-primary')}${dismissButton(copy, id)}</div>`,
-  survey: (copy, id) =>
-    `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${detailList(copy, 'popup-options', '○')}<div class="popup-buttons">${acceptButton(copy, id, 'popup-accept is-primary')}${dismissButton(copy, id)}</div>`,
-  messenger: (copy, id) =>
-    `<ul class="popup-chat">${copy.details.map((line) => `<li><b>${escapeHtml(copy.title)}:</b> ${escapeHtml(line)}</li>`).join('')}<li>${acceptButton(copy, id, 'popup-chat-link')}</li></ul><span class="popup-chat-input">Type a message…</span>`,
-  toolbar: (copy, id) =>
-    `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${detailList(copy, 'popup-checks', '☑')}<div class="popup-buttons">${acceptButton(copy, id, 'popup-accept is-primary')}${dismissButton(copy, id)}</div>`,
+  dialog: (copy) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}`,
+  alert: (copy) =>
+    `<div class="popup-alert"><span class="popup-alert-icon" aria-hidden="true">!</span><div>${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}</div></div>`,
+  prize: (copy) => `<span class="popup-starburst" aria-hidden="true">WINNER!</span>${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}`,
+  download: (copy) =>
+    `${text(copy.headline, 'popup-filename')}${text(copy.body, 'popup-text')}<span class="popup-progress" aria-hidden="true"><span></span></span>${copy.details.map((detail) => text(detail, 'popup-stat')).join('')}`,
+  lightbox: (copy) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}`,
+  survey: (copy) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${detailList(copy, 'popup-options', '○')}`,
+  messenger: (copy) => `<ul class="popup-chat">${copy.details.map((line) => `<li><b>${escapeHtml(copy.title)}:</b> ${escapeHtml(line)}</li>`).join('')}</ul>`,
+  toolbar: (copy) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${detailList(copy, 'popup-checks', '☑')}`,
 };
+
+const MESSENGER_INPUT = '<span class="popup-chat-input">Type a message…</span>';
+
+function renderPopupBody(copy: PopupCopy, popupId: number): string {
+  const input = copy.design === 'messenger' ? MESSENGER_INPUT : '';
+  return `${DESIGN_RENDERERS[copy.design](copy)}${renderButtons(copy, popupId)}${input}`;
+}
 
 function pickCopy(state: GameState, popup: Popup): PopupCopy {
   return pickCyclic(ERA_PRESENTATION[state.eraId].popups, Math.floor(popup.variantRoll * VARIANT_SLOTS), FALLBACK_POPUP);
@@ -54,7 +70,7 @@ function renderPopup(state: GameState, popup: Popup): string {
   const title = copy.design === 'messenger' ? `Chat with ${copy.title}` : copy.title;
   return `<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="left:${left};top:${top};z-index:${popup.id}">
     <div class="popup-titlebar"><span>${escapeHtml(title)}</span><button type="button" class="popup-close" data-action="close-popup" data-id="${popup.id}" aria-label="Close pop-up">×</button></div>
-    <div class="popup-body">${DESIGN_RENDERERS[copy.design](copy, popup.id)}</div>
+    <div class="popup-body">${renderPopupBody(copy, popup.id)}</div>
   </div>`;
 }
 

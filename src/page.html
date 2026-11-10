@@ -279,15 +279,15 @@ button { font: inherit; color: inherit; }
 .popup-body { padding: 10px 12px 12px; display: grid; gap: 8px; text-align: center; }
 .popup-headline { margin: 0; font-weight: 900; font-size: 17px; line-height: 1.15; }
 .popup-text { margin: 0; font-size: 13px; }
-.popup-dismiss { justify-self: center; padding: 4px 16px; cursor: pointer; }
+.popup-button { justify-self: center; padding: 4px 16px; cursor: pointer; }
 [data-era="1997"] .popup { background: #C0C0C0; border: 2px outset #FFFFFF; box-shadow: 3px 3px 0 #000000; color: #000000; font-family: Arial, sans-serif; }
 [data-era="1997"] .popup-titlebar { background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; }
-[data-era="1997"] .popup-close, [data-era="1997"] .popup-dismiss { background: #C0C0C0; border: 2px outset #FFFFFF; color: #000000; }
+[data-era="1997"] .popup-close, [data-era="1997"] .popup-button { background: #C0C0C0; border: 2px outset #FFFFFF; color: #000000; }
 [data-era="2005"] .popup { background: #FFFFFF; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); overflow: hidden; color: #333333; font-family: 'Lucida Grande', Verdana, sans-serif; }
 [data-era="2005"] .popup-titlebar { background: linear-gradient(#FFB347, #FF7A00); color: #FFFFFF; }
 [data-era="2005"] .popup-close { border-radius: 50%; border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.25); color: #FFFFFF; width: 22px; }
 [data-era="2005"] .popup-headline { color: #E05A00; }
-[data-era="2005"] .popup-dismiss { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DDDDDD); }
+[data-era="2005"] .popup-button { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DDDDDD); }
 @keyframes blink { 50% { visibility: hidden; } }
 
 /* ---------- Era transition wipe ---------- */
@@ -548,8 +548,8 @@ button { font: inherit; color: inherit; }
 
 /* ---------- Pop-up designs ---------- */
 .popup-buttons { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.popup-accept { padding: 4px 14px; cursor: pointer; user-select: none; }
-.popup-accept:active, .popup-accept.is-cta:active { animation: shake 0.3s linear; }
+.popup-button { padding: 4px 14px; cursor: pointer; user-select: none; }
+.popup-button:active, .popup-button.is-cta:active { animation: shake 0.3s linear; }
 @keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .popup-alert { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; }
 .popup-alert-icon {
@@ -558,8 +558,8 @@ button { font: inherit; color: inherit; }
 }
 .popup-starburst { justify-self: center; padding: 5px 12px; font-weight: 900; font-size: 15px; letter-spacing: 0.06em; transform: rotate(-6deg); animation: wobble 0.7s ease-in-out infinite alternate; }
 @keyframes wobble { to { transform: rotate(6deg) scale(1.08); } }
-.popup-accept.is-cta { justify-self: center; padding: 8px 14px; font-weight: 900; font-size: 14px; cursor: pointer; user-select: none; }
-.popup-dismiss-link { justify-self: center; padding: 0; border: 0; background: none; color: inherit; font-size: 11px; text-decoration: underline; opacity: 0.75; cursor: pointer; }
+.popup-button.is-cta { justify-self: center; padding: 8px 14px; font-weight: 900; font-size: 14px; cursor: pointer; user-select: none; }
+.popup-link { justify-self: center; padding: 0; border: 0; background: none; color: inherit; font-size: 11px; text-decoration: underline; opacity: 0.75; cursor: pointer; }
 .popup-filename { margin: 0; font-family: 'Courier New', monospace; font-weight: 700; font-size: 14px; word-break: break-all; }
 .popup-progress { display: block; height: 16px; overflow: hidden; }
 .popup-progress span { display: block; height: 100%; animation: progress-crawl 12s linear infinite; }
@@ -572,19 +572,19 @@ button { font: inherit; color: inherit; }
 .popup-chat-input { display: block; padding: 6px 8px; text-align: left; font-size: 12px; color: #9A9A9A; background: #FFFFFF; border: 1px solid #B8C4D6; }
 
 [data-era="1997"] .popup-headline { color: #FF0000; }
-[data-era="1997"] .popup-accept { background: #C0C0C0; border: 2px outset #FFFFFF; color: #000000; }
+[data-era="1997"] .popup-button { background: #C0C0C0; border: 2px outset #FFFFFF; color: #000000; }
 [data-era="1997"] .popup--alert .popup-headline { color: #000000; font-size: 15px; }
 [data-era="1997"] .popup--prize { background: #FFFF33; border: 4px dashed #FF0000; box-shadow: 4px 4px 0 #000000; }
 [data-era="1997"] .popup--prize .popup-titlebar { background: linear-gradient(90deg, #FF0000, #FF00FF); }
 [data-era="1997"] .popup--prize .popup-headline { font-family: Impact, 'Arial Black', sans-serif; font-weight: 400; font-size: 21px; color: #0000EE; animation: blink 0.9s steps(1) infinite; }
 [data-era="1997"] .popup-starburst { background: #FF0000; color: #FFFF00; border: 3px dotted #FFFF00; }
-[data-era="1997"] .popup-accept.is-cta { background: linear-gradient(#33FF33, #009900); color: #FFFFFF; border: 3px outset #66FF66; text-shadow: 1px 1px 0 #000000; }
+[data-era="1997"] .popup-button.is-cta { background: linear-gradient(#33FF33, #009900); color: #FFFFFF; border: 3px outset #66FF66; text-shadow: 1px 1px 0 #000000; }
 [data-era="1997"] .popup-progress { border: 2px inset #808080; background: #FFFFFF; }
 [data-era="1997"] .popup-progress span { background: repeating-linear-gradient(90deg, #000080 0 10px, transparent 10px 12px); }
 [data-era="1997"] .popup--download .popup-filename { color: #000000; }
 
-[data-era="2005"] .popup-accept { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DDDDDD); }
-[data-era="2005"] .popup-accept.is-primary { border-color: #3E8E1C; background: linear-gradient(#9BDB5F, #4FA82A); color: #FFFFFF; font-weight: 700; }
+[data-era="2005"] .popup-button { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DDDDDD); }
+[data-era="2005"] .popup-button.is-primary { border-color: #3E8E1C; background: linear-gradient(#9BDB5F, #4FA82A); color: #FFFFFF; font-weight: 700; }
 [data-era="2005"] .popup--survey .popup-titlebar { background: linear-gradient(#6BB2F0, #2A6FB0); }
 [data-era="2005"] .popup--survey .popup-headline { color: #2A6FB0; }
 [data-era="2005"] .popup--messenger { border-radius: 8px; }
@@ -651,8 +651,8 @@ button { font: inherit; color: inherit; }
 .shop-effect.is-unlock { color: var(--money); }
 
 /* ---------- Scam buttons and money loss ---------- */
-.popup-accept { cursor: pointer; }
-.popup-chat-link { padding: 0; border: 0; background: none; color: #0000EE; text-decoration: underline; font-size: 12.5px; cursor: pointer; }
+.popup-button { cursor: pointer; }
+.popup-link { padding: 0; border: 0; background: none; color: #0000EE; text-decoration: underline; font-size: 12.5px; cursor: pointer; }
 .stat dd.is-loss { animation: money-loss 900ms ease-out; }
 @keyframes money-loss { 0%, 35% { color: var(--hazard); transform: translateX(-3px); } 20% { transform: translateX(3px); } 100% { transform: none; } }
 
