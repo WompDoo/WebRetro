@@ -9,6 +9,7 @@ import {
   ERAS_BY_ID,
   formatCompactNumber,
   formatMoney,
+  getFeatureDisplayName,
   isEraGateComplete,
 } from '../engine';
 import type { GameState, GateCheck, GateRequirementKind } from '../engine';
@@ -95,7 +96,7 @@ const VALUE_FORMATTERS: Readonly<Record<GateRequirementKind, (value: number) => 
 
 function formatGateValue(check: GateCheck): string {
   const format = VALUE_FORMATTERS[check.requirement.kind];
-  return `${format(Math.min(check.current, check.requirement.target))} / ${format(check.requirement.target)}`;
+  return `${format(Math.min(check.current, check.requirement.target))}/${format(check.requirement.target)}`;
 }
 
 function gateFillPercent(check: GateCheck): number {
@@ -103,25 +104,32 @@ function gateFillPercent(check: GateCheck): number {
   return Math.min(FULL, (check.current / check.requirement.target) * FULL);
 }
 
-function renderGateRow(check: GateCheck, index: number): string {
-  return `<li class="gate-row${check.isMet ? ' is-met' : ''}" data-gate-index="${index}">
+const SHORT_LABELS: Readonly<Record<GateRequirementKind, (requirement: GateCheck['requirement'], state: GameState) => string>> = {
+  'era-features-built': () => 'Features',
+  'feature-level': (requirement, state) => (requirement.featureId === null ? 'Level' : getFeatureDisplayName(requirement.featureId, state.eraId)),
+  'visitors-per-second': () => 'Visitors/s',
+  'migration-budget': () => 'Savings',
+};
+
+function renderGateRow(state: GameState, check: GateCheck, index: number): string {
+  const shortLabel = SHORT_LABELS[check.requirement.kind](check.requirement, state);
+  return `<li class="gate-row${check.isMet ? ' is-met' : ''}" data-gate-index="${index}" title="${escapeHtml(check.requirement.label)}">
     <span class="gate-check" aria-hidden="true">${check.isMet ? '✓' : ''}</span>
-    <span class="gate-label">${escapeHtml(check.requirement.label)}</span>
+    <span class="gate-label">${escapeHtml(shortLabel)}</span>
     <span class="gate-value" data-gate-value>${formatGateValue(check)}</span>
     <span class="gate-bar"><span class="gate-fill" data-gate-fill style="width:${gateFillPercent(check).toFixed(1)}%"></span></span>
   </li>`;
 }
 
+/** While locked: the requirement chips. Once everything is met, the chips make way for the Launch button. */
 export function renderGoal(state: GameState): string {
   const era = ERAS_BY_ID[state.eraId];
   const checks = calculateGateChecks(state);
-  const isComplete = isEraGateComplete(state);
-  const label = isComplete ? era.migrationLabel : `Locked: ${era.migrationLabel}`;
-  return `<div class="goal-head">
-      <h2 class="goal-title"><span class="goal-eyebrow">Next era</span><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span></h2>
-      <button type="button" class="migrate-button" data-action="migrate" ${isComplete ? '' : 'disabled'}>${escapeHtml(label)}</button>
-    </div>
-    <ul class="gate-list">${checks.map(renderGateRow).join('')}</ul>`;
+  const target = `<div class="goal-era"><span class="goal-eyebrow">Next era</span><span class="goal-target"><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span></span></div>`;
+  const body = isEraGateComplete(state)
+    ? `<button type="button" class="migrate-button" data-action="migrate">${escapeHtml(era.migrationLabel)}</button>`
+    : `<ul class="gate-list">${checks.map((check, index) => renderGateRow(state, check, index)).join('')}</ul>`;
+  return `${target}${body}`;
 }
 
 export function renderTip(state: GameState): string {

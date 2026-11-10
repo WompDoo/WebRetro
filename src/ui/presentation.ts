@@ -29,7 +29,6 @@ export interface EraStory {
 
 export interface EraPresentation {
   readonly year: number;
-  readonly badge: string;
   readonly browserTitle: string;
   readonly siteUrl: string;
   readonly editorTitle: string;
@@ -46,7 +45,6 @@ export interface EraPresentation {
 export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   'homepage-1997': {
     year: 1997,
-    badge: '1997 · Personal homepage',
     browserTitle: 'My Homepage - Web Navigator',
     siteUrl: 'http://members.freewebspace.net/~you/index.htm',
     editorTitle: 'INDEX.HTM - Text Editor',
@@ -70,7 +68,6 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   },
   'web2-2005': {
     year: 2005,
-    badge: '2005 · Web 2.0',
     browserTitle: 'myhomepage | blog',
     siteUrl: 'http://www.myhomepage.com/blog/',
     editorTitle: 'blog.php — CodeStudio',

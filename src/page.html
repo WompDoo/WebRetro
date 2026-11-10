@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@400;600;700&family=Tinos:wght@400;700&display=swap">
 <style>
-/* Layout: a workbench. Left: your code editor and the news. Middle: the browser window with your site (the star) and the next-era objective bar under it. Right: the shop. */
+/* Layout: a workbench. Top bar: brand, the next-era objective (directly above the browser) and your stats. Left: code editor and news. Middle: the browser window with your site, as tall as the screen allows. Right: the shop. */
 :root {
   --paper: #ECEFF7;
   --paper-grid: rgba(27, 34, 64, 0.06);
@@ -76,25 +76,24 @@ button { font: inherit; color: inherit; }
   gap: 18px;
 }
 
-/* ---------- Top bar ---------- */
+/* ---------- Top bar: same columns as the workbench, so the objective sits right above the browser ---------- */
+.app { --col-left: minmax(280px, 330px); --col-right: minmax(300px, 370px); --col-gap: 20px; }
 .topbar {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px;
-  padding: 10px 14px; background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--lift);
+  display: grid; align-items: center; column-gap: var(--col-gap); row-gap: 8px;
+  grid-template-columns: var(--col-left) minmax(0, 1fr) var(--col-right);
+  grid-template-areas: "brand goal stats";
+  padding-block: 8px; background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--lift);
 }
-.brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.brand { grid-area: brand; display: flex; align-items: center; gap: 12px; min-width: 0; padding-left: 12px; }
 .brand-mark {
   width: 34px; height: 34px; flex: none; border: 2px solid var(--line); border-radius: 4px;
   background: repeating-linear-gradient(-45deg, var(--caution) 0 6px, #1B2240 6px 12px);
 }
 .brand h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: 0.01em; line-height: 1; }
-.era-badge {
-  font-family: var(--font-body); font-weight: 700; font-size: 13px; padding: 3px 10px; border: 2px solid var(--line); border-radius: 999px;
-  background: var(--panel-sunken); white-space: nowrap;
-}
-.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; align-items: center; }
-.stat { display: flex; flex-direction: column; min-width: 92px; }
+.stats { grid-area: stats; display: flex; justify-content: flex-end; gap: 8px 18px; margin: 0; align-items: center; padding-right: 12px; }
+.stat { display: flex; flex-direction: column; min-width: 0; }
 .stat dt { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
-.stat dd { margin: 0; font-family: var(--font-numbers); font-weight: 600; letter-spacing: -0.02em; font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat dd { margin: 0; font-family: var(--font-numbers); font-weight: 600; letter-spacing: -0.02em; font-size: 20px; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stat-money dd { color: var(--money); }
 .ghost-button {
   padding: 5px 10px; border: 2px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink);
@@ -105,32 +104,32 @@ button { font: inherit; color: inherit; }
 
 /* ---------- Workbench grid ---------- */
 .workbench {
-  display: grid; gap: 20px; align-items: start;
-  grid-template-columns: minmax(280px, 330px) minmax(0, 1fr) minmax(300px, 370px);
-  grid-template-areas: "editor browser shop" "news browser shop" "news goal shop";
+  display: grid; gap: var(--col-gap); align-items: start;
+  grid-template-columns: var(--col-left) minmax(0, 1fr) var(--col-right);
+  grid-template-areas: "editor browser shop" "news browser shop";
 }
 .editor-column { grid-area: editor; min-width: 0; }
-.goal { grid-area: goal; min-width: 0; }
+.topbar .goal { grid-area: goal; min-width: 0; }
 .news-panel { grid-area: news; min-width: 0; }
 .browser { grid-area: browser; min-width: 0; }
 .shop { grid-area: shop; min-width: 0; }
 @media (max-width: 1500px) {
-  .workbench { grid-template-columns: minmax(260px, 300px) minmax(0, 1fr) minmax(300px, 340px); }
+  .app { --col-left: minmax(250px, 290px); --col-right: minmax(300px, 330px); --col-gap: 16px; }
+  .brand h1 { font-size: 20px; }
+  .brand-mark { width: 28px; height: 28px; }
 }
+/* Tablets: two columns; the objective takes its own row in the top bar. */
 @media (max-width: 1220px) {
-  .workbench { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px); grid-template-areas: "browser editor" "browser shop" "goal shop" "news shop"; }
+  .topbar { grid-template-columns: minmax(0, 1fr) var(--col-right); grid-template-areas: "brand stats" "goal goal"; }
+  .topbar .goal { padding-inline: 12px; }
+  .workbench { grid-template-columns: minmax(0, 1fr) var(--col-right); grid-template-areas: "browser editor" "browser shop" "browser news"; }
 }
 @media (max-width: 780px) {
-  .workbench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "editor" "browser" "goal" "news" "shop"; }
-  .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; }
-  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
-  .topbar { gap: 8px; padding: 8px 12px; }
-  .brand { gap: 8px; }
+  .topbar { grid-template-columns: minmax(0, 1fr); grid-template-areas: "brand" "stats" "goal"; }
+  .workbench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "editor" "browser" "news" "shop"; }
   .brand-mark { width: 24px; height: 24px; }
   .brand h1 { font-size: 18px; }
-  .era-badge { font-size: 11px; padding: 2px 8px; }
-  .stats { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .stat { min-width: 0; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-left: 12px; }
   .stat dt { font-size: 10px; }
   .stat dd { font-size: 17px; }
 }
@@ -523,7 +522,7 @@ button { font: inherit; color: inherit; }
   html, body { height: 100%; }
   body { overflow: hidden; }
   .app { height: 100%; padding-block: 12px; gap: 12px; }
-  .workbench { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; align-items: stretch; }
+  .workbench { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
   .news-panel { display: flex; flex-direction: column; min-height: 0; }
   .news-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .editor-column { display: flex; flex-direction: column; min-height: 0; }
@@ -533,11 +532,7 @@ button { font: inherit; color: inherit; }
   .shop-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 }
 @media (min-width: 781px) and (max-width: 1220px) and (min-height: 620px) {
-  .workbench {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
-    grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 120px);
-    grid-template-areas: "browser editor" "browser shop" "goal shop" "news shop";
-  }
+  .workbench { grid-template-rows: auto minmax(0, 1fr) minmax(0, 120px); }
   .editor-surface { height: 150px; }
   .news-panel .panel-header, .news-panel .save-row { display: none; }
 }
@@ -764,25 +759,26 @@ button { font: inherit; color: inherit; }
 @keyframes jq-fade-in { from { opacity: 0; } }
 @keyframes jq-slide-down { from { opacity: 0; transform: scaleY(0.6); } }
 
-/* ---------- Next era: an objective bar under the browser ---------- */
-.goal { display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 10px; }
-.goal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
-.goal-title { margin: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.goal-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
-.goal .goal-year { font-size: 24px; }
-.goal .goal-name { font-size: 18px; }
-/* One row of equal chips, however many requirements the era has; two per row on phones. */
-.goal .gate-list { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
-@media (max-width: 520px) { .goal .gate-list { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.goal .gate-row { grid-template-columns: 16px minmax(0, 1fr); align-content: start; gap: 5px 6px; padding: 6px 8px; background: var(--panel-sunken); border: 1.5px solid var(--line-soft); border-radius: 6px; }
-.goal .gate-check { width: 16px; height: 16px; font-size: 11px; }
+/* ---------- Next era: a compact objective in the top bar ---------- */
+.goal { display: flex; align-items: center; gap: 12px; }
+.goal-era { flex: none; display: grid; line-height: 1.1; }
+.goal-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.goal-target { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.goal .goal-year { font-size: 20px; }
+.goal .goal-name { font-size: 15px; }
+/* One row of equal chips, however many requirements the era has. */
+.goal .gate-list { flex: 1; min-width: 0; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+.goal .gate-row { grid-template-columns: 14px minmax(0, 1fr); align-content: start; gap: 2px 6px; padding: 4px 7px 5px; background: var(--panel-sunken); border: 1.5px solid var(--line-soft); border-radius: 5px; }
 .goal .gate-row.is-met { border-color: var(--money); }
-.goal .gate-label { font-size: 12px; line-height: 1.25; }
-.goal .gate-value { grid-column: 2; font-size: 11px; white-space: nowrap; }
-.goal .gate-bar { grid-column: 1 / -1; height: 7px; }
-.goal .migrate-button { width: auto; padding: 8px 16px; font-size: 15px; box-shadow: var(--lift-small); }
-.news-tip { padding: 10px 14px 0; }
-.news-tip .hint { font-size: 13px; }
+.goal .gate-check { width: 14px; height: 14px; font-size: 10px; border-width: 1.5px; }
+.goal .gate-label { font-size: 11.5px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.goal .gate-value { grid-column: 2; font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.goal .gate-bar { grid-column: 1 / -1; height: 4px; border-width: 1px; }
+.goal .migrate-button { flex: 1; width: auto; padding: 9px 16px; font-size: 16px; box-shadow: var(--lift-small); }
+@media (max-width: 520px) {
+  .goal { flex-wrap: wrap; }
+  .goal .gate-list { flex-basis: 100%; grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 /* ---------- News panel ---------- */
 .news-body { padding: 10px 14px; }
@@ -798,8 +794,8 @@ button { font: inherit; color: inherit; }
     <div class="brand">
       <span class="brand-mark" aria-hidden="true"></span>
       <h1>Under Construction</h1>
-      <span class="era-badge" id="era-badge">1997 · Personal homepage</span>
     </div>
+    <section class="goal" id="goal-body" aria-label="Next era"></section>
     <dl class="stats">
       <div class="stat stat-money"><dt>Money</dt><dd id="stat-money">$0.00</dd></div>
       <div class="stat"><dt>Visitors</dt><dd id="stat-visitors">0.00/s</dd></div>
@@ -841,8 +837,6 @@ button { font: inherit; color: inherit; }
       </div>
       <div class="browser-statusbar" id="browser-statusbar"><span class="browser-status-text" id="browser-status">Document: Done</span><span class="browser-perf" id="browser-perf"></span><span class="browser-progress" aria-hidden="true"></span></div>
     </section>
-
-    <section class="panel goal" id="goal-body" aria-label="Next era"></section>
 
     <section class="panel news-panel" aria-label="News">
       <header class="panel-header"><h2 class="panel-title">News</h2><span class="panel-caption">What just happened</span></header>

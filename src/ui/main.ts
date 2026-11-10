@@ -97,7 +97,6 @@ function createSeed(): number {
 
 const elements = {
   app: requireElement<HTMLElement>('#app'),
-  eraBadge: requireElement<HTMLElement>('#era-badge'),
   statMoney: requireElement<HTMLElement>('#stat-money'),
   statVisitors: requireElement<HTMLElement>('#stat-visitors'),
   statRevenue: requireElement<HTMLElement>('#stat-revenue'),
@@ -357,7 +356,6 @@ function renderEraChrome(): void {
   renderedEraId = game.eraId;
   const presentation = ERA_PRESENTATION[game.eraId];
   elements.app.dataset['era'] = String(presentation.year);
-  elements.eraBadge.textContent = presentation.badge;
   elements.browserTitle.textContent = presentation.browserTitle;
   editor?.setEra(game.eraId);
   setTextIfChanged(requireElement('#snake-title'), presentation.antivirusTitle);
