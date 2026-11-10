@@ -1,13 +1,13 @@
-import { advanceSimulation, calculateRequiredVirusFood, findVirus, getFeatureDisplayName, removeVirus } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findInfection, getFeatureDisplayName } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
-import { editorElements, elements, snakeElements } from './elements';
+import { editorElements, elements, minigameElements } from './elements';
 import { installJavaScriptEffects } from './javascript-effects';
 import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, restoreGame, writeSave } from './persistence';
 import { createRenderer } from './renderer';
-import { createSnakeModal } from './snake-modal';
-import type { SnakeTarget } from './snake-modal';
+import { createMinigameModal } from './minigames/minigame-modal';
+import type { MinigameTarget } from './minigames/types';
 import { applyStep, store } from './store';
 
 interface ClaudeHotApi {
@@ -36,12 +36,15 @@ function tick(): void {
   applyStep(advanceSimulation(store.game, elapsedMs, mode));
 }
 
-function findSnakeTarget(infectionId: number): SnakeTarget | null {
-  const virus = findVirus(store.game, infectionId);
-  if (virus === null) return null;
+/** The difficulty is read when an attempt starts, so an infection can't get harder in the middle of a run. */
+function findMinigameTarget(infectionId: number): MinigameTarget | null {
+  const infection = findInfection(store.game, infectionId);
+  if (infection === null) return null;
   return {
-    requiredFood: calculateRequiredVirusFood(virus),
-    featureName: getFeatureDisplayName(virus.featureId, store.game.eraId).toLowerCase(),
+    minigameId: infection.minigameId,
+    difficulty: calculateInfectionDifficulty(infection),
+    featureName: getFeatureDisplayName(infection.featureId, store.game.eraId).toLowerCase(),
+    eraId: store.game.eraId,
   };
 }
 
@@ -56,14 +59,14 @@ function saveWhenHidden(): void {
 function start(hotData: unknown): void {
   restoreGame(hotData);
   const editor = createCodeEditor(editorElements, writeCodeKeystroke);
-  const snake = createSnakeModal(snakeElements, {
-    findTarget: findSnakeTarget,
-    onWin: (infectionId) => applyStep(removeVirus(store.game, infectionId)),
+  const minigame = createMinigameModal(minigameElements, {
+    findTarget: findMinigameTarget,
+    onWin: (infectionId) => applyStep(cleanInfection(store.game, infectionId)),
   });
   const renderer = createRenderer(editor);
   installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
-  document.addEventListener('click', createClickHandler(createActionHandlers({ snake, renderer }), renderer));
-  document.addEventListener('keydown', createKeydownHandler(snake));
+  document.addEventListener('click', createClickHandler(createActionHandlers({ minigame, renderer }), renderer));
+  document.addEventListener('keydown', createKeydownHandler(minigame));
   document.addEventListener('visibilitychange', saveWhenHidden);
   window.addEventListener('pagehide', writeSave);
   window.setInterval(tick, TICK_INTERVAL_MS);

@@ -1,4 +1,4 @@
-import { FEATURE_IDS, calculateRequiredVirusFood, isSiteDown, UPGRADES_BY_ID } from '../../engine';
+import { FEATURE_IDS, calculateInfectionDifficulty, isSiteDown, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, GameState } from '../../engine';
 import { siteName } from './site-context';
 import type { SiteContext } from './site-context';
@@ -22,13 +22,7 @@ export function renderSite(state: GameState, nowMs: number): string {
 }
 
 function calculateInfectionSignature(state: GameState): string {
-  return state.infections
-    .map((infection) =>
-      infection.kind === 'virus'
-        ? `${infection.id}:food${calculateRequiredVirusFood(infection)}`
-        : `${infection.id}:clicks${infection.cleanClicksRemaining}`,
-    )
-    .join(',');
+  return state.infections.map((infection) => `${infection.id}:${calculateInfectionDifficulty(infection)}`).join(',');
 }
 
 /** Everything the page markup depends on. The animated bits update in place through the live slots. */

@@ -2,8 +2,8 @@
 
 An incremental game about building a website, from a bare `Hello World!` in 1997 to today.
 You write code to earn freelance money, learn HTML tag by tag, build features that bring
-in visitors, place ads that pay for it all, and fight pop-ups, viruses (with a snake
-minigame) and spam. Each era ends with a relaunch.
+in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
+with short minigames. Each era ends with a relaunch.
 
 ## Run it
 
@@ -52,11 +52,12 @@ Pages on a private repository needs a paid GitHub plan, and the published site i
   - `content/`: eras, features, skills and boosts, defenses. Adding content means adding data here.
   - `economy.ts`: everything derived from state (traffic, revenue, costs). Only money is stored.
   - `simulation.ts`: advances the game by elapsed time; offline progress never spawns hazards.
-  - `snake.ts`: the virus-removal minigame rules.
+  - `snake.ts` and `minigames/`: the rules of every minigame, one pure module each.
 - `src/ui/`: a thin DOM layer that renders the state and turns clicks into engine actions.
   - `main.ts` starts the game; `store.ts` holds the one mutable game state; `actions.ts` maps every
     `data-action` button to an engine action; `renderer.ts` re-renders what changed, by signature.
   - `sites/`: the fake website, one layout per era, built from shared feature blocks.
+  - `minigames/`: one modal shell that runs any minigame, plus a small view per game.
 - `src/page.html`: the page markup. Styles and the game script are inlined at build time.
 - `src/styles/`: the stylesheet, one file per area. Files are joined in name order, so the number
   prefix is the cascade order: a later file wins a tie.

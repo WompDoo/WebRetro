@@ -45,11 +45,11 @@ const HINT_RULES: readonly HintRule[] = [
   },
   {
     applies: (state) => state.infections.some((infection) => infection.kind === 'virus'),
-    text: 'A virus is blocking one of your features. Click it and play snake to remove it. It grows the longer you wait.',
+    text: 'A virus is blocking one of your features. Click it to fight it in a minigame. It gets harder the longer you wait; fix it fast for a traffic bonus.',
   },
   {
     applies: (state) => state.infections.length > 0,
-    text: 'Spam is drowning your comments. Click it to delete the spam.',
+    text: 'Something broke one of your features. Click it to fix it in a minigame. Fix it fast for a traffic bonus.',
   },
   {
     applies: (state) => isSiteDown(state),

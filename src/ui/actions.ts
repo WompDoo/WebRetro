@@ -12,7 +12,6 @@ import {
   isEraGateComplete,
   placeAd,
   removeAd,
-  scrubInfection,
   toggleDefense,
   toggleFeature,
   upgradeHosting,
@@ -29,13 +28,13 @@ import { SHOP_TABS } from './render-shop';
 import type { ShopTab } from './render-shop';
 import { flashMoneyLoss } from './renderer';
 import type { Renderer } from './renderer';
-import type { SnakeModal } from './snake-modal';
-import { applyStep, pushMessage, startNewGame, store, updateGame } from './store';
+import type { MinigameModal } from './minigames/minigame-modal';
+import { pushMessage, startNewGame, store, updateGame } from './store';
 
 type ActionHandler = (target: HTMLElement) => void;
 
 export interface ActionDependencies {
-  readonly snake: SnakeModal;
+  readonly minigame: MinigameModal;
   readonly renderer: Renderer;
 }
 
@@ -120,7 +119,7 @@ function resetGame(renderer: Renderer): void {
 }
 
 /** Every clickable thing in the game carries data-action; this maps each action to what it does. */
-export function createActionHandlers({ snake, renderer }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
+export function createActionHandlers({ minigame, renderer }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
   return {
     'buy-feature': withId(isFeatureId, (id) => updateGame((state) => buyFeature(state, id))),
     'buy-upgrade': withId(isUpgradeId, (id) => updateGame((state) => buyUpgrade(state, id))),
@@ -132,10 +131,9 @@ export function createActionHandlers({ snake, renderer }: ActionDependencies): R
     'upgrade-hosting': () => updateGame(upgradeHosting),
     'close-popup': (target) => updateGame((state) => closePopup(state, readNumericId(target))),
     'accept-popup': (target) => fallForScam(readNumericId(target)),
-    'scrub-infection': (target) => applyStep(scrubInfection(store.game, readNumericId(target))),
-    'open-snake': (target) => snake.open(readNumericId(target)),
-    'close-snake': () => snake.close(),
-    'retry-snake': () => snake.retry(),
+    'open-minigame': (target) => minigame.open(readNumericId(target)),
+    'close-minigame': () => minigame.close(),
+    'retry-minigame': () => minigame.retry(),
     'shop-tab': withId(isShopTab, (id) => {
       store.shopTab = id;
     }),
@@ -164,9 +162,9 @@ export function createClickHandler(handlers: Readonly<Record<string, ActionHandl
   };
 }
 
-export function createKeydownHandler(snake: SnakeModal): (event: KeyboardEvent) => void {
+export function createKeydownHandler(minigame: MinigameModal): (event: KeyboardEvent) => void {
   return (event) => {
-    if (snake.handleKey(event) || event.key !== 'Escape') return;
+    if (minigame.handleKey(event) || event.key !== 'Escape') return;
     const topPopup = store.game.popups[store.game.popups.length - 1];
     if (topPopup !== undefined) updateGame((state) => closePopup(state, topPopup.id));
   };

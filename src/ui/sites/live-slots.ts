@@ -1,8 +1,8 @@
-import { ERAS_BY_ID, findVirus } from '../../engine';
+import { ERAS_BY_ID, findInfection } from '../../engine';
 import type { GameState } from '../../engine';
 import { setHtmlIfChanged, setTextIfChanged } from '../dom';
 import { calculateDisplayedCounter, renderCounterDigits, renderGalleryLightbox, renderGuestbookEntries, renderMusicStatus } from './features';
-import { renderVirusTimer } from './infections';
+import { renderInfectionTimer } from './infections';
 import { renderJavaScriptClock } from './site-1997';
 
 /** A part of the page that changes every frame. Rendering the whole page that often would restart its animations. */
@@ -12,9 +12,9 @@ interface LiveSlot {
   readonly render: (element: HTMLElement, state: GameState, nowMs: number) => string | null;
 }
 
-function renderVirusTimerSlot(element: HTMLElement, state: GameState): string | null {
-  const virus = findVirus(state, Number(element.dataset['id']));
-  return virus === null ? null : renderVirusTimer(virus);
+function renderInfectionTimerSlot(element: HTMLElement, state: GameState): string | null {
+  const infection = findInfection(state, Number(element.dataset['id']));
+  return infection === null ? null : renderInfectionTimer(infection);
 }
 
 /** Keys match the data-live attributes the site renderers put on the page. */
@@ -24,7 +24,7 @@ const LIVE_SLOTS: Readonly<Record<string, LiveSlot>> = {
   music: { write: setHtmlIfChanged, render: (_element, state, nowMs) => renderMusicStatus(state.eraId, nowMs) },
   'js-clock': { write: setTextIfChanged, render: (_element, state, nowMs) => renderJavaScriptClock(nowMs, ERAS_BY_ID[state.eraId].year) },
   'gallery-lightbox': { write: setHtmlIfChanged, render: (_element, state, nowMs) => renderGalleryLightbox(state.featureLevels['photo-gallery'], nowMs) },
-  'virus-timer': { write: setTextIfChanged, render: renderVirusTimerSlot },
+  'infection-timer': { write: setTextIfChanged, render: renderInfectionTimerSlot },
 };
 
 function writeLiveSlot(slot: LiveSlot, element: HTMLElement, state: GameState, nowMs: number): void {

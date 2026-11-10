@@ -220,25 +220,20 @@ export interface Popup {
   readonly anchorY: number;
 }
 
-interface InfectionBase {
+/** A virus gets one of three arcade games, rolled when it appears. */
+export type VirusMinigameId = 'snake' | 'virus-scan' | 'firewall';
+export type MinigameId = VirusMinigameId | 'spam-sort' | 'backup-restore';
+
+/** Something broke a feature: it brings in nothing until you win its minigame. */
+export interface Infection {
   readonly id: number;
+  readonly kind: InfectionKind;
   readonly featureId: FeatureId;
-  /** Grows only while the player is watching, so offline time never makes a virus harder. */
+  /** Grows only while the player is watching, so offline time never makes an infection harder. */
   readonly ageMs: number;
+  /** Rolled when the infection appears, so closing and reopening it gives the same game. */
+  readonly minigameId: MinigameId;
 }
-
-/** Removed by winning the snake minigame. Needs more food the longer it stays. */
-export interface VirusInfection extends InfectionBase {
-  readonly kind: 'virus';
-}
-
-/** Spam floods and SQL injections: removed by clicking them a few times. */
-export interface ClickInfection extends InfectionBase {
-  readonly kind: 'spam' | 'sql-injection';
-  readonly cleanClicksRemaining: number;
-}
-
-export type Infection = VirusInfection | ClickInfection;
 
 export interface GameState {
   readonly saveVersion: number;
@@ -265,6 +260,8 @@ export interface GameState {
   readonly hostingTier: number;
   /** Time left on a front-page traffic spike; 0 when there is none. */
   readonly trafficSpikeRemainingMs: number;
+  /** Fixing an infection quickly earns a short traffic bonus. */
+  readonly quickFixBonusRemainingMs: number;
   readonly reachedMilestoneIds: readonly MilestoneId[];
   readonly prototypeComplete: boolean;
 }
