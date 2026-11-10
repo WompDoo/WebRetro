@@ -24,6 +24,7 @@ import {
   restoreGameState,
   scrubInfection,
   toggleDefense,
+  toggleFeature,
   upgradeHosting,
   UPGRADE_IDS,
   writeCode,
@@ -297,6 +298,10 @@ const ACTION_HANDLERS: Readonly<Record<string, (target: HTMLElement) => void>> =
     if (isDefenseId(id)) updateGame((state) => toggleDefense(state, id));
   },
   'place-ad': () => updateGame(placeAd),
+  'toggle-feature': (target) => {
+    const id = readId(target);
+    if (isFeatureId(id)) updateGame((state) => toggleFeature(state, id));
+  },
   'upgrade-hosting': () => updateGame(upgradeHosting),
   'remove-ad': () => updateGame(removeAd),
   'close-popup': (target) => updateGame((state) => closePopup(state, Number(readId(target)))),

@@ -29,6 +29,7 @@ import {
   getAvailableSkillIds,
   getNextHostingTier,
   upgradeHosting,
+  toggleFeature,
   canUpgradeHosting,
   calculateLoadTimeSeconds,
   calculateServerLoad,
@@ -84,6 +85,8 @@ const REQUIRED_PURCHASE_PRIORITY = 0.25;
 /** Rough time a player needs per piece of food in the snake minigame. */
 const SNAKE_MS_PER_FOOD = 6_000;
 const SEED = 1997;
+/** Early on, income is tiny and doubles easily; growth only counts once it's real. */
+const MIN_REVENUE_FOR_GROWTH = 100;
 
 const PROFILES: readonly PlayerProfile[] = [
   { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false },
@@ -158,14 +161,21 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
   const hosting: PurchaseOption[] = nextTier === null
     ? []
     : [{ label: `hosting:${nextTier.id}`, cost: nextTier.cost, isRequiredForGate: false, apply: upgradeHosting, canApply: canUpgradeHosting, valueCost: nextTier.cost, valueApply: upgradeHosting }];
-  return [...features, ...skills, ...boosts, ...ads, ...defenses, ...hosting];
+  const switches = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0).map<PurchaseOption>((featureId) => {
+    const apply = (current: GameState): GameState => toggleFeature(current, featureId);
+    return { label: `switch:${featureId}`, cost: 0, isRequiredForGate: false, apply, canApply: () => true, valueCost: 0, valueApply: apply };
+  });
+  return [...features, ...skills, ...boosts, ...ads, ...defenses, ...hosting, ...switches];
 }
 
 function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
   const income = effectiveIncome(state, profile);
   const gain = effectiveIncome(option.valueApply({ ...state, money: option.valueCost }), profile) - income;
   const waitSeconds = Math.max(0, option.cost - state.money) / Math.max(income, Number.EPSILON);
-  const paybackSeconds = gain > 0 ? option.valueCost / gain : Number.POSITIVE_INFINITY;
+  // Like a human reading the checklist, the bot buys what the gate requires even when it adds no income.
+  const paybackSeconds = gain > 0 ? option.valueCost / gain : option.isRequiredForGate ? 0 : Number.POSITIVE_INFINITY;
+  // A free switch is worth flipping only when it actually helps.
+  if (option.cost === 0) return gain > 0 ? 0 : Number.POSITIVE_INFINITY;
   const priority = option.isRequiredForGate ? REQUIRED_PURCHASE_PRIORITY : 1;
   const defenseBonus = option.label.startsWith('defense:') ? REQUIRED_PURCHASE_PRIORITY : 1;
   return (waitSeconds + paybackSeconds) * priority * defenseBonus;
@@ -216,6 +226,8 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
   let now = 0;
   let typingDebt = 0;
   let eraStartedAt = 0;
+  let revenueAMinuteAgo = 0;
+  let steepestMinute = { ratio: 1, atMinute: 0 };
   const reports: EraReport[] = [];
   const seenAt = new Map<number, number>();
   const firstPurchases = new Map<string, number>();
@@ -235,8 +247,14 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
           `rev ${formatMoney(calculateNetRevenuePerSecond(state)).padStart(7)}/s ` +
           `typing ${formatMoney(calculateKeystrokeValue(state) * profile.keystrokesPerSecond).padStart(7)}/s ` +
           `vis ${formatCompactNumber(calculateVisitorsPerSecond(state)).padStart(6)} ads ${state.adCount} levels ${levels} ` +
-          `upg ${state.purchasedUpgradeIds.length} popups ${state.popups.length} inf ${state.infections.length}`,
+          `upg ${state.purchasedUpgradeIds.length} host ${state.hostingTier} server ${(calculateServerLoad(state) * 100).toFixed(0)}% load ${calculateLoadTimeSeconds(state).toFixed(1)}s`,
       );
+    }
+    if (now % MS_PER_MINUTE === 0) {
+      const revenueNow = effectiveIncome(state, profile);
+      const ratio = revenueAMinuteAgo > MIN_REVENUE_FOR_GROWTH ? revenueNow / revenueAMinuteAgo : 1;
+      if (ratio > steepestMinute.ratio) steepestMinute = { ratio, atMinute: now / MS_PER_MINUTE };
+      revenueAMinuteAgo = revenueNow;
     }
     if (now % DECISION_INTERVAL_MS === 0) {
       const before = state.featureLevels;
@@ -269,6 +287,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
     `  [${profile.name}] first purchases: ` +
       [...firstPurchases.entries()].map(([id, at]) => `${id} @ ${(at / MS_PER_MINUTE).toFixed(1)}m`).join(', '),
   );
+  console.log(`  [${profile.name}] steepest minute: income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
   console.log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
   return reports;

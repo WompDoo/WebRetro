@@ -53,7 +53,7 @@ const HINT_RULES: readonly HintRule[] = [
   },
   {
     applies: (state) => isSiteDown(state),
-    text: 'Your server gave up: the whole site is a 503 page and nobody gets in. Upgrade your hosting under Ops.',
+    text: 'Your server is overwhelmed: most visitors get a 503 page and your traffic is stuck at what it can serve. Upgrade your hosting under Ops.',
   },
   {
     applies: (state) => calculateServerLoad(state) > SERVER_WARNING_LOAD,

@@ -265,7 +265,7 @@ function renderFeatureBlock(context: SiteContext, featureId: FeatureId): string 
 }
 
 function ownedFeatures(context: SiteContext, order: readonly FeatureId[]): readonly FeatureId[] {
-  return order.filter((featureId) => levelOf(context, featureId) > 0);
+  return order.filter((featureId) => levelOf(context, featureId) > 0 && !context.state.switchedOffFeatureIds.includes(featureId));
 }
 
 function renderBanner(index: number): string {
@@ -281,8 +281,9 @@ function interleaveBanners(blocks: readonly string[], adCount: number): string {
 }
 
 const MARQUEE_TEXT = '*** Best viewed in 800x600 *** Sign my guestbook!!! *** You are LIVE on the World Wide Web ***';
-const TABLE_SIDEBAR_FEATURES: readonly FeatureId[] = ['hit-counter', 'webring'];
-const TABLE_MAIN_FEATURES: readonly FeatureId[] = ['under-construction', 'guestbook', 'midi-player'];
+/** With tables, the music player sits right under the navigation, where every 1997 sidebar kept it. */
+const TABLE_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'webring'];
+const TABLE_MAIN_FEATURES: readonly FeatureId[] = ['under-construction', 'guestbook'];
 // Stacked 1997 pages list the sidebar features first, the way they were built.
 const STACKED_1997_ORDER: readonly FeatureId[] = FEATURE_IDS;
 const NAV_LINKS: readonly string[] = ['Home', 'About me', 'My cat', 'Cool links', 'Guestbook', 'Email me'];
@@ -337,8 +338,8 @@ function homepage1997Content(skills: HomepageSkills, _state: GameState): Homepag
 function legacy2005Content(skills: HomepageSkills, state: GameState): HomepageContent {
   return {
     title: skills.font ? `Welcome to ${siteName(state)} 2.0!!!` : `${siteName(state)} 2.0`,
-    sidebarFeatures: ['hit-counter', 'webring', 'tag-cloud'],
-    mainFeatures: ['flash-intro', 'blog', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'under-construction', 'guestbook', 'midi-player'],
+    sidebarFeatures: ['midi-player', 'hit-counter', 'webring', 'tag-cloud'],
+    mainFeatures: ['flash-intro', 'blog', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'under-construction', 'guestbook'],
   };
 }
 
@@ -477,5 +478,5 @@ export function calculateSiteSignature(state: GameState): string {
     .join(',');
   const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
   const boosts = state.purchasedUpgradeIds.length;
-  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.adCount}|${infections}|${isSiteDown(state) ? 'down' : 'up'}`;
+  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.adCount}|${infections}|${isSiteDown(state) ? 'down' : 'up'}`;
 }

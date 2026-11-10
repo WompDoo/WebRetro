@@ -1,7 +1,7 @@
 import { POPUP_SCAM_MONEY_SHARE } from './constants';
 import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
-import { getFeatureDisplayName } from './content/features';
+import { FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
 import { UPGRADES_BY_ID } from './content/upgrades';
 import {
   calculateBugChance,
@@ -83,6 +83,19 @@ export function upgradeHosting(state: GameState): GameState {
   const next = getNextHostingTier(state);
   if (next === null || state.money < next.cost) return state;
   return { ...spend(state, next.cost), hostingTier: state.hostingTier + 1 };
+}
+
+/** Switch a trade-off feature off or back on. It keeps its levels either way. */
+export function toggleFeature(state: GameState, featureId: FeatureId): GameState {
+  const canSwitch = FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0;
+  if (!canSwitch) return state;
+  const isOff = state.switchedOffFeatureIds.includes(featureId);
+  return {
+    ...state,
+    switchedOffFeatureIds: isOff
+      ? state.switchedOffFeatureIds.filter((id) => id !== featureId)
+      : [...state.switchedOffFeatureIds, featureId],
+  };
 }
 
 export function canPlaceAd(state: GameState): boolean {

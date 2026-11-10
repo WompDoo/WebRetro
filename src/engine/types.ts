@@ -70,7 +70,7 @@ export type UpgradeKind = 'skill' | 'boost';
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha';
 export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike';
 export type InfectionKind = 'virus' | 'spam' | 'sql-injection';
-export type HostingTierId = 'shared-hosting' | 'vps' | 'dedicated-server' | 'the-cloud';
+export type HostingTierId = 'shared-hosting' | 'vps' | 'dedicated-server' | 'server-cluster' | 'cdn' | 'the-cloud';
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
@@ -101,6 +101,8 @@ export interface FeatureDefinition {
   readonly pageWeightKbPerLevel: number;
   /** The skill you must learn before you can build this. */
   readonly requiredSkillId: UpgradeId | null;
+  /** Trade-off features you can switch off again (the Flash intro). Off: no visitors, no page weight. */
+  readonly isSwitchable: boolean;
 }
 
 export type UpgradeEffect =
@@ -227,6 +229,8 @@ export interface GameState {
   readonly featureLevels: Readonly<Record<FeatureId, number>>;
   readonly adCount: number;
   readonly purchasedUpgradeIds: readonly UpgradeId[];
+  /** Built features the player has switched off. They keep their levels. */
+  readonly switchedOffFeatureIds: readonly FeatureId[];
   readonly ownedDefenseIds: readonly DefenseId[];
   readonly enabledDefenseIds: readonly DefenseId[];
   readonly popups: readonly Popup[];

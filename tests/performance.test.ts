@@ -11,6 +11,7 @@ import {
   createInitialGameState,
   HOSTING_TIERS,
   isSiteDown,
+  toggleFeature,
   upgradeHosting,
 } from '../src/engine';
 import type { GameState } from '../src/engine';
@@ -46,16 +47,45 @@ describe('page load', () => {
   });
 });
 
+describe('switching the Flash intro off', () => {
+  const withIntro = (): GameState => web2(2, {
+    purchasedUpgradeIds: ['learn-php', 'learn-flash'],
+    featureLevels: { ...fresh().featureLevels, blog: 2, 'flash-intro': 1 },
+  });
+
+  it('removes its page weight and its visitors, and keeps its level', () => {
+    const switchedOff = toggleFeature(withIntro(), 'flash-intro');
+    assert.ok(calculatePageWeightKb(switchedOff) < calculatePageWeightKb(withIntro()));
+    assert.equal(switchedOff.featureLevels['flash-intro'], 1);
+  });
+
+  it('can be switched back on', () => {
+    const backOn = toggleFeature(toggleFeature(withIntro(), 'flash-intro'), 'flash-intro');
+    assert.equal(calculatePageWeightKb(backOn), calculatePageWeightKb(withIntro()));
+  });
+
+  it('does nothing for a feature that is not switchable', () => {
+    const state = withIntro();
+    assert.equal(toggleFeature(state, 'blog'), state);
+  });
+
+  it('does nothing for an intro you have not built', () => {
+    const notBuilt = fresh();
+    assert.equal(toggleFeature(notBuilt, 'flash-intro'), notBuilt);
+  });
+});
+
 describe('server load', () => {
   it('1997 has no server to overload', () => {
     assert.equal(calculateServerLoad(fresh()), 0);
   });
 
-  it('goes down at twice the hosting capacity and serves nobody', () => {
+  it('shows the 503 page at twice the hosting capacity, but still serves what it can', () => {
     const overloaded = web2(OVERLOADING_BLOG_LEVEL);
     assert.ok(calculateServerLoad(overloaded) >= 2, `load was ${calculateServerLoad(overloaded)}`);
     assert.equal(isSiteDown(overloaded), true);
-    assert.equal(calculateVisitorsPerSecond(overloaded), 0);
+    assert.ok(calculateVisitorsPerSecond(overloaded) > 0, 'an overloaded server must never drop to zero');
+    assert.ok(calculateVisitorsPerSecond(overloaded) <= sharedCapacity);
   });
 
   it('a hosting upgrade raises capacity and brings the site back', () => {

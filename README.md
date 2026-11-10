@@ -35,6 +35,7 @@ npm run sim        # headless balance simulation: how long each era takes
 5. `npm run sim`: fails if any scripted player can't finish every era. Timing is printed, not enforced.
 
 Each run uploads the built `under-construction.html` as an artifact, so every pull request has a playable copy.
+Actions are pinned to commit SHAs; Dependabot opens weekly pull requests to keep them and the npm dev dependencies current.
 Work happens on branches; a pull request merges into `main` once CI is green.
 
 ## Layout
