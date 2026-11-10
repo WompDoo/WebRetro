@@ -92,9 +92,44 @@ const WEB2_CODE: EraCode = {
   closing: ['</body>', '</html>', ''],
 };
 
+const SOCIAL_EMPTY_FILES: Readonly<Record<string, string>> = {
+  'app.js': '// app.js: empty.\n// Paste in some social plugins or HTML5 media code and it fills up.\n',
+  'style.css': '/* style.css: just the 2005 styles. Learn responsive design for some media queries. */\n',
+};
+
+const SOCIAL_CODE: EraCode = {
+  mainFile: 'index.html',
+  opening: ['<!DOCTYPE html>', '<html lang="en">', '<head>', '<meta charset="utf-8">', '<title>myhomepage</title>'],
+  legacy: ['<link rel="stylesheet" href="style.css">', '</head>', '<body>', '<div id="header"><h1>myhomepage</h1></div>', '<div id="content" class="clearfix"><!-- still the 2005 layout. TODO: Bootstrap? --></div>'],
+  legacyReplacedBy: 'learn-bootstrap',
+  skills: {
+    'responsive-design': ['<meta name="viewport" content="width=device-width, initial-scale=1.0">'],
+    'learn-bootstrap': ['<link href="css/bootstrap.min.css" rel="stylesheet">', '</head>', '<body>', '<div class="navbar navbar-fixed-top"><div class="navbar-inner"><div class="container">', '  <a class="brand" href="#">myhomepage</a>', '</div></div></div>', '<div class="container">', '  <div class="hero-unit">', '    <h1>Hello, world!</h1>', '    <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>', '  </div>', '  <div class="row"><div class="span4"><h2>Heading</h2></div><div class="span4"><h2>Heading</h2></div><div class="span4"><h2>Heading</h2></div></div>', '</div>'],
+    'html5-media': ['<video src="intro.mp4" poster="intro.jpg" controls preload="none"></video>', '<audio src="episode-42.mp3" controls></audio>', '<!-- no plugin. it even plays on phones. -->'],
+    'social-plugins': ['<div class="fs-like" data-href="http://www.myhomepage.com" data-layout="button_count"></div>', '<a href="https://chirper.example/share" class="chirp-button">Chirp</a>', '<script src="app.js"></script>'],
+  },
+  files: {
+    'responsive-design': {
+      'style.css': ['@media (max-width: 767px) {', '  .span4 { float: none; width: auto; }', '  .navbar .nav { display: none; } /* hamburger menu instead */', '}', 'img { max-width: 100%; }'],
+    },
+    'html5-media': {
+      'app.js': ['var video = document.querySelector("video");', 'if (!video.canPlayType("video/mp4")) { video.src = "intro.webm"; } // every browser wants a different file'],
+    },
+    'social-plugins': {
+      'app.js': ['(function(d) {', '  var js = d.createElement("script");', '  js.src = "//connect.facespace.example/en_US/all.js#xfbml=1";', '  d.getElementsByTagName("head")[0].appendChild(js);', '}(document));', '// copied from the top answer (247 votes)'],
+    },
+    'learn-nodejs': {
+      'server.js': ['var app = require("express")();', 'var server = require("http").createServer(app);', 'var io = require("socket.io").listen(server);', 'io.sockets.on("connection", function (socket) {', '  socket.on("like", function (data) {', '    io.sockets.emit("activity", data); // callback inside a callback inside a callback', '  });', '});', 'server.listen(3000);'],
+    },
+  },
+  emptyFile: (fileName) => SOCIAL_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
+  closing: ['</body>', '</html>', ''],
+};
+
 const ERA_CODE: Readonly<Record<EraId, EraCode>> = {
   'homepage-1997': HOMEPAGE_CODE,
   'web2-2005': WEB2_CODE,
+  'social-2011': SOCIAL_CODE,
 };
 
 function knowsSkill(state: GameState, skillId: UpgradeId | null): boolean {

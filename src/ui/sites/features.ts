@@ -1,3 +1,4 @@
+import { FEATURES_BY_ID, formatCompactNumber, isFeaturePluginDead, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, FeatureId, GameState } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
 import { BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, TAGS } from '../presentation';
@@ -176,7 +177,7 @@ const renderForum: FeatureRenderer = (context) => {
 };
 
 const renderFlashIntro: FeatureRenderer = (context) =>
-  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">Requires Flash Player 8 · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
+  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">${context.eraId === 'social-2011' ? 'Rebuilt in HTML5 video · plays on phones' : 'Requires Flash Player 8'} · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
 
 function countVisibleThumbnails(level: number): number {
   return Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
@@ -217,6 +218,46 @@ const renderMapMashup: FeatureRenderer = (context) => {
   return `${heading(context, 'map-mashup', 'Mashup')}<div class="map">${pins}<span class="map-bubble">${escapeHtml(place)}</span></div><p class="map-note">Map from someone else’s API · ${count} pins</p>`;
 };
 
+const SHARE_NETWORKS: readonly string[] = ['Like', 'Chirp', '+1', 'Pin it'];
+const SHARES_PER_LEVEL = 240;
+const SHARE_SPREAD = 0.55;
+const MAX_FEED_ITEMS = 7;
+const BASE_FEED_ITEMS = 3;
+const VIEWS_PER_VIDEO_LEVEL = 380_000;
+const FEED_ACTIONS: readonly string[] = [
+  'Sam liked “My first post”',
+  'Ana shared a photo from your album',
+  'Jo checked in at your Check-in map',
+  'Theo commented: “is this on the app?”',
+  'mel_b is now following you',
+  'Rik shared the cat video (again)',
+  'Grandma Rose liked everything',
+];
+const VIDEOS: readonly string[] = ['cat_vs_printer.mp4', 'unboxing_my_new_phone.mp4', 'double_rainbow_reaction.mp4'];
+
+const renderShareButtons: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'share-buttons');
+  const buttons = SHARE_NETWORKS.map((network, index) => {
+    const count = Math.round(level * SHARES_PER_LEVEL * SHARE_SPREAD ** index);
+    return `<span class="share-button share-button--${index}"><b>${escapeHtml(network)}</b><span class="share-count">${formatCompactNumber(count)}</span></span>`;
+  }).join('');
+  return `${heading(context, 'share-buttons', 'Share this')}<div class="share-row">${buttons}</div>`;
+};
+
+/** HTML5 video: no plugin, a native-looking player, and a view count that only goes up. */
+const renderVideoPlayer: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'video-player');
+  const title = pickCyclic(VIDEOS, level, 'video.mp4');
+  return `${heading(context, 'video-player', 'Video')}<div class="video-player"><span class="video-play" aria-hidden="true">▶</span><span class="video-bar"><span></span></span></div><p class="video-note">${escapeHtml(title)} · ${formatCompactNumber(level * VIEWS_PER_VIDEO_LEVEL)} views · no plugin needed</p>`;
+};
+
+/** Infinite scroll: it always says it's loading more. */
+const renderActivityFeed: FeatureRenderer = (context) => {
+  const count = Math.min(BASE_FEED_ITEMS + levelOf(context, 'activity-feed'), MAX_FEED_ITEMS);
+  const items = FEED_ACTIONS.slice(0, count).map((action) => `<li class="feed-item">${escapeHtml(action)}</li>`).join('');
+  return `${heading(context, 'activity-feed', 'Live activity')}<ul class="feed-list">${items}<li class="feed-more"><span class="spinner" aria-hidden="true"></span>Loading more…</li></ul>`;
+};
+
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'hit-counter': renderHitCounter,
@@ -231,12 +272,23 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'flash-intro': renderFlashIntro,
   'photo-gallery': renderPhotoGallery,
   'map-mashup': renderMapMashup,
+  'share-buttons': renderShareButtons,
+  'video-player': renderVideoPlayer,
+  'activity-feed': renderActivityFeed,
 };
+
+/** Browsers in 2011: the feature is still on the page, but its plugin isn't. */
+function renderMissingPlugin(context: SiteContext, featureId: FeatureId): string {
+  const plugin = FEATURES_BY_ID[featureId].pluginDiesIn;
+  const fix = plugin === null ? 'a newer version' : UPGRADES_BY_ID[plugin.rebuiltWith].name;
+  return `${heading(context, featureId)}<div class="plugin-missing"><span class="plugin-icon" aria-hidden="true">🧩</span><b>Missing plug-in</b><span>This content needs a plug-in your browser doesn’t support.</span><span class="plugin-fix">Rebuild it: ${escapeHtml(fix)}</span></div>`;
+}
 
 export function renderFeatureBlock(context: SiteContext, featureId: FeatureId): string {
   const infection = context.state.infections.find((candidate) => candidate.featureId === featureId);
   const overlay = infection === undefined ? '' : renderInfectionOverlay(infection);
-  return `<section class="feature-block" data-feature="${featureId}">${FEATURE_RENDERERS[featureId](context)}${overlay}</section>`;
+  const content = isFeaturePluginDead(context.state, featureId) ? renderMissingPlugin(context, featureId) : FEATURE_RENDERERS[featureId](context);
+  return `<section class="feature-block" data-feature="${featureId}">${content}${overlay}</section>`;
 }
 
 /** Built and switched on, in the order the layout lists them. */

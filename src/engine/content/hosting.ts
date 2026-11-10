@@ -1,4 +1,4 @@
-import type { HostingTierDefinition } from '../types';
+import type { EraId, HostingTierDefinition } from '../types';
 
 const FIRST_EXTRA_RACK = 1;
 /** Far more racks than anyone can afford: the price, not the list, is what stops you. */
@@ -120,4 +120,46 @@ function createExtraRackTier(racks: number): HostingTierDefinition {
 /** After the second data center you add racks, so there is always a next step: money can always buy capacity. */
 const EXTRA_RACK_TIERS: readonly HostingTierDefinition[] = Array.from({ length: MAX_EXTRA_RACKS }, (_, index) => createExtraRackTier(FIRST_EXTRA_RACK + index));
 
-export const HOSTING_TIERS: readonly HostingTierDefinition[] = [...NAMED_TIERS, ...EXTRA_RACK_TIERS];
+const FIRST_CLOUD_INSTANCES = 2;
+const CLOUD_STEPS = 60;
+const CAPACITY_PER_INSTANCE = 12_000_000;
+/** Each step adds about a quarter more instances, and costs a little more than a quarter more than the last. */
+const INSTANCE_GROWTH = 1.25;
+const SECOND_STEP_COST = 400_000_000;
+const STEP_COST_GROWTH = 1.4;
+
+/** 2, 3, 4, … then about a quarter more each step, never repeating a count. */
+function countCloudInstances(): readonly number[] {
+  return Array.from({ length: CLOUD_STEPS }).reduce<readonly number[]>((counts, _, step) => {
+    const previous = counts[counts.length - 1] ?? FIRST_CLOUD_INSTANCES - 1;
+    return [...counts, Math.max(previous + 1, Math.round(FIRST_CLOUD_INSTANCES * INSTANCE_GROWTH ** step))];
+  }, []);
+}
+
+function describeCloudTier(step: number): string {
+  return step === 0
+    ? 'The relaunch moved you to “the cloud”: someone else’s computers, rented by the hour. No more racks.'
+    : 'More instances, up in a minute. The bill arrives at the end of the month.';
+}
+
+function createCloudTier(instances: number, step: number): HostingTierDefinition {
+  return {
+    id: `cloud-${instances}`,
+    eraId: 'social-2011',
+    year: 2011,
+    name: `The cloud: ${instances} instances`,
+    description: describeCloudTier(step),
+    cost: step === 0 ? 0 : Math.round(SECOND_STEP_COST * STEP_COST_GROWTH ** (step - 1)),
+    capacityVisitorsPerSecond: instances * CAPACITY_PER_INSTANCE,
+  };
+}
+
+/** 2011: the cloud replaces the 2005 racks. It starts with two instances and keeps scaling. */
+const CLOUD_TIERS: readonly HostingTierDefinition[] = countCloudInstances().map((instances, step) => createCloudTier(instances, step));
+
+export const HOSTING_TIERS: readonly HostingTierDefinition[] = [...NAMED_TIERS, ...EXTRA_RACK_TIERS, ...CLOUD_TIERS];
+
+/** Each era has its own ladder: your 2005 racks don't come along to the cloud. */
+export function getEraHostingTiers(eraId: EraId): readonly HostingTierDefinition[] {
+  return HOSTING_TIERS.filter((tier) => tier.eraId === eraId);
+}

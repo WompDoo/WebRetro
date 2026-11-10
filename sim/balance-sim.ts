@@ -100,6 +100,14 @@ const PROFILES: readonly PlayerProfile[] = [
   { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true },
 ];
 
+/**
+ * Income without the passing hazards (infections, pop-ups, traffic spikes, the quick-fix bonus). Growth is
+ * measured on this, so cleaning an infection doesn't read as a snowball.
+ */
+function underlyingIncome(state: GameState, profile: PlayerProfile): number {
+  return effectiveIncome({ ...state, infections: [], popups: [], trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 }, profile);
+}
+
 function effectiveIncome(state: GameState, profile: PlayerProfile): number {
   const typingIncome =
     (calculateKeystrokeValue(state) * profile.keystrokesPerSecond) / (1 + calculateBugChance(state));
@@ -265,7 +273,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
       );
     }
     if (now % MS_PER_MINUTE === 0) {
-      const revenueNow = effectiveIncome(state, profile);
+      const revenueNow = underlyingIncome(state, profile);
       const ratio = revenueAMinuteAgo > MIN_REVENUE_FOR_GROWTH ? revenueNow / revenueAMinuteAgo : 1;
       if (ratio > steepestMinute.ratio) steepestMinute = { ratio, atMinute: now / MS_PER_MINUTE };
       revenueAMinuteAgo = revenueNow;
@@ -303,7 +311,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
     `  [${profile.name}] first purchases: ` +
       [...firstPurchases.entries()].map(([id, at]) => `${id} @ ${(at / MS_PER_MINUTE).toFixed(1)}m`).join(', '),
   );
-  console.log(`  [${profile.name}] steepest minute: income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
+  console.log(`  [${profile.name}] steepest minute: underlying income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
   console.log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
   return reports;

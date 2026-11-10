@@ -2,7 +2,7 @@ import { formatCompactNumber, formatMoney } from '../format';
 import type { EraDefinition, EraGateRequirement, EraId, FeatureId } from '../types';
 import { FEATURES_BY_ID, getFeatureIdsOfEra } from './features';
 
-export const ERA_IDS: readonly EraId[] = ['homepage-1997', 'web2-2005'];
+export const ERA_IDS: readonly EraId[] = ['homepage-1997', 'web2-2005', 'social-2011'];
 
 function requireEveryFeatureOf(eraId: EraId, year: number): EraGateRequirement {
   return {
@@ -42,6 +42,7 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
 
 const HOMEPAGE_MIGRATION_COST = 160_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
+const SOCIAL_MIGRATION_COST = 250_000_000_000;
 
 export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
   'homepage-1997': {
@@ -67,6 +68,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     basePageWeightKb: 2,
     adPageWeightKb: 12,
     hasServerLoad: false,
+    mobileShare: 0,
     adValuePerVisitor: 0.15,
     adAnnoyancePerAd: 0.18,
     maxAds: 6,
@@ -76,10 +78,10 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     id: 'web2-2005',
     year: 2005,
     name: 'Web 2.0',
-    nextEraId: null,
+    nextEraId: 'social-2011',
     nextEraName: 'Social & mobile',
     nextEraYear: 2011,
-    migrationLabel: 'Finish the prototype',
+    migrationLabel: 'Relaunch for 2011',
     migrationCost: WEB2_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('web2-2005', 2005),
@@ -95,9 +97,39 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     basePageWeightKb: 20,
     adPageWeightKb: 6,
     hasServerLoad: true,
+    mobileShare: 0,
     adValuePerVisitor: 0.09,
     adAnnoyancePerAd: 0.18,
     maxAds: 10,
     keystrokeValueMultiplier: 12,
+  },
+  'social-2011': {
+    id: 'social-2011',
+    year: 2011,
+    name: 'Social & mobile',
+    nextEraId: null,
+    nextEraName: 'Platforms',
+    nextEraYear: 2018,
+    migrationLabel: 'Finish the prototype',
+    migrationCost: SOCIAL_MIGRATION_COST,
+    gateRequirements: [
+      requireEveryFeatureOf('social-2011', 2011),
+      requireFeatureLevel('share-buttons', 15),
+      requireVisitorsPerSecond(500_000_000),
+      requireMigrationBudget(SOCIAL_MIGRATION_COST),
+    ],
+    adLabel: 'Sponsored post',
+    adSkillId: null,
+    connectionLabel: 'Broadband and 3G',
+    connectionKbPerSecond: 500,
+    patienceSeconds: 5,
+    basePageWeightKb: 60,
+    adPageWeightKb: 30,
+    hasServerLoad: true,
+    mobileShare: 0.4,
+    adValuePerVisitor: 0.07,
+    adAnnoyancePerAd: 0.15,
+    maxAds: 12,
+    keystrokeValueMultiplier: 150,
   },
 };

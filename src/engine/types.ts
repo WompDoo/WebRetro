@@ -1,4 +1,4 @@
-export type EraId = 'homepage-1997' | 'web2-2005';
+export type EraId = 'homepage-1997' | 'web2-2005' | 'social-2011';
 
 export type FeatureId =
   | 'hit-counter'
@@ -12,7 +12,10 @@ export type FeatureId =
   | 'forum'
   | 'flash-intro'
   | 'photo-gallery'
-  | 'map-mashup';
+  | 'map-mashup'
+  | 'share-buttons'
+  | 'video-player'
+  | 'activity-feed';
 
 export type UpgradeId =
   | 'img-tag'
@@ -64,7 +67,12 @@ export type UpgradeId =
   | 'permalinks'
   | 'ajax-everything'
   | 'threaded-replies'
-  | 'folksonomy';
+  | 'folksonomy'
+  | 'responsive-design'
+  | 'learn-bootstrap'
+  | 'html5-media'
+  | 'social-plugins'
+  | 'learn-nodejs';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 export type UpgradeKind = 'skill' | 'boost';
@@ -72,7 +80,7 @@ export type UpgradeKind = 'skill' | 'boost';
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha';
 export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike';
 export type InfectionKind = 'virus' | 'spam' | 'sql-injection';
-/** The named 2001–2009 steps, then extra racks one at a time: extra-racks-1, extra-racks-2, … */
+/** 2005: the named 2001–2009 steps, then extra racks one at a time. 2011: cloud instances, one at a time. */
 export type HostingTierId =
   | 'shared-hosting'
   | 'business-hosting'
@@ -84,7 +92,8 @@ export type HostingTierId =
   | 'colocation'
   | 'sharded-database'
   | 'second-data-center'
-  | `extra-racks-${number}`;
+  | `extra-racks-${number}`
+  | `cloud-${number}`;
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
@@ -117,6 +126,11 @@ export interface FeatureDefinition {
   readonly requiredSkillId: UpgradeId | null;
   /** Trade-off features you can switch off again (the Flash intro). Off: no visitors, no page weight. */
   readonly isSwitchable: boolean;
+  /**
+   * Built on a browser plugin that dies in a later era (Flash). From that era on the feature shows a
+   * "missing plugin" box and brings nothing, until you rebuild it with the skill named here.
+   */
+  readonly pluginDiesIn: { readonly eraId: EraId; readonly rebuiltWith: UpgradeId } | null;
 }
 
 export type UpgradeEffect =
@@ -136,7 +150,9 @@ export type UpgradeEffect =
   /** Share of each visit that still reaches your server; caches and CDNs answer the rest. */
   | { readonly kind: 'server-load-multiplier'; readonly factor: number }
   /** Traffic spikes are served from a static copy and put no load on the server. */
-  | { readonly kind: 'traffic-spike-cache' };
+  | { readonly kind: 'traffic-spike-cache' }
+  /** The page fits on phones, so phone visitors stop bouncing. */
+  | { readonly kind: 'mobile-friendly' };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -200,6 +216,8 @@ export interface EraDefinition {
   readonly adPageWeightKb: number;
   /** From 2005 on you pay for hosting, and the server can be overloaded. */
   readonly hasServerLoad: boolean;
+  /** Share of visitors on phones. Until your page fits on a phone, most of them leave. */
+  readonly mobileShare: number;
 }
 
 export interface HostingTierDefinition {

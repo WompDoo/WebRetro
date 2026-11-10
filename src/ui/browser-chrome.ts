@@ -1,5 +1,5 @@
-import { ERAS_BY_ID, getHostingTier, isTrafficSpikeCached } from '../engine';
-import type { EconomySnapshot, GameState, UpgradeId } from '../engine';
+import { calculateMobileStayShare, ERAS_BY_ID, getHostingTier, isTrafficSpikeCached } from '../engine';
+import type { EconomySnapshot, EraId, GameState, UpgradeId } from '../engine';
 import { ERA_PRESENTATION } from './presentation';
 import { siteName } from './sites';
 import { mainEditorFile } from './skill-code';
@@ -23,15 +23,23 @@ const J2EE_FILES: readonly string[] = [
 
 const knows = (state: GameState, upgradeId: UpgradeId): boolean => state.purchasedUpgradeIds.includes(upgradeId);
 
+/** 2011 sites routed everything through #! so the page never reloaded. */
+const SOCIAL_PATH = '/#!/home';
+
+const SITE_PATHS: Readonly<Record<EraId, (state: GameState) => string | null>> = {
+  'homepage-1997': () => null,
+  'web2-2005': (state) => (knows(state, 'learn-url-rewriting') ? '/blog/2005/04/my-first-post/' : '/index.php?id=42&cat=3&sid=8f3a9c2e71b04d55'),
+  'social-2011': () => SOCIAL_PATH,
+};
+
 export function buildSiteUrl(state: GameState): string {
-  if (state.eraId === 'homepage-1997') return ERA_PRESENTATION[state.eraId].siteUrl;
-  const path = knows(state, 'learn-url-rewriting') ? '/blog/2005/04/my-first-post/' : '/index.php?id=42&cat=3&sid=8f3a9c2e71b04d55';
-  return `http://www.${siteName(state)}.com${path}`;
+  const path = SITE_PATHS[state.eraId](state);
+  return path === null ? ERA_PRESENTATION[state.eraId].siteUrl : `http://www.${siteName(state)}.com${path}`;
 }
 
 export function buildBrowserTitle(state: GameState): string {
   const title = ERA_PRESENTATION[state.eraId].browserTitle;
-  return state.eraId === 'web2-2005' ? title.replace('myhomepage', siteName(state)) : title;
+  return state.eraId === 'homepage-1997' ? title : title.replace('myhomepage', siteName(state));
 }
 
 function formatSeconds(seconds: number): string {
@@ -62,12 +70,34 @@ function renderServerMeter(serverLoad: number): string {
   return `${'▮'.repeat(filled)}${'▯'.repeat(SERVER_METER_BLOCKS - filled)} ${Math.round(serverLoad * PERCENT)}%`;
 }
 
+/** Load time thresholds for the 2011 grade, after the browser plugins that graded your page A to F. */
+const GRADE_THRESHOLDS: readonly (readonly [number, string])[] = [[1, 'A'], [2, 'B'], [3, 'C'], [5, 'D'], [8, 'E']];
+const MOBILE_SCORE_MAX = 100;
+const MOBILE_SCORE_LOSS_PER_SECOND = 8;
+
+export function gradePageSpeed(loadTimeSeconds: number): string {
+  return GRADE_THRESHOLDS.find(([limit]) => loadTimeSeconds <= limit)?.[1] ?? 'F';
+}
+
+/** Out of 100: how a phone visitor rates your page. Low until it fits on the screen, then it's all about speed. */
+export function calculateMobileScore(state: GameState, loadTimeSeconds: number): number {
+  const fits = calculateMobileStayShare(state) * MOBILE_SCORE_MAX;
+  return Math.max(0, Math.round(fits - loadTimeSeconds * MOBILE_SCORE_LOSS_PER_SECOND));
+}
+
+function renderHostingReadout(state: GameState, economy: EconomySnapshot): string {
+  return `${getHostingTier(state).name} ${renderServerMeter(economy.serverLoad)}`;
+}
+
+const PERFORMANCE_READOUTS: Readonly<Record<EraId, (state: GameState, economy: EconomySnapshot, weight: string) => string>> = {
+  'homepage-1997': (state, _economy, weight) => `${weight} · ${ERAS_BY_ID[state.eraId].connectionLabel}`,
+  'web2-2005': (state, economy, weight) => `${weight} · ${renderHostingReadout(state, economy)}`,
+  'social-2011': (state, economy, weight) =>
+    `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.loadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
+};
+
 export function buildPerformanceReadout(state: GameState, economy: EconomySnapshot): string {
-  const era = ERAS_BY_ID[state.eraId];
-  const weight = `${Math.round(economy.pageWeightKb)} KB`;
-  return era.hasServerLoad
-    ? `${weight} · ${getHostingTier(state).name} ${renderServerMeter(economy.serverLoad)}`
-    : `${weight} · ${era.connectionLabel}`;
+  return PERFORMANCE_READOUTS[state.eraId](state, economy, `${Math.round(economy.pageWeightKb)} KB`);
 }
 
 /** The title names the file you're in; with SVN, the revision too. */
@@ -84,15 +114,19 @@ export interface EditorTabs {
   readonly hiddenCount: number;
 }
 
+/** Files a skill adds to the editor, per era. */
+const SKILL_FILES: Readonly<Partial<Record<EraId, readonly (readonly [UpgradeId, readonly string[]])[]>>> = {
+  'web2-2005': [
+    ['learn-url-rewriting', ['.htaccess']],
+    ['rails', ['config/routes.rb']],
+    ['j2ee', J2EE_FILES],
+  ],
+  'social-2011': [['learn-nodejs', ['server.js']]],
+};
+
 function listEditorFiles(state: GameState): readonly string[] {
-  const base = ERA_PRESENTATION[state.eraId].editorTabs;
-  if (state.eraId !== 'web2-2005') return base;
-  return [
-    ...base,
-    ...(knows(state, 'learn-url-rewriting') ? ['.htaccess'] : []),
-    ...(knows(state, 'rails') ? ['config/routes.rb'] : []),
-    ...(knows(state, 'j2ee') ? J2EE_FILES : []),
-  ];
+  const extra = (SKILL_FILES[state.eraId] ?? []).filter(([skillId]) => knows(state, skillId)).flatMap(([, files]) => files);
+  return [...ERA_PRESENTATION[state.eraId].editorTabs, ...extra];
 }
 
 export function buildEditorTabs(state: GameState): EditorTabs {

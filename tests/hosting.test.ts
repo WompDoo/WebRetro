@@ -8,6 +8,10 @@ import {
   calculateVisitorsPerSecond,
   createInitialGameState,
   getNextHostingTier,
+  advanceEra,
+  getEraHostingTiers,
+  getHostingTier,
+  isEraGateComplete,
   HOSTING_TIERS,
   isSiteDown,
   TRAFFIC_SPIKE_DURATION_MS,
@@ -25,24 +29,48 @@ const busyBlog = (upgrades: readonly UpgradeId[] = [], extra: Partial<GameState>
   ...extra,
 });
 
-describe('the 2005 hosting ladder', () => {
-  it('every step carries more and costs more than the one before', () => {
-    HOSTING_TIERS.slice(1).forEach((tier, index) => {
-      const previous = HOSTING_TIERS[index];
-      assert.ok(previous !== undefined);
-      assert.ok(tier.capacityVisitorsPerSecond > previous.capacityVisitorsPerSecond, tier.id);
-      assert.ok(tier.cost > previous.cost, tier.id);
-    });
+const ladder2005 = getEraHostingTiers('web2-2005');
+const ladder2011 = getEraHostingTiers('social-2011');
+
+function climbsSteadily(ladder: typeof ladder2005): void {
+  ladder.slice(1).forEach((tier, index) => {
+    const previous = ladder[index];
+    assert.ok(previous !== undefined);
+    assert.ok(tier.capacityVisitorsPerSecond > previous.capacityVisitorsPerSecond, tier.id);
+    assert.ok(tier.cost > previous.cost, tier.id);
   });
+}
+
+describe('the 2005 hosting ladder', () => {
+  it('every step carries more and costs more than the one before', () => climbsSteadily(ladder2005));
 
   it('follows history: no step is dated before the one it replaces, and none is the cloud', () => {
-    HOSTING_TIERS.slice(1).forEach((tier, index) => assert.ok(tier.year >= (HOSTING_TIERS[index]?.year ?? 0), tier.id));
-    assert.ok(HOSTING_TIERS.every((tier) => tier.year <= 2009 && !tier.name.toLowerCase().includes('cloud')));
+    ladder2005.slice(1).forEach((tier, index) => assert.ok(tier.year >= (ladder2005[index]?.year ?? 0), tier.id));
+    assert.ok(ladder2005.every((tier) => tier.year <= 2009 && !tier.name.toLowerCase().includes('cloud')));
   });
 
   it('always has a next step for anyone who can still pay: there is no ceiling to run into', () => {
     const lateGame: GameState = { ...busyBlog(), hostingTier: 30 };
     assert.notEqual(getNextHostingTier(lateGame), null);
+  });
+});
+
+describe('the 2011 cloud', () => {
+  it('replaces the racks: every 2011 step is the cloud, and it keeps scaling', () => {
+    assert.ok(ladder2011.length > 20);
+    assert.ok(ladder2011.every((tier) => tier.name.startsWith('The cloud')));
+    climbsSteadily(ladder2011);
+  });
+
+  it('comes with the relaunch: the first step is free, and the relaunch starts at the bottom of it', () => {
+    assert.equal(ladder2011[0]?.cost, 0);
+    const everyFeatureBuilt = Object.fromEntries(Object.keys(fresh().featureLevels).map((featureId) => [featureId, 30])) as GameState['featureLevels'];
+    const finished2005: GameState = { ...busyBlog(), hostingTier: 9, money: 2e9, featureLevels: { ...everyFeatureBuilt, 'share-buttons': 0, 'video-player': 0, 'activity-feed': 0 } };
+    assert.ok(isEraGateComplete(finished2005), 'the fixture should pass the 2005 gate');
+    const relaunched = advanceEra(finished2005);
+    assert.equal(relaunched.eraId, 'social-2011');
+    assert.equal(relaunched.hostingTier, 0);
+    assert.equal(getHostingTier(relaunched).id, ladder2011[0]?.id);
   });
 });
 

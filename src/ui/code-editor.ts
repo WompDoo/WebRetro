@@ -38,6 +38,12 @@ interface PendingTypo {
 }
 
 const CHARS_PER_KEYSTROKE = 4;
+
+/** A pasted chunk: the rest of the current line, newline included. */
+function lineLengthFrom(text: string, start: number): number {
+  const newline = text.indexOf('\n', start);
+  return newline === -1 ? text.length - start : newline - start + 1;
+}
 const MAX_KEPT_LINES = 40;
 /** Counted keystrokes per second are capped, so mashing the keyboard can't outrun a mouse. */
 const MIN_KEYSTROKE_INTERVAL_MS = 100;
@@ -84,11 +90,13 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
   let typo: PendingTypo | null = null;
   let totalLines = 1;
   let highlights = false;
+  let typing = ERA_PRESENTATION['homepage-1997'].typing;
   let lastAcceptedAt = Number.NEGATIVE_INFINITY;
 
   const takeChunk = (): string => {
-    const chunk = source.slice(cursor, cursor + CHARS_PER_KEYSTROKE);
-    cursor = cursor + CHARS_PER_KEYSTROKE >= source.length ? 0 : cursor + CHARS_PER_KEYSTROKE;
+    const size = typing.pastesWholeLines ? lineLengthFrom(source, cursor) : CHARS_PER_KEYSTROKE;
+    const chunk = source.slice(cursor, cursor + size);
+    cursor = cursor + size >= source.length ? 0 : cursor + size;
     totalLines += (chunk.match(/\n/g) ?? []).length;
     return chunk;
   };
@@ -119,8 +127,8 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     const floater = document.createElement('span');
     const texts: Readonly<Record<CodeInputOutcome, string>> = {
       'clean-line': `+${formatMoney(feedback.earned)}`,
-      'bugged-line': 'typo!',
-      'fixed-bug': `fixed +${formatMoney(feedback.earned)}`,
+      'bugged-line': typing.typoLabel,
+      'fixed-bug': `${typing.fixLabel} +${formatMoney(feedback.earned)}`,
     };
     floater.className = `floater floater--${feedback.outcome}`;
     floater.textContent = texts[feedback.outcome];
@@ -170,6 +178,7 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     typo = null;
     totalLines = 1;
     highlights = presentation.editorHighlightsSyntax;
+    typing = presentation.typing;
     elements.window.dataset['era'] = String(presentation.year);
     elements.title.textContent = presentation.editorTitle;
     elements.menu.innerHTML = presentation.editorMenu.map((item) => `<span><u>${escapeHtml(item.charAt(0))}</u>${escapeHtml(item.slice(1))}</span>`).join('');
