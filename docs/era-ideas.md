@@ -172,14 +172,17 @@ shows up in it.
 
 **Ending:** acquisition offers from parody tech giants, based on what you built, plus a "refuse to sell" ending.
 
-## Known balance issues
+## Balance notes
 
-- **Late 2005 snowballs.** In the simulation, revenue jumps about ×24 within one minute near the end
-  of the era and the bot buys 13 upgrades at once: most 2005 multipliers become affordable together and
-  each one makes the next cheaper. Small content changes move when the snowball starts, so the era's length
-  swings (5–19 minutes). Fix by spreading 2005 boost prices further apart and making the late features cost more.
-- **The Flash intro can't be undone.** It weighs 1.2 MB, which alone takes longer than 2005 visitors wait.
-  It's meant as a trade-off, but you can't remove it once built. Consider an on/off switch like the defenses.
+- **Late 2005 used to snowball** (income ×24 in one simulated minute, era over in 5 minutes). Fixed by
+  spreading 2005 prices, making late features cost and produce more, and splitting hosting into six
+  tiers about 4× apart: when traffic is stuck at capacity, an upgrade multiplies income by that gap.
+  Now the steepest minute is ×4.7–8.1 and 2005 takes 12–16 minutes for the scripted players.
+- **An overloaded server serves what it can.** Past 200% load most visitors get a 503 page, but traffic
+  is capped at capacity, never zero. Dropping to zero caused a death spiral: no income, so no upgrade.
+- **The Flash intro can be switched off.** Switchable features keep their levels; switched off they add
+  no visitors and no page weight. The 2011 scroll-jacking toggle can reuse this.
+- The simulation prints each player's steepest minute (income growth within one minute) to spot snowballs.
 
 ## Pop-up rules (all eras)
 

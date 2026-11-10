@@ -80,11 +80,12 @@ describe('server load', () => {
     assert.equal(calculateServerLoad(fresh()), 0);
   });
 
-  it('goes down at twice the hosting capacity and serves nobody', () => {
+  it('shows the 503 page at twice the hosting capacity, but still serves what it can', () => {
     const overloaded = web2(OVERLOADING_BLOG_LEVEL);
     assert.ok(calculateServerLoad(overloaded) >= 2, `load was ${calculateServerLoad(overloaded)}`);
     assert.equal(isSiteDown(overloaded), true);
-    assert.equal(calculateVisitorsPerSecond(overloaded), 0);
+    assert.ok(calculateVisitorsPerSecond(overloaded) > 0, 'an overloaded server must never drop to zero');
+    assert.ok(calculateVisitorsPerSecond(overloaded) <= sharedCapacity);
   });
 
   it('a hosting upgrade raises capacity and brings the site back', () => {

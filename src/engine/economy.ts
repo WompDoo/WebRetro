@@ -205,19 +205,27 @@ export function calculateLoadTimeSeconds(state: GameState): number {
   return transferSeconds * multiplyAll(factors) * Math.max(NEUTRAL_FACTOR, calculateServerLoad(state));
 }
 
+/** Past twice its capacity, most visitors get a 503 page. The server still serves what it can. */
 export function isSiteDown(state: GameState): boolean {
   return calculateServerLoad(state) >= SITE_DOWN_SERVER_LOAD;
 }
 
 /** Share of visitors who wait for the page. Everyone waits up to the era's patience; after that they leave. */
 export function calculatePerformanceTrafficFactor(state: GameState): number {
-  if (isSiteDown(state)) return NO_TRAFFIC;
   const loadTime = calculateLoadTimeSeconds(state);
   return loadTime <= 0 ? NEUTRAL_FACTOR : Math.min(NEUTRAL_FACTOR, ERAS_BY_ID[state.eraId].patienceSeconds / loadTime);
 }
 
+function calculateServedLimit(state: GameState): number {
+  return ERAS_BY_ID[state.eraId].hasServerLoad ? getHostingTier(state).capacityVisitorsPerSecond : Number.POSITIVE_INFINITY;
+}
+
+/**
+ * Visitors who actually get your page: those patient enough to wait, up to what the server can serve.
+ * An overloaded server never drops to zero, so you can always earn your way to the next hosting tier.
+ */
 export function calculateVisitorsPerSecond(state: GameState): number {
-  return calculateDemandVisitorsPerSecond(state) * calculatePerformanceTrafficFactor(state);
+  return Math.min(calculateDemandVisitorsPerSecond(state) * calculatePerformanceTrafficFactor(state), calculateServedLimit(state));
 }
 
 export function calculateAdValuePerAd(state: GameState): number {

@@ -41,7 +41,7 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
 }
 
 const HOMEPAGE_MIGRATION_COST = 160_000;
-const WEB2_MIGRATION_COST = 400_000_000;
+const WEB2_MIGRATION_COST = 1_000_000_000;
 
 export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
   'homepage-1997': {
