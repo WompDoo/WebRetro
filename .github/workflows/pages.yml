@@ -2,6 +2,9 @@ name: Deploy to GitHub Pages
 
 # Publishes the playable game on every push to main. Main only receives merged pull requests that
 # passed CI; the type-check and unit tests run again here so a broken build never goes live.
+#
+# This must be the only workflow that deploys to Pages. Deployments share one site, and the last one to
+# finish wins: a second workflow (such as the Jekyll starter the Pages settings offer) replaces the game.
 on:
   push:
     branches: [main]

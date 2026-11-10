@@ -45,6 +45,8 @@ tab). It type-checks, tests and builds, then deploys `dist/preview.html` as the 
 
 One-time setup in the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 Pages on a private repository needs a paid GitHub plan, and the published site is public either way.
+Don't add a second Pages workflow (the settings page offers a Jekyll starter): the last deploy to finish
+wins, and a Jekyll build of this repository is just the README.
 
 ## Layout
 
