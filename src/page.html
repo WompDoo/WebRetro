@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@400;600;700&family=Tinos:wght@400;700&display=swap">
 <style>
-/* Layout: a workbench. Left: your code editor and the next-era checklist. Middle: the browser window with your site (the star). Right: the shop. */
+/* Layout: a workbench. Left: your code editor and the news. Middle: the browser window with your site (the star) and the next-era objective bar under it. Right: the shop. */
 :root {
   --paper: #ECEFF7;
   --paper-grid: rgba(27, 34, 64, 0.06);
@@ -107,17 +107,21 @@ button { font: inherit; color: inherit; }
 .workbench {
   display: grid; gap: 20px; align-items: start;
   grid-template-columns: minmax(280px, 330px) minmax(0, 1fr) minmax(300px, 370px);
-  grid-template-areas: "editor browser shop" "goal browser shop";
+  grid-template-areas: "editor browser shop" "news browser shop" "news goal shop";
 }
 .editor-column { grid-area: editor; min-width: 0; }
 .goal { grid-area: goal; min-width: 0; }
+.news-panel { grid-area: news; min-width: 0; }
 .browser { grid-area: browser; min-width: 0; }
 .shop { grid-area: shop; min-width: 0; }
+@media (max-width: 1500px) {
+  .workbench { grid-template-columns: minmax(260px, 300px) minmax(0, 1fr) minmax(300px, 340px); }
+}
 @media (max-width: 1220px) {
-  .workbench { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); grid-template-areas: "browser shop" "editor shop" "goal shop"; }
+  .workbench { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px); grid-template-areas: "browser editor" "browser shop" "goal shop" "news shop"; }
 }
 @media (max-width: 780px) {
-  .workbench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "editor" "browser" "goal" "shop"; }
+  .workbench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "editor" "browser" "goal" "news" "shop"; }
   .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; }
   body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
   .topbar { gap: 8px; padding: 8px 12px; }
@@ -199,12 +203,8 @@ button { font: inherit; color: inherit; }
 .tok-keyword { color: #8A2BAE; font-weight: 600; }
 
 /* ---------- Next era checklist ---------- */
-.goal-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 14px; }
-.goal-content { display: flex; flex-direction: column; gap: 12px; }
-.goal-target { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .goal-year { font-family: var(--font-numbers); font-weight: 600; letter-spacing: -0.03em; font-size: 30px; line-height: 1; color: var(--link); }
 .goal-name { font-family: var(--font-display); font-size: 20px; }
-.goal-features { font-size: 12px; color: var(--ink-soft); margin-left: auto; }
 .hint { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; padding: 9px 10px; background: var(--panel-sunken); border: 2px dashed var(--line-soft); border-radius: 6px; font-size: 13.5px; }
 .hint-chip { font-family: var(--font-display); font-size: 12px; padding: 1px 6px; background: var(--caution); color: var(--on-caution); border-radius: 3px; }
 .gate-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
@@ -228,8 +228,6 @@ button { font: inherit; color: inherit; }
   background: repeating-linear-gradient(-45deg, var(--panel-sunken) 0 10px, var(--panel) 10px 20px);
 }
 @keyframes migrate-glow { 50% { filter: brightness(1.08); } }
-.news { border-top: 2px dashed var(--line-soft); padding-top: 10px; }
-.news h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--ink-soft); }
 .news-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .news-list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; font-size: 13px; }
 .news-year { font-family: var(--font-numbers); font-weight: 600; font-size: 12px; color: var(--link); }
@@ -525,12 +523,10 @@ button { font: inherit; color: inherit; }
   html, body { height: 100%; }
   body { overflow: hidden; }
   .app { height: 100%; padding-block: 12px; gap: 12px; }
-  .workbench { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
+  .workbench { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; align-items: stretch; }
+  .news-panel { display: flex; flex-direction: column; min-height: 0; }
+  .news-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   .editor-column { display: flex; flex-direction: column; min-height: 0; }
-  .goal { display: flex; flex-direction: column; min-height: 0; }
-  .goal-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-  /* The relaunch button stays in view while the checklist scrolls. */
-  .goal-body .migrate-button { position: sticky; bottom: 0; z-index: 1; }
   .browser { min-height: 0; }
   .browser-viewport { flex: 1; height: auto; min-height: 0; }
   .shop { position: static; max-height: none; min-height: 0; overflow: hidden; }
@@ -539,11 +535,11 @@ button { font: inherit; color: inherit; }
 @media (min-width: 781px) and (max-width: 1220px) and (min-height: 620px) {
   .workbench {
     grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
-    grid-template-rows: minmax(0, 1fr) minmax(0, 250px);
-    grid-template-areas: "browser shop" "editor goal";
+    grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 120px);
+    grid-template-areas: "browser editor" "browser shop" "goal shop" "news shop";
   }
-  .editor-window { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  .editor-surface { flex: 1; height: auto; min-height: 0; }
+  .editor-surface { height: 150px; }
+  .news-panel .panel-header, .news-panel .save-row { display: none; }
 }
 
 /* ---------- Pop-up designs ---------- */
@@ -768,6 +764,30 @@ button { font: inherit; color: inherit; }
 @keyframes jq-fade-in { from { opacity: 0; } }
 @keyframes jq-slide-down { from { opacity: 0; transform: scaleY(0.6); } }
 
+/* ---------- Next era: an objective bar under the browser ---------- */
+.goal { display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 10px; }
+.goal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.goal-title { margin: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.goal-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.goal .goal-year { font-size: 24px; }
+.goal .goal-name { font-size: 18px; }
+/* One row of equal chips, however many requirements the era has; two per row on phones. */
+.goal .gate-list { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+@media (max-width: 520px) { .goal .gate-list { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.goal .gate-row { grid-template-columns: 16px minmax(0, 1fr); align-content: start; gap: 5px 6px; padding: 6px 8px; background: var(--panel-sunken); border: 1.5px solid var(--line-soft); border-radius: 6px; }
+.goal .gate-check { width: 16px; height: 16px; font-size: 11px; }
+.goal .gate-row.is-met { border-color: var(--money); }
+.goal .gate-label { font-size: 12px; line-height: 1.25; }
+.goal .gate-value { grid-column: 2; font-size: 11px; white-space: nowrap; }
+.goal .gate-bar { grid-column: 1 / -1; height: 7px; }
+.goal .migrate-button { width: auto; padding: 8px 16px; font-size: 15px; box-shadow: var(--lift-small); }
+.news-tip { padding: 10px 14px 0; }
+.news-tip .hint { font-size: 13px; }
+
+/* ---------- News panel ---------- */
+.news-body { padding: 10px 14px; }
+.news-panel .save-row { margin: 0 14px; padding: 10px 0 12px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
@@ -822,18 +842,15 @@ button { font: inherit; color: inherit; }
       <div class="browser-statusbar" id="browser-statusbar"><span class="browser-status-text" id="browser-status">Document: Done</span><span class="browser-perf" id="browser-perf"></span><span class="browser-progress" aria-hidden="true"></span></div>
     </section>
 
-    <section class="panel goal" aria-label="Next era">
-      <header class="panel-header"><h2 class="panel-title">Next era</h2><span class="panel-caption">Finish the checklist to relaunch</span></header>
-      <div class="goal-body">
-        <div id="goal-body" class="goal-content"></div>
-        <div class="news">
-          <h3>News</h3>
-          <ul class="news-list" id="news-list"></ul>
-        </div>
-        <div class="save-row">
-          <span>Progress saves in this browser.</span>
-          <button type="button" class="ghost-button" data-action="open-reset">Start over</button>
-        </div>
+    <section class="panel goal" id="goal-body" aria-label="Next era"></section>
+
+    <section class="panel news-panel" aria-label="News">
+      <header class="panel-header"><h2 class="panel-title">News</h2><span class="panel-caption">What just happened</span></header>
+      <div class="news-tip" id="news-tip"></div>
+      <div class="news-body"><ul class="news-list" id="news-list"></ul></div>
+      <div class="save-row">
+        <span>Progress saves in this browser.</span>
+        <button type="button" class="ghost-button" data-action="open-reset">Start over</button>
       </div>
     </section>
 

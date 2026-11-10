@@ -9,7 +9,6 @@ import {
   ERAS_BY_ID,
   formatCompactNumber,
   formatMoney,
-  getFeatureIdsOfEra,
   isEraGateComplete,
 } from '../engine';
 import type { GameState, GateCheck, GateRequirementKind } from '../engine';
@@ -117,11 +116,16 @@ export function renderGoal(state: GameState): string {
   const era = ERAS_BY_ID[state.eraId];
   const checks = calculateGateChecks(state);
   const isComplete = isEraGateComplete(state);
-  const featureCount = getFeatureIdsOfEra(state.eraId).length;
-  return `<div class="goal-target"><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span><span class="goal-features">${featureCount} features in this era</span></div>
-    <p class="hint"><span class="hint-chip">Tip</span><span>${escapeHtml(findHint(state))}</span></p>
-    <ul class="gate-list">${checks.map(renderGateRow).join('')}</ul>
-    <button type="button" class="migrate-button" data-action="migrate" ${isComplete ? '' : 'disabled'}>${escapeHtml(isComplete ? era.migrationLabel : `Locked: ${era.migrationLabel}`)}</button>`;
+  const label = isComplete ? era.migrationLabel : `Locked: ${era.migrationLabel}`;
+  return `<div class="goal-head">
+      <h2 class="goal-title"><span class="goal-eyebrow">Next era</span><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span></h2>
+      <button type="button" class="migrate-button" data-action="migrate" ${isComplete ? '' : 'disabled'}>${escapeHtml(label)}</button>
+    </div>
+    <ul class="gate-list">${checks.map(renderGateRow).join('')}</ul>`;
+}
+
+export function renderTip(state: GameState): string {
+  return `<p class="hint"><span class="hint-chip">Tip</span><span>${escapeHtml(findHint(state))}</span></p>`;
 }
 
 export function updateGoalProgress(container: HTMLElement, state: GameState): void {
@@ -136,5 +140,5 @@ export function updateGoalProgress(container: HTMLElement, state: GameState): vo
 
 export function calculateGoalSignature(state: GameState): string {
   const met = calculateGateChecks(state).map((check) => (check.isMet ? '1' : '0')).join('');
-  return `${state.eraId}|${met}|${findHint(state)}`;
+  return `${state.eraId}|${met}`;
 }

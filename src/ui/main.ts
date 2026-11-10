@@ -33,7 +33,7 @@ import { createCodeEditor } from './code-editor';
 import type { CodeEditor, KeystrokeFeedback } from './code-editor';
 import { escapeHtml, requireElement, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { ERA_PRESENTATION } from './presentation';
-import { calculateGoalSignature, renderGoal, updateGoalProgress } from './render-goal';
+import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
 import { calculatePopupSignature, findPopupCopy, syncPopups } from './render-popups';
 import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
 import type { ShopTab } from './render-shop';
@@ -73,7 +73,7 @@ const OFFLINE_THRESHOLD_MS = 5_000;
 const MAX_OFFLINE_MS = 8 * 60 * 60 * 1_000;
 const AUTOSAVE_INTERVAL_MS = 5_000;
 const SLOW_RENDER_INTERVAL_MS = 250;
-const MAX_NEWS_ITEMS = 6;
+const MAX_NEWS_ITEMS = 14;
 const WIPE_SWAP_DELAY_MS = 700;
 const WIPE_DURATION_MS = 1_600;
 const SEED_RANGE = 2 ** 31;
@@ -113,6 +113,7 @@ const elements = {
   shopBody: requireElement<HTMLElement>('#shop-body'),
   goalBody: requireElement<HTMLElement>('#goal-body'),
   newsList: requireElement<HTMLElement>('#news-list'),
+  newsTip: requireElement<HTMLElement>('#news-tip'),
   storyOverlay: requireElement<HTMLElement>('#story-overlay'),
   storyCard: requireElement<HTMLElement>('#story-card'),
   resetOverlay: requireElement<HTMLElement>('#reset-overlay'),
@@ -432,6 +433,7 @@ function renderStructure(): void {
     signatures.goal = goalSignature;
     elements.goalBody.innerHTML = renderGoal(game);
   }
+  setHtmlIfChanged(elements.newsTip, renderTip(game));
   renderNews();
   showEndCardOnce();
 }

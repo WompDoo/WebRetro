@@ -34,7 +34,7 @@ function requireVisitorsPerSecond(amount: number): EraGateRequirement {
 function requireMigrationBudget(amount: number): EraGateRequirement {
   return {
     kind: 'migration-budget',
-    label: `Save ${formatMoney(amount)} for the relaunch`,
+    label: `Save ${formatMoney(amount)}`,
     target: amount,
     featureId: null,
   };
