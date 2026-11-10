@@ -12,6 +12,8 @@ import {
   canUpgradeHosting,
   canUseAds,
   DEFENSES_BY_ID,
+  calculateHostingCapacity,
+  calculateServerLoadPerVisitor,
   getHostingTier,
   getNextHostingTier,
   ERA_IDS,
@@ -29,9 +31,10 @@ import {
   isEraUnlocked,
   isFeatureBuildable,
   isFeatureSwitchedOff,
+  MS_PER_SECOND,
   UPGRADES_BY_ID,
 } from '../engine';
-import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, UpgradeEffect, UpgradeId } from '../engine';
+import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
 import { AD_ICON, CODE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
@@ -124,17 +127,23 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'ad-annoyance-multiplier': (effect) => `Ads annoy visitors ${formatFactor(effect.factor)}`,
   'page-weight-multiplier': (effect) => `Page weight ${formatFactor(effect.factor)}`,
   'load-time-multiplier': (effect) => `Load time ${formatFactor(effect.factor)}`,
+  'server-load-multiplier': (effect) => `Server load per visitor ${formatFactor(effect.factor)}`,
+  'traffic-spike-cache': () => 'Traffic spikes put no load on the server',
 };
 
-export function describeUpgradeEffect(effect: UpgradeEffect, eraId: EraId): string {
+function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
   const describe = EFFECT_DESCRIPTIONS[effect.kind] as (value: UpgradeEffect, era: EraId) => string;
   return describe(effect, eraId);
+}
+
+export function describeUpgradeEffects(effects: readonly UpgradeEffect[], eraId: EraId): string {
+  return effects.map((effect) => describeOneEffect(effect, eraId)).join(' · ');
 }
 
 function renderVisitedList(state: GameState, upgradeIds: readonly UpgradeId[], title: string): string {
   if (upgradeIds.length === 0) return '';
   const links = upgradeIds
-    .map((upgradeId) => `<span class="visited-link" title="${escapeHtml(describeUpgradeEffect(UPGRADES_BY_ID[upgradeId].effect, state.eraId))}">${escapeHtml(UPGRADES_BY_ID[upgradeId].name)}</span>`)
+    .map((upgradeId) => `<span class="visited-link" title="${escapeHtml(describeUpgradeEffects(UPGRADES_BY_ID[upgradeId].effects, state.eraId))}">${escapeHtml(UPGRADES_BY_ID[upgradeId].name)}</span>`)
     .join('');
   return `<h3 class="shop-group-title">${escapeHtml(title)}</h3><p class="visited-list">${links}</p>`;
 }
@@ -163,7 +172,7 @@ function renderSkillRow(state: GameState, skillId: UpgradeId): string {
       <h3 class="shop-name">${escapeHtml(skill.name)}</h3>
       <p class="shop-desc">${escapeHtml(skill.description)}</p>
       ${describeUnlocks(state, skillId)}
-      <p class="shop-effect">${escapeHtml(describeUpgradeEffect(skill.effect, state.eraId) + describeUpgradeWeight(skillId))}</p>
+      <p class="shop-effect">${escapeHtml(describeUpgradeEffects(skill.effects, state.eraId) + describeUpgradeWeight(skillId))}</p>
     </div>
     ${buyButton('buy-upgrade', skillId, skill.cost)}
   </article>`;
@@ -183,9 +192,10 @@ function renderLearnTab(state: GameState): string {
 
 // ---------- Upgrades (boosts) ----------
 
+const TYPING_EFFECT_KINDS: readonly UpgradeEffect['kind'][] = ['keystroke-value-multiplier', 'keystroke-revenue-share', 'bug-chance-reduction'];
+
 function isTypingBoost(upgradeId: UpgradeId): boolean {
-  const kind = UPGRADES_BY_ID[upgradeId].effect.kind;
-  return kind === 'keystroke-value-multiplier' || kind === 'keystroke-revenue-share' || kind === 'bug-chance-reduction';
+  return UPGRADES_BY_ID[upgradeId].effects.some((effect) => TYPING_EFFECT_KINDS.includes(effect.kind));
 }
 
 function renderBoostRow(state: GameState, upgradeId: UpgradeId): string {
@@ -195,7 +205,7 @@ function renderBoostRow(state: GameState, upgradeId: UpgradeId): string {
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(upgrade.name)}</h3>
       <p class="shop-desc">${escapeHtml(upgrade.description)}</p>
-      <p class="shop-effect">${escapeHtml(describeUpgradeEffect(upgrade.effect, state.eraId) + describeUpgradeWeight(upgradeId))}</p>
+      <p class="shop-effect">${escapeHtml(describeUpgradeEffects(upgrade.effects, state.eraId) + describeUpgradeWeight(upgradeId))}</p>
     </div>
     ${buyButton('buy-upgrade', upgradeId, upgrade.cost)}
   </article>`;
@@ -215,11 +225,34 @@ function renderUpgradesTab(state: GameState): string {
 
 // ---------- Ads & security ----------
 
-function describeTradeOffs(defense: DefenseDefinition): string {
+const HAZARD_NAMES: Readonly<Record<HazardKind, string>> = {
+  popup: 'pop-up ads on your page',
+  virus: 'viruses',
+  spam: 'spam floods in your comments',
+  'sql-injection': 'SQL injections',
+  'traffic-spike': 'traffic spikes',
+};
+
+/** What the defense does for you. Without this line a defense reads like a pure cost. */
+function describeBenefit(defense: DefenseDefinition): string {
+  const hazard = HAZARD_NAMES[defense.countersHazard];
+  return defense.counterMode === 'prevents-spawn'
+    ? `Stops ${hazard}`
+    : `Removes ${hazard} on its own after ${Math.round(defense.autoCleanDelayMs / MS_PER_SECOND)} s`;
+}
+
+function describeTrafficTradeOff(defense: DefenseDefinition, eraId: EraId): string {
+  const share = formatPercent(NEUTRAL_FACTOR - defense.trafficFactor);
+  return defense.penalizedFeatureId === null
+    ? `${share} fewer visitors`
+    : `${getFeatureDisplayName(defense.penalizedFeatureId, eraId).toLowerCase()} bring ${share} fewer visitors`;
+}
+
+function describeTradeOffs(defense: DefenseDefinition, eraId: EraId): string {
   const tradeOffs = [
     defense.revenueUpkeepShare > 0 ? `costs ${formatPercent(defense.revenueUpkeepShare)} of revenue` : '',
     defense.adValueFactor < NEUTRAL_FACTOR ? `ads pay ${formatPercent(NEUTRAL_FACTOR - defense.adValueFactor)} less` : '',
-    defense.trafficFactor < NEUTRAL_FACTOR ? `${formatPercent(NEUTRAL_FACTOR - defense.trafficFactor)} fewer visitors` : '',
+    defense.trafficFactor < NEUTRAL_FACTOR ? describeTrafficTradeOff(defense, eraId) : '',
   ].filter((text) => text !== '');
   return `Trade-off while on: ${tradeOffs.join(', ')}`;
 }
@@ -237,7 +270,8 @@ function renderDefenseRow(state: GameState, defenseId: DefenseId): string {
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(defense.name)}</h3>
       <p class="shop-desc">${escapeHtml(defense.description)}</p>
-      <p class="shop-effect is-tradeoff">${escapeHtml(describeTradeOffs(defense))}</p>
+      <p class="shop-effect">${escapeHtml(describeBenefit(defense))}</p>
+      <p class="shop-effect is-tradeoff">${escapeHtml(describeTradeOffs(defense, state.eraId))}</p>
     </div>
     ${renderDefenseControl(state, defenseId)}
   </article>`;
@@ -275,12 +309,12 @@ function renderHostingRow(state: GameState): string {
   const next = getNextHostingTier(state);
   const load = calculateServerLoad(state);
   const button = next === null ? '<button type="button" class="buy-button" disabled>Maxed</button>' : buyButton('upgrade-hosting', next.id, next.cost);
-  const nextLine = next === null ? '' : `<p class="shop-effect">Next: ${escapeHtml(next.name)}, ${formatCompactNumber(next.capacityVisitorsPerSecond)} visitors/s. ${escapeHtml(next.description)}</p>`;
+  const nextLine = next === null ? '' : `<p class="shop-effect">Next (${next.year}): ${escapeHtml(next.name)}, ${formatCompactNumber(calculateHostingCapacity(state, next))} visitors/s. ${escapeHtml(next.description)}</p>`;
   return `<article class="shop-row">
     <div class="shop-icon">${SERVER_ICON}</div>
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(tier.name)} <span class="level-chip${load > 1 ? ' is-hot' : ''}">${formatPercent(load)} load</span></h3>
-      <p class="shop-desc">Handles ${formatCompactNumber(tier.capacityVisitorsPerSecond)} visitors/s. Over 100% pages slow down; at 200% the site goes down.</p>
+      <p class="shop-desc">Handles ${formatCompactNumber(calculateHostingCapacity(state, tier))} visitors/s${calculateServerLoadPerVisitor(state) < 1 ? ' with caching' : ''}. Over 100% pages slow down; at 200% the site goes down.</p>
       ${nextLine}
     </div>
     ${button}

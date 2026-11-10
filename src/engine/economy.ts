@@ -33,6 +33,7 @@ const NO_TRAFFIC = 0;
 const FALLBACK_HOSTING_TIER: HostingTierDefinition = {
   id: 'shared-hosting',
   eraId: 'web2-2005',
+  year: 2001,
   name: 'Shared hosting',
   description: '',
   cost: 0,
@@ -48,7 +49,7 @@ function sumAll(values: readonly number[]): number {
 }
 
 function getPurchasedEffects(state: GameState): readonly UpgradeEffect[] {
-  return state.purchasedUpgradeIds.map((id) => UPGRADES_BY_ID[id].effect);
+  return state.purchasedUpgradeIds.flatMap((id) => UPGRADES_BY_ID[id].effects);
 }
 
 export function getEnabledDefenses(state: GameState): readonly DefenseDefinition[] {
@@ -91,11 +92,16 @@ export function isFeatureInfected(state: GameState, featureId: FeatureId): boole
   return state.infections.some((infection) => infection.featureId === featureId);
 }
 
+/** Defenses whose trade-off lands on one feature (null: on all traffic). */
+function getDefenseTrafficFactors(state: GameState, featureId: FeatureId | null): readonly number[] {
+  return getEnabledDefenses(state).flatMap((defense) => (defense.penalizedFeatureId === featureId ? [defense.trafficFactor] : []));
+}
+
 function calculateFeatureUpgradeFactor(state: GameState, featureId: FeatureId): number {
   const factors = getPurchasedEffects(state).flatMap((effect) =>
     effect.kind === 'feature-traffic-multiplier' && effect.featureId === featureId ? [effect.factor] : [],
   );
-  return multiplyAll(factors);
+  return multiplyAll(factors) * multiplyAll(getDefenseTrafficFactors(state, featureId));
 }
 
 function calculateSynergyFactor(state: GameState, definition: FeatureDefinition): number {
@@ -131,8 +137,7 @@ export function calculateGlobalTrafficFactor(state: GameState): number {
   const upgradeFactors = getPurchasedEffects(state).flatMap((effect) =>
     effect.kind === 'global-traffic-multiplier' ? [effect.factor] : [],
   );
-  const defenseFactors = getEnabledDefenses(state).map((defense) => defense.trafficFactor);
-  return multiplyAll(upgradeFactors) * multiplyAll(defenseFactors);
+  return multiplyAll(upgradeFactors) * multiplyAll(getDefenseTrafficFactors(state, null));
 }
 
 export function calculateAdAnnoyancePerAd(state: GameState): number {
@@ -174,11 +179,33 @@ export function getNextHostingTier(state: GameState): HostingTierDefinition | nu
   return next !== undefined && isEraUnlocked(state, next.eraId) && ERAS_BY_ID[state.eraId].hasServerLoad ? next : null;
 }
 
-/** Demand divided by hosting capacity. 0 in eras where hosting doesn't matter yet. */
+/** Share of each visit that reaches your own server. Caching and a CDN answer the rest. */
+export function calculateServerLoadPerVisitor(state: GameState): number {
+  return multiplyAll(getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'server-load-multiplier' ? [effect.factor] : [])));
+}
+
+export function hasTrafficSpikeCache(state: GameState): boolean {
+  return getPurchasedEffects(state).some((effect) => effect.kind === 'traffic-spike-cache');
+}
+
+export function isTrafficSpikeCached(state: GameState): boolean {
+  return state.trafficSpikeRemainingMs > 0 && hasTrafficSpikeCache(state);
+}
+
+/** Visitors per second a hosting tier can serve, once caching has taken its share. */
+export function calculateHostingCapacity(state: GameState, tier: HostingTierDefinition): number {
+  return tier.capacityVisitorsPerSecond / calculateServerLoadPerVisitor(state);
+}
+
+/** Visitors who reach your own server. During a cached spike the extra crowd gets the static copy instead. */
+function calculateServerDemand(state: GameState): number {
+  const servedFromCache = isTrafficSpikeCached(state) ? TRAFFIC_SPIKE_DEMAND_FACTOR : NEUTRAL_FACTOR;
+  return calculateDemandVisitorsPerSecond(state) / servedFromCache;
+}
+
+/** Server demand divided by capacity. 0 in eras where hosting doesn't matter yet. */
 export function calculateServerLoad(state: GameState): number {
-  return ERAS_BY_ID[state.eraId].hasServerLoad
-    ? calculateDemandVisitorsPerSecond(state) / getHostingTier(state).capacityVisitorsPerSecond
-    : 0;
+  return ERAS_BY_ID[state.eraId].hasServerLoad ? calculateServerDemand(state) / calculateHostingCapacity(state, getHostingTier(state)) : 0;
 }
 
 function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): number {
@@ -217,7 +244,8 @@ export function calculatePerformanceTrafficFactor(state: GameState): number {
 }
 
 function calculateServedLimit(state: GameState): number {
-  return ERAS_BY_ID[state.eraId].hasServerLoad ? getHostingTier(state).capacityVisitorsPerSecond : Number.POSITIVE_INFINITY;
+  // A cached spike keeps the site up, but you still only earn from what your setup can carry.
+  return ERAS_BY_ID[state.eraId].hasServerLoad ? calculateHostingCapacity(state, getHostingTier(state)) : Number.POSITIVE_INFINITY;
 }
 
 /**

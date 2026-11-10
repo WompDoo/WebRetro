@@ -43,6 +43,8 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'drop-vowels',
   'rails',
   'memcached',
+  'cdn',
+  'page-cache',
   'syntax-highlighting',
   'perpetual-beta',
   'contextual-text-ads',
@@ -62,7 +64,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Pictures on a web page! Hit counters and banners are just images too.',
     cost: 10,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 1.5 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'font-tags': {
@@ -73,7 +75,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Big, small, red, Comic Sans, centered. "Hello World" becomes a real welcome.',
     cost: 60,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 2 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 2 }],
     requiredFeatureId: null,
   },
   'body-background': {
@@ -84,7 +86,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'A tiled starfield behind everything. Neon text on top. Perfect.',
     cost: 150,
     pageWeightKb: 12,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   hyperlinks: {
@@ -95,7 +97,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Link to other pages, and let other pages link to you.',
     cost: 400,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'marquee-blink': {
@@ -106,7 +108,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Text that scrolls. Text that blinks. Visitors can’t look away.',
     cost: 700,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   'cgi-forms': {
@@ -117,7 +119,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Visitors can type things and your server remembers them. Clients pay well for forms.',
     cost: 900,
     pageWeightKb: 1,
-    effect: { kind: 'keystroke-value-multiplier', factor: 1.5 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'table-layouts': {
@@ -128,7 +130,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Now you can put things next to other things. Your page gets a sidebar.',
     cost: 1_800,
     pageWeightKb: 2,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'embed-tag': {
@@ -139,7 +141,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Sound on a web page. Your visitors have not agreed to this.',
     cost: 2_500,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   'learn-javascript': {
@@ -150,7 +152,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Scripts that run in the browser. Mostly scrolling text in the status bar.',
     cost: 9_000,
     pageWeightKb: 3,
-    effect: { kind: 'keystroke-revenue-share', share: 0.01 },
+    effects: [{ kind: 'keystroke-revenue-share', share: 0.01 }],
     requiredFeatureId: null,
   },
   // ---------- 2005 skills: you arrive still knowing only 1997 HTML ----------
@@ -162,7 +164,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Tables are for data now, apparently. Rebuild the page with divs and a stylesheet.',
     cost: 40_000,
     pageWeightKb: 6,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'web2-design': {
@@ -173,7 +175,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Glossy gradients, reflections under the logo, rounded everything and a beta starburst.',
     cost: 1_500_000,
     pageWeightKb: 45,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'learn-php': {
@@ -184,7 +186,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Your pages talk to a database now. Write a post once, show it forever.',
     cost: 60_000,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-revenue-share', share: 0.02 },
+    effects: [{ kind: 'keystroke-revenue-share', share: 0.02 }],
     requiredFeatureId: null,
   },
   'learn-ajax': {
@@ -195,7 +197,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'XMLHttpRequest: load new things without reloading the page.',
     cost: 5_000_000,
     pageWeightKb: 5,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'learn-rss': {
@@ -206,7 +208,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Feeds for subscribers, tags for everything.',
     cost: 50_000_000,
     pageWeightKb: 1,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   'learn-flash': {
@@ -217,7 +219,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Timelines, tweens and a Skip intro button nobody can find.',
     cost: 300_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   'learn-url-rewriting': {
@@ -228,7 +230,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'An .htaccess file turns index.php?id=42&sid=8f3a… into a URL humans can read.',
     cost: 800_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'learn-jquery': {
@@ -239,7 +241,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Write less, do more. Fade things in. Fade things out.',
     cost: 2_000_000,
     pageWeightKb: 54,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   'prepared-statements': {
@@ -250,7 +252,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Stop pasting user input straight into SQL. Ends SQL injections for good.',
     cost: 3_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 1.5 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'learn-web-apis': {
@@ -261,7 +263,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'XML, then JSON, from other people’s servers. Mash it all together.',
     cost: 20_000_000,
     pageWeightKb: 10,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.05 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: null,
   },
   // ---------- 1997 boosts ----------
@@ -273,7 +275,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Nobody trusts a site with 12 visitors.',
     cost: 150,
     pageWeightKb: 0,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'hit-counter', factor: 3 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'hit-counter', factor: 3 }],
     requiredFeatureId: 'hit-counter',
   },
   'html-validator': {
@@ -284,7 +286,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Catches typos before your visitors do.',
     cost: 400,
     pageWeightKb: 0,
-    effect: { kind: 'bug-chance-reduction', amount: 0.1 },
+    effects: [{ kind: 'bug-chance-reduction', amount: 0.1 }],
     requiredFeatureId: null,
   },
   'animated-gif-pack': {
@@ -295,7 +297,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Spinning globes, flaming text and a mailbox that opens.',
     cost: 800,
     pageWeightKb: 20,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'under-construction', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'under-construction', factor: 2 }],
     requiredFeatureId: 'under-construction',
   },
   'view-source': {
@@ -306,7 +308,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Borrow code from the best.',
     cost: 1_500,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 2 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 2 }],
     requiredFeatureId: null,
   },
   'banner-exchange': {
@@ -317,7 +319,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Show their banner, they show yours.',
     cost: 2_000,
     pageWeightKb: 0,
-    effect: { kind: 'ad-value-multiplier', factor: 1.5 },
+    effects: [{ kind: 'ad-value-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'web-directories': {
@@ -328,7 +330,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Fill in 40 forms by hand. Wait six weeks.',
     cost: 3_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.5 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'guestbook-smileys': {
@@ -339,7 +341,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: ':) :D ;) and one that spins.',
     cost: 6_000,
     pageWeightKb: 6,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'guestbook', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'guestbook', factor: 2 }],
     requiredFeatureId: 'guestbook',
   },
   'meta-keywords': {
@@ -350,7 +352,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'cool, free, games, cool, cool. Search engines love it.',
     cost: 12_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.3 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.3 }],
     requiredFeatureId: null,
   },
   'bigger-monitor': {
@@ -361,7 +363,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'It weighs as much as your desk.',
     cost: 15_000,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 2 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 2 }],
     requiredFeatureId: null,
   },
   'animated-banners': {
@@ -372,7 +374,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Blinking text sells.',
     cost: 20_000,
     pageWeightKb: 15,
-    effect: { kind: 'ad-value-multiplier', factor: 1.5 },
+    effects: [{ kind: 'ad-value-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'more-midi-files': {
@@ -383,7 +385,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Every game theme ever, in glorious General MIDI.',
     cost: 25_000,
     pageWeightKb: 0,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'midi-player', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'midi-player', factor: 2 }],
     requiredFeatureId: 'midi-player',
   },
   'bigger-webring': {
@@ -394,7 +396,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Thousands of sites, one Next button.',
     cost: 150_000,
     pageWeightKb: 0,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'webring', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'webring', factor: 2 }],
     requiredFeatureId: 'webring',
   },
   'optimize-gifs': {
@@ -405,7 +407,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Down to 16 colors each. Nobody will notice. Probably.',
     cost: 2000,
     pageWeightKb: 0,
-    effect: { kind: 'page-weight-multiplier', factor: 0.7 },
+    effects: [{ kind: 'page-weight-multiplier', factor: 0.7 }],
     requiredFeatureId: null,
   },
   'glitter-text': {
@@ -416,7 +418,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Sparkly headings, straight from a social profile page.',
     cost: 100000,
     pageWeightKb: 25,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'guestbook', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'guestbook', factor: 2 }],
     requiredFeatureId: null,
   },
   'xhtml-badges': {
@@ -427,7 +429,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Tiny 80×15 badges that prove you care about web standards.',
     cost: 150000,
     pageWeightKb: 6,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
     requiredFeatureId: null,
   },
   'j2ee': {
@@ -438,7 +440,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Fourteen XML files to say Hello World. Clients pay by the XML file.',
     cost: 150000,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 1.3 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.3 }],
     requiredFeatureId: null,
   },
   'svn': {
@@ -449,7 +451,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'No more index_old2_FINAL.php. Every change gets a revision number.',
     cost: 200000,
     pageWeightKb: 0,
-    effect: { kind: 'bug-chance-reduction', amount: 0.05 },
+    effects: [{ kind: 'bug-chance-reduction', amount: 0.05 }],
     requiredFeatureId: null,
   },
   'ie6-hacks': {
@@ -460,7 +462,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Fix the gray boxes behind your transparent images in the old browser.',
     cost: 1_200_000,
     pageWeightKb: 3,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.15 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.15 }],
     requiredFeatureId: null,
   },
   'gzip': {
@@ -471,7 +473,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Compress everything before sending it. Pages weigh half as much.',
     cost: 600_000,
     pageWeightKb: 0,
-    effect: { kind: 'page-weight-multiplier', factor: 0.5 },
+    effects: [{ kind: 'page-weight-multiplier', factor: 0.5 }],
     requiredFeatureId: null,
   },
   'drop-vowels': {
@@ -482,7 +484,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Every cool startup does it. myhomepage becomes myhmpg.',
     cost: 6_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.2 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.2 }],
     requiredFeatureId: null,
   },
   'rails': {
@@ -493,7 +495,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Build a blog in 15 minutes, like in the video.',
     cost: 10_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'keystroke-value-multiplier', factor: 2 },
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 2 }],
     requiredFeatureId: null,
   },
   'memcached': {
@@ -501,11 +503,33 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     kind: 'boost',
     eraId: 'web2-2005',
     name: 'Add memcached',
-    description: 'Keep answers in memory so the database can rest. Pages load faster.',
+    description: 'Keep answers in memory so the database can rest. Pages load faster and each visit costs the server half as much.',
     cost: 15_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'load-time-multiplier', factor: 0.6 },
+    effects: [{ kind: 'load-time-multiplier', factor: 0.6 }, { kind: 'server-load-multiplier', factor: 0.5 }],
     requiredFeatureId: null,
+  },
+  'cdn': {
+    id: 'cdn',
+    kind: 'boost',
+    eraId: 'web2-2005',
+    name: 'Put your files on a CDN',
+    description: 'Copies of your images on servers around the world, close to every visitor. Your own server only sends the HTML.',
+    cost: 25_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'server-load-multiplier', factor: 0.5 }, { kind: 'load-time-multiplier', factor: 0.8 }],
+    requiredFeatureId: null,
+  },
+  'page-cache': {
+    id: 'page-cache',
+    kind: 'boost',
+    eraId: 'web2-2005',
+    name: 'Static page cache',
+    description: 'Save every page as plain HTML. When a link-sharing site sends a crowd, the cache serves them, not your database.',
+    cost: 2_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'traffic-spike-cache' }],
+    requiredFeatureId: 'blog',
   },
   // ---------- 2005 boosts ----------
   'syntax-highlighting': {
@@ -516,7 +540,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Colors make typos obvious.',
     cost: 250_000,
     pageWeightKb: 0,
-    effect: { kind: 'bug-chance-reduction', amount: 0.08 },
+    effects: [{ kind: 'bug-chance-reduction', amount: 0.08 }],
     requiredFeatureId: null,
   },
   'perpetual-beta': {
@@ -527,7 +551,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Never finish anything. Everyone loves it.',
     cost: 2_500_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 1.25 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.25 }],
     requiredFeatureId: null,
   },
   'contextual-text-ads': {
@@ -538,7 +562,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Ads that match your content. Visitors barely notice them.',
     cost: 4_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'ad-annoyance-multiplier', factor: 0.5 },
+    effects: [{ kind: 'ad-annoyance-multiplier', factor: 0.5 }],
     requiredFeatureId: null,
   },
   permalinks: {
@@ -549,7 +573,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Every post gets a URL that lasts forever. Supposedly.',
     cost: 8_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'blog', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'blog', factor: 2 }],
     requiredFeatureId: 'blog',
   },
   'ajax-everything': {
@@ -560,7 +584,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Nothing reloads anymore. Not even when it should.',
     cost: 60_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'global-traffic-multiplier', factor: 2 },
+    effects: [{ kind: 'global-traffic-multiplier', factor: 2 }],
     requiredFeatureId: null,
   },
   'threaded-replies': {
@@ -571,7 +595,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Arguments can now go 12 levels deep.',
     cost: 40_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'comments', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'comments', factor: 2 }],
     requiredFeatureId: 'comments',
   },
   folksonomy: {
@@ -582,7 +606,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Readers tag your posts. Nobody can spell the word.',
     cost: 250_000_000,
     pageWeightKb: 0,
-    effect: { kind: 'feature-traffic-multiplier', featureId: 'tag-cloud', factor: 2 },
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'tag-cloud', factor: 2 }],
     requiredFeatureId: 'tag-cloud',
   },
 };

@@ -101,6 +101,15 @@ const renderBlog: FeatureRenderer = (context) => {
   return `${heading(context, 'blog', 'Latest posts')}${posts}`;
 };
 
+const CAPTCHA_WORDS: readonly string[] = ['xK7pQ', 'overlooks', 'w4bT9', 'inquest', 'mR2zV', 'gl0ssy'];
+
+/** The visible half of the CAPTCHA defense: commenters have to get past this box. */
+function renderCaptchaBox(context: SiteContext): string {
+  if (!context.state.enabledDefenseIds.includes('captcha')) return '';
+  const word = pickCyclic(CAPTCHA_WORDS, levelOf(context, 'comments'), 'xK7pQ');
+  return `<div class="captcha-box"><span class="captcha-word" aria-hidden="true">${escapeHtml(word)}</span><span class="captcha-input">Type the letters above to post</span><span class="captcha-note">Spam bots: blocked</span></div>`;
+}
+
 const renderComments: FeatureRenderer = (context) => {
   const count = Math.min(levelOf(context, 'comments') + 1, MAX_COMMENTS);
   const items = COMMENTS.slice(0, count)
@@ -109,7 +118,7 @@ const renderComments: FeatureRenderer = (context) => {
       return `<li class="comment"><span class="avatar" style="background:${color}">${escapeHtml(comment.author.charAt(0).toUpperCase())}</span><span><b>${escapeHtml(comment.author)}</b> ${escapeHtml(comment.text)}</span></li>`;
     })
     .join('');
-  return `${heading(context, 'comments', `Comments (${levelOf(context, 'comments')})`)}<ul class="comment-list">${items}<li class="comment-loading"><span class="spinner" aria-hidden="true"></span>Loading new comments…</li></ul>`;
+  return `${heading(context, 'comments', `Comments (${levelOf(context, 'comments')})`)}<ul class="comment-list">${items}<li class="comment-loading"><span class="spinner" aria-hidden="true"></span>Loading new comments…</li></ul>${renderCaptchaBox(context)}`;
 };
 
 const renderTagCloud: FeatureRenderer = (context) => {
@@ -139,8 +148,11 @@ const FORUM_MEMBERS_PER_LEVEL = 140;
 const FORUM_ONLINE_PER_LEVEL = 3;
 const FLASH_INTRO_SECONDS_PER_LEVEL = 40;
 const BASE_THUMBNAILS = 4;
-const MAX_THUMBNAILS = 12;
+/** Two rows on a laptop; the rest of the album sits behind "View all". */
+const MAX_THUMBNAILS = 8;
 const THUMBNAIL_STYLES = 6;
+const PHOTOS_PER_LEVEL = 12;
+const PHOTO_NAMES: readonly string[] = ['beach.jpg', 'garden.jpg', 'office.jpg', 'cat.jpg', 'party.jpg', 'flag.jpg'];
 const LIGHTBOX_CYCLE_MS = 9_000;
 const LIGHTBOX_OPEN_MS = 3_000;
 const BASE_MAP_PINS = 3;
@@ -166,8 +178,12 @@ const renderForum: FeatureRenderer = (context) => {
 const renderFlashIntro: FeatureRenderer = (context) =>
   `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">Requires Flash Player 8 · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
 
+function countVisibleThumbnails(level: number): number {
+  return Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
+}
+
 export function renderGalleryLightbox(level: number, nowMs: number): string {
-  const count = Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
+  const count = countVisibleThumbnails(level);
   const cycle = Math.floor(nowMs / LIGHTBOX_CYCLE_MS);
   const isOpen = nowMs % LIGHTBOX_CYCLE_MS < LIGHTBOX_OPEN_MS;
   const photo = cycle % count;
@@ -176,11 +192,17 @@ export function renderGalleryLightbox(level: number, nowMs: number): string {
     : '';
 }
 
+function renderThumbnail(index: number): string {
+  const style = index % THUMBNAIL_STYLES;
+  return `<figure class="photo"><span class="thumb thumb--${style}"></span><figcaption class="photo-name">${pickCyclic(PHOTO_NAMES, style, 'photo.jpg')}</figcaption></figure>`;
+}
+
 const renderPhotoGallery: FeatureRenderer = (context) => {
   const level = levelOf(context, 'photo-gallery');
-  const count = Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
-  const thumbs = Array.from({ length: count }, (_, index) => `<span class="thumb thumb--${index % THUMBNAIL_STYLES}"></span>`).join('');
-  return `${heading(context, 'photo-gallery', 'Photos')}<div class="gallery">${thumbs}</div><div data-live="gallery-lightbox">${renderGalleryLightbox(level, context.nowMs)}</div>`;
+  const count = countVisibleThumbnails(level);
+  const albumSize = BASE_THUMBNAILS + level * PHOTOS_PER_LEVEL;
+  const thumbs = Array.from({ length: count }, (_, index) => renderThumbnail(index)).join('');
+  return `${heading(context, 'photo-gallery', 'Photos')}<p class="gallery-meta">${count} of ${albumSize} photos · <span class="fake-link">View all</span> · <span class="fake-link">Slideshow ▶</span></p><div class="gallery">${thumbs}</div><div data-live="gallery-lightbox">${renderGalleryLightbox(level, context.nowMs)}</div>`;
 };
 
 const renderMapMashup: FeatureRenderer = (context) => {

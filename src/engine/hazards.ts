@@ -11,7 +11,7 @@ import {
 } from './constants';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
-import { getEnabledDefenses, isFeatureInfected } from './economy';
+import { getEnabledDefenses, hasTrafficSpikeCache, isFeatureInfected } from './economy';
 import { drawRandoms, interpolateRange } from './random';
 import type {
   FeatureId,
@@ -170,7 +170,9 @@ const TRAFFIC_SPIKE_RULE: HazardRule = {
   countdownSpeed: () => NORMAL_SPEED,
   spawn: (state) => ({
     state: { ...state, trafficSpikeRemainingMs: TRAFFIC_SPIKE_DURATION_MS },
-    events: hazardEvent('Your blog post hit the front page of a link-sharing site! Five times the visitors for 45 seconds. Hope your server can take it.'),
+    events: hazardEvent(
+      `Your blog post hit the front page of a link-sharing site! Five times the visitors for 45 seconds. ${hasTrafficSpikeCache(state) ? 'Your page cache is serving them.' : 'Hope your server can take it.'}`,
+    ),
   }),
 };
 

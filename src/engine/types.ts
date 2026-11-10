@@ -53,6 +53,8 @@ export type UpgradeId =
   | 'svn'
   | 'gzip'
   | 'memcached'
+  | 'cdn'
+  | 'page-cache'
   | 'j2ee'
   | 'rails'
   | 'learn-php'
@@ -70,7 +72,19 @@ export type UpgradeKind = 'skill' | 'boost';
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha';
 export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike';
 export type InfectionKind = 'virus' | 'spam' | 'sql-injection';
-export type HostingTierId = 'shared-hosting' | 'vps' | 'dedicated-server' | 'server-cluster' | 'cdn' | 'the-cloud';
+/** The named 2001–2009 steps, then extra racks one at a time: extra-racks-1, extra-racks-2, … */
+export type HostingTierId =
+  | 'shared-hosting'
+  | 'business-hosting'
+  | 'vps'
+  | 'dedicated-server'
+  | 'database-server'
+  | 'load-balancer'
+  | 'database-replicas'
+  | 'colocation'
+  | 'sharded-database'
+  | 'second-data-center'
+  | `extra-racks-${number}`;
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
@@ -118,7 +132,11 @@ export type UpgradeEffect =
   | { readonly kind: 'ad-value-multiplier'; readonly factor: number }
   | { readonly kind: 'ad-annoyance-multiplier'; readonly factor: number }
   | { readonly kind: 'page-weight-multiplier'; readonly factor: number }
-  | { readonly kind: 'load-time-multiplier'; readonly factor: number };
+  | { readonly kind: 'load-time-multiplier'; readonly factor: number }
+  /** Share of each visit that still reaches your server; caches and CDNs answer the rest. */
+  | { readonly kind: 'server-load-multiplier'; readonly factor: number }
+  /** Traffic spikes are served from a static copy and put no load on the server. */
+  | { readonly kind: 'traffic-spike-cache' };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -129,7 +147,7 @@ export interface UpgradeDefinition {
   readonly name: string;
   readonly description: string;
   readonly cost: number;
-  readonly effect: UpgradeEffect;
+  readonly effects: readonly UpgradeEffect[];
   readonly requiredFeatureId: FeatureId | null;
 }
 
@@ -143,6 +161,8 @@ export interface DefenseDefinition {
   readonly counterMode: DefenseCounterMode;
   readonly autoCleanDelayMs: number;
   readonly trafficFactor: number;
+  /** The one feature whose visitors pay trafficFactor, or null when every visitor does. */
+  readonly penalizedFeatureId: FeatureId | null;
   readonly adValueFactor: number;
   readonly revenueUpkeepShare: number;
 }
@@ -185,6 +205,8 @@ export interface EraDefinition {
 export interface HostingTierDefinition {
   readonly id: HostingTierId;
   readonly eraId: EraId;
+  /** When this setup became the usual next step for a growing site. */
+  readonly year: number;
   readonly name: string;
   readonly description: string;
   readonly cost: number;
