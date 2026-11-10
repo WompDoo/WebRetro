@@ -8,6 +8,7 @@ import {
   calculateBugChance,
   calculateKeystrokeValue,
   calculateNextAdCost,
+  calculateFeatureLevelsCost,
   calculateNextFeatureCost,
   canUseAds,
   getNextHostingTier,
@@ -74,6 +75,16 @@ export function buyFeature(state: GameState, featureId: FeatureId): GameState {
   if (!canBuyFeature(state, featureId)) return state;
   const levels = { ...state.featureLevels, [featureId]: state.featureLevels[featureId] + 1 };
   return { ...spend(state, calculateNextFeatureCost(state, featureId)), featureLevels: levels };
+}
+
+export function canBuyFeatureLevels(state: GameState, featureId: FeatureId, count: number): boolean {
+  return isFeatureBuildable(state, featureId) && state.money >= calculateFeatureLevelsCost(state, featureId, count);
+}
+
+/** Multi-buy (5×, 10×): all the levels or none, so the button never buys fewer than it says. */
+export function buyFeatureLevels(state: GameState, featureId: FeatureId, count: number): GameState {
+  if (!canBuyFeatureLevels(state, featureId, count)) return state;
+  return Array.from({ length: count }).reduce<GameState>((current) => buyFeature(current, featureId), state);
 }
 
 export function canUpgradeHosting(state: GameState): boolean {

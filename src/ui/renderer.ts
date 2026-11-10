@@ -1,5 +1,5 @@
 import { calculateEconomySnapshot, formatCompactNumber, formatMoney } from '../engine';
-import { buildBrowserTitle, buildEditorTabs, buildEditorTitle, buildPerformanceReadout, buildSiteUrl, buildStatusText, classifyPerformance, isStatusScrolling } from './browser-chrome';
+import { buildBrowserTitle, buildEditorTabs, buildEditorTitle, resolveEditorFile, buildPerformanceReadout, buildSiteUrl, buildStatusText, classifyPerformance, isStatusScrolling } from './browser-chrome';
 import type { CodeEditor } from './code-editor';
 import { escapeHtml, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { elements } from './elements';
@@ -72,12 +72,16 @@ function renderBrowserStatus(editor: CodeEditor): void {
   elements.browserStatus.classList.toggle('is-scrolling', isStatusScrolling(store.game, economy));
   setTextIfChanged(elements.browserPerf, buildPerformanceReadout(store.game, economy));
   elements.browserStatusbar.dataset['performance'] = classifyPerformance(store.game, economy);
-  editor.setTitle(buildEditorTitle(store.game));
+  editor.setTitle(buildEditorTitle(store.game, resolveEditorFile(store.game, store.editorFile)));
 }
 
-function renderSkillChrome(editor: CodeEditor): void {
-  editor.setSource(buildEditorSource(store.game));
-  editor.setTabs(buildEditorTabs(store.game));
+/** A new skill adds to the file being typed; picking another tab opens that file from the top. */
+function renderSkillChrome(editor: CodeEditor, file: string, isNewFile: boolean): void {
+  const source = buildEditorSource(store.game, file);
+  if (isNewFile) editor.openFile(source);
+  else editor.setSource(source);
+  const tabs = buildEditorTabs(store.game);
+  editor.setTabs(tabs.files, tabs.hiddenCount, file);
   setTextIfChanged(elements.browserUrl, buildSiteUrl(store.game));
   setTextIfChanged(elements.browserTitle, buildBrowserTitle(store.game));
 }
@@ -142,7 +146,7 @@ function renderTabBadges(issues: readonly Issue[]): void {
 
 function renderShop(): void {
   setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab));
-  elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab);
+  elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab, { buyAmount: store.buyAmount });
 }
 
 function updateShopAffordability(): void {
@@ -164,6 +168,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   let hasRenderedSite = false;
   let endCardShown = store.game.prototypeComplete;
   let lastSlowRenderAt = 0;
+  let openedFile = '';
 
   /** Runs render only when the signature moved since last time. */
   const renderWhenChanged = (key: SignatureKey, signature: string, render: () => void): void => {
@@ -192,10 +197,14 @@ export function createRenderer(editor: CodeEditor): Renderer {
 
   const renderStructure = (): void => {
     renderEraChromeOnce();
-    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}`, () => renderSkillChrome(editor));
+    const file = resolveEditorFile(store.game, store.editorFile);
+    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}`, () => {
+      renderSkillChrome(editor, file, openedFile !== '' && file !== openedFile);
+      openedFile = file;
+    });
     renderWhenChanged('site', calculateSiteSignature(store.game), renderSiteAndReload);
     renderWhenChanged('popups', calculatePopupSignature(store.game), () => syncPopups(elements.popupLayer, store.game));
-    renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab), renderShop);
+    renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, { buyAmount: store.buyAmount }), renderShop);
     renderWhenChanged('goal', calculateGoalSignature(store.game), () => {
       elements.goalBody.innerHTML = renderGoal(store.game);
     });

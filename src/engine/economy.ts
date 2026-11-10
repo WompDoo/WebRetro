@@ -309,7 +309,17 @@ export function calculateEconomySnapshot(state: GameState): EconomySnapshot {
 }
 
 export function calculateNextFeatureCost(state: GameState, featureId: FeatureId): number {
-  return Math.ceil(FEATURES_BY_ID[featureId].baseCost * FEATURE_COST_GROWTH ** state.featureLevels[featureId]);
+  return calculateFeatureLevelCost(featureId, state.featureLevels[featureId]);
+}
+
+function calculateFeatureLevelCost(featureId: FeatureId, level: number): number {
+  return Math.ceil(FEATURES_BY_ID[featureId].baseCost * FEATURE_COST_GROWTH ** level);
+}
+
+/** The next `count` levels bought together: each costs what it would cost bought one at a time. */
+export function calculateFeatureLevelsCost(state: GameState, featureId: FeatureId, count: number): number {
+  const level = state.featureLevels[featureId];
+  return Array.from({ length: count }, (_, offset) => calculateFeatureLevelCost(featureId, level + offset)).reduce((total, cost) => total + cost, 0);
 }
 
 export function calculateNextAdCost(state: GameState): number {

@@ -6,6 +6,7 @@ import {
   calculateFeatureVisitorsPerSecond,
   calculateGlobalTrafficFactor,
   calculateNextAdCost,
+  calculateFeatureLevelsCost,
   calculateNextFeatureCost,
   calculateRevenuePerVisitor,
   calculateServerLoad,
@@ -36,6 +37,7 @@ import {
 } from '../engine';
 import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
+import { LEARN_LINKS } from './learn-links';
 import { AD_ICON, CODE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
 export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security';
@@ -69,24 +71,46 @@ function skillName(skillId: UpgradeId | null): string {
 
 // ---------- Build ----------
 
-function renderBuildableEffect(state: GameState, featureId: FeatureId): string {
+/** How many levels one click on a Build button buys. */
+export type BuyAmount = 1 | 5 | 10;
+export const BUY_AMOUNTS: readonly BuyAmount[] = [1, 5, 10];
+
+/** What the shop shows besides the game state. */
+export interface ShopView {
+  readonly buyAmount: BuyAmount;
+}
+
+function renderBuyAmountPicker(buyAmount: BuyAmount): string {
+  const options = BUY_AMOUNTS.map(
+    (amount) => `<button type="button" class="buy-amount-option${amount === buyAmount ? ' is-active' : ''}" data-action="buy-amount" data-id="${amount}" aria-pressed="${amount === buyAmount}">${amount}×</button>`,
+  ).join('');
+  return `<div class="buy-amount" role="group" aria-label="Levels per click"><span class="buy-amount-label">Buy</span>${options}</div>`;
+}
+
+function renderBuildableEffect(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
   const perLevel =
-    calculateFeatureVisitorsPerLevel(state, featureId) * calculateGlobalTrafficFactor(state) * calculateAdTrafficFactor(state);
+    buyAmount * calculateFeatureVisitorsPerLevel(state, featureId) * calculateGlobalTrafficFactor(state) * calculateAdTrafficFactor(state);
   const currentLine = state.featureLevels[featureId] > 0 ? ` · now ${formatCompactNumber(calculateFeatureVisitorsPerSecond(state, featureId))}/s` : '';
   const definition = FEATURES_BY_ID[featureId];
-  const weightKb = state.featureLevels[featureId] > 0 ? definition.pageWeightKbPerLevel : definition.pageWeightKb;
+  // Page weight is the base weight once the feature exists, plus its per-level weight for every level.
+  const weightKb = buyAmount * definition.pageWeightKbPerLevel + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
   const weight = weightKb > 0 ? ` · +${weightKb} KB` : '';
   return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${weight}</p>`;
 }
 
-function renderFeatureRow(state: GameState, featureId: FeatureId): string {
+function renderFeatureBuyButton(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
+  const cost = calculateFeatureLevelsCost(state, featureId, buyAmount);
+  return buyButton('buy-feature', featureId, cost, buyAmount === 1 ? undefined : `${buyAmount}× ${formatMoney(cost)}`);
+}
+
+function renderFeatureRow(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
   const level = state.featureLevels[featureId];
   const isBuildable = isFeatureBuildable(state, featureId);
   const levelChip = level > 0 ? `<span class="level-chip">Lv ${level}</span>` : '<span class="level-chip is-new">New</span>';
   const effect = isBuildable
-    ? renderBuildableEffect(state, featureId)
+    ? renderBuildableEffect(state, featureId, buyAmount)
     : `<p class="shop-effect is-requirement">Requires: ${escapeHtml(skillName(FEATURES_BY_ID[featureId].requiredSkillId))}</p>`;
-  const button = isBuildable ? buyButton('buy-feature', featureId, calculateNextFeatureCost(state, featureId)) : lockedButton();
+  const button = isBuildable ? renderFeatureBuyButton(state, featureId, buyAmount) : lockedButton();
   const isSwitchable = FEATURES_BY_ID[featureId].isSwitchable && level > 0;
   const isOn = !isFeatureSwitchedOff(state, featureId);
   const toggle = isSwitchable
@@ -104,15 +128,15 @@ function renderFeatureRow(state: GameState, featureId: FeatureId): string {
   </article>`;
 }
 
-function renderFeatureGroup(state: GameState, eraId: EraId): string {
+function renderFeatureGroup(state: GameState, eraId: EraId, buyAmount: BuyAmount): string {
   const featureIds = getUnlockedFeatureIds(state).filter((featureId) => FEATURES_BY_ID[featureId].eraId === eraId);
   const era = ERAS_BY_ID[eraId];
-  return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId)).join('')}`;
+  return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId, buyAmount)).join('')}`;
 }
 
-function renderBuildTab(state: GameState): string {
+function renderBuildTab(state: GameState, view: ShopView): string {
   const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
-  return eras.map((eraId) => renderFeatureGroup(state, eraId)).join('');
+  return `${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view.buyAmount)).join('')}`;
 }
 
 // ---------- Effects ----------
@@ -140,12 +164,20 @@ export function describeUpgradeEffects(effects: readonly UpgradeEffect[], eraId:
   return effects.map((effect) => describeOneEffect(effect, eraId)).join(' · ');
 }
 
+/** A real link to where you can learn it for real, or plain text when there's nothing worth linking. */
+function renderVisitedItem(state: GameState, upgradeId: UpgradeId): string {
+  const name = escapeHtml(UPGRADES_BY_ID[upgradeId].name);
+  const effect = escapeHtml(describeUpgradeEffects(UPGRADES_BY_ID[upgradeId].effects, state.eraId));
+  const url = LEARN_LINKS[upgradeId];
+  return url === null
+    ? `<span class="visited-item" title="${effect}">${name}</span>`
+    : `<a class="visited-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="${effect} · Learn it for real (opens a new tab)">${name}</a>`;
+}
+
 function renderVisitedList(state: GameState, upgradeIds: readonly UpgradeId[], title: string): string {
   if (upgradeIds.length === 0) return '';
-  const links = upgradeIds
-    .map((upgradeId) => `<span class="visited-link" title="${escapeHtml(describeUpgradeEffects(UPGRADES_BY_ID[upgradeId].effects, state.eraId))}">${escapeHtml(UPGRADES_BY_ID[upgradeId].name)}</span>`)
-    .join('');
-  return `<h3 class="shop-group-title">${escapeHtml(title)}</h3><p class="visited-list">${links}</p>`;
+  const items = upgradeIds.map((upgradeId) => renderVisitedItem(state, upgradeId)).join('');
+  return `<h3 class="shop-group-title">${escapeHtml(title)}</h3><p class="visited-list">${items}</p>`;
 }
 
 // ---------- Learn ----------
@@ -328,15 +360,15 @@ function renderSecurityTab(state: GameState): string {
 
 // ---------- Tabs ----------
 
-const TAB_RENDERERS: Readonly<Record<ShopTab, (state: GameState) => string>> = {
+const TAB_RENDERERS: Readonly<Record<ShopTab, (state: GameState, view: ShopView) => string>> = {
   learn: renderLearnTab,
   build: renderBuildTab,
   upgrades: renderUpgradesTab,
   security: renderSecurityTab,
 };
 
-export function renderShopBody(state: GameState, tab: ShopTab): string {
-  return TAB_RENDERERS[tab](state);
+export function renderShopBody(state: GameState, tab: ShopTab, view: ShopView): string {
+  return TAB_RENDERERS[tab](state, view);
 }
 
 export function renderShopTabs(activeTab: ShopTab): string {
@@ -361,9 +393,10 @@ export function countAffordable(state: GameState, tab: ShopTab): number {
   return AFFORDABLE_COUNTERS[tab](state);
 }
 
-export function calculateShopSignature(state: GameState, tab: ShopTab): string {
+export function calculateShopSignature(state: GameState, tab: ShopTab, view: ShopView): string {
   return [
     tab,
+    view.buyAmount,
     state.eraId,
     Object.values(state.featureLevels).join(','),
     state.adCount,

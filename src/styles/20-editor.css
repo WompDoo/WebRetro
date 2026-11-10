@@ -45,6 +45,10 @@
 [data-era="2005"] .editor-tabs { background: #E4E4E4; border-bottom: 1px solid #B8B8B8; font-family: 'Lucida Grande', Verdana, sans-serif; }
 [data-era="2005"] .editor-tab { padding: 3px 10px; border: 1px solid #B8B8B8; border-bottom: 0; border-radius: 5px 5px 0 0; background: #D2D2D2; color: #555555; }
 [data-era="2005"] .editor-tab.is-active { background: #FFFFFF; color: #222222; }
+/* Tabs are buttons: they switch files. "+N more" is not a file, so it doesn't look pressable. */
+.editor-tab { margin: 0; font: inherit; cursor: pointer; }
+[data-era="2005"] .editor-tab:not(.is-active):not(.is-more):hover { background: #E8E8E8; color: #222222; }
+[data-era="2005"] .editor-tab.is-more { cursor: default; background: transparent; border-color: transparent; font-style: italic; }
 [data-era="2005"] .editor-code { padding-left: 0; font-family: var(--font-code); font-size: 12px; }
 [data-era="2005"] .code-line { padding-left: 46px; text-indent: 0; position: relative; }
 [data-era="2005"] .code-line::before {

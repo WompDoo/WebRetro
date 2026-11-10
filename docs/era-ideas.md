@@ -174,6 +174,16 @@ shows up in it.
 
 **Ending:** acquisition offers from parody tech giants, based on what you built, plus a "refuse to sell" ending.
 
+## Small things players asked for (built)
+
+- **Editor tabs are real files.** From 2005 each skill puts its code where it belongs: CSS in `style.css`,
+  JavaScript in `ajax.js`, rewrite rules in `.htaccess`. Clicking a tab opens that file; a file no skill has
+  written to yet says which skill fills it. Three players tried to click them before they did anything.
+- **Multi-buy.** The Build tab buys 1, 5 or 10 levels per click, all or none, at the price of buying them
+  one by one.
+- **Learn it for real.** Learned skills (and bought boosts that are real technologies) link to MDN, the
+  official docs or Wikipedia. Joke boosts stay plain text, so nothing looks clickable that isn't.
+
 ## The 2005 hosting ladder (built)
 
 How a growing site scaled between 2001 and 2009, in the order people did it. Each step carries about 2.3×

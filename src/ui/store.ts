@@ -1,6 +1,6 @@
 import { createInitialGameState, ERAS_BY_ID } from '../engine';
 import type { GameEvent, GameState, GameStep } from '../engine';
-import type { ShopTab } from './render-shop';
+import type { BuyAmount, ShopTab } from './render-shop';
 
 export interface NewsItem {
   readonly id: number;
@@ -15,6 +15,10 @@ export const MOBILE_TABS: readonly MobileTab[] = ['site', 'code', 'shop', 'inbox
 interface UiStore {
   game: GameState;
   shopTab: ShopTab;
+  /** Levels per click in the Build tab. */
+  buyAmount: BuyAmount;
+  /** The editor tab picked by the player; null means the era's main file. */
+  editorFile: string | null;
   mobileTab: MobileTab;
   /** Phones show the objective as one line until you tap it open. */
   isGoalOpen: boolean;
@@ -38,6 +42,8 @@ export function createSeed(): number {
 export const store: UiStore = {
   game: createInitialGameState(createSeed()),
   shopTab: 'learn',
+  buyAmount: 1,
+  editorFile: null,
   mobileTab: 'code',
   isGoalOpen: false,
   news: [],
@@ -72,6 +78,7 @@ export function pickStartingMobileTab(game: GameState): MobileTab {
 export function startNewGame(): void {
   store.game = createInitialGameState(createSeed());
   store.news = [];
+  store.editorFile = null;
   store.mobileTab = pickStartingMobileTab(store.game);
 }
 
