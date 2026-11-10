@@ -24,6 +24,19 @@ npm run sim        # headless balance simulation: how long each era takes
 
 `SIM_TIMELINE=active npm run sim` prints a minute-by-minute log for the scripted player.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`:
+
+1. `npm ci`
+2. `npm run typecheck`
+3. `npm test`
+4. `npm run build`
+5. `npm run sim`: fails if any scripted player can't finish every era. Timing is printed, not enforced.
+
+Each run uploads the built `under-construction.html` as an artifact, so every pull request has a playable copy.
+Work happens on branches; a pull request merges into `main` once CI is green.
+
 ## Layout
 
 - `src/engine/`: the game itself. Pure TypeScript, no DOM. State in, state out.

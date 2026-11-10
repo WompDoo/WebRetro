@@ -21,6 +21,7 @@ import {
   closePopup,
   createInitialGameState,
   DEFENSES_BY_ID,
+  ERA_IDS,
   ERAS_BY_ID,
   formatCompactNumber,
   formatMoney,
@@ -274,7 +275,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
 }
 
 console.log('Balance simulation');
-PROFILES.forEach((profile) => {
+const stuckProfiles = PROFILES.filter((profile) => {
   const reports = runProfile(profile);
   reports.forEach((report) =>
     console.log(
@@ -282,4 +283,14 @@ PROFILES.forEach((profile) => {
         `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end`,
     ),
   );
+  return reports.length < ERA_IDS.length;
 });
+
+// CI check: every scripted player has to finish every era. Timing is reported, never enforced.
+if (stuckProfiles.length > 0) {
+  const names = stuckProfiles.map((profile) => profile.name).join(', ');
+  console.error(`FAILED: ${names} could not finish every era within ${MAX_SIMULATED_MS / MS_PER_MINUTE} simulated minutes.`);
+  process.exitCode = 1;
+} else {
+  console.log(`OK: every player finished all ${ERA_IDS.length} eras.`);
+}
