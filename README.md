@@ -46,5 +46,10 @@ Work happens on branches; a pull request merges into `main` once CI is green.
   - `simulation.ts`: advances the game by elapsed time; offline progress never spawns hazards.
   - `snake.ts`: the virus-removal minigame rules.
 - `src/ui/`: a thin DOM layer that renders the state and turns clicks into engine actions.
-- `src/page.html`: markup and CSS for the page, with the game script inlined at build time.
+  - `main.ts` starts the game; `store.ts` holds the one mutable game state; `actions.ts` maps every
+    `data-action` button to an engine action; `renderer.ts` re-renders what changed, by signature.
+  - `sites/`: the fake website, one layout per era, built from shared feature blocks.
+- `src/page.html`: the page markup. Styles and the game script are inlined at build time.
+- `src/styles/`: the stylesheet, one file per area. Files are joined in name order, so the number
+  prefix is the cascade order: a later file wins a tie.
 - `sim/`: the balance simulation. `tests/`: unit tests.

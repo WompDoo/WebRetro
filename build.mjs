@@ -1,7 +1,5 @@
 import { build } from 'esbuild';
-import { readFile, writeFile } from 'node:fs/promises';
-
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 
 const simOnly = process.argv.includes('--sim-only');
 const testsOnly = process.argv.includes('--tests');
@@ -42,8 +40,11 @@ if (!simOnly) {
   const script = result.outputFiles[0].text
     .replace(/<\/script/gi, '<\\/script')
     .replace(/<!--/g, '<\\!--');
+  // Stylesheets are concatenated in file-name order: the numeric prefixes are the cascade order.
+  const styleFiles = (await readdir('src/styles')).filter((name) => name.endsWith('.css')).sort();
+  const styles = (await Promise.all(styleFiles.map((name) => readFile(`src/styles/${name}`, 'utf8')))).join('\n');
   const template = await readFile('src/page.html', 'utf8');
-  const page = template.replace('/*__GAME_SCRIPT__*/', () => script);
+  const page = template.replace('/*__STYLES__*/', () => styles).replace('/*__GAME_SCRIPT__*/', () => script);
   await writeFile('dist/under-construction.html', page);
   const preview = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>${page}</body></html>`;
   await writeFile('dist/preview.html', preview);

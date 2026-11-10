@@ -1,7 +1,7 @@
 import { ERAS_BY_ID, getHostingTier } from '../engine';
 import type { EconomySnapshot, GameState, UpgradeId } from '../engine';
 import { ERA_PRESENTATION } from './presentation';
-import { siteName } from './render-site';
+import { siteName } from './sites';
 
 /** Backend knowledge mostly shows up here: the address bar, the status bar and the editor. */
 

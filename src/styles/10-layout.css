@@ -1,0 +1,64 @@
+/* ---------- Top bar: same columns as the workbench, so the objective sits right above the browser ---------- */
+.app { --col-left: minmax(280px, 330px); --col-right: minmax(300px, 370px); --col-gap: 20px; }
+.topbar {
+  display: grid; align-items: center; column-gap: var(--col-gap); row-gap: 8px;
+  grid-template-columns: var(--col-left) minmax(0, 1fr) var(--col-right);
+  grid-template-areas: "brand goal stats";
+  padding-block: 8px; background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--lift);
+}
+.brand { grid-area: brand; display: flex; align-items: center; gap: 12px; min-width: 0; padding-left: 12px; }
+.brand-mark {
+  width: 34px; height: 34px; flex: none; border: 2px solid var(--line); border-radius: 4px;
+  background: repeating-linear-gradient(-45deg, var(--caution) 0 6px, #1B2240 6px 12px);
+}
+.brand h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: 0.01em; line-height: 1; }
+.stats { grid-area: stats; display: flex; justify-content: flex-end; gap: 8px 18px; margin: 0; align-items: center; padding-right: 12px; }
+.stat { display: flex; flex-direction: column; min-width: 0; }
+.stat dt { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.stat dd { margin: 0; font-family: var(--font-numbers); font-weight: 600; letter-spacing: -0.02em; font-size: 20px; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stat-money dd { color: var(--money); }
+.ghost-button {
+  padding: 5px 10px; border: 2px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.ghost-button:hover { background: var(--panel-sunken); }
+.ghost-button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------- Workbench grid ---------- */
+.workbench {
+  display: grid; gap: var(--col-gap); align-items: start;
+  grid-template-columns: var(--col-left) minmax(0, 1fr) var(--col-right);
+  grid-template-areas: "editor browser shop" "news browser shop";
+}
+.editor-column { grid-area: editor; min-width: 0; }
+.topbar .goal { grid-area: goal; min-width: 0; }
+.news-panel { grid-area: news; min-width: 0; }
+.browser { grid-area: browser; min-width: 0; }
+.shop { grid-area: shop; min-width: 0; }
+@media (max-width: 1500px) {
+  .app { --col-left: minmax(250px, 290px); --col-right: minmax(300px, 330px); --col-gap: 16px; }
+  .brand h1 { font-size: 20px; }
+  .brand-mark { width: 28px; height: 28px; }
+}
+/* Tablets: two columns; the objective takes its own row in the top bar. */
+@media (max-width: 1220px) {
+  .topbar { grid-template-columns: minmax(0, 1fr) var(--col-right); grid-template-areas: "brand stats" "goal goal"; }
+  .topbar .goal { padding-inline: 12px; }
+  .workbench { grid-template-columns: minmax(0, 1fr) var(--col-right); grid-template-areas: "browser editor" "browser shop" "browser news"; }
+}
+@media (max-width: 780px) {
+  .topbar { grid-template-columns: minmax(0, 1fr); grid-template-areas: "brand" "stats" "goal"; }
+  .workbench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "editor" "browser" "news" "shop"; }
+  .brand-mark { width: 24px; height: 24px; }
+  .brand h1 { font-size: 18px; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-left: 12px; }
+  .stat dt { font-size: 10px; }
+  .stat dd { font-size: 17px; }
+}
+
+.panel { background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--lift); }
+.panel-header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 2px solid var(--line); }
+.panel-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.panel-caption { font-size: 12px; color: var(--ink-soft); }
+.column-caption { margin: 0 0 8px; display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 15px; }
+.column-caption span:last-child { font-family: var(--font-body); font-size: 12px; color: var(--ink-soft); align-self: center; }

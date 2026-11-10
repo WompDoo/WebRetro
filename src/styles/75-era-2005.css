@@ -1,0 +1,148 @@
+/* ---------- The 2005 site: plain CSS after "Learn CSS", glossy after "Learn the Web 2.0 look" ---------- */
+.site-2005 { min-height: 100%; display: flex; flex-direction: column; background: #FFFFFF; color: #333333; font-family: Verdana, 'DejaVu Sans', sans-serif; font-size: 12.5px; }
+.w2-header { position: relative; padding: 16px 18px 0; background: #336699; overflow: hidden; }
+.w2-logo { position: relative; z-index: 1; display: inline-block; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(24px, 6.5cqi, 32px); color: #FFFFFF; }
+.w2-beta { display: none; }
+.w2-nav { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 2px; margin-top: 14px; }
+.w2-nav span { padding: 5px 12px; background: #4F80B3; color: #FFFFFF; font-weight: 700; }
+.w2-nav .is-active { background: #FFFFFF; color: #336699; }
+.w2-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px); gap: 14px; padding: 14px; align-items: start; }
+@container (max-width: 560px) { .w2-columns { grid-template-columns: minmax(0, 1fr); } }
+.w2-main, .w2-sidebar { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.site-2005 .feature-block { position: relative; min-height: 70px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #CCCCCC; overflow: hidden; }
+.site-2005 .feature-heading { margin: -10px -12px 10px; padding: 5px 12px; font-size: 13px; color: #336699; background: #F0F0F0; border-bottom: 1px solid #CCCCCC; }
+.site-2005 .w2-intro p { margin: 0; }
+.site-2005 .counter { display: inline-flex; gap: 3px; }
+.site-2005 .counter-digit { padding: 2px 5px; background: #F0F0F0; border: 1px solid #CCCCCC; font-weight: 700; font-size: 15px; color: #333333; }
+.site-2005 .counter-label { margin: 6px 0 0; font-size: 11px; color: #888888; }
+.site-2005 .construction-row { justify-content: flex-start; }
+.site-2005 .construction-sign span { display: block; padding: 3px 10px; background: #FF9900; color: #FFFFFF; font-weight: 700; }
+.site-2005 .guestbook-entry { padding: 5px 0; border-bottom: 1px dotted #CCCCCC; font-size: 12px; }
+.site-2005 .guestbook-entry b { color: #336699; }
+.site-2005 .music-player { background: #F4F4F4; border: 1px solid #CCCCCC; color: #333333; }
+.site-2005 .music-play { color: #336699; }
+.site-2005 .music-eq i { background: #336699; }
+.site-2005 .music-note { color: #888888; }
+.blogroll, .comment-list, .sponsored-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.site-2005 .fake-link { color: #336699; text-decoration: underline; }
+.blog-post + .blog-post { margin-top: 12px; padding-top: 12px; border-top: 1px dotted #CCCCCC; }
+.blog-post h3 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 400; color: #336699; }
+.blog-post p { margin: 0; }
+.post-meta { margin: 2px 0 6px !important; color: #888888; font-size: 11px; }
+.comment { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: start; font-size: 12px; text-align: left; }
+.avatar { width: 26px; height: 26px; display: grid; place-items: center; color: #FFFFFF; font-weight: 700; }
+.comment b { color: #336699; }
+.tag-cloud { margin: 0; line-height: 1.7; }
+.tag { color: #336699; }
+.sponsored-list li { display: grid; gap: 1px; }
+.ad-title { color: #0000CC; font-weight: 700; text-decoration: underline; }
+.ad-url { color: #008000; font-size: 11px; }
+.ad-text { font-size: 12px; }
+.w2-footer { margin-top: auto; padding: 12px 14px; font-size: 11px; color: #888888; text-align: center; }
+
+.site-2005.is-glossy { background: #EEF3E6; font-family: 'Lucida Grande', 'Trebuchet MS', Verdana, 'DejaVu Sans', sans-serif; font-size: 13px; }
+.is-glossy .w2-header { padding: 18px 18px 0; background: linear-gradient(#A8DB5A, #67AC22); }
+.is-glossy .w2-header::after { content: ""; position: absolute; inset: 0 0 52% 0; background: linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.1)); pointer-events: none; }
+.is-glossy .w2-logo { font-family: inherit; font-size: clamp(26px, 7cqi, 36px); font-weight: 700; letter-spacing: -1.5px; text-shadow: 0 1px 0 #4E8A12, 0 2px 4px rgba(0,0,0,0.25); -webkit-box-reflect: below -10px linear-gradient(transparent 55%, rgba(255,255,255,0.35)); }
+.is-glossy .w2-beta { display: grid; position: absolute; top: 12px; right: 16px; z-index: 2; width: 58px; height: 58px; place-items: center; transform: rotate(14deg); }
+.w2-beta::before, .w2-beta::after { content: ""; position: absolute; inset: 7px; background: linear-gradient(#FFA640, #FF6A00); }
+.w2-beta::after { transform: rotate(45deg); }
+.w2-beta span { position: relative; z-index: 1; color: #FFFFFF; font-weight: 700; font-size: 14px; text-shadow: 0 1px 1px rgba(0,0,0,0.3); }
+.is-glossy .w2-nav { gap: 4px; margin-top: 18px; }
+.is-glossy .w2-nav span { border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.3); }
+.is-glossy .w2-nav .is-active { background: #EEF3E6; color: #4E8A12; }
+.is-glossy .feature-block { border-color: #CFE0B5; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.is-glossy .feature-heading { color: #3F6E12; background: linear-gradient(#F8FCF0, #E1EECD); border-bottom-color: #CFE0B5; }
+.is-glossy .counter-digit { background: linear-gradient(#FFFFFF, #E2E2E2); border-color: #C6C6C6; border-radius: 4px; }
+.is-glossy .counter-label, .is-glossy .music-note, .is-glossy .post-meta, .is-glossy .w2-footer { color: #7A8A66; }
+.is-glossy .construction-sign span { padding: 3px 12px; border-radius: 12px; background: linear-gradient(#FFA640, #FF6A00); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+.is-glossy .guestbook-entry { padding: 6px 8px; background: #F2F7FB; border: 1px solid #D5E4F0; border-radius: 8px; }
+.is-glossy .guestbook-entry b, .is-glossy .comment b, .is-glossy .tag, .is-glossy .fake-link { color: #2A6FB0; }
+.is-glossy .music-player { background: linear-gradient(#FDFDFD, #E4E4E4); border-color: #C9C9C9; border-radius: 14px; }
+.is-glossy .music-play { color: #FF6A00; }
+.is-glossy .music-eq i { background: #FF8A1E; }
+.is-glossy .blog-post + .blog-post { border-top-color: #CFE0B5; }
+.is-glossy .blog-post h3 { color: #2E6E9E; }
+.is-glossy .avatar { border-radius: 4px; }
+
+/* 2005 content on a page that still only knows 1997 HTML */
+.site-1997 .blog-post h3 { color: var(--s97-heading); font-family: inherit; }
+.site-1997 .blog-post + .blog-post { border-top-color: var(--s97-rule); }
+.site-1997 .post-meta { color: var(--s97-muted); }
+.site-1997 .comment b { color: var(--s97-name); }
+.site-1997 .tag { color: var(--s97-link); }
+
+/* ---------- Forum ---------- */
+.forum-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+.forum-table th { padding: 4px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.forum-table td { padding: 5px 6px; border-top: 1px solid rgba(128, 128, 128, 0.35); }
+.forum-table td + td, .forum-table th + th { width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+.site-2005 .forum-table th { background: #E8EEF5; color: #336699; }
+.site-2005.is-glossy .forum-table th { background: #EEF5E3; color: #3F6E12; }
+.site-1997 .forum-table th { color: var(--s97-heading); }
+.forum-note { margin: 6px 0 0; font-size: 11px; opacity: 0.75; }
+
+/* ---------- Flash intro ---------- */
+.flash-intro { display: grid; gap: 6px; }
+.flash-stage { position: relative; height: 120px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(circle at 30% 40%, #3B5BDB, #0B1340 70%); border: 1px solid #000000; }
+.flash-logo { position: relative; z-index: 1; color: #FFFFFF; font-family: 'Arial Black', Arial, sans-serif; font-size: 26px; letter-spacing: -1px; text-shadow: 0 0 12px #8FB0FF; animation: flash-logo 4s ease-in-out infinite; }
+.flash-swoosh { position: absolute; inset: 40% -20%; height: 18px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent); transform: rotate(-12deg); animation: flash-swoosh 2.4s linear infinite; }
+@keyframes flash-logo { 0% { transform: scale(0.3) rotate(-20deg); opacity: 0; } 30% { transform: scale(1.15) rotate(4deg); opacity: 1; } 45%, 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes flash-swoosh { from { transform: translateX(-70%) rotate(-12deg); } to { transform: translateX(70%) rotate(-12deg); } }
+.flash-bar { height: 8px; border: 1px solid #555555; background: #FFFFFF; }
+.flash-bar span { display: block; height: 100%; width: 0; background: #FF6A00; animation: progress-crawl 8s linear infinite; }
+.flash-caption, .flash-note { margin: 0; font-size: 12px; }
+.flash-note { opacity: 0.7; }
+
+/* ---------- Photo gallery with lightbox ---------- */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 6px; }
+.thumb { display: block; aspect-ratio: 1; border: 2px solid #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+.thumb--0 { background: linear-gradient(#FFB86B 0 55%, #2E5E8C 55%); }
+.thumb--1 { background: radial-gradient(circle at 70% 30%, #FFF6A8 0 12%, transparent 13%), linear-gradient(#7CC4FF, #2E7D32 60%); }
+.thumb--2 { background: linear-gradient(135deg, #8E9EAB, #EEF2F3); }
+.thumb--3 { background: radial-gradient(circle at 50% 60%, #6D4C41 0 22%, transparent 23%), linear-gradient(#F5E6CA, #E0C9A6); }
+.thumb--4 { background: linear-gradient(#1A237E, #000000 70%), #000000; }
+.thumb--5 { background: repeating-linear-gradient(90deg, #C62828 0 10px, #FFEBEE 10px 20px); }
+.lightbox { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; align-content: center; gap: 6px; background: rgba(0, 0, 0, 0.82); animation: lightbox-in 300ms ease-out; }
+.thumb.is-large { width: min(70%, 220px); border-width: 6px; }
+.lightbox-caption { color: #FFFFFF; font-size: 11px; font-family: Verdana, sans-serif; }
+@keyframes lightbox-in { from { opacity: 0; } }
+
+/* ---------- Map mashup ---------- */
+.map { position: relative; height: 150px; overflow: hidden; border: 1px solid #A9B8A0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.55) 2px, transparent 2px) 0 0 / 40px 40px,
+    linear-gradient(rgba(255, 255, 255, 0.55) 2px, transparent 2px) 0 0 / 40px 40px,
+    radial-gradient(ellipse at 80% 20%, #A7D3F2 0 25%, transparent 26%),
+    linear-gradient(160deg, #DDE8C8, #C9DDB0);
+}
+.map-pin { position: absolute; width: 14px; height: 14px; border-radius: 50% 50% 50% 0; background: #E53935; transform: rotate(-45deg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.map-bubble { position: absolute; left: 10px; bottom: 10px; padding: 4px 8px; background: #FFFFFF; border: 1px solid #999999; border-radius: 4px; font-size: 11px; color: #333333; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.map-note { margin: 6px 0 0; font-size: 11px; opacity: 0.75; }
+
+/* ---------- AJAX comments: spinner and the yellow fade ---------- */
+.comment-loading { display: flex; align-items: center; gap: 6px; font-size: 11px; opacity: 0.75; }
+.spinner { width: 12px; height: 12px; border: 2px solid rgba(128, 128, 128, 0.35); border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.comment-list .comment:first-child { animation: yellow-fade 7s ease-out infinite; }
+@keyframes yellow-fade { 0% { background: #FFF59D; } 30%, 100% { background: transparent; } }
+
+/* ---------- IE6, glitter and badges ---------- */
+.needs-ie6-fix .avatar, .needs-ie6-fix .map-pin { box-shadow: 0 0 0 5px #BDBDBD; }
+.needs-ie6-fix.is-glossy .w2-beta { background: #BDBDBD; }
+.has-glitter .w2-sidebar .feature-heading {
+  background-image: linear-gradient(90deg, #FF4FD8, #FFD700, #7CF7FF, #FF4FD8); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: glitter 2s linear infinite;
+}
+@keyframes glitter { to { background-position: 200% 0; } }
+.w2-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 0 0 8px; }
+.badge-80x15 { display: inline-block; width: 80px; height: 15px; overflow: hidden; border: 1px solid #666666; background: linear-gradient(90deg, #FF9900 0 30%, #FFFFFF 30%); color: #000000; font: 700 8px/13px Verdana, sans-serif; text-align: right; padding-right: 3px; white-space: nowrap; }
+
+/* ---------- 2005 jQuery: posts fade in, blocks slide down ---------- */
+.has-jquery .blog-post { animation: jq-fade-in 900ms ease-out both; }
+.has-jquery .blog-post:nth-child(3) { animation-delay: 150ms; }
+.has-jquery .blog-post:nth-child(4) { animation-delay: 300ms; }
+.has-jquery .blog-post:nth-child(5) { animation-delay: 450ms; }
+.has-jquery .w2-sidebar .feature-block { animation: jq-slide-down 500ms ease-out both; transform-origin: top; }
+@keyframes jq-fade-in { from { opacity: 0; } }
+@keyframes jq-slide-down { from { opacity: 0; transform: scaleY(0.6); } }

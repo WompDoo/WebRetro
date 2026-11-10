@@ -1,0 +1,53 @@
+/* ---------- Browser window ---------- */
+.browser { border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--lift); overflow: hidden; display: flex; flex-direction: column; }
+.browser-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px 4px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+.browser-titlebar span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.browser-toolbar { display: flex; align-items: center; gap: 6px; padding: 5px 8px; font-size: 12px; }
+.browser-buttons { display: flex; gap: 4px; flex: none; }
+.browser-button { padding: 2px 8px; }
+.browser-address { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
+.browser-address-label { flex: none; }
+.browser-url { flex: 1; min-width: 0; padding: 3px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browser-viewport { position: relative; height: clamp(420px, 66vh, 640px); overflow: hidden; }
+.browser-statusbar { padding: 3px 10px; font-size: 11.5px; }
+.site { height: 100%; overflow-y: auto; overscroll-behavior: contain; container-type: inline-size; }
+@media (max-width: 520px) {
+  .browser-button.is-optional { display: none; }
+  .browser-viewport { height: 440px; }
+}
+
+[data-era="1997"] .browser { background: #C0C0C0; font-family: Arial, Helvetica, sans-serif; color: #000000; }
+[data-era="1997"] .browser-titlebar { background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; }
+[data-era="1997"] .window-buttons i { background: #C0C0C0; border: 2px outset #FFFFFF; }
+[data-era="1997"] .browser-toolbar { border-bottom: 2px groove #FFFFFF; }
+[data-era="1997"] .browser-button { background: #C0C0C0; border: 2px outset #FFFFFF; }
+[data-era="1997"] .browser-url { background: #FFFFFF; border: 2px inset #808080; font-family: Arial, sans-serif; }
+[data-era="1997"] .browser-statusbar { border-top: 2px groove #FFFFFF; }
+[data-era="2005"] .browser { background: linear-gradient(#F2F2F2, #DCDCDC); font-family: 'Lucida Grande', 'Trebuchet MS', Verdana, sans-serif; color: #333333; }
+[data-era="2005"] .browser-titlebar { background: linear-gradient(#FAFAFA, #D6D6D6); color: #333333; border-bottom: 1px solid #ABABAB; font-weight: 600; }
+[data-era="2005"] .browser-toolbar { background: linear-gradient(#EDEDED, #D4D4D4); border-bottom: 1px solid #A8A8A8; }
+[data-era="2005"] .browser-button { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DADADA); }
+[data-era="2005"] .browser-address-label { display: none; }
+[data-era="2005"] .browser-url { background: #FFFFFF; border: 1px solid #9C9C9C; border-radius: 12px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
+[data-era="2005"] .browser-url::after { content: "RSS"; margin-left: 8px; padding: 0 4px; border-radius: 3px; background: #FF8A00; color: #FFFFFF; font-size: 9px; font-weight: 700; vertical-align: middle; }
+[data-era="2005"] .browser-statusbar { background: #E4E4E4; border-top: 1px solid #B4B4B4; }
+
+/* ---------- Era transition wipe ---------- */
+.era-wipe {
+  position: absolute; inset: 0; z-index: 6; pointer-events: none; display: grid; place-items: center; transform: translateX(-101%);
+  background: repeating-linear-gradient(-45deg, #FFC83A 0 30px, #1B2240 30px 60px);
+}
+.era-wipe span { padding: 10px 16px; background: #1B2240; color: #FFC83A; font-family: var(--font-display); font-size: 24px; border: 3px solid #FFC83A; }
+.era-wipe.is-running { animation: era-wipe 1.6s ease-in-out forwards; }
+@keyframes era-wipe { 0% { transform: translateX(-101%); } 40%, 60% { transform: translateX(0); } 100% { transform: translateX(101%); } }
+
+/* ---------- Status bar: load time, page weight, server load, reload progress ---------- */
+.browser-statusbar { position: relative; display: flex; justify-content: space-between; gap: 12px; align-items: center; overflow: hidden; white-space: nowrap; }
+.browser-status-text { overflow: hidden; text-overflow: ellipsis; }
+.browser-perf { flex: none; font-variant-numeric: tabular-nums; }
+.browser-statusbar[data-performance="slow"] .browser-perf, .browser-statusbar[data-performance="overloaded"] .browser-perf { color: #B45309; font-weight: 700; }
+.browser-statusbar[data-performance="down"] { color: #B91C1C; font-weight: 700; }
+.browser-progress { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: #1E40E6; opacity: 0; }
+.browser-statusbar.is-reloading .browser-progress { animation: page-reload var(--reload-ms, 600ms) ease-out forwards; }
+@keyframes page-reload { 0% { width: 0; opacity: 1; } 90% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
+.level-chip.is-hot { border-color: var(--hazard); color: var(--hazard); }
