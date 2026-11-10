@@ -16,14 +16,17 @@ export const POPUP_FREQUENCY_PER_EXTRA_AD = 0.3;
 /** Clicking the shiny button on a pop-up costs this share of your money. */
 export const POPUP_SCAM_MONEY_SHARE = 0.1;
 
-export const SPAM_CLEAN_CLICKS = 4;
-export const SQL_INJECTION_RESTORE_CLICKS = 3;
 export const MAX_VIRUS_INFECTIONS = 2;
 
-/** A virus starts at 1 food, needs 2 after 2:30 and 3 after 5:00. */
-export const MIN_VIRUS_FOOD = 1;
-export const MAX_VIRUS_FOOD = 3;
-export const VIRUS_FOOD_STEP_MS = 150_000;
+/** Every infection's minigame starts at difficulty 1, reaches 2 after 2:30 and 3 after 5:00. */
+export const MIN_INFECTION_DIFFICULTY = 1;
+export const MAX_INFECTION_DIFFICULTY = 3;
+export const INFECTION_DIFFICULTY_STEP_MS = 150_000;
+
+/** Win an infection's minigame within this long of it appearing and visitors notice: a short traffic bonus. */
+export const QUICK_FIX_WINDOW_MS = 30_000;
+export const QUICK_FIX_TRAFFIC_FACTOR = 1.15;
+export const QUICK_FIX_BONUS_MS = 60_000;
 
 /** At twice your hosting capacity the server gives up: the whole site is a 503 page. */
 export const SITE_DOWN_SERVER_LOAD = 2;

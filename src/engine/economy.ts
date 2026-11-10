@@ -7,6 +7,7 @@ import {
   MIN_BUG_CHANCE,
   POPUP_TRAFFIC_PENALTY,
   SITE_DOWN_SERVER_LOAD,
+  QUICK_FIX_TRAFFIC_FACTOR,
   TRAFFIC_SPIKE_DEMAND_FACTOR,
   UPGRADE_REVEAL_EARNINGS_SHARE,
 } from './constants';
@@ -155,6 +156,11 @@ export function calculatePopupTrafficFactor(state: GameState): number {
   return (NEUTRAL_FACTOR - POPUP_TRAFFIC_PENALTY) ** state.popups.length;
 }
 
+/** Visitors notice a site that gets fixed fast. */
+export function calculateQuickFixFactor(state: GameState): number {
+  return state.quickFixBonusRemainingMs > 0 ? QUICK_FIX_TRAFFIC_FACTOR : NEUTRAL_FACTOR;
+}
+
 export function calculateTrafficSpikeFactor(state: GameState): number {
   return state.trafficSpikeRemainingMs > 0 ? TRAFFIC_SPIKE_DEMAND_FACTOR : NEUTRAL_FACTOR;
 }
@@ -166,7 +172,8 @@ export function calculateDemandVisitorsPerSecond(state: GameState): number {
     calculateGlobalTrafficFactor(state) *
     calculateAdTrafficFactor(state) *
     calculatePopupTrafficFactor(state) *
-    calculateTrafficSpikeFactor(state)
+    calculateTrafficSpikeFactor(state) *
+    calculateQuickFixFactor(state)
   );
 }
 

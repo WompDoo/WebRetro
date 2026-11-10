@@ -1,13 +1,11 @@
 import {
+  INFECTION_DIFFICULTY_STEP_MS,
+  MAX_INFECTION_DIFFICULTY,
   MAX_OPEN_POPUPS,
-  MAX_VIRUS_FOOD,
   MAX_VIRUS_INFECTIONS,
-  MIN_VIRUS_FOOD,
+  MIN_INFECTION_DIFFICULTY,
   POPUP_FREQUENCY_PER_EXTRA_AD,
-  SPAM_CLEAN_CLICKS,
-  SQL_INJECTION_RESTORE_CLICKS,
   TRAFFIC_SPIKE_DURATION_MS,
-  VIRUS_FOOD_STEP_MS,
 } from './constants';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
@@ -21,8 +19,8 @@ import type {
   HazardKind,
   Infection,
   InfectionKind,
-  ClickInfection,
-  VirusInfection,
+  MinigameId,
+  VirusMinigameId,
 } from './types';
 
 interface HazardRule {
@@ -57,16 +55,28 @@ function addInfection(state: GameState, infection: Infection): GameState {
   return { ...state, infections: [...state.infections, infection] };
 }
 
-function createVirus(id: number, featureId: FeatureId): VirusInfection {
-  return { id, kind: 'virus', featureId, ageMs: 0 };
+/** Each virus loads one of these at random. */
+export const VIRUS_MINIGAME_IDS: readonly VirusMinigameId[] = ['snake', 'virus-scan', 'firewall'];
+/** The other infections always get the same game: it is what fixing that problem looks like. */
+export const INFECTION_MINIGAMES: Readonly<Record<Exclude<InfectionKind, 'virus'>, MinigameId>> = {
+  spam: 'spam-sort',
+  'sql-injection': 'backup-restore',
+};
+
+export function pickVirusMinigame(roll: number): VirusMinigameId {
+  return VIRUS_MINIGAME_IDS[Math.floor(roll * VIRUS_MINIGAME_IDS.length)] ?? 'snake';
 }
 
-function createSpam(id: number): ClickInfection {
-  return { id, kind: 'spam', featureId: 'comments', cleanClicksRemaining: SPAM_CLEAN_CLICKS, ageMs: 0 };
+function createVirus(id: number, featureId: FeatureId, minigameRoll: number): Infection {
+  return { id, kind: 'virus', featureId, ageMs: 0, minigameId: pickVirusMinigame(minigameRoll) };
 }
 
-function createSqlInjection(id: number, featureId: FeatureId): ClickInfection {
-  return { id, kind: 'sql-injection', featureId, cleanClicksRemaining: SQL_INJECTION_RESTORE_CLICKS, ageMs: 0 };
+function createSpam(id: number): Infection {
+  return { id, kind: 'spam', featureId: 'comments', ageMs: 0, minigameId: INFECTION_MINIGAMES.spam };
+}
+
+function createSqlInjection(id: number, featureId: FeatureId): Infection {
+  return { id, kind: 'sql-injection', featureId, ageMs: 0, minigameId: INFECTION_MINIGAMES['sql-injection'] };
 }
 
 /** Anything backed by the database can have its table dropped. */
@@ -76,26 +86,29 @@ function findSqlTargets(state: GameState): readonly FeatureId[] {
   return DATABASE_FEATURES.filter((featureId) => state.featureLevels[featureId] > 0 && !isFeatureInfected(state, featureId));
 }
 
-/** How many pieces of food the snake must eat to remove this virus right now. */
-export function calculateRequiredVirusFood(virus: VirusInfection): number {
-  return Math.min(MAX_VIRUS_FOOD, MIN_VIRUS_FOOD + Math.floor(virus.ageMs / VIRUS_FOOD_STEP_MS));
+/** 1 to 3: how hard this infection's minigame is right now. It grows the longer the infection stays. */
+export function calculateInfectionDifficulty(infection: Infection): number {
+  return Math.min(MAX_INFECTION_DIFFICULTY, MIN_INFECTION_DIFFICULTY + Math.floor(infection.ageMs / INFECTION_DIFFICULTY_STEP_MS));
 }
 
-/** Time until the virus needs one more food, or null once it's fully grown. */
-export function calculateMsUntilVirusGrows(virus: VirusInfection): number | null {
-  const isFullyGrown = calculateRequiredVirusFood(virus) >= MAX_VIRUS_FOOD;
-  return isFullyGrown ? null : VIRUS_FOOD_STEP_MS - (virus.ageMs % VIRUS_FOOD_STEP_MS);
+/** Time until the minigame gets harder, or null once it's at its hardest. */
+export function calculateMsUntilHarder(infection: Infection): number | null {
+  const isHardest = calculateInfectionDifficulty(infection) >= MAX_INFECTION_DIFFICULTY;
+  return isHardest ? null : INFECTION_DIFFICULTY_STEP_MS - (infection.ageMs % INFECTION_DIFFICULTY_STEP_MS);
 }
 
-export function findVirus(state: GameState, infectionId: number): VirusInfection | null {
-  const infection = state.infections.find((candidate) => candidate.id === infectionId);
-  return infection?.kind === 'virus' ? infection : null;
+export function findInfection(state: GameState, infectionId: number): Infection | null {
+  return state.infections.find((candidate) => candidate.id === infectionId) ?? null;
 }
 
 function hazardEvent(message: string): readonly GameEvent[] {
   return [{ kind: 'hazard', message }];
 }
 
+/**
+ * Hazard intervals are sized for a time budget: with the era's cheapest defense bought, minigames should take
+ * about a tenth of an hour's play or less. The balance simulation prints the share.
+ */
 const POPUP_RULE: HazardRule = {
   kind: 'popup',
   intervalRangeMs: [16_000, 32_000],
@@ -116,7 +129,7 @@ const POPUP_RULE: HazardRule = {
 
 const VIRUS_RULE: HazardRule = {
   kind: 'virus',
-  intervalRangeMs: [50_000, 100_000],
+  intervalRangeMs: [100_000, 180_000],
   isActive: (state) =>
     state.featureLevels.guestbook > 0 &&
     countInfections(state, 'virus') < MAX_VIRUS_INFECTIONS &&
@@ -127,26 +140,26 @@ const VIRUS_RULE: HazardRule = {
     const featureId = candidates[Math.floor(rollAt(rolls, 0) * candidates.length)] ?? 'hit-counter';
     const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
     return {
-      state: addInfection(state, createVirus(entityId, featureId)),
-      events: hazardEvent(`A virus infected your ${featureName}. It brings in no visitors until you remove it, and it grows the longer you wait.`),
+      state: addInfection(state, createVirus(entityId, featureId, rollAt(rolls, 1))),
+      events: hazardEvent(`A virus infected your ${featureName}. It brings in no visitors until you beat it, and it gets harder the longer you wait.`),
     };
   },
 };
 
 const SPAM_RULE: HazardRule = {
   kind: 'spam',
-  intervalRangeMs: [40_000, 80_000],
+  intervalRangeMs: [120_000, 200_000],
   isActive: (state) => state.featureLevels.comments > 0 && countInfections(state, 'spam') === 0,
   countdownSpeed: () => NORMAL_SPEED,
   spawn: (state, _rolls, entityId) => ({
     state: addInfection(state, createSpam(entityId)),
-    events: hazardEvent('Spam bots flooded your comments. Real readers left until you clean it up.'),
+    events: hazardEvent('Spam bots flooded your comments. Real readers left until you sort it out.'),
   }),
 };
 
 const SQL_INJECTION_RULE: HazardRule = {
   kind: 'sql-injection',
-  intervalRangeMs: [80_000, 160_000],
+  intervalRangeMs: [180_000, 300_000],
   isActive: (state) =>
     !state.purchasedUpgradeIds.includes('prepared-statements') &&
     countInfections(state, 'sql-injection') === 0 &&
@@ -231,7 +244,11 @@ function mergeSteps(previous: GameStep, next: GameStep): GameStep {
 
 /** Hazards only tick while the player is watching. Offline progress never spawns them. */
 export function advanceHazards(state: GameState, deltaMs: number): GameStep {
-  const spikeTicked = { ...state, trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs) };
+  const spikeTicked = {
+    ...state,
+    trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs),
+    quickFixBonusRemainingMs: Math.max(0, state.quickFixBonusRemainingMs - deltaMs),
+  };
   const cleaned = ageAndAutoCleanInfections(spikeTicked, deltaMs);
   return HAZARD_RULES.reduce<GameStep>(
     (step, rule) => mergeSteps(step, tickHazardRule(step.state, rule, deltaMs)),

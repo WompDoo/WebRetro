@@ -21,21 +21,47 @@
 .end-stats b { display: block; font-family: var(--font-numbers); font-weight: 600; font-size: 20px; }
 
 /* ---------- Snake minigame ---------- */
-.snake-card { max-width: 480px; padding: 0; overflow: hidden; }
-.snake-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 14px; background: linear-gradient(90deg, #8A0018, #D4283C); color: #FFFFFF; font-family: var(--font-display); font-size: 16px; }
-.snake-close { width: 28px; height: 26px; padding: 0; border: 2px solid #FFFFFF; border-radius: 4px; background: transparent; color: #FFFFFF; font-weight: 700; cursor: pointer; }
-.snake-content { padding: 14px 16px 16px; display: grid; gap: 10px; }
-.snake-brief { margin: 0 !important; font-size: 14px; }
-.snake-hud { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-family: var(--font-numbers); font-size: 12.5px; color: var(--ink-soft); }
-.snake-canvas { display: block; width: 100%; aspect-ratio: 14 / 10; border: 2px solid var(--line); border-radius: 4px; background: #0B1022; touch-action: none; }
-.snake-status { margin: 0 !important; font-size: 13.5px; font-weight: 600; }
-.snake-status[data-status="won"] { color: var(--money); }
-.snake-status[data-status="crashed"] { color: var(--hazard); }
-.snake-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.snake-pad { display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(2, 36px); gap: 4px; }
+.minigame-card { max-width: 480px; padding: 0; overflow: hidden; }
+.minigame-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 14px; background: linear-gradient(90deg, #8A0018, #D4283C); color: #FFFFFF; font-family: var(--font-display); font-size: 16px; }
+.minigame-close { width: 28px; height: 26px; padding: 0; border: 2px solid #FFFFFF; border-radius: 4px; background: transparent; color: #FFFFFF; font-weight: 700; cursor: pointer; }
+.minigame-content { padding: 14px 16px 16px; display: grid; gap: 10px; }
+.minigame-brief { margin: 0 !important; font-size: 14px; }
+.minigame-hud { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-family: var(--font-numbers); font-size: 12.5px; color: var(--ink-soft); }
+.minigame-stage { display: grid; gap: 10px; }
+.minigame-status { margin: 0 !important; min-height: 1.4em; font-size: 13.5px; font-weight: 600; }
+.minigame-status[data-status="won"] { color: var(--money); }
+.minigame-status[data-status="lost"] { color: var(--hazard); }
+.minigame-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+/* Canvas games: the canvas keeps its field's shape and owns touch input. */
+.minigame-canvas { display: block; width: 100%; border: 2px solid var(--line); border-radius: 4px; background: #0B1022; touch-action: none; }
+.snake-canvas { aspect-ratio: 14 / 10; }
+.firewall-canvas { aspect-ratio: 4 / 3; cursor: crosshair; }
+.snake-pad { display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(2, 36px); gap: 4px; justify-self: center; }
 .snake-pad button { border: 2px solid var(--line); border-radius: 4px; background: var(--panel-sunken); font-size: 15px; cursor: pointer; touch-action: manipulation; }
 .snake-pad [data-snake-direction="up"] { grid-column: 2; grid-row: 1; }
 .snake-pad [data-snake-direction="left"] { grid-column: 1; grid-row: 2; }
 .snake-pad [data-snake-direction="down"] { grid-column: 2; grid-row: 2; }
 .snake-pad [data-snake-direction="right"] { grid-column: 3; grid-row: 2; }
-.snake-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+/* Virus scan: nine files, the virus peeks out of one. */
+.scan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.scan-file { position: relative; display: grid; place-items: center; gap: 4px; padding: 12px 6px 8px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken); font: 600 11px/1.2 var(--font-numbers); color: var(--ink-soft); cursor: pointer; touch-action: manipulation; }
+.scan-file::before { content: ""; width: 26px; height: 32px; background: linear-gradient(135deg, transparent 0 8px, var(--panel) 8px) top right / 100% 100% no-repeat; border: 2px solid var(--line); border-radius: 2px; }
+.scan-file.is-infected { border-color: var(--hazard); background: color-mix(in srgb, var(--hazard) 14%, var(--panel)); color: var(--hazard); }
+.scan-file.is-infected::before { border-color: var(--hazard); background: radial-gradient(circle at 35% 40%, #1A1A1A 0 3px, transparent 4px), radial-gradient(circle at 65% 40%, #1A1A1A 0 3px, transparent 4px), radial-gradient(circle at 50% 50%, #3DDC84 0 13px, #1F8F4E 14px); border-radius: 50%; }
+/* Spam sort: one comment at a time. */
+.spam-card { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: center; padding: 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-sunken); touch-action: pan-y; user-select: none; }
+.spam-card .avatar { grid-row: span 2; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 6px; color: #FFFFFF; font-weight: 700; }
+.spam-author { font-weight: 700; }
+.spam-text { font-size: 14px; }
+.spam-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.spam-buttons button { padding: 10px; border: 2px solid var(--line); border-radius: 6px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.spam-trash { background: color-mix(in srgb, var(--hazard) 14%, var(--panel)); color: var(--hazard); }
+.spam-keep { background: color-mix(in srgb, var(--money) 14%, var(--panel)); color: var(--money); }
+.spam-count { font: 12px var(--font-numbers); color: var(--ink-soft); text-align: center; }
+/* Backup restore: pick the right file. */
+.restore-alert { margin: 0; padding: 8px 10px; border-left: 4px solid var(--hazard); background: color-mix(in srgb, var(--hazard) 8%, var(--panel)); font-size: 13px; }
+.restore-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.restore-backup { display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 9px 12px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken); font: 12.5px var(--font-numbers); text-align: left; cursor: pointer; touch-action: manipulation; }
+.restore-backup:hover { border-color: var(--link); }
+.restore-backup.is-wrong { border-color: var(--hazard); opacity: 0.55; text-decoration: line-through; }
+.restore-time { font-weight: 700; white-space: nowrap; }

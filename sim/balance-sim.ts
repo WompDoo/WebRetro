@@ -44,13 +44,13 @@ import {
   isEraGateComplete,
   isOnlySavingForMigration,
   placeAd,
-  calculateRequiredVirusFood,
-  removeVirus,
-  scrubInfection,
+  calculateInfectionDifficulty,
+  cleanInfection,
   UPGRADES_BY_ID,
   writeCode,
   type EraId,
   type GameState,
+  type Infection,
 } from '../src/engine';
 
 interface PlayerProfile {
@@ -75,6 +75,13 @@ interface EraReport {
   readonly eraId: EraId;
   readonly durationMs: number;
   readonly keystrokeIncomeShareAtEnd: number;
+  /** Share of the era spent playing minigames: the time budget is about a tenth. */
+  readonly minigameShare: number;
+}
+
+interface HazardReaction {
+  readonly state: GameState;
+  readonly minigameMs: number;
 }
 
 const TICK_MS = 100;
@@ -82,8 +89,8 @@ const DECISION_INTERVAL_MS = 1_000;
 const MAX_SIMULATED_MS = 4 * 60 * 60 * 1000;
 const MS_PER_MINUTE = 60_000;
 const REQUIRED_PURCHASE_PRIORITY = 0.25;
-/** Rough time a player needs per piece of food in the snake minigame. */
-const SNAKE_MS_PER_FOOD = 6_000;
+/** Rough time a player needs per difficulty level in any minigame (about 5, 10 or 15 seconds). */
+const MINIGAME_MS_PER_DIFFICULTY = 5_000;
 const SEED = 1997;
 /** Early on, income is tiny and doubles easily; growth only counts once it's real. */
 const MIN_REVENUE_FOR_GROWTH = 100;
@@ -196,25 +203,29 @@ function decide(state: GameState, profile: PlayerProfile): GameState {
   );
   const ranked = [...options].sort((a, b) => scoreOption(state, a, profile) - scoreOption(state, b, profile));
   const best = ranked[0];
-  return best !== undefined && best.canApply(state) ? best.apply(state) : state;
+  if (best === undefined) return state;
+  if (best.canApply(state)) return best.apply(state);
+  // Saving up for the best option: meanwhile buy anything that pays for itself before that is affordable.
+  const waitSeconds = Math.max(0, best.cost - state.money) / Math.max(effectiveIncome(state, profile), Number.EPSILON);
+  const filler = ranked.find((option) => option.canApply(state) && option.cost > 0 && scoreOption(state, option, profile) < waitSeconds);
+  return filler === undefined ? state : filler.apply(state);
 }
 
-function reactToHazards(state: GameState, seenAt: Map<number, number>, now: number, profile: PlayerProfile): GameState {
+function minigameDurationMs(infection: Infection): number {
+  return calculateInfectionDifficulty(infection) * MINIGAME_MS_PER_DIFFICULTY;
+}
+
+/** Closes pop-ups after the reaction time, and plays each infection's minigame once noticed. */
+function reactToHazards(state: GameState, seenAt: Map<number, number>, now: number, profile: PlayerProfile): HazardReaction {
   const ids = [...state.popups.map((popup) => popup.id), ...state.infections.map((infection) => infection.id)];
   ids.forEach((id) => (seenAt.has(id) ? undefined : seenAt.set(id, now)));
-  const isDue = (id: number): boolean => now - (seenAt.get(id) ?? now) >= profile.reactionMs;
-  const withoutPopups = state.popups.filter((popup) => isDue(popup.id)).reduce((current, popup) => closePopup(current, popup.id), state);
-  return withoutPopups.infections
-    .filter((infection) => isDue(infection.id))
-    .reduce<GameState>((current, infection) => {
-      if (infection.kind === 'virus') {
-        const snakeMs = calculateRequiredVirusFood(infection) * SNAKE_MS_PER_FOOD;
-        const isSnakeDone = now - (seenAt.get(infection.id) ?? now) >= profile.reactionMs + snakeMs;
-        return isSnakeDone ? removeVirus(current, infection.id).state : current;
-      }
-      const clicks = Array.from({ length: infection.cleanClicksRemaining });
-      return clicks.reduce<GameState>((scrubbing) => scrubInfection(scrubbing, infection.id).state, current);
-    }, withoutPopups);
+  const waitedMs = (id: number): number => now - (seenAt.get(id) ?? now);
+  const withoutPopups = state.popups.filter((popup) => waitedMs(popup.id) >= profile.reactionMs).reduce((current, popup) => closePopup(current, popup.id), state);
+  const finished = withoutPopups.infections.filter((infection) => waitedMs(infection.id) >= profile.reactionMs + minigameDurationMs(infection));
+  return {
+    state: finished.reduce<GameState>((current, infection) => cleanInfection(current, infection.id).state, withoutPopups),
+    minigameMs: finished.reduce((total, infection) => total + minigameDurationMs(infection), 0),
+  };
 }
 
 function typeKeystrokes(state: GameState, count: number): GameState {
@@ -226,6 +237,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
   let now = 0;
   let typingDebt = 0;
   let eraStartedAt = 0;
+  let minigameMsThisEra = 0;
   let revenueAMinuteAgo = 0;
   let steepestMinute = { ratio: 1, atMinute: 0 };
   const reports: EraReport[] = [];
@@ -238,7 +250,9 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
     typingDebt -= keystrokes;
     state = typeKeystrokes(state, keystrokes);
     state = advanceSimulation(state, TICK_MS, 'live').state;
-    state = reactToHazards(state, seenAt, now, profile);
+    const reaction = reactToHazards(state, seenAt, now, profile);
+    state = reaction.state;
+    minigameMsThisEra += reaction.minigameMs;
 
     if (process.env['SIM_TIMELINE'] === profile.name && now % MS_PER_MINUTE === 0) {
       const levels = Object.values(state.featureLevels).join('/');
@@ -270,6 +284,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
         eraId: state.eraId,
         durationMs: now - eraStartedAt,
         keystrokeIncomeShareAtEnd: typingIncome / effectiveIncome(state, profile),
+        minigameShare: minigameMsThisEra / Math.max(1, now - eraStartedAt),
       });
       console.log(
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
@@ -279,6 +294,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
       );
       state = advanceEra(state);
       eraStartedAt = now;
+      minigameMsThisEra = 0;
     }
     now += TICK_MS;
   }
@@ -299,7 +315,8 @@ const stuckProfiles = PROFILES.filter((profile) => {
   reports.forEach((report) =>
     console.log(
       `  [${profile.name}] ${report.eraId}: ${(report.durationMs / MS_PER_MINUTE).toFixed(1)} min, ` +
-        `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end`,
+        `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end, ` +
+        `minigames = ${(report.minigameShare * 100).toFixed(0)}% of play time`,
     ),
   );
   return reports.length < ERA_IDS.length;

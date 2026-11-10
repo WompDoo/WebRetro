@@ -1,6 +1,6 @@
 import type { CodeEditorElements } from './code-editor';
 import { requireElement } from './dom';
-import type { SnakeModalElements } from './snake-modal';
+import type { MinigameModalElements } from './minigames/minigame-modal';
 
 /** Looked up once at startup. A missing element is a broken page, so requireElement throws. */
 export const elements = {
@@ -26,7 +26,6 @@ export const elements = {
   resetOverlay: requireElement<HTMLElement>('#reset-overlay'),
   endOverlay: requireElement<HTMLElement>('#end-overlay'),
   endStats: requireElement<HTMLElement>('#end-stats'),
-  snakeTitle: requireElement<HTMLElement>('#snake-title'),
 };
 
 export const editorElements: CodeEditorElements = {
@@ -42,13 +41,13 @@ export const editorElements: CodeEditorElements = {
   rate: requireElement('#editor-rate'),
 };
 
-export const snakeElements: SnakeModalElements = {
-  overlay: requireElement('#snake-overlay'),
-  title: elements.snakeTitle,
-  brief: requireElement('#snake-brief'),
-  progress: requireElement('#snake-progress'),
-  canvas: requireElement<HTMLCanvasElement>('#snake-canvas'),
-  status: requireElement('#snake-status'),
-  pad: requireElement('#snake-pad'),
-  retry: requireElement('#snake-retry'),
+export const minigameElements: MinigameModalElements = {
+  overlay: requireElement('#minigame-overlay'),
+  title: requireElement('#minigame-title'),
+  brief: requireElement('#minigame-brief'),
+  progress: requireElement('#minigame-progress'),
+  hint: requireElement('#minigame-hint'),
+  stage: requireElement('#minigame-stage'),
+  status: requireElement('#minigame-status'),
+  retry: requireElement('#minigame-retry'),
 };

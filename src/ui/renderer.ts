@@ -83,7 +83,6 @@ function renderEraChrome(editor: CodeEditor): void {
   elements.app.dataset['era'] = String(presentation.year);
   elements.browserTitle.textContent = presentation.browserTitle;
   editor.setEra(store.game.eraId);
-  setTextIfChanged(elements.snakeTitle, presentation.antivirusTitle);
 }
 
 function renderShop(): void {

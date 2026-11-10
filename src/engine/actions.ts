@@ -1,4 +1,5 @@
-import { POPUP_SCAM_MONEY_SHARE } from './constants';
+import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_BONUS_MS, QUICK_FIX_TRAFFIC_FACTOR, QUICK_FIX_WINDOW_MS } from './constants';
+import { formatPercent } from './format';
 import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
@@ -15,7 +16,7 @@ import {
   isUpgradeAvailable,
 } from './economy';
 import { isEraGateComplete } from './era-gate';
-import { findVirus } from './hazards';
+import { findInfection } from './hazards';
 import { drawRandoms } from './random';
 import type {
   CodeInputResult,
@@ -26,6 +27,7 @@ import type {
   GameState,
   GameStep,
   Infection,
+  MinigameId,
   UpgradeId,
 } from './types';
 
@@ -168,44 +170,38 @@ export function fallForPopupScam(state: GameState, popupId: number): PopupScamRe
   return { state: closePopup(spend(state, moneyLost), popupId), moneyLost };
 }
 
-const CLEANUP_MESSAGES: Readonly<Record<Infection['kind'], (featureName: string) => string>> = {
-  virus: (featureName) => `Your snake ate the virus in your ${featureName}.`,
-  spam: (featureName) => `You deleted the spam from your ${featureName}.`,
-  'sql-injection': (featureName) => `You restored your ${featureName} from last night’s backup.`,
+const CLEANUP_MESSAGES: Readonly<Record<MinigameId, (featureName: string) => string>> = {
+  snake: (featureName) => `Your snake ate the virus in your ${featureName}.`,
+  'virus-scan': (featureName) => `Your scan zapped the virus in your ${featureName}.`,
+  firewall: (featureName) => `Your firewall smashed the virus out of your ${featureName}.`,
+  'spam-sort': (featureName) => `You sorted the spam out of your ${featureName}.`,
+  'backup-restore': (featureName) => `You restored your ${featureName} from the right backup.`,
 };
 
 function describeCleanup(infection: Infection, eraId: EraId): GameEvent {
   const featureName = getFeatureDisplayName(infection.featureId, eraId).toLowerCase();
-  return { kind: 'cleanup', message: CLEANUP_MESSAGES[infection.kind](featureName) };
+  return { kind: 'cleanup', message: CLEANUP_MESSAGES[infection.minigameId](featureName) };
 }
 
-function scrubIfTargetedSpam(infection: Infection, infectionId: number): Infection {
-  return infection.id === infectionId && infection.kind !== 'virus'
-    ? { ...infection, cleanClicksRemaining: infection.cleanClicksRemaining - 1 }
-    : infection;
+export function isQuickFix(infection: Infection): boolean {
+  return infection.ageMs <= QUICK_FIX_WINDOW_MS;
 }
 
-function isCleanedSpam(infection: Infection): boolean {
-  return infection.kind !== 'virus' && infection.cleanClicksRemaining <= 0;
-}
-
-/** One click on a spam flood or a broken table. Viruses ignore clicks: they need the snake minigame. */
-export function scrubInfection(state: GameState, infectionId: number): GameStep {
-  const scrubbed = state.infections.map((infection) => scrubIfTargetedSpam(infection, infectionId));
+function withQuickFixBonus(state: GameState, infection: Infection): GameStep {
+  if (!isQuickFix(infection)) return { state, events: [] };
   return {
-    state: { ...state, infections: scrubbed.filter((infection) => !isCleanedSpam(infection)) },
-    events: scrubbed.filter(isCleanedSpam).map((infection) => describeCleanup(infection, state.eraId)),
+    state: { ...state, quickFixBonusRemainingMs: QUICK_FIX_BONUS_MS },
+    events: [{ kind: 'cleanup', message: `Quick fix! Visitors noticed: +${formatPercent(QUICK_FIX_TRAFFIC_FACTOR - 1)} traffic for a minute.` }],
   };
 }
 
-/** Called when the player wins the snake minigame for this virus. */
-export function removeVirus(state: GameState, infectionId: number): GameStep {
-  const virus = findVirus(state, infectionId);
-  if (virus === null) return { state, events: [] };
-  return {
-    state: { ...state, infections: state.infections.filter((infection) => infection.id !== infectionId) },
-    events: [describeCleanup(virus, state.eraId)],
-  };
+/** Called when the player wins this infection's minigame. A quick win also earns a short traffic bonus. */
+export function cleanInfection(state: GameState, infectionId: number): GameStep {
+  const infection = findInfection(state, infectionId);
+  if (infection === null) return { state, events: [] };
+  const cleaned = { ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) };
+  const bonus = withQuickFixBonus(cleaned, infection);
+  return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }
 
 function enterEra(state: GameState, eraId: EraId): GameState {

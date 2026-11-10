@@ -102,25 +102,17 @@
   </div>
 </div>
 
-<div class="overlay" id="snake-overlay" hidden>
-  <div class="overlay-card snake-card" role="dialog" aria-modal="true" aria-labelledby="snake-title">
-    <div class="snake-titlebar"><span id="snake-title">ANTIVIRUS.EXE</span><button type="button" class="snake-close" data-action="close-snake" aria-label="Close the minigame">×</button></div>
-    <div class="snake-content">
-      <p class="snake-brief" id="snake-brief"></p>
-      <div class="snake-hud"><span id="snake-progress">0 / 1 eaten</span><span>Arrow keys · WASD · swipe</span></div>
-      <canvas class="snake-canvas" id="snake-canvas" tabindex="0" aria-label="Snake board"></canvas>
-      <p class="snake-status" id="snake-status"></p>
-      <div class="snake-controls">
-        <div class="snake-pad" id="snake-pad" aria-label="Direction buttons">
-          <button type="button" data-snake-direction="up" aria-label="Up">▲</button>
-          <button type="button" data-snake-direction="left" aria-label="Left">◀</button>
-          <button type="button" data-snake-direction="down" aria-label="Down">▼</button>
-          <button type="button" data-snake-direction="right" aria-label="Right">▶</button>
-        </div>
-        <div class="snake-actions">
-          <button type="button" class="primary-button" id="snake-retry" data-action="retry-snake" hidden>Try again</button>
-          <button type="button" class="ghost-button" data-action="close-snake">Leave it for now</button>
-        </div>
+<div class="overlay" id="minigame-overlay" hidden>
+  <div class="overlay-card minigame-card" role="dialog" aria-modal="true" aria-labelledby="minigame-title">
+    <div class="minigame-titlebar"><span id="minigame-title">ANTIVIRUS.EXE</span><button type="button" class="minigame-close" data-action="close-minigame" aria-label="Close the minigame">×</button></div>
+    <div class="minigame-content">
+      <p class="minigame-brief" id="minigame-brief"></p>
+      <div class="minigame-hud"><span id="minigame-progress"></span><span id="minigame-hint"></span></div>
+      <div class="minigame-stage" id="minigame-stage"></div>
+      <p class="minigame-status" id="minigame-status"></p>
+      <div class="minigame-actions">
+        <button type="button" class="primary-button" id="minigame-retry" data-action="retry-minigame" hidden>Try again</button>
+        <button type="button" class="ghost-button" data-action="close-minigame">Leave it for now</button>
       </div>
     </div>
   </div>

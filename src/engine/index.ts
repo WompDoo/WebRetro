@@ -15,3 +15,8 @@ export * from './simulation';
 export * from './save';
 export * from './state';
 export * from './snake';
+export * from './minigames/status';
+export * from './minigames/virus-scan';
+export * from './minigames/firewall';
+export * from './minigames/spam-sort';
+export * from './minigames/backup-restore';

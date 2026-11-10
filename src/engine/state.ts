@@ -50,6 +50,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     playTimeMs: 0,
     hostingTier: 0,
     trafficSpikeRemainingMs: 0,
+    quickFixBonusRemainingMs: 0,
     reachedMilestoneIds: [],
     prototypeComplete: false,
   };

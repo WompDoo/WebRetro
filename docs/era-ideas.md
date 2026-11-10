@@ -205,42 +205,43 @@ the last; the year is when that step became the usual next move.
 | Hazard | Active fix (you, now) | Passive fix (money, with a trade-off) |
 |---|---|---|
 | Pop-up | click the × | Premium ad network: ads pay 25% less |
-| Virus | the snake minigame | Antivirus: 10% of revenue, cleans after 6 s |
-| Spam flood | 4 clicks | CAPTCHA: comments bring 10% fewer visitors |
-| SQL injection | 3 clicks to restore | Learn prepared statements (a skill, no downside) |
+| Virus | one of three arcade minigames, picked at random | Antivirus: 10% of revenue, cleans after 6 s |
+| Spam flood | the comment sorter minigame | CAPTCHA: comments bring 10% fewer visitors |
+| SQL injection | the backup restore minigame | Learn prepared statements (a skill, no downside) |
 | Traffic spike | none | Hosting headroom, or the static page cache |
 
 A defense must show what it protects, not only what it costs: the shop lists both lines, and CAPTCHA puts
 a visible CAPTCHA box under the comments. Before that it read as a pure cost.
 
-## Proposal: a minigame per hazard
+## Minigames (built)
 
-The snake is the only hazard with a real active fix; the others are click-N-times. Short task minigames,
-like the ones in party games where everyone does chores, would give each hazard its own 5–15 second task.
-All web-themed and original:
+Every infection opens a short minigame; winning it fixes the feature. The game is rolled when the infection
+appears, so closing and reopening it gives the same one.
 
-| Hazard | Minigame idea | Feel |
-|---|---|---|
-| Virus (1997) | Snake (exists) | arcade |
-| Spam flood | Sort the comments: swipe spam to the trash, real comments to the page | fast sorting |
-| SQL injection | Restore from backup: drag the right dated backup into the database slot | matching |
-| Server overload | Rewire the rack: connect each server to the matching switch port by color | connecting |
-| Traffic spike | Hold the line: keep a load meter in the green by tapping before it peaks | timing |
-| Broken build (2018) | Untangle `node_modules`: click the duplicate packages | spotting |
-| Prompt injection (2024) | Find the guestbook entry that says "ignore previous instructions" | spotting |
+| Minigame | For | How it plays | Harder with age (levels 1–3) |
+|---|---|---|---|
+| Snake | virus | eat the virus fragments without crashing | 1–3 fragments |
+| Virus scan | virus | click the virus while it peeks out of one of nine files; 3 clean-file clicks fail | 3/5/7 hits, shorter peeks |
+| Firewall | virus | slide the firewall, shoot the marching viruses before they reach your files | 1–3 rows of five |
+| Sort the comments | spam | spam to the trash, real comments to the page; 3 wrong calls fail | 6/8/10 comments |
+| Restore a backup | SQL injection | pick the newest backup from before the attack; 2 wrong picks fail | 3/4/5 backups, closer together |
 
-Design rules:
-- **Same contract as the snake**: a pure engine module (state in, state out, unit-tested) plus a thin modal.
-  `snake.ts` and `snake-modal.ts` become the template; a shared `MinigameModal` shell does open, close,
-  retry and win.
-- **Short and optional.** Every minigame has a passive fix you can buy instead, so it is never a chore wall.
-- **Scales with the problem.** Like the virus food, an older infection makes its minigame a little harder.
-- **One input model.** Click/tap and drag only, so every minigame works on a phone (needed for the mobile
-  layout) and later gets keyboard support from the options menu.
-- **Era-styled.** The 1997 games look like Windows 95 dialogs, 2005 like glossy widgets.
+Rules they all follow:
+- **A pure engine module** each (`src/engine/minigames/`, plus `snake.ts`): state in, state out, seeded,
+  unit-tested. The UI side is one shared modal shell (`ui/minigames/minigame-modal.ts`) with a small view per
+  game. Adding a minigame means one engine module, one view and one line in the shell's table.
+- **Difficulty grows with age.** Every infection reaches level 2 after 2:30 and level 3 after 5:00, like the
+  virus food used to. The overlay shows the level and the countdown.
+- **Fix it fast:** winning within 30 s of the infection appearing gives +15% traffic for a minute.
+- **The time budget:** minigames should take a tenth of play time or less. Hazards fire less often than when
+  fixes were clicks (virus every 1:40–3:00, spam 2:00–3:20, SQL 3:00–5:00); the simulation prints the share:
+  2–3% in 1997 and 6–7% in 2005.
+- **Touch first.** Every game works with taps, swipes and the pointer, and has keys too.
+- Original and web-themed: inspired by party-game chores in spirit, not copied from any game.
 
-Suggested order: build the shared modal shell and the spam sorter first (spam already exists and its fix is the
-weakest), then SQL restore, then rack wiring together with a server-overload hazard.
+Next candidates: rack wiring (server overload as a hazard), "hold the line" during a traffic spike, untangle
+`node_modules` (2018), find the prompt injection in the guestbook (2024). A pool of several games per hazard,
+like the virus has, can come later for the others.
 
 ## Balance notes
 
@@ -253,6 +254,10 @@ weakest), then SQL restore, then rack wiring together with a server-overload haz
 - **The Flash intro can be switched off.** Switchable features keep their levels; switched off they add
   no visitors and no page weight. The 2011 scroll-jacking toggle can reuse this.
 - The simulation prints each player's steepest minute (income growth within one minute) to spot snowballs.
+- **The scripted players used to hoard.** While saving for an unaffordable item they bought nothing, even
+  things that pay for themselves first, then spent everything at once. They now buy those meanwhile, like a
+  person would. That made them faster (2005 in 9–11 minutes) and showed a real late-2005 snowball the
+  hoarding hid: ×13–14 within the era's last minute. Next balance pass: the late 2005 features.
 - **The old top hosting tier was hiding a snowball.** With cheap capacity, demand jumped ×20 in one
   minute at the end of 2005: the $100M "cloud" was the real brake. The dated ladder brakes with smaller steps
   instead: steepest minute ×6.7 (active) and ×4.2 (relaxed), 2005 takes 11–13 minutes.
