@@ -172,6 +172,15 @@ shows up in it.
 
 **Ending:** acquisition offers from parody tech giants, based on what you built, plus a "refuse to sell" ending.
 
+## Known balance issues
+
+- **Late 2005 snowballs.** In the simulation, revenue jumps about ×24 within one minute near the end
+  of the era and the bot buys 13 upgrades at once: most 2005 multipliers become affordable together and
+  each one makes the next cheaper. Small content changes move when the snowball starts, so the era's length
+  swings (5–19 minutes). Fix by spreading 2005 boost prices further apart and making the late features cost more.
+- **The Flash intro can't be undone.** It weighs 1.2 MB, which alone takes longer than 2005 visitors wait.
+  It's meant as a trade-off, but you can't remove it once built. Consider an on/off switch like the defenses.
+
 ## Pop-up rules (all eras)
 
 - Every pop-up has a safe × in the title bar. Body buttons vary per pop-up: none, a safe close,
