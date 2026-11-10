@@ -1,0 +1,75 @@
+/* ---------- Pop-ups ---------- */
+.popup-layer { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.popup { position: absolute; width: min(280px, 88%); pointer-events: auto; animation: popup-in 160ms ease-out; }
+@keyframes popup-in { from { transform: scale(0.85); opacity: 0; } }
+.popup-titlebar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 3px 3px 8px; font-size: 12px; font-weight: 700; }
+.popup-close { width: 24px; height: 22px; padding: 0; font-weight: 700; line-height: 1; cursor: pointer; }
+.popup-body { padding: 10px 12px 12px; display: grid; gap: 8px; text-align: center; }
+.popup-headline { margin: 0; font-weight: 900; font-size: 17px; line-height: 1.15; }
+.popup-text { margin: 0; font-size: 13px; }
+.popup-button { justify-self: center; padding: 4px 16px; cursor: pointer; }
+[data-era="1997"] .popup { background: #C0C0C0; border: 2px outset #FFFFFF; box-shadow: 3px 3px 0 #000000; color: #000000; font-family: Arial, sans-serif; }
+[data-era="1997"] .popup-titlebar { background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; }
+[data-era="1997"] .popup-close, [data-era="1997"] .popup-button { background: #C0C0C0; border: 2px outset #FFFFFF; color: #000000; }
+[data-era="2005"] .popup { background: #FFFFFF; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); overflow: hidden; color: #333333; font-family: 'Lucida Grande', Verdana, sans-serif; }
+[data-era="2005"] .popup-titlebar { background: linear-gradient(#FFB347, #FF7A00); color: #FFFFFF; }
+[data-era="2005"] .popup-close { border-radius: 50%; border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.25); color: #FFFFFF; width: 22px; }
+[data-era="2005"] .popup-headline { color: #E05A00; }
+[data-era="2005"] .popup-button { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DDDDDD); }
+@keyframes blink { 50% { visibility: hidden; } }
+
+/* ---------- Pop-up designs ---------- */
+.popup-buttons { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.popup-button { padding: 4px 14px; cursor: pointer; user-select: none; }
+.popup-button:active, .popup-button.is-cta:active { animation: shake 0.3s linear; }
+@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.popup-alert { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; }
+.popup-alert-icon {
+  width: 36px; height: 32px; display: grid; place-items: end center; padding-bottom: 2px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%); background: #FFD400; color: #000000; font-weight: 900; font-size: 18px;
+}
+.popup-starburst { justify-self: center; padding: 5px 12px; font-weight: 900; font-size: 15px; letter-spacing: 0.06em; transform: rotate(-6deg); animation: wobble 0.7s ease-in-out infinite alternate; }
+@keyframes wobble { to { transform: rotate(6deg) scale(1.08); } }
+.popup-button.is-cta { justify-self: center; padding: 8px 14px; font-weight: 900; font-size: 14px; cursor: pointer; user-select: none; }
+.popup-link { justify-self: center; padding: 0; border: 0; background: none; color: inherit; font-size: 11px; text-decoration: underline; opacity: 0.75; cursor: pointer; }
+.popup-filename { margin: 0; font-family: 'Courier New', monospace; font-weight: 700; font-size: 14px; word-break: break-all; }
+.popup-progress { display: block; height: 16px; overflow: hidden; }
+.popup-progress span { display: block; height: 100%; animation: progress-crawl 12s linear infinite; }
+@keyframes progress-crawl { from { width: 6%; } to { width: 97%; } }
+.popup-stat { margin: 0; font-size: 11.5px; text-align: left; }
+.popup-options, .popup-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; text-align: left; font-size: 13px; }
+.popup-mark { margin-right: 6px; }
+.popup-chat { list-style: none; margin: 0; padding: 8px; display: grid; gap: 4px; min-height: 88px; text-align: left; font-size: 12.5px; background: #FFFFFF; border: 1px solid #B8C4D6; }
+.popup-chat b { color: #C0392B; }
+.popup-chat-input { display: block; padding: 6px 8px; text-align: left; font-size: 12px; color: #9A9A9A; background: #FFFFFF; border: 1px solid #B8C4D6; }
+
+[data-era="1997"] .popup-headline { color: #FF0000; }
+[data-era="1997"] .popup-button { background: #C0C0C0; border: 2px outset #FFFFFF; color: #000000; }
+[data-era="1997"] .popup--alert .popup-headline { color: #000000; font-size: 15px; }
+[data-era="1997"] .popup--prize { background: #FFFF33; border: 4px dashed #FF0000; box-shadow: 4px 4px 0 #000000; }
+[data-era="1997"] .popup--prize .popup-titlebar { background: linear-gradient(90deg, #FF0000, #FF00FF); }
+[data-era="1997"] .popup--prize .popup-headline { font-family: Impact, 'Arial Black', sans-serif; font-weight: 400; font-size: 21px; color: #0000EE; animation: blink 0.9s steps(1) infinite; }
+[data-era="1997"] .popup-starburst { background: #FF0000; color: #FFFF00; border: 3px dotted #FFFF00; }
+[data-era="1997"] .popup-button.is-cta { background: linear-gradient(#33FF33, #009900); color: #FFFFFF; border: 3px outset #66FF66; text-shadow: 1px 1px 0 #000000; }
+[data-era="1997"] .popup-progress { border: 2px inset #808080; background: #FFFFFF; }
+[data-era="1997"] .popup-progress span { background: repeating-linear-gradient(90deg, #000080 0 10px, transparent 10px 12px); }
+[data-era="1997"] .popup--download .popup-filename { color: #000000; }
+
+[data-era="2005"] .popup-button { border-radius: 12px; border: 1px solid #A0A0A0; background: linear-gradient(#FFFFFF, #DDDDDD); }
+[data-era="2005"] .popup-button.is-primary { border-color: #3E8E1C; background: linear-gradient(#9BDB5F, #4FA82A); color: #FFFFFF; font-weight: 700; }
+[data-era="2005"] .popup--survey .popup-titlebar { background: linear-gradient(#6BB2F0, #2A6FB0); }
+[data-era="2005"] .popup--survey .popup-headline { color: #2A6FB0; }
+[data-era="2005"] .popup--messenger { border-radius: 8px; }
+[data-era="2005"] .popup--messenger .popup-titlebar { background: linear-gradient(#E8F0FA, #B9CDE6); color: #1C3A5E; }
+[data-era="2005"] .popup--messenger .popup-close { border-color: #6F8DB3; color: #1C3A5E; background: rgba(255,255,255,0.6); }
+[data-era="2005"] .popup--messenger .popup-body { background: #DCE7F5; }
+[data-era="2005"] .popup--toolbar { border-radius: 6px; }
+[data-era="2005"] .popup--toolbar .popup-titlebar { background: linear-gradient(#F6F6F6, #D2D2D2); color: #333333; }
+[data-era="2005"] .popup--toolbar .popup-close { border-color: #9A9A9A; color: #333333; background: #FFFFFF; }
+[data-era="2005"] .popup--toolbar .popup-headline { color: #333333; font-size: 15px; }
+
+/* ---------- Scam buttons and money loss ---------- */
+.popup-button { cursor: pointer; }
+.popup-link { padding: 0; border: 0; background: none; color: #0000EE; text-decoration: underline; font-size: 12.5px; cursor: pointer; }
+.stat dd.is-loss { animation: money-loss 900ms ease-out; }
+@keyframes money-loss { 0%, 35% { color: var(--hazard); transform: translateX(-3px); } 20% { transform: translateX(3px); } 100% { transform: none; } }

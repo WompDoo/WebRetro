@@ -1,49 +1,14 @@
-import {
-  advanceEra,
-  advanceSimulation,
-  calculateRequiredVirusFood,
-  findVirus,
-  getFeatureDisplayName,
-  removeVirus,
-  buyDefense,
-  buyFeature,
-  buyUpgrade,
-  calculateEconomySnapshot,
-  closePopup,
-  createInitialGameState,
-  fallForPopupScam,
-  DEFENSE_IDS,
-  ERAS_BY_ID,
-  FEATURE_IDS,
-  formatCompactNumber,
-  formatMoney,
-  formatWholeNumber,
-  isEraGateComplete,
-  placeAd,
-  removeAd,
-  restoreGameState,
-  scrubInfection,
-  toggleDefense,
-  toggleFeature,
-  upgradeHosting,
-  UPGRADE_IDS,
-  writeCode,
-} from '../engine';
-import type { DefenseId, FeatureId, GameEvent, GameState, SimulationMode, UpgradeId } from '../engine';
+import { advanceSimulation, calculateRequiredVirusFood, findVirus, getFeatureDisplayName, removeVirus } from '../engine';
+import type { SimulationMode } from '../engine';
+import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
-import type { CodeEditor, KeystrokeFeedback } from './code-editor';
-import { escapeHtml, requireElement, setHtmlIfChanged, setTextIfChanged } from './dom';
-import { ERA_PRESENTATION } from './presentation';
-import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
-import { calculatePopupSignature, findPopupCopy, syncPopups } from './render-popups';
-import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
-import type { ShopTab } from './render-shop';
-import { calculateDisplayedCounter, calculateSiteSignature, renderCounterDigits, renderGalleryLightbox, renderGuestbookEntries, renderJavaScriptClock, renderMusicStatus, renderSite, renderVirusTimer } from './render-site';
-import { buildBrowserTitle, buildEditorTabs, buildEditorTitle, buildPerformanceReadout, buildSiteUrl, buildStatusText, classifyPerformance, isStatusScrolling } from './browser-chrome';
+import { editorElements, elements, snakeElements } from './elements';
 import { installJavaScriptEffects } from './javascript-effects';
-import { buildEditorSource } from './skill-code';
+import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, restoreGame, writeSave } from './persistence';
+import { createRenderer } from './renderer';
 import { createSnakeModal } from './snake-modal';
-import type { SnakeModal, SnakeTarget } from './snake-modal';
+import type { SnakeTarget } from './snake-modal';
+import { applyStep, store } from './store';
 
 interface ClaudeHotApi {
   readonly data?: unknown;
@@ -57,500 +22,55 @@ declare global {
   }
 }
 
-interface StoredSave {
-  readonly savedAtMs: number;
-  readonly game: unknown;
-}
-
-interface NewsItem {
-  readonly id: number;
-  readonly year: number;
-  readonly message: string;
-}
-
-const SAVE_STORAGE_KEY = 'under-construction:save';
 const TICK_INTERVAL_MS = 100;
-const OFFLINE_THRESHOLD_MS = 5_000;
-const MAX_OFFLINE_MS = 8 * 60 * 60 * 1_000;
 const AUTOSAVE_INTERVAL_MS = 5_000;
-const SLOW_RENDER_INTERVAL_MS = 250;
-const MAX_NEWS_ITEMS = 14;
-const WIPE_SWAP_DELAY_MS = 700;
-const WIPE_DURATION_MS = 1_600;
-const SEED_RANGE = 2 ** 31;
-const MS_PER_MINUTE = 60_000;
 
-let game: GameState = createInitialGameState(createSeed());
-let shopTab: ShopTab = 'learn';
-let news: readonly NewsItem[] = [];
-let newsCounter = 0;
 let lastTickAt = performance.now();
-let lastSlowRenderAt = 0;
-let renderedEraId = '';
-let endCardShown = false;
-let editor: CodeEditor | null = null;
-let snake: SnakeModal | null = null;
-const signatures = { site: '', popups: '', shop: '', goal: '', news: '', skills: '' };
 
-function createSeed(): number {
-  return Math.floor(Math.random() * SEED_RANGE);
-}
-
-const elements = {
-  app: requireElement<HTMLElement>('#app'),
-  statMoney: requireElement<HTMLElement>('#stat-money'),
-  statVisitors: requireElement<HTMLElement>('#stat-visitors'),
-  statRevenue: requireElement<HTMLElement>('#stat-revenue'),
-  browserTitle: requireElement<HTMLElement>('#browser-title'),
-  browserUrl: requireElement<HTMLElement>('#browser-url'),
-  browserStatus: requireElement<HTMLElement>('#browser-status'),
-  browserPerf: requireElement<HTMLElement>('#browser-perf'),
-  browserStatusbar: requireElement<HTMLElement>('#browser-statusbar'),
-  site: requireElement<HTMLElement>('#site'),
-  popupLayer: requireElement<HTMLElement>('#popup-layer'),
-  eraWipe: requireElement<HTMLElement>('#era-wipe'),
-  shopTabs: requireElement<HTMLElement>('#shop-tabs'),
-  shopBody: requireElement<HTMLElement>('#shop-body'),
-  goalBody: requireElement<HTMLElement>('#goal-body'),
-  newsList: requireElement<HTMLElement>('#news-list'),
-  newsTip: requireElement<HTMLElement>('#news-tip'),
-  storyOverlay: requireElement<HTMLElement>('#story-overlay'),
-  storyCard: requireElement<HTMLElement>('#story-card'),
-  resetOverlay: requireElement<HTMLElement>('#reset-overlay'),
-  endOverlay: requireElement<HTMLElement>('#end-overlay'),
-  endStats: requireElement<HTMLElement>('#end-stats'),
-};
-
-function readSave(): StoredSave | null {
-  try {
-    const raw = window.localStorage.getItem(SAVE_STORAGE_KEY);
-    return raw === null ? null : (JSON.parse(raw) as StoredSave);
-  } catch {
-    return null;
-  }
-}
-
-function writeSave(): void {
-  try {
-    const save: StoredSave = { savedAtMs: Date.now(), game };
-    window.localStorage.setItem(SAVE_STORAGE_KEY, JSON.stringify(save));
-  } catch {
-    // Storage can be blocked (private windows, previews). The game keeps running without saves.
-  }
-}
-
-function clearSave(): void {
-  try {
-    window.localStorage.removeItem(SAVE_STORAGE_KEY);
-  } catch {
-    // Nothing to clear when storage is blocked.
-  }
-}
-
-function pushNews(events: readonly GameEvent[]): void {
-  const year = ERAS_BY_ID[game.eraId].year;
-  const items = events.map<NewsItem>((event) => ({ id: ++newsCounter, year, message: event.message }));
-  news = [...items.reverse(), ...news].slice(0, MAX_NEWS_ITEMS);
-}
-
-function pushMessage(message: string): void {
-  pushNews([{ kind: 'milestone', message }]);
-}
-
-function updateGame(update: (state: GameState) => GameState): void {
-  game = update(game);
-}
-
-function applyStep(step: { readonly state: GameState; readonly events: readonly GameEvent[] }): void {
-  game = step.state;
-  pushNews(step.events);
-}
-
-function catchUpOffline(savedAtMs: number): void {
-  const awayMs = Math.min(Date.now() - savedAtMs, MAX_OFFLINE_MS);
-  if (awayMs < OFFLINE_THRESHOLD_MS) return;
-  const moneyBefore = game.money;
-  applyStep(advanceSimulation(game, awayMs, 'offline'));
-  const earned = game.money - moneyBefore;
-  if (earned > 0) pushMessage(`While you were away (${Math.round(awayMs / MS_PER_MINUTE)} min), your site earned ${formatMoney(earned)}.`);
-}
-
-function restoreGame(hotData: unknown): void {
-  const hotSave = typeof hotData === 'object' && hotData !== null ? (hotData as { save?: unknown }).save : undefined;
-  const fromHot = restoreGameState(hotSave, createSeed());
-  if (fromHot !== null) {
-    game = fromHot;
-    return;
-  }
-  const stored = readSave();
-  const fromStorage = stored === null ? null : restoreGameState(stored.game, createSeed());
-  if (fromStorage === null || stored === null) return;
-  game = fromStorage;
-  catchUpOffline(stored.savedAtMs);
-}
-
-function handleKeystroke(): KeystrokeFeedback {
-  const result = writeCode(game);
-  game = result.state;
-  return { outcome: result.outcome, earned: result.earned };
-}
-
-function readId(target: HTMLElement): string {
-  return target.dataset['id'] ?? '';
-}
-
-function isFeatureId(value: string): value is FeatureId {
-  return (FEATURE_IDS as readonly string[]).includes(value);
-}
-
-function isUpgradeId(value: string): value is UpgradeId {
-  return (UPGRADE_IDS as readonly string[]).includes(value);
-}
-
-function isDefenseId(value: string): value is DefenseId {
-  return (DEFENSE_IDS as readonly string[]).includes(value);
-}
-
-function isShopTab(value: string): value is ShopTab {
-  return (SHOP_TABS as readonly string[]).includes(value);
-}
-
-function showOverlay(overlay: HTMLElement): void {
-  overlay.hidden = false;
-  overlay.querySelector<HTMLElement>('button')?.focus();
-}
-
-function renderStory(): boolean {
-  const nextEraId = ERAS_BY_ID[game.eraId].nextEraId;
-  const story = nextEraId === null ? null : ERA_PRESENTATION[nextEraId].entryStory;
-  if (story === null) return false;
-  elements.storyCard.innerHTML = `<p class="story-year">${escapeHtml(story.yearSpan)}</p>
-    <h2 class="story-heading">${escapeHtml(story.heading)}</h2>
-    ${story.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')}
-    <h3 class="story-subheading">What changes</h3>
-    <ul class="story-list">${story.whatsNew.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
-    <button type="button" class="primary-button" data-action="confirm-migration">${escapeHtml(story.confirmLabel)}</button>`;
-  return true;
-}
-
-function runEraWipe(): void {
-  elements.eraWipe.classList.remove('is-running');
-  void elements.eraWipe.offsetWidth;
-  elements.eraWipe.classList.add('is-running');
-  window.setTimeout(() => {
-    updateGame(advanceEra);
-    pushMessage(`Relaunched as ${ERAS_BY_ID[game.eraId].name}. Your old features got a makeover.`);
-  }, WIPE_SWAP_DELAY_MS);
-  window.setTimeout(() => elements.eraWipe.classList.remove('is-running'), WIPE_DURATION_MS);
-}
-
-function startMigration(): void {
-  if (!isEraGateComplete(game)) return;
-  const isFinalEra = ERAS_BY_ID[game.eraId].nextEraId === null;
-  if (isFinalEra) {
-    updateGame(advanceEra);
-    return;
-  }
-  if (renderStory()) showOverlay(elements.storyOverlay);
-}
-
-function flashMoneyLoss(): void {
-  elements.statMoney.classList.remove('is-loss');
-  void elements.statMoney.offsetWidth;
-  elements.statMoney.classList.add('is-loss');
-}
-
-function fallForScam(popupId: number): void {
-  const copy = findPopupCopy(game, popupId);
-  const result = fallForPopupScam(game, popupId);
-  game = result.state;
-  if (copy === null) return;
-  pushMessage(`${copy.scamOutcome} You lost ${formatMoney(result.moneyLost)}.`);
-  flashMoneyLoss();
-}
-
-function resetGame(): void {
-  clearSave();
-  game = createInitialGameState(createSeed());
-  news = [];
-  endCardShown = false;
-  signatures.skills = '';
-  elements.resetOverlay.hidden = true;
-  elements.endOverlay.hidden = true;
-  renderedEraId = '';
-}
-
-const ACTION_HANDLERS: Readonly<Record<string, (target: HTMLElement) => void>> = {
-  'buy-feature': (target) => {
-    const id = readId(target);
-    if (isFeatureId(id)) updateGame((state) => buyFeature(state, id));
-  },
-  'buy-upgrade': (target) => {
-    const id = readId(target);
-    if (isUpgradeId(id)) updateGame((state) => buyUpgrade(state, id));
-  },
-  'buy-defense': (target) => {
-    const id = readId(target);
-    if (isDefenseId(id)) updateGame((state) => buyDefense(state, id));
-  },
-  'toggle-defense': (target) => {
-    const id = readId(target);
-    if (isDefenseId(id)) updateGame((state) => toggleDefense(state, id));
-  },
-  'place-ad': () => updateGame(placeAd),
-  'toggle-feature': (target) => {
-    const id = readId(target);
-    if (isFeatureId(id)) updateGame((state) => toggleFeature(state, id));
-  },
-  'upgrade-hosting': () => updateGame(upgradeHosting),
-  'remove-ad': () => updateGame(removeAd),
-  'close-popup': (target) => updateGame((state) => closePopup(state, Number(readId(target)))),
-  'accept-popup': (target) => fallForScam(Number(readId(target))),
-  'scrub-infection': (target) => applyStep(scrubInfection(game, Number(readId(target)))),
-  'open-snake': (target) => snake?.open(Number(readId(target))),
-  'close-snake': () => snake?.close(),
-  'retry-snake': () => snake?.retry(),
-  'shop-tab': (target) => {
-    const id = readId(target);
-    if (isShopTab(id)) shopTab = id;
-  },
-  migrate: startMigration,
-  'confirm-migration': () => {
-    elements.storyOverlay.hidden = true;
-    runEraWipe();
-  },
-  'cancel-migration': () => {
-    elements.storyOverlay.hidden = true;
-  },
-  'open-reset': () => showOverlay(elements.resetOverlay),
-  'cancel-reset': () => {
-    elements.resetOverlay.hidden = true;
-  },
-  'confirm-reset': resetGame,
-  'keep-playing': () => {
-    elements.endOverlay.hidden = true;
-  },
-};
-
-function handleClick(event: MouseEvent): void {
-  const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-action]');
-  const action = target?.dataset['action'];
-  if (target === null || target === undefined || action === undefined) return;
-  ACTION_HANDLERS[action]?.(target);
-  renderStructure();
-  renderSlow();
-}
-
-function handleGlobalKeydown(event: KeyboardEvent): void {
-  if (snake?.handleKey(event) === true) return;
-  if (event.key !== 'Escape') return;
-  const topPopup = game.popups[game.popups.length - 1];
-  if (topPopup !== undefined) updateGame((state) => closePopup(state, topPopup.id));
-}
-
+/** The simulation runs on a timer, separate from rendering, so it keeps going in a background tab. */
 function tick(): void {
   const now = performance.now();
   const elapsedMs = Math.min(now - lastTickAt, MAX_OFFLINE_MS);
   lastTickAt = now;
   const mode: SimulationMode = elapsedMs > OFFLINE_THRESHOLD_MS ? 'offline' : 'live';
-  applyStep(advanceSimulation(game, elapsedMs, mode));
-}
-
-function renderEraChrome(): void {
-  if (renderedEraId === game.eraId) return;
-  renderedEraId = game.eraId;
-  const presentation = ERA_PRESENTATION[game.eraId];
-  elements.app.dataset['era'] = String(presentation.year);
-  elements.browserTitle.textContent = presentation.browserTitle;
-  editor?.setEra(game.eraId);
-  setTextIfChanged(requireElement('#snake-title'), presentation.antivirusTitle);
-}
-
-function renderSkillChrome(): void {
-  editor?.setSource(buildEditorSource(game));
-  editor?.setTabs(buildEditorTabs(game));
-  setTextIfChanged(elements.browserUrl, buildSiteUrl(game));
-  setTextIfChanged(elements.browserTitle, buildBrowserTitle(game));
-}
-
-const MIN_RELOAD_MS = 300;
-const MAX_RELOAD_MS = 1_800;
-const RELOAD_MS_PER_SECOND_OF_LOAD = 120;
-let hasRenderedSite = false;
-
-/** After every change the page "reloads": a progress bar runs across the status bar. */
-function playReloadProgress(loadTimeSeconds: number): void {
-  const durationMs = Math.min(MAX_RELOAD_MS, Math.max(MIN_RELOAD_MS, loadTimeSeconds * RELOAD_MS_PER_SECOND_OF_LOAD));
-  elements.browserStatusbar.style.setProperty('--reload-ms', `${durationMs}ms`);
-  elements.browserStatusbar.classList.remove('is-reloading');
-  void elements.browserStatusbar.offsetWidth;
-  elements.browserStatusbar.classList.add('is-reloading');
-}
-
-function renderBrowserStatus(): void {
-  const economy = calculateEconomySnapshot(game);
-  setTextIfChanged(elements.browserStatus, buildStatusText(game, economy));
-  elements.browserStatus.classList.toggle('is-scrolling', isStatusScrolling(game, economy));
-  setTextIfChanged(elements.browserPerf, buildPerformanceReadout(game, economy));
-  elements.browserStatusbar.dataset['performance'] = classifyPerformance(game, economy);
-  editor?.setTitle(buildEditorTitle(game));
-}
-
-function renderNews(): void {
-  const signature = news.map((item) => item.id).join(',');
-  if (signature === signatures.news) return;
-  signatures.news = signature;
-  elements.newsList.innerHTML =
-    news.length === 0
-      ? '<li class="news-empty">Nothing yet. The web is quiet.</li>'
-      : news.map((item) => `<li><span class="news-year">${item.year}</span><span>${escapeHtml(item.message)}</span></li>`).join('');
-}
-
-function renderStructure(): void {
-  renderEraChrome();
-  const skillSignature = `${game.eraId}|${game.purchasedUpgradeIds.length}`;
-  if (skillSignature !== signatures.skills) {
-    signatures.skills = skillSignature;
-    renderSkillChrome();
-  }
-  const siteSignature = calculateSiteSignature(game);
-  if (siteSignature !== signatures.site) {
-    signatures.site = siteSignature;
-    elements.site.innerHTML = renderSite(game, Date.now());
-    if (hasRenderedSite) playReloadProgress(calculateEconomySnapshot(game).loadTimeSeconds);
-    hasRenderedSite = true;
-  }
-  const popupSignature = calculatePopupSignature(game);
-  if (popupSignature !== signatures.popups) {
-    signatures.popups = popupSignature;
-    syncPopups(elements.popupLayer, game);
-  }
-  const shopSignature = calculateShopSignature(game, shopTab);
-  if (shopSignature !== signatures.shop) {
-    signatures.shop = shopSignature;
-    setHtmlIfChanged(elements.shopTabs, renderShopTabs(shopTab));
-    elements.shopBody.innerHTML = renderShopBody(game, shopTab);
-  }
-  const goalSignature = calculateGoalSignature(game);
-  if (goalSignature !== signatures.goal) {
-    signatures.goal = goalSignature;
-    elements.goalBody.innerHTML = renderGoal(game);
-  }
-  setHtmlIfChanged(elements.newsTip, renderTip(game));
-  renderNews();
-  showEndCardOnce();
-}
-
-function showEndCardOnce(): void {
-  if (!game.prototypeComplete || endCardShown) return;
-  endCardShown = true;
-  const minutes = Math.round(game.playTimeMs / MS_PER_MINUTE);
-  elements.endStats.innerHTML = `<li><b>${minutes} min</b> played</li><li><b>${formatWholeNumber(game.lifetimeVisitors)}</b> visitors</li><li><b>${formatMoney(game.lifetimeEarnings)}</b> earned</li><li><b>${formatWholeNumber(game.keystrokes)}</b> keystrokes</li>`;
-  showOverlay(elements.endOverlay);
-}
-
-function renderStats(): void {
-  const economy = calculateEconomySnapshot(game);
-  setTextIfChanged(elements.statMoney, formatMoney(game.money));
-  setTextIfChanged(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
-  setTextIfChanged(elements.statRevenue, `${formatMoney(economy.netRevenuePerSecond)}/s`);
-  editor?.updateRate(economy.keystrokeValue, economy.bugChance);
-}
-
-function renderLiveSiteBits(): void {
-  const nowMs = Date.now();
-  const counter = elements.site.querySelector<HTMLElement>('[data-live="counter"]');
-  const guestbook = elements.site.querySelector<HTMLElement>('[data-live="guestbook"]');
-  const music = elements.site.querySelector<HTMLElement>('[data-live="music"]');
-  const clock = elements.site.querySelector<HTMLElement>('[data-live="js-clock"]');
-  if (clock) setTextIfChanged(clock, renderJavaScriptClock(nowMs, ERAS_BY_ID[game.eraId].year));
-  const lightbox = elements.site.querySelector<HTMLElement>('[data-live="gallery-lightbox"]');
-  if (lightbox) setHtmlIfChanged(lightbox, renderGalleryLightbox(game.featureLevels['photo-gallery'], nowMs));
-  if (counter) setHtmlIfChanged(counter, renderCounterDigits(calculateDisplayedCounter(game)));
-  if (guestbook) setHtmlIfChanged(guestbook, renderGuestbookEntries(game.eraId, game.featureLevels.guestbook, nowMs));
-  if (music) setHtmlIfChanged(music, renderMusicStatus(game.eraId, nowMs));
-  elements.site.querySelectorAll<HTMLElement>('[data-live="virus-timer"]').forEach((timer) => {
-    const virus = findVirus(game, Number(timer.dataset['id']));
-    if (virus !== null) setTextIfChanged(timer, renderVirusTimer(virus));
-  });
+  applyStep(advanceSimulation(store.game, elapsedMs, mode));
 }
 
 function findSnakeTarget(infectionId: number): SnakeTarget | null {
-  const virus = findVirus(game, infectionId);
+  const virus = findVirus(store.game, infectionId);
   if (virus === null) return null;
   return {
     requiredFood: calculateRequiredVirusFood(virus),
-    featureName: getFeatureDisplayName(virus.featureId, game.eraId).toLowerCase(),
+    featureName: getFeatureDisplayName(virus.featureId, store.game.eraId).toLowerCase(),
   };
 }
 
-function renderSlow(): void {
-  renderBrowserStatus();
-  updateGoalProgress(elements.goalBody, game);
-  elements.shopBody.querySelectorAll<HTMLButtonElement>('button[data-cost]').forEach((button) => {
-    button.disabled = game.money < Number(button.dataset['cost']);
-  });
-  SHOP_TABS.forEach((tab) => {
-    const badge = elements.shopTabs.querySelector<HTMLElement>(`[data-tab-badge="${tab}"]`);
-    const count = countAffordable(game, tab);
-    if (badge === null) return;
-    badge.hidden = count === 0 || tab === shopTab;
-    setTextIfChanged(badge, String(count));
-  });
+function isJavaScriptLearnedIn1997(): boolean {
+  return store.game.eraId === 'homepage-1997' && store.game.purchasedUpgradeIds.includes('learn-javascript');
 }
 
-function frame(now: number): void {
-  renderStats();
-  renderStructure();
-  renderLiveSiteBits();
-  if (now - lastSlowRenderAt > SLOW_RENDER_INTERVAL_MS) {
-    lastSlowRenderAt = now;
-    renderSlow();
-  }
-  window.requestAnimationFrame(frame);
+function saveWhenHidden(): void {
+  if (document.visibilityState === 'hidden') writeSave();
 }
 
 function start(hotData: unknown): void {
   restoreGame(hotData);
-  editor = createCodeEditor(
-    {
-      window: requireElement('#editor-window'),
-      surface: requireElement('#editor-surface'),
-      code: requireElement('#editor-code'),
-      floaters: requireElement('#editor-floaters'),
-      prompt: requireElement('#editor-prompt'),
-      title: requireElement('#editor-title'),
-      menu: requireElement('#editor-menu'),
-      tabs: requireElement('#editor-tabs'),
-      position: requireElement('#editor-position'),
-      rate: requireElement('#editor-rate'),
-    },
-    handleKeystroke,
-  );
-  snake = createSnakeModal(
-    {
-      overlay: requireElement('#snake-overlay'),
-      title: requireElement('#snake-title'),
-      brief: requireElement('#snake-brief'),
-      progress: requireElement('#snake-progress'),
-      canvas: requireElement<HTMLCanvasElement>('#snake-canvas'),
-      status: requireElement('#snake-status'),
-      pad: requireElement('#snake-pad'),
-      retry: requireElement('#snake-retry'),
-    },
-    { findTarget: findSnakeTarget, onWin: (infectionId) => applyStep(removeVirus(game, infectionId)) },
-  );
-  installJavaScriptEffects(elements.site, elements.popupLayer, () => game.eraId === 'homepage-1997' && game.purchasedUpgradeIds.includes('learn-javascript'));
-  document.addEventListener('click', handleClick);
-  document.addEventListener('keydown', handleGlobalKeydown);
-  document.addEventListener('visibilitychange', () => (document.visibilityState === 'hidden' ? writeSave() : undefined));
+  const editor = createCodeEditor(editorElements, writeCodeKeystroke);
+  const snake = createSnakeModal(snakeElements, {
+    findTarget: findSnakeTarget,
+    onWin: (infectionId) => applyStep(removeVirus(store.game, infectionId)),
+  });
+  const renderer = createRenderer(editor);
+  installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
+  document.addEventListener('click', createClickHandler(createActionHandlers({ snake, renderer }), renderer));
+  document.addEventListener('keydown', createKeydownHandler(snake));
+  document.addEventListener('visibilitychange', saveWhenHidden);
   window.addEventListener('pagehide', writeSave);
   window.setInterval(tick, TICK_INTERVAL_MS);
   window.setInterval(writeSave, AUTOSAVE_INTERVAL_MS);
-  window.claude?.hot?.snapshot?.(() => ({ save: game }));
-  endCardShown = game.prototypeComplete;
+  window.claude?.hot?.snapshot?.(() => ({ save: store.game }));
   lastTickAt = performance.now();
-  window.requestAnimationFrame(frame);
+  renderer.startFrames();
 }
 
 const hot = window.claude?.hot;

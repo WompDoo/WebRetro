@@ -1,0 +1,19 @@
+/* ---------- One screen: panels scroll, the page doesn't (desktop and tablet; phones scroll the page) ---------- */
+@media (min-width: 781px) and (min-height: 620px) {
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .app { height: 100%; padding-block: 12px; gap: 12px; }
+  .workbench { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
+  .news-panel { display: flex; flex-direction: column; min-height: 0; }
+  .news-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .editor-column { display: flex; flex-direction: column; min-height: 0; }
+  .browser { min-height: 0; }
+  .browser-viewport { flex: 1; height: auto; min-height: 0; }
+  .shop { position: static; max-height: none; min-height: 0; overflow: hidden; }
+  .shop-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+}
+@media (min-width: 781px) and (max-width: 1220px) and (min-height: 620px) {
+  .workbench { grid-template-rows: auto minmax(0, 1fr) minmax(0, 120px); }
+  .editor-surface { height: 150px; }
+  .news-panel .panel-header, .news-panel .save-row { display: none; }
+}

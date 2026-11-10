@@ -1,0 +1,71 @@
+/* Layout: a workbench. Top bar: brand, the next-era objective (directly above the browser) and your stats. Left: code editor and news. Middle: the browser window with your site, as tall as the screen allows. Right: the shop. */
+:root {
+  --paper: #ECEFF7;
+  --paper-grid: rgba(27, 34, 64, 0.06);
+  --panel: #FFFFFF;
+  --panel-sunken: #F3F5FB;
+  --ink: #1B2240;
+  --ink-soft: #565F82;
+  --line: #1B2240;
+  --line-soft: rgba(27, 34, 64, 0.18);
+  --shadow: #1B2240;
+  --link: #1E40E6;
+  --on-link: #FFFFFF;
+  --visited: #6A2DB8;
+  --money: #0F7A3E;
+  --hazard: #C92A35;
+  --caution: #FFC83A;
+  --caution-deep: #F2A900;
+  --on-caution: #1B2240;
+  --focus: #FF8A00;
+  --scrim: rgba(12, 16, 34, 0.6);
+  --font-display: 'Pixelify Sans', 'Courier New', monospace;
+  --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', 'Courier New', monospace;
+  --font-numbers: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+  --radius: 6px;
+  --lift: 4px 4px 0 var(--shadow);
+  --lift-small: 2px 2px 0 var(--shadow);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10152A; --paper-grid: rgba(228, 232, 250, 0.045); --panel: #1A2039; --panel-sunken: #141A31;
+    --ink: #E4E8FA; --ink-soft: #A3AACB; --line: #4A5482; --line-soft: rgba(228, 232, 250, 0.16); --shadow: #05070F;
+    --link: #8299FF; --on-link: #0C1130; --visited: #BC92F5; --money: #4ECB88; --hazard: #FF6A74;
+    --caution: #FFD25A; --caution-deep: #F2B320; --on-caution: #1B2240; --focus: #FFB547; --scrim: rgba(3, 5, 12, 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10152A; --paper-grid: rgba(228, 232, 250, 0.045); --panel: #1A2039; --panel-sunken: #141A31;
+  --ink: #E4E8FA; --ink-soft: #A3AACB; --line: #4A5482; --line-soft: rgba(228, 232, 250, 0.16); --shadow: #05070F;
+  --link: #8299FF; --on-link: #0C1130; --visited: #BC92F5; --money: #4ECB88; --hazard: #FF6A74;
+  --caution: #FFD25A; --caution-deep: #F2B320; --on-caution: #1B2240; --focus: #FFB547; --scrim: rgba(3, 5, 12, 0.7);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--paper-grid) 1px, transparent 1px), linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.app {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding-block: 16px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}

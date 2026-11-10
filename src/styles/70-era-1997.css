@@ -1,0 +1,113 @@
+/* ---------- The 1997 site: starts as a bare browser-default Hello World, grows with every skill ---------- */
+.site-1997 {
+  --s97-bg: #FFFFFF; --s97-text: #000000; --s97-heading: #000000; --s97-link: #0000EE; --s97-name: #551A8B;
+  --s97-muted: #555555; --s97-accent: #AA00AA; --s97-box: #FFFFFF; --s97-nav: #E4E4E4; --s97-rule: #9A9A9A;
+  min-height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 10px 14px 28px;
+  background-color: var(--s97-bg); color: var(--s97-text); font-family: 'Times New Roman', Tinos, Times, serif; font-size: 16px; text-align: left;
+}
+.site-1997.has-font { align-items: center; text-align: center; --s97-heading: #CC0000; --s97-name: #0000CC; }
+.site-1997.has-background {
+  --s97-bg: #000020; --s97-text: #F0F0F0; --s97-heading: #FFFF00; --s97-link: #FFFF00; --s97-name: #00FFFF;
+  --s97-muted: #C0C0C0; --s97-accent: #FF66FF; --s97-box: #000066; --s97-nav: #000080; --s97-rule: #808080;
+  background-image:
+    radial-gradient(1.5px 1.5px at 14px 20px, #FFFFFF 50%, transparent 51%),
+    radial-gradient(1px 1px at 66px 44px, #FFFFCC 50%, transparent 51%),
+    radial-gradient(1px 1px at 100px 92px, #FFFFFF 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 32px 106px, #CCE0FF 50%, transparent 51%),
+    radial-gradient(1px 1px at 86px 10px, #FFFFFF 50%, transparent 51%);
+  background-size: 120px 120px;
+}
+.site-1997 .site-title { margin: 0; font-size: 32px; font-weight: 700; line-height: 1.15; }
+.site-1997.has-font .site-title {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive; font-size: clamp(22px, 6.5cqi, 36px);
+  background: linear-gradient(90deg, #FF3B3B, #FFB300, #E6D600, #2ECC00, #00B8E6, #3D7BFF, #E040FB);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.site-1997 .site-intro { margin: 0; max-width: 520px; color: var(--s97-heading); }
+.site-1997 .blink { color: #FF2020; font-weight: 700; animation: blink 1s steps(1) infinite; }
+.site-1997 .site-marquee { width: 100%; max-width: 540px; overflow: hidden; white-space: nowrap; color: var(--s97-heading); font-weight: 700; }
+.site-1997 .site-marquee span { display: inline-block; padding-left: 100%; animation: marquee 14s linear infinite; }
+@keyframes marquee { to { transform: translateX(-100%); } }
+.site-1997 .feature-block { position: relative; width: 100%; max-width: 540px; min-height: 56px; }
+.site-1997.is-table-layout .feature-block { padding: 10px; border: 4px ridge #C0C0C0; background: var(--s97-box); }
+.site-1997 .feature-heading { margin: 0 0 8px; font-size: 22px; color: var(--s97-heading); }
+.site-1997.has-font .feature-heading { text-decoration: underline; }
+.site-1997 hr.rainbow { width: 70%; max-width: 420px; margin: 0; border: 0; border-top: 2px groove var(--s97-rule); }
+.site-1997.has-font hr.rainbow { height: 4px; border: 0; background: linear-gradient(90deg, #FF0000, #FF9900, #FFFF00, #33FF00, #00FFFF, #3366FF, #FF00FF); }
+.site-1997.has-font hr.rainbow { align-self: center; }
+.site-1997 .site-footer { margin: 0; font-size: 12px; color: var(--s97-muted); }
+.site-1997 .fake-link { color: var(--s97-link); text-decoration: underline; }
+.site-1997 .counter-label { margin: 0 0 6px; }
+.site-1997.has-font .counter-label { font-family: 'Comic Sans MS', 'Comic Neue', cursive; }
+.site-1997 .counter { display: inline-flex; gap: 2px; padding: 3px; background: #333333; border: 2px inset #808080; }
+.site-1997 .counter-digit { min-width: 1.1ch; padding: 1px 4px; background: #000000; color: #39FF14; font-family: 'Courier New', monospace; font-weight: 700; font-size: 20px; }
+.construction-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.site-1997:not(.has-font) .construction-row { justify-content: flex-start; }
+.site-1997 .construction-sign { padding: 5px; background: repeating-linear-gradient(-45deg, #FFD400 0 10px, #111111 10px 20px); background-size: 28.28px 28.28px; animation: stripes 1s linear infinite; }
+@keyframes stripes { to { background-position: 28.28px 0; } }
+.site-1997 .construction-sign span { display: block; padding: 4px 10px; background: #FFD400; color: #111111; font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; font-size: 13px; letter-spacing: 0.04em; }
+.guestbook-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; text-align: left; }
+.site-1997 .guestbook-entry { padding: 3px 6px; border-bottom: 1px dashed var(--s97-rule); font-size: 14px; }
+.site-1997.has-font .guestbook-entry { font-family: 'Comic Sans MS', 'Comic Neue', cursive; }
+.site-1997 .guestbook-entry b { color: var(--s97-name); }
+.music-player { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; font-size: 12px; max-width: 100%; }
+.music-status { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+.music-eq i { width: 3px; height: 100%; animation: equalizer 0.9s ease-in-out infinite alternate; transform-origin: bottom; }
+.music-eq i:nth-child(2) { animation-delay: -0.3s; } .music-eq i:nth-child(3) { animation-delay: -0.6s; } .music-eq i:nth-child(4) { animation-delay: -0.15s; } .music-eq i:nth-child(5) { animation-delay: -0.45s; }
+@keyframes equalizer { from { transform: scaleY(0.25); } to { transform: scaleY(1); } }
+.music-note { margin: 6px 0 0; font-size: 12px; }
+.site-1997 .music-player { background: #C0C0C0; color: #000000; border: 2px outset #E0E0E0; font-family: Arial, sans-serif; }
+.site-1997 .music-eq i { background: #008000; }
+.site-1997 .music-note { color: var(--s97-muted); }
+.site-1997 .webring-intro, .site-1997 .webring-count { margin: 0; font-size: 13px; color: var(--s97-muted); }
+.site-1997 .webring-name { margin: 4px 0; font-size: 19px; font-weight: 700; color: var(--s97-accent); }
+.site-1997 .webring-nav { margin: 0 0 4px; }
+.banner-ad {
+  width: 100%; max-width: 468px; aspect-ratio: 468 / 60; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px;
+  border: 3px outset #D0D0D0; font-family: Impact, 'Arial Black', Arial, sans-serif; text-transform: uppercase;
+}
+.banner-headline { text-align: left; line-height: 1.1; font-size: clamp(11px, 3.4cqi, 17px); }
+.banner-cta { flex: none; padding: 3px 8px; background: #0000EE; color: #FFFFFF; font-family: Arial, sans-serif; font-weight: 700; font-size: 11px; animation: blink 1s steps(1) infinite; }
+.banner-ad--0 { background: linear-gradient(#FFFF33, #FF9900); color: #CC0000; }
+.banner-ad--1 { background: linear-gradient(#3366FF, #000099); color: #FFFFFF; }
+.banner-ad--2 { background: linear-gradient(#66FF66, #009900); color: #000000; }
+.banner-ad--3 { background: linear-gradient(#FF66FF, #990099); color: #FFFF00; }
+
+/* ---------- 1997 table layout (after "Learn <TABLE> layouts") ---------- */
+.site-1997.is-table-layout { align-items: stretch; }
+.t97-header { display: grid; justify-items: center; gap: 8px; }
+.site-1997:not(.has-font) .t97-header { justify-items: start; }
+.t97-table { width: 100%; max-width: 780px; align-self: center; display: grid; grid-template-columns: 180px minmax(0, 1fr); border: 3px outset #C0C0C0; background: var(--s97-bg); text-align: left; }
+.t97-nav { display: flex; flex-direction: column; gap: 10px; padding: 10px; background: var(--s97-nav); border-right: 3px ridge #C0C0C0; }
+.t97-nav-title { margin: 0; text-align: center; color: var(--s97-accent); font-weight: 700; }
+.site-1997.has-font .t97-nav-title { font-family: 'Comic Sans MS', 'Comic Neue', cursive; }
+.t97-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.t97-links li::before { content: "» "; color: var(--s97-name); }
+.t97-main { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px; }
+.site-1997 .t97-nav .feature-block, .site-1997 .t97-main .feature-block { max-width: none; text-align: center; }
+.t97-nav .feature-block { padding: 8px; }
+.t97-nav .counter-digit { font-size: 15px !important; padding: 1px 3px !important; }
+.t97-nav .webring-name { font-size: 15px !important; }
+.t97-nav .music-player { width: 100%; flex-wrap: wrap; justify-content: center; row-gap: 2px; }
+.t97-nav .music-status { white-space: normal; text-align: center; }
+.t97-nav .music-note { font-size: 11px; }
+.t97-about .site-intro { margin: 0; }
+@container (max-width: 540px) {
+  .t97-table { grid-template-columns: minmax(0, 1fr); }
+  .t97-nav { border-right: 0; border-bottom: 3px ridge #C0C0C0; }
+  .t97-links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---------- 1997 JavaScript: clock, sparkle trail, right-click scolding, scrolling status bar ---------- */
+.site-1997 .js-clock { margin: 0; font-family: 'Courier New', monospace; font-size: 13px; color: var(--s97-name); }
+.site { position: relative; }
+.js-sparkle { position: absolute; z-index: 3; pointer-events: none; font-size: 14px; transform: translate(-50%, -50%); animation: sparkle-fall 700ms ease-out forwards; }
+@keyframes sparkle-fall { to { opacity: 0; transform: translate(-50%, 10px) scale(0.4); } }
+.has-javascript .t97-links li { transition: transform 150ms; }
+.has-javascript .t97-links li:hover { transform: translateX(6px); }
+.js-scold { position: absolute; left: 50%; top: 40%; z-index: 7; width: min(300px, 86%); transform: translate(-50%, -50%); pointer-events: none;
+  background: #C0C0C0; border: 2px outset #FFFFFF; box-shadow: 3px 3px 0 #000000; color: #000000; font-family: Arial, sans-serif; font-size: 13px; animation: popup-in 160ms ease-out; }
+.js-scold-title { padding: 3px 8px; background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; font-weight: 700; font-size: 12px; }
+.js-scold p { margin: 0; padding: 12px; }
+.browser-status-text.is-scrolling { display: inline-block; padding-left: 100%; overflow: visible; text-overflow: clip; animation: marquee 12s linear infinite; }
