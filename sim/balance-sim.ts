@@ -26,6 +26,11 @@ import {
   formatMoney,
   getFeatureIdsOfEra,
   getAvailableSkillIds,
+  getNextHostingTier,
+  upgradeHosting,
+  canUpgradeHosting,
+  calculateLoadTimeSeconds,
+  calculateServerLoad,
   getRevealedBoostIds,
   canUseAds,
   isFeatureBuildable,
@@ -148,7 +153,11 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
           return { label: `defense:${defenseId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyDefense(current, defenseId), valueCost: cost, valueApply: apply };
         })
     : [];
-  return [...features, ...skills, ...boosts, ...ads, ...defenses];
+  const nextTier = getNextHostingTier(state);
+  const hosting: PurchaseOption[] = nextTier === null
+    ? []
+    : [{ label: `hosting:${nextTier.id}`, cost: nextTier.cost, isRequiredForGate: false, apply: upgradeHosting, canApply: canUpgradeHosting, valueCost: nextTier.cost, valueApply: upgradeHosting }];
+  return [...features, ...skills, ...boosts, ...ads, ...defenses, ...hosting];
 }
 
 function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
@@ -247,7 +256,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
           `${formatCompactNumber(calculateVisitorsPerSecond(state))} visitors/s · ` +
           `${formatMoney(calculateNetRevenuePerSecond(state))}/s · ads ${state.adCount} · ` +
-          `upgrades ${state.purchasedUpgradeIds.length}`,
+          `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
       );
       state = advanceEra(state);
       eraStartedAt = now;

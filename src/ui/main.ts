@@ -24,6 +24,7 @@ import {
   restoreGameState,
   scrubInfection,
   toggleDefense,
+  upgradeHosting,
   UPGRADE_IDS,
   writeCode,
 } from '../engine';
@@ -36,7 +37,9 @@ import { calculateGoalSignature, renderGoal, updateGoalProgress } from './render
 import { calculatePopupSignature, findPopupCopy, syncPopups } from './render-popups';
 import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
 import type { ShopTab } from './render-shop';
-import { calculateDisplayedCounter, calculateSiteSignature, renderCounterDigits, renderGuestbookEntries, renderMusicStatus, renderSite, renderVirusTimer } from './render-site';
+import { calculateDisplayedCounter, calculateSiteSignature, renderCounterDigits, renderGalleryLightbox, renderGuestbookEntries, renderJavaScriptClock, renderMusicStatus, renderSite, renderVirusTimer } from './render-site';
+import { buildBrowserTitle, buildEditorTabs, buildEditorTitle, buildPerformanceReadout, buildSiteUrl, buildStatusText, classifyPerformance, isStatusScrolling } from './browser-chrome';
+import { installJavaScriptEffects } from './javascript-effects';
 import { buildEditorSource } from './skill-code';
 import { createSnakeModal } from './snake-modal';
 import type { SnakeModal, SnakeTarget } from './snake-modal';
@@ -101,6 +104,8 @@ const elements = {
   browserTitle: requireElement<HTMLElement>('#browser-title'),
   browserUrl: requireElement<HTMLElement>('#browser-url'),
   browserStatus: requireElement<HTMLElement>('#browser-status'),
+  browserPerf: requireElement<HTMLElement>('#browser-perf'),
+  browserStatusbar: requireElement<HTMLElement>('#browser-statusbar'),
   site: requireElement<HTMLElement>('#site'),
   popupLayer: requireElement<HTMLElement>('#popup-layer'),
   eraWipe: requireElement<HTMLElement>('#era-wipe'),
@@ -292,6 +297,7 @@ const ACTION_HANDLERS: Readonly<Record<string, (target: HTMLElement) => void>> =
     if (isDefenseId(id)) updateGame((state) => toggleDefense(state, id));
   },
   'place-ad': () => updateGame(placeAd),
+  'upgrade-hosting': () => updateGame(upgradeHosting),
   'remove-ad': () => updateGame(removeAd),
   'close-popup': (target) => updateGame((state) => closePopup(state, Number(readId(target)))),
   'accept-popup': (target) => fallForScam(Number(readId(target))),
@@ -352,18 +358,38 @@ function renderEraChrome(): void {
   elements.app.dataset['era'] = String(presentation.year);
   elements.eraBadge.textContent = presentation.badge;
   elements.browserTitle.textContent = presentation.browserTitle;
-  elements.browserUrl.textContent = presentation.siteUrl;
-  elements.browserStatus.textContent = presentation.browserStatus;
   editor?.setEra(game.eraId);
   setTextIfChanged(requireElement('#snake-title'), presentation.antivirusTitle);
 }
 
-const JAVASCRIPT_STATUS_TEXT = 'Welcome to my homepage!!! *** Welcome!!! *** Please sign my guestbook!!!';
-
 function renderSkillChrome(): void {
   editor?.setSource(buildEditorSource(game));
-  const knowsJavaScript = game.eraId === 'homepage-1997' && game.purchasedUpgradeIds.includes('learn-javascript');
-  setTextIfChanged(elements.browserStatus, knowsJavaScript ? JAVASCRIPT_STATUS_TEXT : ERA_PRESENTATION[game.eraId].browserStatus);
+  editor?.setTabs(buildEditorTabs(game));
+  setTextIfChanged(elements.browserUrl, buildSiteUrl(game));
+  setTextIfChanged(elements.browserTitle, buildBrowserTitle(game));
+}
+
+const MIN_RELOAD_MS = 300;
+const MAX_RELOAD_MS = 1_800;
+const RELOAD_MS_PER_SECOND_OF_LOAD = 120;
+let hasRenderedSite = false;
+
+/** After every change the page "reloads": a progress bar runs across the status bar. */
+function playReloadProgress(loadTimeSeconds: number): void {
+  const durationMs = Math.min(MAX_RELOAD_MS, Math.max(MIN_RELOAD_MS, loadTimeSeconds * RELOAD_MS_PER_SECOND_OF_LOAD));
+  elements.browserStatusbar.style.setProperty('--reload-ms', `${durationMs}ms`);
+  elements.browserStatusbar.classList.remove('is-reloading');
+  void elements.browserStatusbar.offsetWidth;
+  elements.browserStatusbar.classList.add('is-reloading');
+}
+
+function renderBrowserStatus(): void {
+  const economy = calculateEconomySnapshot(game);
+  setTextIfChanged(elements.browserStatus, buildStatusText(game, economy));
+  elements.browserStatus.classList.toggle('is-scrolling', isStatusScrolling(game, economy));
+  setTextIfChanged(elements.browserPerf, buildPerformanceReadout(game, economy));
+  elements.browserStatusbar.dataset['performance'] = classifyPerformance(game, economy);
+  editor?.setTitle(buildEditorTitle(game));
 }
 
 function renderNews(): void {
@@ -387,6 +413,8 @@ function renderStructure(): void {
   if (siteSignature !== signatures.site) {
     signatures.site = siteSignature;
     elements.site.innerHTML = renderSite(game, Date.now());
+    if (hasRenderedSite) playReloadProgress(calculateEconomySnapshot(game).loadTimeSeconds);
+    hasRenderedSite = true;
   }
   const popupSignature = calculatePopupSignature(game);
   if (popupSignature !== signatures.popups) {
@@ -429,6 +457,10 @@ function renderLiveSiteBits(): void {
   const counter = elements.site.querySelector<HTMLElement>('[data-live="counter"]');
   const guestbook = elements.site.querySelector<HTMLElement>('[data-live="guestbook"]');
   const music = elements.site.querySelector<HTMLElement>('[data-live="music"]');
+  const clock = elements.site.querySelector<HTMLElement>('[data-live="js-clock"]');
+  if (clock) setTextIfChanged(clock, renderJavaScriptClock(nowMs, ERAS_BY_ID[game.eraId].year));
+  const lightbox = elements.site.querySelector<HTMLElement>('[data-live="gallery-lightbox"]');
+  if (lightbox) setHtmlIfChanged(lightbox, renderGalleryLightbox(game.featureLevels['photo-gallery'], nowMs));
   if (counter) setHtmlIfChanged(counter, renderCounterDigits(calculateDisplayedCounter(game)));
   if (guestbook) setHtmlIfChanged(guestbook, renderGuestbookEntries(game.eraId, game.featureLevels.guestbook, nowMs));
   if (music) setHtmlIfChanged(music, renderMusicStatus(game.eraId, nowMs));
@@ -448,6 +480,7 @@ function findSnakeTarget(infectionId: number): SnakeTarget | null {
 }
 
 function renderSlow(): void {
+  renderBrowserStatus();
   updateGoalProgress(elements.goalBody, game);
   elements.shopBody.querySelectorAll<HTMLButtonElement>('button[data-cost]').forEach((button) => {
     button.disabled = game.money < Number(button.dataset['cost']);
@@ -502,6 +535,7 @@ function start(hotData: unknown): void {
     },
     { findTarget: findSnakeTarget, onWin: (infectionId) => applyStep(removeVirus(game, infectionId)) },
   );
+  installJavaScriptEffects(elements.site, elements.popupLayer, () => game.eraId === 'homepage-1997' && game.purchasedUpgradeIds.includes('learn-javascript'));
   document.addEventListener('click', handleClick);
   document.addEventListener('keydown', handleGlobalKeydown);
   document.addEventListener('visibilitychange', () => (document.visibilityState === 'hidden' ? writeSave() : undefined));

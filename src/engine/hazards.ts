@@ -5,8 +5,11 @@ import {
   MIN_VIRUS_FOOD,
   POPUP_FREQUENCY_PER_EXTRA_AD,
   SPAM_CLEAN_CLICKS,
+  SQL_INJECTION_RESTORE_CLICKS,
+  TRAFFIC_SPIKE_DURATION_MS,
   VIRUS_FOOD_STEP_MS,
 } from './constants';
+import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
 import { getEnabledDefenses, isFeatureInfected } from './economy';
 import { drawRandoms, interpolateRange } from './random';
@@ -18,7 +21,7 @@ import type {
   HazardKind,
   Infection,
   InfectionKind,
-  SpamInfection,
+  ClickInfection,
   VirusInfection,
 } from './types';
 
@@ -58,8 +61,19 @@ function createVirus(id: number, featureId: FeatureId): VirusInfection {
   return { id, kind: 'virus', featureId, ageMs: 0 };
 }
 
-function createSpam(id: number): SpamInfection {
+function createSpam(id: number): ClickInfection {
   return { id, kind: 'spam', featureId: 'comments', cleanClicksRemaining: SPAM_CLEAN_CLICKS, ageMs: 0 };
+}
+
+function createSqlInjection(id: number, featureId: FeatureId): ClickInfection {
+  return { id, kind: 'sql-injection', featureId, cleanClicksRemaining: SQL_INJECTION_RESTORE_CLICKS, ageMs: 0 };
+}
+
+/** Anything backed by the database can have its table dropped. */
+const DATABASE_FEATURES: readonly FeatureId[] = ['blog', 'comments', 'forum'];
+
+function findSqlTargets(state: GameState): readonly FeatureId[] {
+  return DATABASE_FEATURES.filter((featureId) => state.featureLevels[featureId] > 0 && !isFeatureInfected(state, featureId));
 }
 
 /** How many pieces of food the snake must eat to remove this virus right now. */
@@ -130,7 +144,37 @@ const SPAM_RULE: HazardRule = {
   }),
 };
 
-const HAZARD_RULES: readonly HazardRule[] = [POPUP_RULE, VIRUS_RULE, SPAM_RULE];
+const SQL_INJECTION_RULE: HazardRule = {
+  kind: 'sql-injection',
+  intervalRangeMs: [80_000, 160_000],
+  isActive: (state) =>
+    !state.purchasedUpgradeIds.includes('prepared-statements') &&
+    countInfections(state, 'sql-injection') === 0 &&
+    findSqlTargets(state).length > 0,
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state, rolls, entityId) => {
+    const targets = findSqlTargets(state);
+    const featureId = targets[Math.floor(rollAt(rolls, 0) * targets.length)] ?? 'blog';
+    const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
+    return {
+      state: addInfection(state, createSqlInjection(entityId, featureId)),
+      events: hazardEvent(`Someone typed '; DROP TABLE into a form. Your ${featureName} is broken until you restore it from a backup.`),
+    };
+  },
+};
+
+const TRAFFIC_SPIKE_RULE: HazardRule = {
+  kind: 'traffic-spike',
+  intervalRangeMs: [150_000, 300_000],
+  isActive: (state) => ERAS_BY_ID[state.eraId].hasServerLoad && state.featureLevels.blog > 0 && state.trafficSpikeRemainingMs <= 0,
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state) => ({
+    state: { ...state, trafficSpikeRemainingMs: TRAFFIC_SPIKE_DURATION_MS },
+    events: hazardEvent('Your blog post hit the front page of a link-sharing site! Five times the visitors for 45 seconds. Hope your server can take it.'),
+  }),
+};
+
+const HAZARD_RULES: readonly HazardRule[] = [POPUP_RULE, VIRUS_RULE, SPAM_RULE, SQL_INJECTION_RULE, TRAFFIC_SPIKE_RULE];
 
 export function isHazardPrevented(state: GameState, kind: HazardKind): boolean {
   return getEnabledDefenses(state).some(
@@ -185,7 +229,8 @@ function mergeSteps(previous: GameStep, next: GameStep): GameStep {
 
 /** Hazards only tick while the player is watching. Offline progress never spawns them. */
 export function advanceHazards(state: GameState, deltaMs: number): GameStep {
-  const cleaned = ageAndAutoCleanInfections(state, deltaMs);
+  const spikeTicked = { ...state, trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs) };
+  const cleaned = ageAndAutoCleanInfections(spikeTicked, deltaMs);
   return HAZARD_RULES.reduce<GameStep>(
     (step, rule) => mergeSteps(step, tickHazardRule(step.state, rule, deltaMs)),
     cleaned,

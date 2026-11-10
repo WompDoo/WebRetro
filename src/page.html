@@ -656,6 +656,118 @@ button { font: inherit; color: inherit; }
 .stat dd.is-loss { animation: money-loss 900ms ease-out; }
 @keyframes money-loss { 0%, 35% { color: var(--hazard); transform: translateX(-3px); } 20% { transform: translateX(3px); } 100% { transform: none; } }
 
+/* ---------- Status bar: load time, page weight, server load, reload progress ---------- */
+.browser-statusbar { position: relative; display: flex; justify-content: space-between; gap: 12px; align-items: center; overflow: hidden; white-space: nowrap; }
+.browser-status-text { overflow: hidden; text-overflow: ellipsis; }
+.browser-perf { flex: none; font-variant-numeric: tabular-nums; }
+.browser-statusbar[data-performance="slow"] .browser-perf, .browser-statusbar[data-performance="overloaded"] .browser-perf { color: #B45309; font-weight: 700; }
+.browser-statusbar[data-performance="down"] { color: #B91C1C; font-weight: 700; }
+.browser-progress { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: #1E40E6; opacity: 0; }
+.browser-statusbar.is-reloading .browser-progress { animation: page-reload var(--reload-ms, 600ms) ease-out forwards; }
+@keyframes page-reload { 0% { width: 0; opacity: 1; } 90% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
+.level-chip.is-hot { border-color: var(--hazard); color: var(--hazard); }
+
+/* ---------- 503 page ---------- */
+.site-down { min-height: 100%; padding: 16px 20px; background: #FFFFFF; color: #000000; font-family: 'Times New Roman', Tinos, Times, serif; font-size: 16px; }
+.site-down h1 { margin: 0 0 12px; font-size: 28px; }
+.site-down p { margin: 0 0 12px; max-width: 560px; }
+.site-down hr { border: 0; border-top: 1px solid #000000; }
+.site-down address { font-style: italic; }
+
+/* ---------- Forum ---------- */
+.forum-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+.forum-table th { padding: 4px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.forum-table td { padding: 5px 6px; border-top: 1px solid rgba(128, 128, 128, 0.35); }
+.forum-table td + td, .forum-table th + th { width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+.site-2005 .forum-table th { background: #E8EEF5; color: #336699; }
+.site-2005.is-glossy .forum-table th { background: #EEF5E3; color: #3F6E12; }
+.site-1997 .forum-table th { color: var(--s97-heading); }
+.forum-note { margin: 6px 0 0; font-size: 11px; opacity: 0.75; }
+
+/* ---------- Flash intro ---------- */
+.flash-intro { display: grid; gap: 6px; }
+.flash-stage { position: relative; height: 120px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(circle at 30% 40%, #3B5BDB, #0B1340 70%); border: 1px solid #000000; }
+.flash-logo { position: relative; z-index: 1; color: #FFFFFF; font-family: 'Arial Black', Arial, sans-serif; font-size: 26px; letter-spacing: -1px; text-shadow: 0 0 12px #8FB0FF; animation: flash-logo 4s ease-in-out infinite; }
+.flash-swoosh { position: absolute; inset: 40% -20%; height: 18px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent); transform: rotate(-12deg); animation: flash-swoosh 2.4s linear infinite; }
+@keyframes flash-logo { 0% { transform: scale(0.3) rotate(-20deg); opacity: 0; } 30% { transform: scale(1.15) rotate(4deg); opacity: 1; } 45%, 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes flash-swoosh { from { transform: translateX(-70%) rotate(-12deg); } to { transform: translateX(70%) rotate(-12deg); } }
+.flash-bar { height: 8px; border: 1px solid #555555; background: #FFFFFF; }
+.flash-bar span { display: block; height: 100%; width: 0; background: #FF6A00; animation: progress-crawl 8s linear infinite; }
+.flash-caption, .flash-note { margin: 0; font-size: 12px; }
+.flash-note { opacity: 0.7; }
+
+/* ---------- Photo gallery with lightbox ---------- */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 6px; }
+.thumb { display: block; aspect-ratio: 1; border: 2px solid #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+.thumb--0 { background: linear-gradient(#FFB86B 0 55%, #2E5E8C 55%); }
+.thumb--1 { background: radial-gradient(circle at 70% 30%, #FFF6A8 0 12%, transparent 13%), linear-gradient(#7CC4FF, #2E7D32 60%); }
+.thumb--2 { background: linear-gradient(135deg, #8E9EAB, #EEF2F3); }
+.thumb--3 { background: radial-gradient(circle at 50% 60%, #6D4C41 0 22%, transparent 23%), linear-gradient(#F5E6CA, #E0C9A6); }
+.thumb--4 { background: linear-gradient(#1A237E, #000000 70%), #000000; }
+.thumb--5 { background: repeating-linear-gradient(90deg, #C62828 0 10px, #FFEBEE 10px 20px); }
+.lightbox { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; align-content: center; gap: 6px; background: rgba(0, 0, 0, 0.82); animation: lightbox-in 300ms ease-out; }
+.thumb.is-large { width: min(70%, 220px); border-width: 6px; }
+.lightbox-caption { color: #FFFFFF; font-size: 11px; font-family: Verdana, sans-serif; }
+@keyframes lightbox-in { from { opacity: 0; } }
+
+/* ---------- Map mashup ---------- */
+.map { position: relative; height: 150px; overflow: hidden; border: 1px solid #A9B8A0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.55) 2px, transparent 2px) 0 0 / 40px 40px,
+    linear-gradient(rgba(255, 255, 255, 0.55) 2px, transparent 2px) 0 0 / 40px 40px,
+    radial-gradient(ellipse at 80% 20%, #A7D3F2 0 25%, transparent 26%),
+    linear-gradient(160deg, #DDE8C8, #C9DDB0);
+}
+.map-pin { position: absolute; width: 14px; height: 14px; border-radius: 50% 50% 50% 0; background: #E53935; transform: rotate(-45deg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.map-bubble { position: absolute; left: 10px; bottom: 10px; padding: 4px 8px; background: #FFFFFF; border: 1px solid #999999; border-radius: 4px; font-size: 11px; color: #333333; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.map-note { margin: 6px 0 0; font-size: 11px; opacity: 0.75; }
+
+/* ---------- AJAX comments: spinner and the yellow fade ---------- */
+.comment-loading { display: flex; align-items: center; gap: 6px; font-size: 11px; opacity: 0.75; }
+.spinner { width: 12px; height: 12px; border: 2px solid rgba(128, 128, 128, 0.35); border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.comment-list .comment:first-child { animation: yellow-fade 7s ease-out infinite; }
+@keyframes yellow-fade { 0% { background: #FFF59D; } 30%, 100% { background: transparent; } }
+
+/* ---------- SQL injection ---------- */
+.infection[data-kind="sql-injection"] { align-items: flex-start; justify-content: flex-start; gap: 6px; padding: 10px; background: #FFFFFF; color: #000000; border: 2px solid #B91C1C; font-family: 'Times New Roman', Tinos, Times, serif; text-align: left; }
+.infection-error { font-size: 12.5px; line-height: 1.35; }
+.infection-sql { font-family: 'Courier New', monospace; font-size: 12px; color: #B91C1C; }
+.infection[data-kind="sql-injection"] .infection-hint { font-family: Verdana, sans-serif; font-weight: 700; }
+
+/* ---------- IE6, glitter and badges ---------- */
+.needs-ie6-fix .avatar, .needs-ie6-fix .map-pin { box-shadow: 0 0 0 5px #BDBDBD; }
+.needs-ie6-fix.is-glossy .w2-beta { background: #BDBDBD; }
+.has-glitter .w2-sidebar .feature-heading {
+  background-image: linear-gradient(90deg, #FF4FD8, #FFD700, #7CF7FF, #FF4FD8); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: glitter 2s linear infinite;
+}
+@keyframes glitter { to { background-position: 200% 0; } }
+.w2-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 0 0 8px; }
+.badge-80x15 { display: inline-block; width: 80px; height: 15px; overflow: hidden; border: 1px solid #666666; background: linear-gradient(90deg, #FF9900 0 30%, #FFFFFF 30%); color: #000000; font: 700 8px/13px Verdana, sans-serif; text-align: right; padding-right: 3px; white-space: nowrap; }
+
+/* ---------- 1997 JavaScript: clock, sparkle trail, right-click scolding, scrolling status bar ---------- */
+.site-1997 .js-clock { margin: 0; font-family: 'Courier New', monospace; font-size: 13px; color: var(--s97-name); }
+.site { position: relative; }
+.js-sparkle { position: absolute; z-index: 3; pointer-events: none; font-size: 14px; transform: translate(-50%, -50%); animation: sparkle-fall 700ms ease-out forwards; }
+@keyframes sparkle-fall { to { opacity: 0; transform: translate(-50%, 10px) scale(0.4); } }
+.has-javascript .t97-links li { transition: transform 150ms; }
+.has-javascript .t97-links li:hover { transform: translateX(6px); }
+.js-scold { position: absolute; left: 50%; top: 40%; z-index: 7; width: min(300px, 86%); transform: translate(-50%, -50%); pointer-events: none;
+  background: #C0C0C0; border: 2px outset #FFFFFF; box-shadow: 3px 3px 0 #000000; color: #000000; font-family: Arial, sans-serif; font-size: 13px; animation: popup-in 160ms ease-out; }
+.js-scold-title { padding: 3px 8px; background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; font-weight: 700; font-size: 12px; }
+.js-scold p { margin: 0; padding: 12px; }
+.browser-status-text.is-scrolling { display: inline-block; padding-left: 100%; overflow: visible; text-overflow: clip; animation: marquee 12s linear infinite; }
+
+/* ---------- 2005 jQuery: posts fade in, blocks slide down ---------- */
+.has-jquery .blog-post { animation: jq-fade-in 900ms ease-out both; }
+.has-jquery .blog-post:nth-child(3) { animation-delay: 150ms; }
+.has-jquery .blog-post:nth-child(4) { animation-delay: 300ms; }
+.has-jquery .blog-post:nth-child(5) { animation-delay: 450ms; }
+.has-jquery .w2-sidebar .feature-block { animation: jq-slide-down 500ms ease-out both; transform-origin: top; }
+@keyframes jq-fade-in { from { opacity: 0; } }
+@keyframes jq-slide-down { from { opacity: 0; transform: scaleY(0.6); } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
@@ -707,7 +819,7 @@ button { font: inherit; color: inherit; }
         <div class="popup-layer" id="popup-layer"></div>
         <div class="era-wipe" id="era-wipe" aria-hidden="true"><span>RELAUNCHING…</span></div>
       </div>
-      <div class="browser-statusbar" id="browser-status">Document: Done</div>
+      <div class="browser-statusbar" id="browser-statusbar"><span class="browser-status-text" id="browser-status">Document: Done</span><span class="browser-perf" id="browser-perf"></span><span class="browser-progress" aria-hidden="true"></span></div>
     </section>
 
     <section class="panel goal" aria-label="Next era">

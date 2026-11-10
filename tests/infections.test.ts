@@ -9,10 +9,10 @@ import {
   SPAM_CLEAN_CLICKS,
   VIRUS_FOOD_STEP_MS,
 } from '../src/engine';
-import type { GameState, SpamInfection, VirusInfection } from '../src/engine';
+import type { GameState, ClickInfection, VirusInfection } from '../src/engine';
 
 const virusAged = (ageMs: number): VirusInfection => ({ id: 7, kind: 'virus', featureId: 'guestbook', ageMs });
-const spam: SpamInfection = { id: 8, kind: 'spam', featureId: 'comments', cleanClicksRemaining: SPAM_CLEAN_CLICKS, ageMs: 0 };
+const spam: ClickInfection = { id: 8, kind: 'spam', featureId: 'comments', cleanClicksRemaining: SPAM_CLEAN_CLICKS, ageMs: 0 };
 const withInfections = (infections: GameState['infections']): GameState => ({ ...createInitialGameState(1), infections });
 
 describe('virus growth', () => {

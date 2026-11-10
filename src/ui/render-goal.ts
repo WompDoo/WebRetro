@@ -1,5 +1,8 @@
 import {
   calculateGateChecks,
+  calculatePerformanceTrafficFactor,
+  calculateServerLoad,
+  isSiteDown,
   canUseAds,
   getAvailableSkillIds,
   UPGRADES_BY_ID,
@@ -19,6 +22,8 @@ interface HintRule {
 
 const FIRST_KEYSTROKES = 8;
 const POPUP_NAG_COUNT = 2;
+const SERVER_WARNING_LOAD = 0.85;
+const SLOW_PAGE_FACTOR = 0.9;
 const ERA_ONE_MAX_ADS = 6;
 
 const HINT_RULES: readonly HintRule[] = [
@@ -45,6 +50,18 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => state.infections.length > 0,
     text: 'Spam is drowning your comments. Click it to delete the spam.',
+  },
+  {
+    applies: (state) => isSiteDown(state),
+    text: 'Your server gave up: the whole site is a 503 page and nobody gets in. Upgrade your hosting under Ops.',
+  },
+  {
+    applies: (state) => calculateServerLoad(state) > SERVER_WARNING_LOAD,
+    text: 'Your server is close to full. Over 100% pages slow down, and at 200% the site goes down. Upgrade your hosting under Ops.',
+  },
+  {
+    applies: (state) => calculatePerformanceTrafficFactor(state) < SLOW_PAGE_FACTOR,
+    text: 'Your page loads so slowly that visitors give up before it finishes. Make it lighter (fewer ads, smaller files) or faster.',
   },
   {
     applies: (state) => state.popups.length >= POPUP_NAG_COUNT,

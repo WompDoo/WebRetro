@@ -8,6 +8,8 @@ export const INITIAL_HAZARD_COUNTDOWNS_MS: Readonly<Record<HazardKind, number>> 
   popup: 12_000,
   virus: 35_000,
   spam: 30_000,
+  'sql-injection': 90_000,
+  'traffic-spike': 150_000,
 };
 
 const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
@@ -19,6 +21,10 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   blog: 0,
   comments: 0,
   'tag-cloud': 0,
+  forum: 0,
+  'flash-intro': 0,
+  'photo-gallery': 0,
+  'map-mashup': 0,
 };
 
 export function createInitialGameState(randomSeed: number): GameState {
@@ -41,6 +47,8 @@ export function createInitialGameState(randomSeed: number): GameState {
     nextEntityId: FIRST_ENTITY_ID,
     randomSeed,
     playTimeMs: 0,
+    hostingTier: 0,
+    trafficSpikeRemainingMs: 0,
     reachedMilestoneIds: [],
     prototypeComplete: false,
   };

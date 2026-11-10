@@ -25,6 +25,8 @@ export interface CodeEditor {
   readonly setEra: (eraId: EraId) => void;
   /** Swap in new code to type (after learning a skill). What's already on screen stays. */
   readonly setSource: (nextSource: string) => void;
+  readonly setTitle: (title: string) => void;
+  readonly setTabs: (tabs: readonly string[]) => void;
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
 }
 
@@ -186,5 +188,14 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     cursor = 0;
   };
 
-  return { setEra, setSource, updateRate };
+  const setTitle = (title: string): void => {
+    if (elements.title.textContent !== title) elements.title.textContent = title;
+  };
+
+  const setTabs = (tabs: readonly string[]): void => {
+    elements.tabs.innerHTML = tabs.map((tab, index) => `<span class="editor-tab${index === 0 ? ' is-active' : ''}">${escapeHtml(tab)}</span>`).join('');
+    elements.tabs.hidden = tabs.length === 0;
+  };
+
+  return { setEra, setSource, setTitle, setTabs, updateRate };
 }

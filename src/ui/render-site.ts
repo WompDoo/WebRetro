@@ -1,5 +1,5 @@
-import { calculateMsUntilVirusGrows, calculateRequiredVirusFood, FEATURE_IDS, getFeatureDisplayName, UPGRADES_BY_ID } from '../engine';
-import type { EraId, FeatureId, GameState, Infection, SpamInfection, UpgradeId, VirusInfection } from '../engine';
+import { calculateMsUntilVirusGrows, calculateRequiredVirusFood, FEATURE_IDS, getFeatureDisplayName, isSiteDown, UPGRADES_BY_ID } from '../engine';
+import type { ClickInfection, EraId, FeatureId, GameState, Infection, UpgradeId, VirusInfection } from '../engine';
 import { escapeHtml, pickCyclic } from './dom';
 import { BANNER_ADS, BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, TAGS, TEXT_ADS } from './presentation';
 import type { MessageCopy } from './presentation';
@@ -124,7 +124,7 @@ const renderComments: FeatureRenderer = (context) => {
       return `<li class="comment"><span class="avatar" style="background:${color}">${escapeHtml(comment.author.charAt(0).toUpperCase())}</span><span><b>${escapeHtml(comment.author)}</b> ${escapeHtml(comment.text)}</span></li>`;
     })
     .join('');
-  return `${heading(context, 'comments', `Comments (${levelOf(context, 'comments')})`)}<ul class="comment-list">${items}</ul>`;
+  return `${heading(context, 'comments', `Comments (${levelOf(context, 'comments')})`)}<ul class="comment-list">${items}<li class="comment-loading"><span class="spinner" aria-hidden="true"></span>Loading new comments…</li></ul>`;
 };
 
 const renderTagCloud: FeatureRenderer = (context) => {
@@ -133,6 +133,80 @@ const renderTagCloud: FeatureRenderer = (context) => {
     .map((tag, index) => `<span class="tag" style="font-size:${pickCyclic(TAG_SIZES_PX, index * 3 + tag.length, 13)}px">${escapeHtml(tag)}</span>`)
     .join(' ');
   return `${heading(context, 'tag-cloud', 'Tags')}<p class="tag-cloud">${tags}</p>`;
+};
+
+
+const FORUM_THREADS: readonly string[] = [
+  '[STICKY] Read this before posting!!',
+  'Re: Re: Re: help!!',
+  'Post your desktop screenshots',
+  'Is AJAX a fad? (poll)',
+  'Which PHP framework should I use? (3 pages)',
+  'My site got hacked :(',
+  'Introduce yourself here',
+  'Signature test, please ignore',
+];
+const MAX_FORUM_THREADS = 6;
+const BASE_FORUM_THREADS = 2;
+const FORUM_REPLY_STEP = 7;
+const FORUM_REPLY_BASE = 3;
+const FORUM_VIEWS_PER_REPLY = 13;
+const FORUM_MEMBERS_PER_LEVEL = 140;
+const BASE_THUMBNAILS = 4;
+const MAX_THUMBNAILS = 12;
+const THUMBNAIL_STYLES = 6;
+const LIGHTBOX_CYCLE_MS = 9_000;
+const LIGHTBOX_OPEN_MS = 3_000;
+const BASE_MAP_PINS = 3;
+const MAX_MAP_PINS = 12;
+const PIN_SPREAD_X = 37;
+const PIN_SPREAD_Y = 53;
+const PIN_MARGIN = 8;
+const PIN_RANGE = 84;
+const MAP_PLACES: readonly string[] = ['Best pizza in town ★★★★☆', 'Free Wi-Fi café', 'Where I parked', 'Office (no AJAX here)'];
+
+const renderForum: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'forum');
+  const count = Math.min(level + BASE_FORUM_THREADS, MAX_FORUM_THREADS);
+  const rows = FORUM_THREADS.slice(0, count)
+    .map((thread, index) => {
+      const replies = (index * FORUM_REPLY_STEP + FORUM_REPLY_BASE) * level;
+      return `<tr><td><span class="fake-link">${escapeHtml(thread)}</span></td><td>${replies}</td><td>${replies * FORUM_VIEWS_PER_REPLY}</td></tr>`;
+    })
+    .join('');
+  return `${heading(context, 'forum')}<table class="forum-table"><thead><tr><th>Topic</th><th>Replies</th><th>Views</th></tr></thead><tbody>${rows}</tbody></table><p class="forum-note">${level * FORUM_MEMBERS_PER_LEVEL} members · ${level * 3} online</p>`;
+};
+
+const renderFlashIntro: FeatureRenderer = (context) =>
+  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">Requires Flash Player 8 · ${levelOf(context, 'flash-intro') * 40} seconds of intro</p></div>`;
+
+export function renderGalleryLightbox(level: number, nowMs: number): string {
+  const count = Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
+  const cycle = Math.floor(nowMs / LIGHTBOX_CYCLE_MS);
+  const isOpen = nowMs % LIGHTBOX_CYCLE_MS < LIGHTBOX_OPEN_MS;
+  const photo = cycle % count;
+  return isOpen
+    ? `<div class="lightbox"><span class="thumb thumb--${photo % THUMBNAIL_STYLES} is-large"></span><span class="lightbox-caption">IMG_00${photo + 1}.JPG · ${photo + 1} of ${count} · ×</span></div>`
+    : '';
+}
+
+const renderPhotoGallery: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'photo-gallery');
+  const count = Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
+  const thumbs = Array.from({ length: count }, (_, index) => `<span class="thumb thumb--${index % THUMBNAIL_STYLES}"></span>`).join('');
+  return `${heading(context, 'photo-gallery', 'Photos')}<div class="gallery">${thumbs}</div><div data-live="gallery-lightbox">${renderGalleryLightbox(level, context.nowMs)}</div>`;
+};
+
+const renderMapMashup: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'map-mashup');
+  const count = Math.min(BASE_MAP_PINS + level, MAX_MAP_PINS);
+  const pins = Array.from({ length: count }, (_, index) => {
+    const left = PIN_MARGIN + ((index * PIN_SPREAD_X) % PIN_RANGE);
+    const top = PIN_MARGIN + ((index * PIN_SPREAD_Y) % PIN_RANGE);
+    return `<span class="map-pin" style="left:${left}%;top:${top}%"></span>`;
+  }).join('');
+  const place = pickCyclic(MAP_PLACES, level, 'Here');
+  return `${heading(context, 'map-mashup', 'Mashup')}<div class="map">${pins}<span class="map-bubble">${escapeHtml(place)}</span></div><p class="map-note">Map from someone else’s API · ${count} pins</p>`;
 };
 
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
@@ -144,6 +218,10 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   blog: renderBlog,
   comments: renderComments,
   'tag-cloud': renderTagCloud,
+  forum: renderForum,
+  'flash-intro': renderFlashIntro,
+  'photo-gallery': renderPhotoGallery,
+  'map-mashup': renderMapMashup,
 };
 
 
@@ -164,12 +242,20 @@ function renderVirusOverlay(virus: VirusInfection): string {
   return `<button type="button" class="infection" data-action="open-snake" data-id="${virus.id}" data-kind="virus"><span class="infection-title">☣ VIRUS DETECTED</span><span class="infection-hint">Click to remove it · ${food} food needed</span><span class="infection-timer" data-live="virus-timer" data-id="${virus.id}">${renderVirusTimer(virus)}</span></button>`;
 }
 
-function renderSpamOverlay(spam: SpamInfection): string {
+function renderSpamOverlay(spam: ClickInfection): string {
   return `<button type="button" class="infection" data-action="scrub-infection" data-id="${spam.id}" data-kind="spam"><span class="infection-spam">${SPAM_LINES.map(escapeHtml).join('<br>')}</span><span class="infection-title">SPAM FLOOD</span><span class="infection-hint">Click to delete the spam · ${spam.cleanClicksRemaining} left</span></button>`;
 }
 
+function renderSqlInjectionOverlay(injection: ClickInfection): string {
+  return `<button type="button" class="infection" data-action="scrub-infection" data-id="${injection.id}" data-kind="sql-injection"><span class="infection-error"><b>Warning</b>: mysql_fetch_array(): supplied argument is not a valid MySQL result resource in <b>/home/you/public_html/${injection.featureId}.php</b> on line <b>42</b></span><span class="infection-sql">Latest comment: '; DROP TABLE ${injection.featureId};--</span><span class="infection-hint">Click to restore from backup · ${injection.cleanClicksRemaining} left</span></button>`;
+}
+
+function renderClickInfectionOverlay(infection: ClickInfection): string {
+  return infection.kind === 'spam' ? renderSpamOverlay(infection) : renderSqlInjectionOverlay(infection);
+}
+
 function renderInfectionOverlay(infection: Infection): string {
-  return infection.kind === 'virus' ? renderVirusOverlay(infection) : renderSpamOverlay(infection);
+  return infection.kind === 'virus' ? renderVirusOverlay(infection) : renderClickInfectionOverlay(infection);
 }
 
 function renderFeatureBlock(context: SiteContext, featureId: FeatureId): string {
@@ -208,6 +294,7 @@ interface HomepageSkills {
   readonly links: boolean;
   readonly marquee: boolean;
   readonly tables: boolean;
+  readonly javascript: boolean;
 }
 
 function readHomepageSkills(state: GameState): HomepageSkills {
@@ -218,6 +305,7 @@ function readHomepageSkills(state: GameState): HomepageSkills {
     links: knows('hyperlinks'),
     marquee: knows('marquee-blink'),
     tables: knows('table-layouts'),
+    javascript: knows('learn-javascript'),
   };
 }
 
@@ -227,6 +315,7 @@ function homepageClasses(skills: HomepageSkills): string {
     skills.background ? 'has-background' : '',
     skills.links ? 'has-links' : '',
     skills.tables ? 'is-table-layout' : '',
+    skills.javascript ? 'has-javascript' : '',
   ].filter((modifier) => modifier !== '');
   return ['site-1997', ...modifiers].join(' ');
 }
@@ -237,7 +326,7 @@ interface HomepageContent {
   readonly mainFeatures: readonly FeatureId[];
 }
 
-function homepage1997Content(skills: HomepageSkills): HomepageContent {
+function homepage1997Content(skills: HomepageSkills, _state: GameState): HomepageContent {
   const title = skills.font ? 'Welcome to My Homepage!!!' : 'Hello World!';
   return skills.tables
     ? { title, sidebarFeatures: TABLE_SIDEBAR_FEATURES, mainFeatures: TABLE_MAIN_FEATURES }
@@ -245,17 +334,29 @@ function homepage1997Content(skills: HomepageSkills): HomepageContent {
 }
 
 /** 2005 content crammed into a 1997 page: what you get before you learn CSS. */
-function legacy2005Content(skills: HomepageSkills): HomepageContent {
+function legacy2005Content(skills: HomepageSkills, state: GameState): HomepageContent {
   return {
-    title: skills.font ? 'Welcome to myhomepage 2.0!!!' : 'myhomepage 2.0',
+    title: skills.font ? `Welcome to ${siteName(state)} 2.0!!!` : `${siteName(state)} 2.0`,
     sidebarFeatures: ['hit-counter', 'webring', 'tag-cloud'],
-    mainFeatures: ['blog', 'comments', 'under-construction', 'guestbook', 'midi-player'],
+    mainFeatures: ['flash-intro', 'blog', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'under-construction', 'guestbook', 'midi-player'],
   };
 }
 
 function renderHomepageTitle(skills: HomepageSkills, title: string): string {
   const marquee = skills.marquee ? `<div class="site-marquee"><span>${MARQUEE_TEXT}</span></div>` : '';
-  return `<h1 class="site-title">${title}</h1>${marquee}`;
+  const clock = skills.javascript ? `<p class="js-clock" data-live="js-clock">${renderJavaScriptClock(Date.now(), ERA_YEAR_OF_HOMEPAGE)}</p>` : '';
+  return `<h1 class="site-title">${title}</h1>${marquee}${clock}`;
+}
+
+const ERA_YEAR_OF_HOMEPAGE = 1997;
+const WEEKDAYS: readonly string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS: readonly string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/** document.write(new Date()), the way every 1997 homepage did it. The year stays in 1997. */
+export function renderJavaScriptClock(nowMs: number, year: number): string {
+  const now = new Date(nowMs);
+  const time = now.toLocaleTimeString('en-US');
+  return `Today is ${pickCyclic(WEEKDAYS, now.getDay(), 'Monday')}, ${pickCyclic(MONTHS, now.getMonth(), 'January')} ${now.getDate()}, ${year} · ${time}`;
 }
 
 function renderHomepageIntro(skills: HomepageSkills): string {
@@ -298,16 +399,38 @@ function render1997StackedSite(context: SiteContext, skills: HomepageSkills, con
   return `<div class="${homepageClasses(skills)}">${renderHomepageTitle(skills, content.title)}${renderHomepageIntro(skills)}${body}${renderHomepageFooter(skills)}</div>`;
 }
 
-function renderOldSchoolPage(context: SiteContext, content: (skills: HomepageSkills) => HomepageContent): string {
+function renderOldSchoolPage(context: SiteContext, content: (skills: HomepageSkills, state: GameState) => HomepageContent): string {
   const skills = readHomepageSkills(context.state);
-  return skills.tables ? render1997TableSite(context, skills, content(skills)) : render1997StackedSite(context, skills, content(skills));
+  const page = content(skills, context.state);
+  return skills.tables ? render1997TableSite(context, skills, page) : render1997StackedSite(context, skills, page);
 }
 
 function render1997Site(context: SiteContext): string {
   return renderOldSchoolPage(context, homepage1997Content);
 }
 
-const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['blog', 'comments'];
+const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['flash-intro', 'blog', 'comments', 'forum', 'photo-gallery', 'map-mashup'];
+const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.0', 'PHP powered', 'MySQL', 'Get the fox browser'];
+
+export function siteName(state: GameState): string {
+  return state.purchasedUpgradeIds.includes('drop-vowels') ? 'myhmpg' : 'myhomepage';
+}
+
+function web2Classes(state: GameState): string {
+  const knows = (upgradeId: UpgradeId): boolean => state.purchasedUpgradeIds.includes(upgradeId);
+  return [
+    'site-2005',
+    knows('web2-design') ? 'is-glossy' : 'is-plain',
+    knows('ie6-hacks') ? '' : 'needs-ie6-fix',
+    knows('glitter-text') ? 'has-glitter' : '',
+    knows('learn-jquery') ? 'has-jquery' : '',
+  ].filter((name) => name !== '').join(' ');
+}
+
+function renderStandardsBadges(state: GameState): string {
+  if (!state.purchasedUpgradeIds.includes('xhtml-badges')) return '';
+  return `<p class="w2-badges">${STANDARDS_BADGES.map((badge) => `<span class="badge-80x15">${escapeHtml(badge)}</span>`).join('')}</p>`;
+}
 const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'webring'];
 
 function renderSponsoredLinks(adCount: number): string {
@@ -324,11 +447,10 @@ function render2005Site(context: SiteContext): string {
 }
 
 function render2005DivSite(context: SiteContext): string {
-  const look = context.state.purchasedUpgradeIds.includes('web2-design') ? 'is-glossy' : 'is-plain';
   const main = ownedFeatures(context, WEB2_MAIN_FEATURES).map((featureId) => renderFeatureBlock(context, featureId)).join('');
   const sidebar = ownedFeatures(context, WEB2_SIDEBAR_FEATURES).map((featureId) => renderFeatureBlock(context, featureId)).join('');
   const intro = main === '' ? '<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new myhomepage!</h2><p>We relaunched. Start a blog to fill this space.</p></section>' : main;
-  return `<div class="site-2005 ${look}"><header class="w2-header"><span class="w2-logo">myhomepage</span><span class="w2-beta"><span>beta</span></span><nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state.adCount)}${sidebar}</aside></div><footer class="w2-footer">© 2005 myhomepage · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
+  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${siteName(context.state)}</span><span class="w2-beta"><span>beta</span></span><nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state.adCount)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${siteName(context.state)} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
 }
 
 const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> = {
@@ -336,8 +458,12 @@ const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> 
   'web2-2005': render2005Site,
 };
 
+function renderServiceUnavailable(state: GameState): string {
+  return `<div class="site-down"><h1>Service Temporarily Unavailable</h1><p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p><hr><address>Apache/2.0.54 (Unix) PHP/4.4.0 Server at www.${siteName(state)}.com Port 80</address></div>`;
+}
+
 export function renderSite(state: GameState, nowMs: number): string {
-  return SITE_RENDERERS[state.eraId]({ state, eraId: state.eraId, nowMs });
+  return isSiteDown(state) ? renderServiceUnavailable(state) : SITE_RENDERERS[state.eraId]({ state, eraId: state.eraId, nowMs });
 }
 
 export function calculateSiteSignature(state: GameState): string {
@@ -350,5 +476,6 @@ export function calculateSiteSignature(state: GameState): string {
     )
     .join(',');
   const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
-  return `${state.eraId}|${skills}|${levels}|${state.adCount}|${infections}`;
+  const boosts = state.purchasedUpgradeIds.length;
+  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.adCount}|${infections}|${isSiteDown(state) ? 'down' : 'up'}`;
 }

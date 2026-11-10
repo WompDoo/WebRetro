@@ -8,7 +8,11 @@ export type FeatureId =
   | 'webring'
   | 'blog'
   | 'comments'
-  | 'tag-cloud';
+  | 'tag-cloud'
+  | 'forum'
+  | 'flash-intro'
+  | 'photo-gallery'
+  | 'map-mashup';
 
 export type UpgradeId =
   | 'img-tag'
@@ -21,6 +25,11 @@ export type UpgradeId =
   | 'embed-tag'
   | 'learn-css'
   | 'web2-design'
+  | 'learn-flash'
+  | 'learn-url-rewriting'
+  | 'learn-jquery'
+  | 'learn-web-apis'
+  | 'prepared-statements'
   | 'learn-ajax'
   | 'learn-rss'
   | 'counter-starts-at-ten-thousand'
@@ -36,6 +45,16 @@ export type UpgradeId =
   | 'animated-banners'
   | 'more-midi-files'
   | 'bigger-webring'
+  | 'optimize-gifs'
+  | 'ie6-hacks'
+  | 'xhtml-badges'
+  | 'glitter-text'
+  | 'drop-vowels'
+  | 'svn'
+  | 'gzip'
+  | 'memcached'
+  | 'j2ee'
+  | 'rails'
   | 'learn-php'
   | 'syntax-highlighting'
   | 'perpetual-beta'
@@ -49,8 +68,9 @@ export type UpgradeId =
 export type UpgradeKind = 'skill' | 'boost';
 
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha';
-export type HazardKind = 'popup' | 'virus' | 'spam';
-export type InfectionKind = Exclude<HazardKind, 'popup'>;
+export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike';
+export type InfectionKind = 'virus' | 'spam' | 'sql-injection';
+export type HostingTierId = 'shared-hosting' | 'vps' | 'dedicated-server' | 'the-cloud';
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
@@ -76,6 +96,9 @@ export interface FeatureDefinition {
   readonly baseCost: number;
   readonly visitorsPerSecondPerLevel: number;
   readonly synergy: FeatureSynergy | null;
+  /** Kilobytes this feature adds to the page once built, plus a little per level. */
+  readonly pageWeightKb: number;
+  readonly pageWeightKbPerLevel: number;
   /** The skill you must learn before you can build this. */
   readonly requiredSkillId: UpgradeId | null;
 }
@@ -91,7 +114,9 @@ export type UpgradeEffect =
     }
   | { readonly kind: 'global-traffic-multiplier'; readonly factor: number }
   | { readonly kind: 'ad-value-multiplier'; readonly factor: number }
-  | { readonly kind: 'ad-annoyance-multiplier'; readonly factor: number };
+  | { readonly kind: 'ad-annoyance-multiplier'; readonly factor: number }
+  | { readonly kind: 'page-weight-multiplier'; readonly factor: number }
+  | { readonly kind: 'load-time-multiplier'; readonly factor: number };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -142,6 +167,24 @@ export interface EraDefinition {
   readonly adAnnoyancePerAd: number;
   readonly maxAds: number;
   readonly keystrokeValueMultiplier: number;
+  /** What visitors browse with. The page weight divided by this is the load time. */
+  readonly connectionLabel: string;
+  readonly connectionKbPerSecond: number;
+  /** How long visitors wait before leaving. Shrinks every era. */
+  readonly patienceSeconds: number;
+  readonly basePageWeightKb: number;
+  readonly adPageWeightKb: number;
+  /** From 2005 on you pay for hosting, and the server can be overloaded. */
+  readonly hasServerLoad: boolean;
+}
+
+export interface HostingTierDefinition {
+  readonly id: HostingTierId;
+  readonly eraId: EraId;
+  readonly name: string;
+  readonly description: string;
+  readonly cost: number;
+  readonly capacityVisitorsPerSecond: number;
 }
 
 export interface Popup {
@@ -163,13 +206,13 @@ export interface VirusInfection extends InfectionBase {
   readonly kind: 'virus';
 }
 
-/** Removed by clicking it a few times. */
-export interface SpamInfection extends InfectionBase {
-  readonly kind: 'spam';
+/** Spam floods and SQL injections: removed by clicking them a few times. */
+export interface ClickInfection extends InfectionBase {
+  readonly kind: 'spam' | 'sql-injection';
   readonly cleanClicksRemaining: number;
 }
 
-export type Infection = VirusInfection | SpamInfection;
+export type Infection = VirusInfection | ClickInfection;
 
 export interface GameState {
   readonly saveVersion: number;
@@ -190,6 +233,10 @@ export interface GameState {
   readonly nextEntityId: number;
   readonly randomSeed: number;
   readonly playTimeMs: number;
+  /** Index into HOSTING_TIERS. Only matters in eras with server load. */
+  readonly hostingTier: number;
+  /** Time left on a front-page traffic spike; 0 when there is none. */
+  readonly trafficSpikeRemainingMs: number;
   readonly reachedMilestoneIds: readonly MilestoneId[];
   readonly prototypeComplete: boolean;
 }
@@ -211,7 +258,15 @@ export interface CodeInputResult {
 }
 
 export interface EconomySnapshot {
+  /** Visitors who try to reach the site, before slow loading and server trouble send some away. */
+  readonly demandVisitorsPerSecond: number;
   readonly visitorsPerSecond: number;
+  readonly pageWeightKb: number;
+  readonly loadTimeSeconds: number;
+  /** Demand divided by hosting capacity; 0 in eras without server load. */
+  readonly serverLoad: number;
+  readonly isSiteDown: boolean;
+  readonly performanceTrafficFactor: number;
   readonly revenuePerVisitor: number;
   readonly adValuePerAd: number;
   readonly adAnnoyancePerAd: number;

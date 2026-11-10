@@ -32,7 +32,6 @@ export interface EraPresentation {
   readonly badge: string;
   readonly browserTitle: string;
   readonly siteUrl: string;
-  readonly browserStatus: string;
   readonly editorTitle: string;
   readonly editorMenu: readonly string[];
   readonly editorTabs: readonly string[];
@@ -50,7 +49,6 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     badge: '1997 · Personal homepage',
     browserTitle: 'My Homepage - Web Navigator',
     siteUrl: 'http://members.freewebspace.net/~you/index.htm',
-    browserStatus: 'Document: Done',
     editorTitle: 'INDEX.HTM - Text Editor',
     editorMenu: ['File', 'Edit', 'Search', 'Help'],
     editorTabs: [],
@@ -75,7 +73,6 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     badge: '2005 · Web 2.0',
     browserTitle: 'myhomepage | blog',
     siteUrl: 'http://www.myhomepage.com/blog/',
-    browserStatus: 'Done',
     editorTitle: 'blog.php — CodeStudio',
     editorMenu: [],
     editorTabs: ['blog.php', 'ajax.js', 'style.css'],

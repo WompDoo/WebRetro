@@ -9,6 +9,7 @@ import {
   calculateNextAdCost,
   calculateNextFeatureCost,
   canUseAds,
+  getNextHostingTier,
   isEraUnlocked,
   isFeatureBuildable,
   isUpgradeAvailable,
@@ -71,6 +72,17 @@ export function buyFeature(state: GameState, featureId: FeatureId): GameState {
   if (!canBuyFeature(state, featureId)) return state;
   const levels = { ...state.featureLevels, [featureId]: state.featureLevels[featureId] + 1 };
   return { ...spend(state, calculateNextFeatureCost(state, featureId)), featureLevels: levels };
+}
+
+export function canUpgradeHosting(state: GameState): boolean {
+  const next = getNextHostingTier(state);
+  return next !== null && state.money >= next.cost;
+}
+
+export function upgradeHosting(state: GameState): GameState {
+  const next = getNextHostingTier(state);
+  if (next === null || state.money < next.cost) return state;
+  return { ...spend(state, next.cost), hostingTier: state.hostingTier + 1 };
 }
 
 export function canPlaceAd(state: GameState): boolean {
@@ -146,6 +158,7 @@ export function fallForPopupScam(state: GameState, popupId: number): PopupScamRe
 const CLEANUP_MESSAGES: Readonly<Record<Infection['kind'], (featureName: string) => string>> = {
   virus: (featureName) => `Your snake ate the virus in your ${featureName}.`,
   spam: (featureName) => `You deleted the spam from your ${featureName}.`,
+  'sql-injection': (featureName) => `You restored your ${featureName} from last night’s backup.`,
 };
 
 function describeCleanup(infection: Infection, eraId: EraId): GameEvent {
@@ -154,16 +167,16 @@ function describeCleanup(infection: Infection, eraId: EraId): GameEvent {
 }
 
 function scrubIfTargetedSpam(infection: Infection, infectionId: number): Infection {
-  return infection.id === infectionId && infection.kind === 'spam'
+  return infection.id === infectionId && infection.kind !== 'virus'
     ? { ...infection, cleanClicksRemaining: infection.cleanClicksRemaining - 1 }
     : infection;
 }
 
 function isCleanedSpam(infection: Infection): boolean {
-  return infection.kind === 'spam' && infection.cleanClicksRemaining <= 0;
+  return infection.kind !== 'virus' && infection.cleanClicksRemaining <= 0;
 }
 
-/** One click on a spam flood. Viruses ignore clicks: they need the snake minigame. */
+/** One click on a spam flood or a broken table. Viruses ignore clicks: they need the snake minigame. */
 export function scrubInfection(state: GameState, infectionId: number): GameStep {
   const scrubbed = state.infections.map((infection) => scrubIfTargetedSpam(infection, infectionId));
   return {

@@ -1,12 +1,12 @@
 # Era ideas
 
-Each era is a snapshot year standing for a span of web history. Built so far: 1997 and 2005 (2005 is thin).
+Each era is a snapshot year standing for a span of web history. Built so far: 1997 and 2005, plus the performance indicator.
 Everything on the page is site dressing: fake content and simple loops, never a working app.
 
 | Era | Covers | Status |
 |---|---|---|
 | 1997 Personal homepage | mid-90s to the 2000 crash | built |
-| 2005 Web 2.0 | 2001–2009 | built, needs the expansion below |
+| 2005 Web 2.0 | 2001–2009 | built, including the expansion below |
 | 2011 Social & mobile | 2010–2015 | ideas |
 | 2018 Platform | 2016–2022 | ideas |
 | 2024 AI | 2023–now | ideas |
@@ -51,7 +51,7 @@ Done (4.2 s) · 182 KB · Server ▮▮▮▮▮▮▯▯ 74%
 | 2018 | A Lighthouse-style score circle (green, orange, red) with Core Web Vitals |
 | 2024 | The score circle plus a cloud bill, mostly your chatbot's |
 
-## 2005 Web 2.0: expansion
+## 2005 Web 2.0: expansion (built)
 
 What exists: Learn CSS, PHP and MySQL, the Web 2.0 look, AJAX, RSS; blog, comments, tag cloud; spam; CAPTCHA.
 

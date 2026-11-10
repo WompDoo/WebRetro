@@ -12,6 +12,10 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   blog: svg('<path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="m13 7 4 4"/>'),
   comments: svg('<path d="M4 4h16v11H9l-5 5Z"/><path d="M8 9h8M8 12h5"/>'),
   'tag-cloud': svg('<path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.5 1.5A3.5 3.5 0 0 1 17.5 18Z"/>'),
+  forum: svg('<path d="M3 5h12v8H7l-4 3Z"/><path d="M9 13v2h8l4 3V9h-6"/>'),
+  'flash-intro': svg('<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>'),
+  'photo-gallery': svg('<rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="9" cy="10" r="1.5"/><path d="m21 16-5-5-8 8"/>'),
+  'map-mashup': svg('<path d="M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11Z"/><circle cx="12" cy="10" r="2"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
@@ -23,4 +27,5 @@ export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
 export const AD_ICON = svg('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 14l1.5-4L9 14M6.5 12.8h2M12 10v4h1.5a2 2 0 0 0 0-4Z"/>');
 export const UPGRADE_ICON = svg('<path d="M12 19V5M6 11l6-6 6 6"/><path d="M5 21h14"/>');
 export const CODE_ICON = svg('<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>');
+export const SERVER_ICON = svg('<rect x="4" y="3" width="16" height="7" rx="1"/><rect x="4" y="14" width="16" height="7" rx="1"/><path d="M8 6.5h.01M8 17.5h.01"/>');
 export const LEARN_ICON = svg('<path d="M3 7 12 3l9 4-9 4Z"/><path d="M7 9v5c0 1.5 2.2 3 5 3s5-1.5 5-3V9"/><path d="M21 7v6"/>');

@@ -8,8 +8,12 @@ import {
   calculateNextAdCost,
   calculateNextFeatureCost,
   calculateRevenuePerVisitor,
+  calculateServerLoad,
+  canUpgradeHosting,
   canUseAds,
   DEFENSES_BY_ID,
+  getHostingTier,
+  getNextHostingTier,
   ERA_IDS,
   ERAS_BY_ID,
   FEATURE_IDS,
@@ -28,7 +32,7 @@ import {
 } from '../engine';
 import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
-import { AD_ICON, CODE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, UPGRADE_ICON } from './icons';
+import { AD_ICON, CODE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
 export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security';
 
@@ -38,7 +42,7 @@ const SHOP_TAB_LABELS: Readonly<Record<ShopTab, string>> = {
   learn: 'Learn',
   build: 'Build',
   upgrades: 'Upgrades',
-  security: 'Ads & security',
+  security: 'Ops',
 };
 
 const NEUTRAL_FACTOR = 1;
@@ -65,7 +69,10 @@ function renderBuildableEffect(state: GameState, featureId: FeatureId): string {
   const perLevel =
     calculateFeatureVisitorsPerLevel(state, featureId) * calculateGlobalTrafficFactor(state) * calculateAdTrafficFactor(state);
   const currentLine = state.featureLevels[featureId] > 0 ? ` · now ${formatCompactNumber(calculateFeatureVisitorsPerSecond(state, featureId))}/s` : '';
-  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}</p>`;
+  const definition = FEATURES_BY_ID[featureId];
+  const weightKb = state.featureLevels[featureId] > 0 ? definition.pageWeightKbPerLevel : definition.pageWeightKb;
+  const weight = weightKb > 0 ? ` · +${weightKb} KB` : '';
+  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${weight}</p>`;
 }
 
 function renderFeatureRow(state: GameState, featureId: FeatureId): string {
@@ -108,6 +115,8 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'global-traffic-multiplier': (effect) => `All traffic ${formatFactor(effect.factor)}`,
   'ad-value-multiplier': (effect) => `Ads pay ${formatFactor(effect.factor)}`,
   'ad-annoyance-multiplier': (effect) => `Ads annoy visitors ${formatFactor(effect.factor)}`,
+  'page-weight-multiplier': (effect) => `Page weight ${formatFactor(effect.factor)}`,
+  'load-time-multiplier': (effect) => `Load time ${formatFactor(effect.factor)}`,
 };
 
 export function describeUpgradeEffect(effect: UpgradeEffect, eraId: EraId): string {
@@ -246,9 +255,29 @@ function renderAdRow(state: GameState): string {
   </article>`;
 }
 
+function renderHostingRow(state: GameState): string {
+  if (!ERAS_BY_ID[state.eraId].hasServerLoad) {
+    return `<article class="shop-row"><div class="shop-icon">${SERVER_ICON}</div><div class="shop-info"><h3 class="shop-name">Free web space</h3><p class="shop-desc">2 MB on a free host, banner on top included. Servers are someone else’s problem until 2005.</p></div></article>`;
+  }
+  const tier = getHostingTier(state);
+  const next = getNextHostingTier(state);
+  const load = calculateServerLoad(state);
+  const button = next === null ? '<button type="button" class="buy-button" disabled>Maxed</button>' : buyButton('upgrade-hosting', next.id, next.cost);
+  const nextLine = next === null ? '' : `<p class="shop-effect">Next: ${escapeHtml(next.name)}, ${formatCompactNumber(next.capacityVisitorsPerSecond)} visitors/s. ${escapeHtml(next.description)}</p>`;
+  return `<article class="shop-row">
+    <div class="shop-icon">${SERVER_ICON}</div>
+    <div class="shop-info">
+      <h3 class="shop-name">${escapeHtml(tier.name)} <span class="level-chip${load > 1 ? ' is-hot' : ''}">${formatPercent(load)} load</span></h3>
+      <p class="shop-desc">Handles ${formatCompactNumber(tier.capacityVisitorsPerSecond)} visitors/s. Over 100% pages slow down; at 200% the site goes down.</p>
+      ${nextLine}
+    </div>
+    ${button}
+  </article>`;
+}
+
 function renderSecurityTab(state: GameState): string {
   const defenses = getUnlockedDefenseIds(state).map((defenseId) => renderDefenseRow(state, defenseId)).join('');
-  return `<h3 class="shop-group-title">Monetization</h3>${renderAdRow(state)}<h3 class="shop-group-title">Security</h3>${defenses}`;
+  return `<h3 class="shop-group-title">Monetization</h3>${renderAdRow(state)}<h3 class="shop-group-title">Hosting</h3>${renderHostingRow(state)}<h3 class="shop-group-title">Security</h3>${defenses}`;
 }
 
 // ---------- Tabs ----------
@@ -278,7 +307,8 @@ const AFFORDABLE_COUNTERS: Readonly<Record<ShopTab, (state: GameState) => number
   upgrades: (state) => getRevealedBoostIds(state).filter((upgradeId) => state.money >= UPGRADES_BY_ID[upgradeId].cost).length,
   security: (state) =>
     getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost).length +
-    (canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state) ? 1 : 0),
+    (canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state) ? 1 : 0) +
+    (canUpgradeHosting(state) ? 1 : 0),
 };
 
 export function countAffordable(state: GameState, tab: ShopTab): number {
@@ -294,6 +324,8 @@ export function calculateShopSignature(state: GameState, tab: ShopTab): string {
     state.purchasedUpgradeIds.join(','),
     state.ownedDefenseIds.join(','),
     state.enabledDefenseIds.join(','),
+    state.hostingTier,
+    state.eraId === 'web2-2005' ? Math.round(calculateServerLoad(state) * 20) : 0,
     getRevealedBoostIds(state).join(','),
     state.infections.map((infection) => infection.featureId).join(','),
   ].join('|');
