@@ -8,9 +8,13 @@ import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
 import { calculatePopupSignature, syncPopups } from './render-popups';
 import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
+import { listIssues } from './issues';
+import type { Issue } from './issues';
+import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './render-issues';
 import { buildEditorSource } from './skill-code';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
-import { store } from './store';
+import { countUnreadNews, markNewsRead, MOBILE_TABS, store } from './store';
+import type { MobileTab } from './store';
 
 export interface Renderer {
   /** Rebuilds whatever markup the game state changed. Cheap when nothing did: it compares signatures. */
@@ -22,7 +26,7 @@ export interface Renderer {
   readonly forgetRenderedState: () => void;
 }
 
-type SignatureKey = 'site' | 'popups' | 'shop' | 'goal' | 'news' | 'skills';
+type SignatureKey = 'site' | 'popups' | 'shop' | 'goal' | 'news' | 'skills' | 'issues';
 
 const SLOW_RENDER_INTERVAL_MS = 250;
 const MIN_RELOAD_MS = 300;
@@ -82,7 +86,58 @@ function renderEraChrome(editor: CodeEditor): void {
   const presentation = ERA_PRESENTATION[store.game.eraId];
   elements.app.dataset['era'] = String(presentation.year);
   elements.browserTitle.textContent = presentation.browserTitle;
+  elements.issueTitle.textContent = issuePanelTitle(store.game.eraId);
+  elements.tabbarInboxLabel.textContent = issuePanelTitle(store.game.eraId);
   editor.setEra(store.game.eraId);
+}
+
+/** Phones: which section shows, and whether the objective is open. Desktop CSS ignores both. */
+function renderMobileChrome(): void {
+  elements.app.dataset['mobileTab'] = store.mobileTab;
+  elements.app.dataset['goalOpen'] = String(store.isGoalOpen);
+  elements.tabbar.querySelectorAll<HTMLElement>('[data-action="mobile-tab"]').forEach((button) => {
+    const isCurrent = button.dataset['id'] === store.mobileTab;
+    if (isCurrent) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  if (store.mobileTab === 'inbox') markNewsRead();
+}
+
+function countAffordableNewPurchases(): number {
+  return NEW_PURCHASE_TABS.reduce((total, tab) => total + countAffordable(store.game, tab), 0);
+}
+
+interface TabBadge {
+  readonly count: number;
+  /** Red: something is wrong. Blue: something is new. */
+  readonly isAlert: boolean;
+  /** Only whether there is something, not how much. */
+  readonly isDot: boolean;
+}
+
+/** One-time buys: skills, boosts, defenses, hosting. Another feature level is always on offer, so it isn't news. */
+const NEW_PURCHASE_TABS = SHOP_TABS.filter((tab) => tab !== 'build');
+
+function calculateTabBadges(issues: readonly Issue[]): Readonly<Record<MobileTab, TabBadge>> {
+  return {
+    site: { count: store.game.popups.length, isAlert: true, isDot: false },
+    code: { count: 0, isAlert: false, isDot: false },
+    shop: { count: countAffordableNewPurchases(), isAlert: false, isDot: true },
+    inbox: issues.length > 0 ? { count: issues.length, isAlert: true, isDot: false } : { count: countUnreadNews(), isAlert: false, isDot: false },
+  };
+}
+
+function renderTabBadges(issues: readonly Issue[]): void {
+  const badges = calculateTabBadges(issues);
+  MOBILE_TABS.forEach((tab) => {
+    const badge = elements.tabbar.querySelector<HTMLElement>(`[data-tabbar-badge="${tab}"]`);
+    if (badge === null) return;
+    const { count, isAlert, isDot } = badges[tab];
+    badge.hidden = count === 0 || tab === store.mobileTab;
+    badge.classList.toggle('is-alert', isAlert);
+    badge.classList.toggle('is-dot', isDot);
+    setTextIfChanged(badge, isDot ? '' : String(count));
+  });
 }
 
 function renderShop(): void {
@@ -104,7 +159,7 @@ function updateShopAffordability(): void {
 }
 
 export function createRenderer(editor: CodeEditor): Renderer {
-  const signatures: Record<SignatureKey, string> = { site: '', popups: '', shop: '', goal: '', news: '', skills: '' };
+  const signatures: Record<SignatureKey, string> = { site: '', popups: '', shop: '', goal: '', news: '', skills: '', issues: '' };
   let renderedEraId = '';
   let hasRenderedSite = false;
   let endCardShown = store.game.prototypeComplete;
@@ -145,7 +200,13 @@ export function createRenderer(editor: CodeEditor): Renderer {
       elements.goalBody.innerHTML = renderGoal(store.game);
     });
     setHtmlIfChanged(elements.newsTip, renderTip(store.game));
+    setHtmlIfChanged(elements.codeTip, renderTip(store.game));
+    const issues = listIssues(store.game);
+    renderWhenChanged('issues', calculateIssueSignature(issues, store.game), () => {
+      elements.issueList.innerHTML = renderIssueList(issues, store.game, Date.now());
+    });
     renderWhenChanged('news', store.news.map((item) => item.id).join(','), renderNewsList);
+    renderMobileChrome();
     showEndCardOnce();
   };
 
@@ -153,6 +214,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
     renderBrowserStatus(editor);
     updateGoalProgress(elements.goalBody, store.game);
     updateShopAffordability();
+    renderTabBadges(listIssues(store.game));
   };
 
   const renderSlowWhenDue = (now: number): void => {
@@ -165,6 +227,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
     renderStats(editor);
     renderStructure();
     updateLiveSlots(elements.site, store.game, Date.now());
+    updateLiveSlots(elements.issueList, store.game, Date.now());
     renderSlowWhenDue(now);
     window.requestAnimationFrame(frame);
   };

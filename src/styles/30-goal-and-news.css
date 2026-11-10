@@ -54,3 +54,23 @@
 /* ---------- News panel ---------- */
 .news-body { padding: 10px 14px; }
 .news-panel .save-row { margin: 0 14px; padding: 10px 0 12px; }
+.news-heading { margin: 14px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* ---------- Issue tracker: a 1997 email inbox, a 2005 bug list ---------- */
+.issues { display: grid; }
+.news-body .news-tip { margin-top: 10px; }
+.issue-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.issue { display: grid; gap: 3px; padding: 8px 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken); font-size: 13px; }
+.issue[data-severity="critical"] { border-color: var(--hazard); }
+.issue-from, .issue-head, .issue-meta { font-family: var(--font-numbers); font-size: 11.5px; color: var(--ink-soft); }
+.issue-subject, .issue-title { font-weight: 700; line-height: 1.3; }
+.issue--email .issue-subject::before { content: "✉ "; }
+.issue-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.issue-number { color: var(--link); font-weight: 600; }
+.issue-severity { padding: 0 5px; border-radius: 3px; background: var(--ink-soft); color: var(--panel); font-weight: 700; letter-spacing: 0.04em; }
+.issue[data-severity="critical"] .issue-severity { background: var(--hazard); }
+.issue[data-severity="major"] .issue-severity { background: var(--caution-deep); color: var(--on-caution); }
+.issue-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.issue-fix { padding: 5px 14px; border: 2px solid var(--line); border-radius: 4px; background: var(--link); color: var(--on-link); font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.issue-prevent { padding: 5px 10px; border: 2px dashed var(--line-soft); border-radius: 4px; background: transparent; font-size: 12px; font-weight: 600; cursor: pointer; touch-action: manipulation; }
+.issue-empty { margin: 0; font-size: 13px; color: var(--ink-soft); }

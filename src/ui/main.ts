@@ -8,7 +8,7 @@ import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, restoreGame, writeSave } from './
 import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
-import { applyStep, store } from './store';
+import { applyStep, pickStartingMobileTab, store } from './store';
 
 interface ClaudeHotApi {
   readonly data?: unknown;
@@ -58,6 +58,7 @@ function saveWhenHidden(): void {
 
 function start(hotData: unknown): void {
   restoreGame(hotData);
+  store.mobileTab = pickStartingMobileTab(store.game);
   const editor = createCodeEditor(editorElements, writeCodeKeystroke);
   const minigame = createMinigameModal(minigameElements, {
     findTarget: findMinigameTarget,

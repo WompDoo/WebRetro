@@ -121,6 +121,12 @@ function renderGateRow(state: GameState, check: GateCheck, index: number): strin
   </li>`;
 }
 
+/** Phones only: the objective as one line, "2 of 4 done", that opens the chips. */
+function renderGoalToggle(checks: readonly GateCheck[]): string {
+  const met = checks.filter((check) => check.isMet).length;
+  return `<button type="button" class="goal-toggle" data-action="toggle-goal">${met} of ${checks.length} done<span class="goal-toggle-arrow" aria-hidden="true">▾</span></button>`;
+}
+
 /** While locked: the requirement chips. Once everything is met, the chips make way for the Launch button. */
 export function renderGoal(state: GameState): string {
   const era = ERAS_BY_ID[state.eraId];
@@ -128,7 +134,7 @@ export function renderGoal(state: GameState): string {
   const target = `<div class="goal-era"><span class="goal-eyebrow">Next era</span><span class="goal-target"><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span></span></div>`;
   const body = isEraGateComplete(state)
     ? `<button type="button" class="migrate-button" data-action="migrate">${escapeHtml(era.migrationLabel)}</button>`
-    : `<ul class="gate-list">${checks.map((check, index) => renderGateRow(state, check, index)).join('')}</ul>`;
+    : `${renderGoalToggle(checks)}<ul class="gate-list">${checks.map((check, index) => renderGateRow(state, check, index)).join('')}</ul>`;
   return `${target}${body}`;
 }
 

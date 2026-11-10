@@ -58,6 +58,8 @@ Pages on a private repository needs a paid GitHub plan, and the published site i
     `data-action` button to an engine action; `renderer.ts` re-renders what changed, by signature.
   - `sites/`: the fake website, one layout per era, built from shared feature blocks.
   - `minigames/`: one modal shell that runs any minigame, plus a small view per game.
+  - `issues.ts` and `render-issues.ts`: the issue tracker, as data and as era-styled markup.
+- `src/styles/95-phone.css`: the phone layout (bottom tabs, sticky stats); everything above 780px is untouched by it.
 - `src/page.html`: the page markup. Styles and the game script are inlined at build time.
 - `src/styles/`: the stylesheet, one file per area. Files are joined in name order, so the number
   prefix is the cascade order: a later file wins a tie.
