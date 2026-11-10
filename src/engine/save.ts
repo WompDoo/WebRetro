@@ -35,8 +35,11 @@ function isKnownUpgrade(upgradeId: UpgradeId): boolean {
 export function restoreGameState(value: unknown, fallbackSeed: number): GameState | null {
   if (!isRecord(value) || !hasCompatibleShape(value)) return null;
   const restored: GameState = { ...createInitialGameState(fallbackSeed), ...(value as Partial<GameState>) };
+  const initial = createInitialGameState(fallbackSeed);
   return {
     ...restored,
+    // Features added since the save was made start at level 0.
+    featureLevels: { ...initial.featureLevels, ...restored.featureLevels },
     infections: restored.infections.map(withMinigame),
     purchasedUpgradeIds: restored.purchasedUpgradeIds.filter(isKnownUpgrade),
   };

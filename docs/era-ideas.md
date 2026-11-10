@@ -1,13 +1,13 @@
 # Era ideas
 
-Each era is a snapshot year standing for a span of web history. Built so far: 1997 and 2005, plus the performance indicator.
+Each era is a snapshot year standing for a span of web history. Built so far: 1997, 2005 and the core of 2011, plus the performance indicator.
 Everything on the page is site dressing: fake content and simple loops, never a working app.
 
 | Era | Covers | Status |
 |---|---|---|
 | 1997 Personal homepage | mid-90s to the 2000 crash | built |
 | 2005 Web 2.0 | 2001–2009 | built, including the expansion below |
-| 2011 Social & mobile | 2010–2015 | ideas |
+| 2011 Social & mobile | 2010–2015 | core built (see below); content to come |
 | 2018 Platform | 2016–2022 | ideas |
 | 2024 AI | 2023–now | ideas |
 
@@ -78,35 +78,33 @@ memcached, a CDN and a static page cache as server boosts.
 
 ## 2011 Social & mobile
 
-**You arrive with:** the glossy 2005 blog, which doesn't fit on phones. Mobile visitors bounce until you learn
-responsive design. Flash is dead: the Flash intro and the MIDI player show a puzzle piece until rebuilt.
+**Built (the core):**
+- The relaunch story ("Everyone has a phone now"), the checklist (every 2011 feature, Like and share buttons
+  level 15, 500M visitors/s, $250B) and the new ending: 2011 is the last era of the prototype for now.
+- **Phones:** four in ten visitors are on a phone, and three in four of them leave until you learn responsive
+  design. A phone frame in the corner of your page shows the desktop page scrolling sideways, then fitting.
+- **Flash is dead:** the Flash intro and the podcast player show a "missing plug-in" box and bring nothing until
+  Learn HTML5 video and audio rebuilds them. Engine: `pluginDiesIn` on a feature, so 2018 can kill something too.
+- **Bootstrap:** the page becomes the template: dark navbar (a hamburger once responsive), "Hello, world!" hero,
+  a grid of blocks. Until then the 2011 site keeps its 2005 look.
+- **Features:** Like and share buttons (counters per network), HTML5 video player, live activity feed (infinite
+  scroll, busier with every share). Skills: responsive design, Bootstrap, HTML5 media, social plugins, Node.js.
+- **The cloud:** each era has its own hosting ladder; the relaunch starts at "The cloud: 2 instances" (free),
+  growing about a quarter per step. The racks stay in 2005.
+- **Typing:** a dark code editor where every keystroke pastes a whole line from a Q&A site ("duplicate!",
+  "accepted"). Files: index.html, app.js, style.css, and server.js with Node.js.
+- **Performance:** "Grade B · Mobile 69/100" in the status bar. Pop-ups: like-gates, app banners, the first cookie
+  notices, phishing through a friend's chat. The issue tracker becomes Mentions: complaints posted at you.
 
-**Looks (frontend)**
-- **Responsive design**: before it, a phone-sized frame shows your site scrolling sideways. Media queries are
-  this era's "Learn CSS" moment.
-- **Bootstrap**: the page becomes the template everyone used: a big "Hello, world!" hero, three columns with icons.
-- **Masonry tiles**: the page breaks into Pinterest-style tiles. The editor types `$('.grid').masonry(...)`,
-  because it was a jQuery plugin.
-- **Parallax scrolling**: background layers drift at different speeds. Animate only `transform`.
-- **Scroll-jacking one-pager**: a toggle. On: "Site of the Day" awards (more traffic), but scrolling snaps
-  section by section, some visitors leave, and you live with it too.
-- Hamburger menu, infinite scroll, like and share buttons with counts, "Get our app!" banners.
-- HTML5 video replaces Flash; retina images are blurry until you learn `@2x` images.
-- Skeuomorphic textures (leather, linen, stitching) that a later era will strip away.
-
-**Backend**
-- Node.js and npm, MongoDB ("is it web scale?"), REST and JSON APIs.
-- The cloud: `git push` deploys, object storage, autoscaling. It replaces the 2005 racks as the hosting
-  ladder (moved here from 2005: the cloud took off around 2010, not in 2005).
-- OAuth "Sign in with…" buttons (parody social networks).
-- Sass in the editor, Grunt build files.
-
-**Hazards:** DDoS attacks, password leaks and account takeovers, mobile visitors bouncing, Flash-dead features.
-
-**Typing tool:** copy-paste from a Q&A site. Each keystroke pastes a whole answer; a typo becomes
-"copied the wrong answer (marked as duplicate)".
-
-**Performance indicator:** a YSlow-style letter grade plus a separate mobile score.
+**Still to build (the content PR):**
+- **Looks:** masonry tiles (`$('.grid').masonry(...)`, a jQuery plugin), parallax scrolling (animate only
+  `transform`), a scroll-jacking one-pager as a switch (more traffic from "Site of the Day" awards, some visitors
+  leave; reuses `isSwitchable`), retina images blurry until `@2x`, skeuomorphic textures (leather, linen,
+  stitching) for 2018 to strip away, a "Get our app!" banner.
+- **Backend:** MongoDB ("is it web scale?"), REST and JSON APIs, `git push` deploys and autoscaling as cloud
+  boosts, "Sign in with…" buttons (parody networks), Sass and Grunt files in the editor.
+- **Hazards:** DDoS attacks and password leaks, each with a minigame (block the attacking IPs; reset the leaked
+  accounts) and a passive fix.
 
 ## 2018 Platform
 
@@ -281,6 +279,14 @@ Next candidates: rack wiring (server overload as a hazard), "hold the line" duri
 like the virus has, can come later for the others.
 
 ## Balance notes
+
+- **2011 pacing:** 11–12 minutes for the scripted players, like the other eras. Two fixes got it there: cloud steps
+  grow geometrically (a flat +12M per instance at ×1.3 the price stopped scaling at about 20 instances), and the
+  budget is about two minutes of end-of-era income (a $2T budget meant 19 minutes of saving with nothing to buy).
+- **The relaunch costs something:** phone visitors bouncing and Flash dying cut income for the first minute of
+  2011, until responsive design and HTML5 media win it back. Tuned so it reads as a challenge, not a punishment.
+- **The steepest-minute check now measures underlying income** (no infections, pop-ups, spikes or quick-fix
+  bonus). Before, cleaning an infection that took out your biggest feature read as a ×30 "snowball".
 
 - **Late 2005 used to snowball** (income ×24 in one simulated minute, era over in 5 minutes). Fixed by
   spreading 2005 prices, making late features cost and produce more, and splitting hosting into six

@@ -1,5 +1,7 @@
 import {
   calculateGateChecks,
+  FEATURE_IDS,
+  isFeaturePluginDead,
   calculatePerformanceTrafficFactor,
   calculateServerLoad,
   isSiteDown,
@@ -66,6 +68,14 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => state.popups.length >= POPUP_NAG_COUNT,
     text: 'Every open pop-up drives visitors away. Close them, or switch to a pickier ad network.',
+  },
+  {
+    applies: (state) => state.eraId === 'social-2011' && !state.purchasedUpgradeIds.includes('responsive-design'),
+    text: 'Four in ten of your visitors are on a phone, and most of them leave: your page doesn’t fit their screen. Learn responsive design.',
+  },
+  {
+    applies: (state) => FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0 && isFeaturePluginDead(state, featureId)),
+    text: 'Flash is dead: your intro and podcast player show a missing-plugin box and bring nothing. Learn HTML5 video and audio to rebuild them.',
   },
   {
     applies: (state) => state.eraId === 'web2-2005' && !state.purchasedUpgradeIds.includes('learn-css'),

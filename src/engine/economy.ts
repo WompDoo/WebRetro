@@ -14,7 +14,7 @@ import {
 import { DEFENSE_IDS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, FEATURES_BY_ID } from './content/features';
-import { HOSTING_TIERS } from './content/hosting';
+import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
 import type {
   DefenseDefinition,
@@ -31,6 +31,8 @@ import type {
 
 const NEUTRAL_FACTOR = 1;
 const NO_TRAFFIC = 0;
+/** Before responsive design, about one phone visitor in four puts up with pinching and zooming. */
+const MOBILE_STAY_SHARE_UNFRIENDLY = 0.25;
 const FALLBACK_HOSTING_TIER: HostingTierDefinition = {
   id: 'shared-hosting',
   eraId: 'web2-2005',
@@ -125,8 +127,14 @@ export function isFeatureSwitchedOff(state: GameState, featureId: FeatureId): bo
   return state.switchedOffFeatureIds.includes(featureId);
 }
 
+/** Flash in 2011: the feature is still built, but browsers show a "missing plugin" box until you rebuild it. */
+export function isFeaturePluginDead(state: GameState, featureId: FeatureId): boolean {
+  const plugin = FEATURES_BY_ID[featureId].pluginDiesIn;
+  return plugin !== null && isEraUnlocked(state, plugin.eraId) && !state.purchasedUpgradeIds.includes(plugin.rebuiltWith);
+}
+
 export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
-  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId);
+  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
   return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * (isProducing ? NEUTRAL_FACTOR : NO_TRAFFIC);
 }
 
@@ -156,6 +164,21 @@ export function calculatePopupTrafficFactor(state: GameState): number {
   return (NEUTRAL_FACTOR - POPUP_TRAFFIC_PENALTY) ** state.popups.length;
 }
 
+export function isMobileFriendly(state: GameState): boolean {
+  return getPurchasedEffects(state).some((effect) => effect.kind === 'mobile-friendly');
+}
+
+/** Share of phone visitors who stay: almost none while the page needs pinching and sideways scrolling. */
+export function calculateMobileStayShare(state: GameState): number {
+  return isMobileFriendly(state) ? NEUTRAL_FACTOR : MOBILE_STAY_SHARE_UNFRIENDLY;
+}
+
+/** Desktop visitors all stay; phone visitors stay only once the page fits their screen. */
+export function calculateMobileTrafficFactor(state: GameState): number {
+  const mobileShare = ERAS_BY_ID[state.eraId].mobileShare;
+  return NEUTRAL_FACTOR - mobileShare + mobileShare * calculateMobileStayShare(state);
+}
+
 /** Visitors notice a site that gets fixed fast. */
 export function calculateQuickFixFactor(state: GameState): number {
   return state.quickFixBonusRemainingMs > 0 ? QUICK_FIX_TRAFFIC_FACTOR : NEUTRAL_FACTOR;
@@ -173,17 +196,20 @@ export function calculateDemandVisitorsPerSecond(state: GameState): number {
     calculateAdTrafficFactor(state) *
     calculatePopupTrafficFactor(state) *
     calculateTrafficSpikeFactor(state) *
-    calculateQuickFixFactor(state)
+    calculateQuickFixFactor(state) *
+    calculateMobileTrafficFactor(state)
   );
 }
 
+/** hostingTier is a step on the current era's ladder; a relaunch starts the new era's ladder at the bottom. */
 export function getHostingTier(state: GameState): HostingTierDefinition {
-  return HOSTING_TIERS[Math.min(state.hostingTier, HOSTING_TIERS.length - 1)] ?? FALLBACK_HOSTING_TIER;
+  const ladder = getEraHostingTiers(state.eraId);
+  return ladder[Math.min(state.hostingTier, ladder.length - 1)] ?? FALLBACK_HOSTING_TIER;
 }
 
 export function getNextHostingTier(state: GameState): HostingTierDefinition | null {
-  const next = HOSTING_TIERS[state.hostingTier + 1];
-  return next !== undefined && isEraUnlocked(state, next.eraId) && ERAS_BY_ID[state.eraId].hasServerLoad ? next : null;
+  const next = getEraHostingTiers(state.eraId)[state.hostingTier + 1];
+  return next !== undefined && ERAS_BY_ID[state.eraId].hasServerLoad ? next : null;
 }
 
 /** Share of each visit that reaches your own server. Caching and a CDN answer the rest. */
@@ -218,7 +244,7 @@ export function calculateServerLoad(state: GameState): number {
 function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): number {
   const definition = FEATURES_BY_ID[featureId];
   const level = state.featureLevels[featureId];
-  const isOnPage = level > 0 && !isFeatureSwitchedOff(state, featureId);
+  const isOnPage = level > 0 && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
   return isOnPage ? definition.pageWeightKb + definition.pageWeightKbPerLevel * level : 0;
 }
 

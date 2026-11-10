@@ -153,6 +153,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'load-time-multiplier': (effect) => `Load time ${formatFactor(effect.factor)}`,
   'server-load-multiplier': (effect) => `Server load per visitor ${formatFactor(effect.factor)}`,
   'traffic-spike-cache': () => 'Traffic spikes put no load on the server',
+  'mobile-friendly': () => 'Phone visitors stop leaving',
 };
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
@@ -405,7 +406,7 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
     state.enabledDefenseIds.join(','),
     state.switchedOffFeatureIds.join(','),
     state.hostingTier,
-    state.eraId === 'web2-2005' ? Math.round(calculateServerLoad(state) * 20) : 0,
+    ERAS_BY_ID[state.eraId].hasServerLoad ? Math.round(calculateServerLoad(state) * 20) : 0,
     getRevealedBoostIds(state).join(','),
     state.infections.map((infection) => infection.featureId).join(','),
   ].join('|');

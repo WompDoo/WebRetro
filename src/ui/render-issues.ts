@@ -43,9 +43,20 @@ function renderBug(issue: Issue, state: GameState, nowMs: number): string {
   </li>`;
 }
 
+/** 2011: your problems arrive as public posts, aimed at you, for everyone to see. */
+function renderMention(issue: Issue, state: GameState, nowMs: number): string {
+  const handle = issue.sender.split('@')[0] ?? 'someone';
+  return `<li class="issue issue--mention" data-severity="${issue.severity}">
+    <span class="issue-from">@${escapeHtml(handle)} · ${issue.severity === 'critical' ? 'now' : 'just now'}</span>
+    <span class="issue-subject">@myhomepage ${escapeHtml(issue.title.toLowerCase())} ${issue.severity === 'critical' ? '#fail' : '#annoyed'}</span>
+    ${renderMeta(issue, state, nowMs)}${renderActions(issue)}
+  </li>`;
+}
+
 const TRACKER_STYLES: Readonly<Record<EraId, TrackerStyle>> = {
   'homepage-1997': { panelTitle: 'Inbox', emptyText: 'No new mail.', renderIssue: renderEmail },
   'web2-2005': { panelTitle: 'Issues', emptyText: 'No open bugs. Ship it!', renderIssue: renderBug },
+  'social-2011': { panelTitle: 'Mentions', emptyText: 'Nobody is complaining about you. For now.', renderIssue: renderMention },
 };
 
 export function issuePanelTitle(eraId: EraId): string {

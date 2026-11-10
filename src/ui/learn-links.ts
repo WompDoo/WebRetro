@@ -32,6 +32,12 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'prepared-statements': 'https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html',
   'learn-ajax': `${MDN}/Glossary/AJAX`,
   'learn-rss': `${WIKIPEDIA}/RSS`,
+  // 2011 skills
+  'responsive-design': `${MDN}/Web/CSS/CSS_media_queries/Using_media_queries`,
+  'learn-bootstrap': 'https://getbootstrap.com/docs/',
+  'html5-media': `${MDN}/Web/HTML/Element/video`,
+  'social-plugins': `${WIKIPEDIA}/Like_button`,
+  'learn-nodejs': 'https://nodejs.org/en/learn/getting-started/introduction-to-nodejs',
   // 1997 boosts
   'counter-starts-at-ten-thousand': null,
   'html-validator': 'https://validator.w3.org/',

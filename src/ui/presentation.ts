@@ -1,5 +1,5 @@
 import type { EraId } from '../engine';
-import { HOMEPAGE_POPUPS, WEB2_POPUPS } from './popup-copy';
+import { HOMEPAGE_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
 import type { PopupCopy } from './popup-copy';
 
 export interface MessageCopy {
@@ -27,6 +27,15 @@ export interface EraStory {
   readonly confirmLabel: string;
 }
 
+/** How code arrives in the editor: typed a few characters at a time, or pasted a line at a time. */
+export interface TypingStyle {
+  readonly pastesWholeLines: boolean;
+  readonly typoLabel: string;
+  readonly fixLabel: string;
+}
+
+const TYPED_BY_HAND: TypingStyle = { pastesWholeLines: false, typoLabel: 'typo!', fixLabel: 'fixed' };
+
 export interface EraPresentation {
   readonly year: number;
   readonly browserTitle: string;
@@ -35,6 +44,7 @@ export interface EraPresentation {
   readonly editorMenu: readonly string[];
   readonly editorTabs: readonly string[];
   readonly editorHighlightsSyntax: boolean;
+  readonly typing: TypingStyle;
   readonly popups: readonly PopupCopy[];
   readonly guestbook: readonly MessageCopy[];
   readonly musicTracks: readonly string[];
@@ -51,6 +61,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorMenu: ['File', 'Edit', 'Search', 'Help'],
     editorTabs: [],
     editorHighlightsSyntax: false,
+    typing: TYPED_BY_HAND,
     popups: HOMEPAGE_POPUPS,
     guestbook: [
       { author: 'xX_SkaterBoi_Xx', text: 'cool site!!! check out mine 2' },
@@ -74,6 +85,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorMenu: [],
     editorTabs: ['blog.php', 'ajax.js', 'style.css'],
     editorHighlightsSyntax: true,
+    typing: TYPED_BY_HAND,
     popups: WEB2_POPUPS,
     guestbook: [
       { author: 'web2fan', text: 'nice redesign!! so glossy' },
@@ -102,6 +114,45 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
       confirmLabel: 'Relaunch as Web 2.0',
     },
     antivirusTitle: 'Antivirus 2005 · Quick scan',
+  },
+  'social-2011': {
+    year: 2011,
+    browserTitle: 'myhomepage',
+    siteUrl: 'http://www.myhomepage.com/#!/home',
+    editorTitle: 'index.html — Lime Text',
+    editorMenu: [],
+    editorTabs: ['index.html', 'app.js', 'style.css'],
+    editorHighlightsSyntax: true,
+    // Nobody types code in 2011: every keystroke pastes a whole answer from a Q&A site.
+    typing: { pastesWholeLines: true, typoLabel: 'duplicate!', fixLabel: 'accepted' },
+    popups: SOCIAL_POPUPS,
+    guestbook: [
+      { author: 'Sam K.', text: 'liked your post!' },
+      { author: 'Ana P.', text: 'is this mobile friendly?? cant read it on my phone' },
+      { author: 'Jo', text: 'shared this with 400 friends' },
+      { author: 'Theo', text: 'first! (from my phone)' },
+      { author: 'mel_b', text: 'pls make an app' },
+      { author: 'Rik', text: 'checked in here #awesome' },
+    ],
+    musicTracks: ['Ep. 41: Is Flash dead?', 'Ep. 42: Responsive everything', 'Ep. 43: Hashbang URLs, why'],
+    entryStory: {
+      yearSpan: '2006 → 2011',
+      heading: 'Everyone has a phone now',
+      paragraphs: [
+        'A phone with no keyboard and a real web browser comes out. By 2011, four in ten of your visitors are on a phone, and your glossy 2005 blog makes them pinch, zoom and scroll sideways.',
+        'Everyone is on a social network. Visitors arrive from their friends’ shares now, not from your blogroll.',
+        'And Flash is dying: phones never ran it, and desktop browsers started blocking it. Your Flash intro and podcast player show a missing-plugin box.',
+      ],
+      whatsNew: [
+        'Four in ten visitors are on phones. Most of them leave until you learn responsive design.',
+        'Flash is dead: rebuild your intro and podcast player with HTML5 video and audio.',
+        'Learn Bootstrap and your site gets the look every 2011 site had.',
+        'Your racks don’t come along: you move to the cloud, and add instances as you grow.',
+        'Code comes from a Q&A site now: every keystroke pastes a whole answer. Some get marked as duplicate.',
+      ],
+      confirmLabel: 'Relaunch for 2011',
+    },
+    antivirusTitle: 'AntiMalware Free · Quick scan',
   },
 };
 

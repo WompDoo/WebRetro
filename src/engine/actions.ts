@@ -215,8 +215,9 @@ export function cleanInfection(state: GameState, infectionId: number): GameStep 
   return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }
 
+/** A relaunch: the new era's world, and the bottom of its hosting ladder. Features and skills come along. */
 function enterEra(state: GameState, eraId: EraId): GameState {
-  return { ...state, eraId, hasPendingBug: false, popups: [] };
+  return { ...state, eraId, hasPendingBug: false, popups: [], hostingTier: 0 };
 }
 
 /** Moving to the next era is always the player's choice. It never happens on its own, even offline. */

@@ -4,6 +4,7 @@ import { siteName } from './site-context';
 import type { SiteContext } from './site-context';
 import { render1997Site } from './site-1997';
 import { render2005Site } from './site-2005';
+import { render2011Site } from './site-2011';
 
 export { siteName } from './site-context';
 export { renderLiveSlotText, updateLiveSlots } from './live-slots';
@@ -12,6 +13,7 @@ export type { LiveSlotName } from './live-slots';
 const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> = {
   'homepage-1997': render1997Site,
   'web2-2005': render2005Site,
+  'social-2011': render2011Site,
 };
 
 function renderServiceUnavailable(state: GameState): string {

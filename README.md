@@ -1,6 +1,7 @@
 # Under Construction
 
 An incremental game about building a website, from a bare `Hello World!` in 1997 to today.
+Playable now: 1997 (personal homepage), 2005 (Web 2.0) and 2011 (social and mobile).
 You write code to earn freelance money, learn HTML tag by tag, build features that bring
 in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
 with short minigames. Each era ends with a relaunch.
