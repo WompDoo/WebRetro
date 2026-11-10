@@ -186,7 +186,10 @@ function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): n
 export function calculatePageWeightKb(state: GameState): number {
   const era = ERAS_BY_ID[state.eraId];
   const factors = getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'page-weight-multiplier' ? [effect.factor] : []));
-  const rawKb = era.basePageWeightKb + sumAll(FEATURE_IDS.map((featureId) => calculateFeaturePageWeightKb(state, featureId))) + state.adCount * era.adPageWeightKb;
+  const featuresKb = sumAll(FEATURE_IDS.map((featureId) => calculateFeaturePageWeightKb(state, featureId)));
+  // Old assets come along: your 1997 stars.gif still loads on the 2005 page.
+  const upgradesKb = sumAll(state.purchasedUpgradeIds.map((upgradeId) => UPGRADES_BY_ID[upgradeId].pageWeightKb));
+  const rawKb = era.basePageWeightKb + featuresKb + upgradesKb + state.adCount * era.adPageWeightKb;
   return rawKb * multiplyAll(factors);
 }
 

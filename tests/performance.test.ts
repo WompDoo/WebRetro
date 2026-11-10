@@ -4,6 +4,7 @@ import {
   advanceHazards,
   calculateDemandVisitorsPerSecond,
   calculateLoadTimeSeconds,
+  calculatePageWeightKb,
   calculatePerformanceTrafficFactor,
   calculateServerLoad,
   calculateVisitorsPerSecond,
@@ -31,6 +32,11 @@ describe('page load', () => {
   it('a Hello World page loads well within 1997 patience', () => {
     assert.ok(calculateLoadTimeSeconds(fresh()) < 1);
     assert.equal(calculatePerformanceTrafficFactor(fresh()), 1);
+  });
+
+  it('a tiled BODY BACKGROUND makes every page load heavier', () => {
+    const withBackground: GameState = { ...fresh(), purchasedUpgradeIds: ['body-background'] };
+    assert.ok(calculatePageWeightKb(withBackground) > calculatePageWeightKb(fresh()));
   });
 
   it('a heavy 1997 page over the modem loses visitors', () => {

@@ -121,6 +121,8 @@ export type UpgradeEffect =
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
   readonly kind: UpgradeKind;
+  /** Kilobytes this adds to every page load: background images, script files, glossy PNGs. */
+  readonly pageWeightKb: number;
   readonly eraId: EraId;
   readonly name: string;
   readonly description: string;

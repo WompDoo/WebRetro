@@ -143,6 +143,11 @@ function describeUnlocks(state: GameState, skillId: UpgradeId): string {
   return unlocked.length === 0 ? '' : `<p class="shop-effect is-unlock">Unlocks: ${escapeHtml(unlocked.join(', '))}</p>`;
 }
 
+function describeUpgradeWeight(upgradeId: UpgradeId): string {
+  const weightKb = UPGRADES_BY_ID[upgradeId].pageWeightKb;
+  return weightKb > 0 ? ` · +${weightKb} KB per page` : '';
+}
+
 function renderSkillRow(state: GameState, skillId: UpgradeId): string {
   const skill = UPGRADES_BY_ID[skillId];
   return `<article class="shop-row">
@@ -151,7 +156,7 @@ function renderSkillRow(state: GameState, skillId: UpgradeId): string {
       <h3 class="shop-name">${escapeHtml(skill.name)}</h3>
       <p class="shop-desc">${escapeHtml(skill.description)}</p>
       ${describeUnlocks(state, skillId)}
-      <p class="shop-effect">${escapeHtml(describeUpgradeEffect(skill.effect, state.eraId))}</p>
+      <p class="shop-effect">${escapeHtml(describeUpgradeEffect(skill.effect, state.eraId) + describeUpgradeWeight(skillId))}</p>
     </div>
     ${buyButton('buy-upgrade', skillId, skill.cost)}
   </article>`;
@@ -183,7 +188,7 @@ function renderBoostRow(state: GameState, upgradeId: UpgradeId): string {
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(upgrade.name)}</h3>
       <p class="shop-desc">${escapeHtml(upgrade.description)}</p>
-      <p class="shop-effect">${escapeHtml(describeUpgradeEffect(upgrade.effect, state.eraId))}</p>
+      <p class="shop-effect">${escapeHtml(describeUpgradeEffect(upgrade.effect, state.eraId) + describeUpgradeWeight(upgradeId))}</p>
     </div>
     ${buyButton('buy-upgrade', upgradeId, upgrade.cost)}
   </article>`;
