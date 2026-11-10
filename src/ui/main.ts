@@ -11,6 +11,7 @@ import {
   calculateEconomySnapshot,
   closePopup,
   createInitialGameState,
+  fallForPopupScam,
   DEFENSE_IDS,
   ERAS_BY_ID,
   FEATURE_IDS,
@@ -32,7 +33,7 @@ import type { CodeEditor, KeystrokeFeedback } from './code-editor';
 import { escapeHtml, requireElement, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, updateGoalProgress } from './render-goal';
-import { calculatePopupSignature, syncPopups } from './render-popups';
+import { calculatePopupSignature, findPopupCopy, syncPopups } from './render-popups';
 import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
 import type { ShopTab } from './render-shop';
 import { calculateDisplayedCounter, calculateSiteSignature, renderCounterDigits, renderGuestbookEntries, renderMusicStatus, renderSite, renderVirusTimer } from './render-site';
@@ -247,11 +248,27 @@ function startMigration(): void {
   if (renderStory()) showOverlay(elements.storyOverlay);
 }
 
+function flashMoneyLoss(): void {
+  elements.statMoney.classList.remove('is-loss');
+  void elements.statMoney.offsetWidth;
+  elements.statMoney.classList.add('is-loss');
+}
+
+function fallForScam(popupId: number): void {
+  const copy = findPopupCopy(game, popupId);
+  const result = fallForPopupScam(game, popupId);
+  game = result.state;
+  if (copy === null) return;
+  pushMessage(`${copy.scamOutcome} You lost ${formatMoney(result.moneyLost)}.`);
+  flashMoneyLoss();
+}
+
 function resetGame(): void {
   clearSave();
   game = createInitialGameState(createSeed());
   news = [];
   endCardShown = false;
+  signatures.skills = '';
   elements.resetOverlay.hidden = true;
   elements.endOverlay.hidden = true;
   renderedEraId = '';
@@ -277,6 +294,7 @@ const ACTION_HANDLERS: Readonly<Record<string, (target: HTMLElement) => void>> =
   'place-ad': () => updateGame(placeAd),
   'remove-ad': () => updateGame(removeAd),
   'close-popup': (target) => updateGame((state) => closePopup(state, Number(readId(target)))),
+  'accept-popup': (target) => fallForScam(Number(readId(target))),
   'scrub-infection': (target) => applyStep(scrubInfection(game, Number(readId(target)))),
   'open-snake': (target) => snake?.open(Number(readId(target))),
   'close-snake': () => snake?.close(),

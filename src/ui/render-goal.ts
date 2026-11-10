@@ -51,6 +51,10 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'Every open pop-up drives visitors away. Close them, or switch to a pickier ad network.',
   },
   {
+    applies: (state) => state.eraId === 'web2-2005' && !state.purchasedUpgradeIds.includes('learn-css'),
+    text: 'It’s 2005 and your site still runs on <TABLE> tags. Learn CSS to rebuild it properly.',
+  },
+  {
     applies: (state) => state.eraId === 'web2-2005' && state.adCount <= ERA_ONE_MAX_ADS && !state.purchasedUpgradeIds.includes('contextual-text-ads'),
     text: 'It’s 2005: ads pay less, but you have room for more. With contextual text ads, your 1997 ad count is no longer the best.',
   },

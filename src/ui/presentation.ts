@@ -37,87 +37,12 @@ export interface EraPresentation {
   readonly editorMenu: readonly string[];
   readonly editorTabs: readonly string[];
   readonly editorHighlightsSyntax: boolean;
-  readonly codeSnippet: string;
   readonly popups: readonly PopupCopy[];
   readonly guestbook: readonly MessageCopy[];
   readonly musicTracks: readonly string[];
   readonly entryStory: EraStory | null;
   readonly antivirusTitle: string;
 }
-
-const HOMEPAGE_CODE = [
-  '<HTML>',
-  '<HEAD>',
-  '<TITLE>~*~ Welcome to My Homepage!!! ~*~</TITLE>',
-  '<META NAME="keywords" CONTENT="cool, homepage, free, games, cool, cool, cool">',
-  '</HEAD>',
-  '<BODY BGCOLOR="#000020" TEXT="#00FF00" LINK="#FFFF00" VLINK="#FF00FF" BACKGROUND="stars.gif">',
-  '<CENTER>',
-  '<FONT FACE="Comic Sans MS" SIZE="6" COLOR="#FF00FF">Welcome to my homepage!!!</FONT>',
-  '<BR><IMG SRC="construction.gif" WIDTH="88" HEIGHT="31" ALT="under construction">',
-  '<MARQUEE BEHAVIOR="alternate">*** Best viewed in 800x600 ***</MARQUEE>',
-  '<TABLE BORDER="1" CELLPADDING="4" CELLSPACING="0" WIDTH="600">',
-  '<TR><TD BGCOLOR="#000080"><FONT COLOR="#FFFF00"><B>About me</B></FONT></TD></TR>',
-  '<TR><TD>Hi!! I like computers, my cat, and pizza. This is my page.</TD></TR>',
-  '</TABLE>',
-  '<BLINK>NEW!</BLINK> Please sign my <A HREF="guestbook.cgi">guestbook</A>!!',
-  '<EMBED SRC="song.mid" AUTOSTART="true" LOOP="true" HIDDEN="true">',
-  '<!-- TODO: make it look right in the other browser too -->',
-  '<IMG SRC="/cgi-bin/counter.cgi?page=index" ALT="hit counter">',
-  '<SCRIPT LANGUAGE="JavaScript">',
-  '<!-- hide from old browsers',
-  'function welcomeVisitor() {',
-  '  alert("Welcome!!! Please sign my guestbook!!!");',
-  '}',
-  'window.status = "Welcome to my homepage!!! *** Welcome!!! ***";',
-  '// -->',
-  '</SCRIPT>',
-  '#!/usr/bin/perl',
-  'print "Content-type: text/html\\n\\n";',
-  'open(GUESTBOOK, ">>guestbook.txt");',
-  'print GUESTBOOK "$name says: $message<BR>\\n";',
-  'close(GUESTBOOK);',
-  '<A HREF="http://www.webring.example/next?site=42">Next site &gt;&gt;</A>',
-  '<FONT SIZE="1">Last updated: 10/31/97. (c) 1997 Webmaster.</FONT>',
-  '</CENTER>',
-  '</BODY>',
-  '</HTML>',
-  '',
-].join('\n');
-
-const WEB2_CODE = [
-  '<?php',
-  'include("config.php");',
-  'mysql_connect($db_host, $db_user, $db_pass);',
-  'mysql_select_db("myhomepage");',
-  '$posts = mysql_query("SELECT * FROM posts ORDER BY created DESC LIMIT 10");',
-  'while ($post = mysql_fetch_array($posts)) {',
-  '  echo "<div class=\\"post\\"><h2>" . $post["title"] . "</h2>";',
-  '  echo nl2br($post["body"]) . "</div>";',
-  '}',
-  '// TODO: escape this before launch',
-  '$comments = mysql_query("SELECT * FROM comments WHERE post_id = " . $_GET["id"]);',
-  '?>',
-  '<script type="text/javascript">',
-  'var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");',
-  'xhr.onreadystatechange = function() {',
-  '  if (xhr.readyState == 4 && xhr.status == 200) {',
-  '    document.getElementById("comments").innerHTML = xhr.responseText;',
-  '  }',
-  '};',
-  'xhr.open("GET", "comments.php?post=" + postId, true);',
-  'xhr.send(null);',
-  '</script>',
-  '<style type="text/css">',
-  '#header { background: url(gloss.png) repeat-x; height: 120px; }',
-  '.box { -moz-border-radius: 10px; -webkit-border-radius: 10px; }',
-  '.beta { float: right; } /* clearfix hack below, do not touch */',
-  '.clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }',
-  '* html .clearfix { height: 1%; } /* old browser fix */',
-  '</style>',
-  '<link rel="alternate" type="application/rss+xml" title="RSS" href="/feed.xml" />',
-  '',
-].join('\n');
 
 export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   'homepage-1997': {
@@ -130,7 +55,6 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorMenu: ['File', 'Edit', 'Search', 'Help'],
     editorTabs: [],
     editorHighlightsSyntax: false,
-    codeSnippet: HOMEPAGE_CODE,
     popups: HOMEPAGE_POPUPS,
     guestbook: [
       { author: 'xX_SkaterBoi_Xx', text: 'cool site!!! check out mine 2' },
@@ -156,7 +80,6 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorMenu: [],
     editorTabs: ['blog.php', 'ajax.js', 'style.css'],
     editorHighlightsSyntax: true,
-    codeSnippet: WEB2_CODE,
     popups: WEB2_POPUPS,
     guestbook: [
       { author: 'web2fan', text: 'nice redesign!! so glossy' },
@@ -173,10 +96,11 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
       paragraphs: [
         'March 2000. The dot-com bubble bursts. Ad rates crash and half your webring goes offline overnight.',
         'Then somebody coins “Web 2.0”. Websites stop being pages you read and turn into places where people post.',
-        'Your homepage needs a relaunch: rounded corners, glossy gradients and a beta sticker.',
+        'Your homepage needs a relaunch: rounded corners, glossy gradients and a beta sticker. One problem: you still build everything with tables.'
       ],
       whatsNew: [
-        'Blogs, comments and tag clouds.',
+        'Your site keeps its 1997 look until you learn CSS. Learn the Web 2.0 look after that to make it glossy.',
+        'Blogs, comments and tag clouds, each unlocked by a new skill.',
         'Your old features get new names: the guestbook becomes a shoutbox, the webring a blogroll.',
         'Ads pay less after the crash, and you have room for more of them. Contextual text ads annoy visitors less, so your best ad count changes.',
         'Spam bots now target your comments.',

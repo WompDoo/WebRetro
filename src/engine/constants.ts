@@ -13,6 +13,8 @@ export const AD_COST_GROWTH = 2.4;
 export const POPUP_TRAFFIC_PENALTY = 0.1;
 export const MAX_OPEN_POPUPS = 5;
 export const POPUP_FREQUENCY_PER_EXTRA_AD = 0.3;
+/** Clicking the shiny button on a pop-up costs this share of your money. */
+export const POPUP_SCAM_MONEY_SHARE = 0.1;
 
 export const SPAM_CLEAN_CLICKS = 4;
 export const MAX_VIRUS_INFECTIONS = 2;

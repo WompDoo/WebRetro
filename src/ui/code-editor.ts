@@ -161,7 +161,6 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
 
   const setEra = (eraId: EraId): void => {
     const presentation = ERA_PRESENTATION[eraId];
-    source = presentation.codeSnippet;
     cursor = 0;
     committed = '';
     typo = null;

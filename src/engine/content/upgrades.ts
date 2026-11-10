@@ -11,7 +11,9 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'table-layouts',
   'embed-tag',
   'learn-javascript',
+  'learn-css',
   'learn-php',
+  'web2-design',
   'learn-ajax',
   'learn-rss',
   'counter-starts-at-ten-thousand',
@@ -127,7 +129,27 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     effect: { kind: 'keystroke-revenue-share', share: 0.01 },
     requiredFeatureId: null,
   },
-  // ---------- 2005 skills ----------
+  // ---------- 2005 skills: you arrive still knowing only 1997 HTML ----------
+  'learn-css': {
+    id: 'learn-css',
+    kind: 'skill',
+    eraId: 'web2-2005',
+    name: 'Learn CSS',
+    description: 'Tables are for data now, apparently. Rebuild the page with divs and a stylesheet.',
+    cost: 40_000,
+    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    requiredFeatureId: null,
+  },
+  'web2-design': {
+    id: 'web2-design',
+    kind: 'skill',
+    eraId: 'web2-2005',
+    name: 'Learn the Web 2.0 look',
+    description: 'Glossy gradients, reflections under the logo, rounded everything and a beta starburst.',
+    cost: 250_000,
+    effect: { kind: 'global-traffic-multiplier', factor: 1.1 },
+    requiredFeatureId: null,
+  },
   'learn-php': {
     id: 'learn-php',
     kind: 'skill',

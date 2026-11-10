@@ -1,4 +1,4 @@
-import { calculateMsUntilVirusGrows, calculateRequiredVirusFood, FEATURE_IDS, getFeatureDisplayName } from '../engine';
+import { calculateMsUntilVirusGrows, calculateRequiredVirusFood, FEATURE_IDS, getFeatureDisplayName, UPGRADES_BY_ID } from '../engine';
 import type { EraId, FeatureId, GameState, Infection, SpamInfection, UpgradeId, VirusInfection } from '../engine';
 import { escapeHtml, pickCyclic } from './dom';
 import { BANNER_ADS, BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, TAGS, TEXT_ADS } from './presentation';
@@ -197,6 +197,8 @@ function interleaveBanners(blocks: readonly string[], adCount: number): string {
 const MARQUEE_TEXT = '*** Best viewed in 800x600 *** Sign my guestbook!!! *** You are LIVE on the World Wide Web ***';
 const TABLE_SIDEBAR_FEATURES: readonly FeatureId[] = ['hit-counter', 'webring'];
 const TABLE_MAIN_FEATURES: readonly FeatureId[] = ['under-construction', 'guestbook', 'midi-player'];
+// Stacked 1997 pages list the sidebar features first, the way they were built.
+const STACKED_1997_ORDER: readonly FeatureId[] = FEATURE_IDS;
 const NAV_LINKS: readonly string[] = ['Home', 'About me', 'My cat', 'Cool links', 'Guestbook', 'Email me'];
 
 /** What the developer knows decides what the 1997 page looks like. */
@@ -229,8 +231,29 @@ function homepageClasses(skills: HomepageSkills): string {
   return ['site-1997', ...modifiers].join(' ');
 }
 
-function renderHomepageTitle(skills: HomepageSkills): string {
+interface HomepageContent {
+  readonly title: string;
+  readonly sidebarFeatures: readonly FeatureId[];
+  readonly mainFeatures: readonly FeatureId[];
+}
+
+function homepage1997Content(skills: HomepageSkills): HomepageContent {
   const title = skills.font ? 'Welcome to My Homepage!!!' : 'Hello World!';
+  return skills.tables
+    ? { title, sidebarFeatures: TABLE_SIDEBAR_FEATURES, mainFeatures: TABLE_MAIN_FEATURES }
+    : { title, sidebarFeatures: [], mainFeatures: STACKED_1997_ORDER };
+}
+
+/** 2005 content crammed into a 1997 page: what you get before you learn CSS. */
+function legacy2005Content(skills: HomepageSkills): HomepageContent {
+  return {
+    title: skills.font ? 'Welcome to myhomepage 2.0!!!' : 'myhomepage 2.0',
+    sidebarFeatures: ['hit-counter', 'webring', 'tag-cloud'],
+    mainFeatures: ['blog', 'comments', 'under-construction', 'guestbook', 'midi-player'],
+  };
+}
+
+function renderHomepageTitle(skills: HomepageSkills, title: string): string {
   const marquee = skills.marquee ? `<div class="site-marquee"><span>${MARQUEE_TEXT}</span></div>` : '';
   return `<h1 class="site-title">${title}</h1>${marquee}`;
 }
@@ -253,13 +276,13 @@ function renderNavLinks(skills: HomepageSkills): string {
 }
 
 /** After "Learn <TABLE> layouts": the classic navigation column on the left, content on the right. */
-function render1997TableSite(context: SiteContext, skills: HomepageSkills): string {
-  const sidebar = ownedFeatures(context, TABLE_SIDEBAR_FEATURES).map((featureId) => renderFeatureBlock(context, featureId)).join('');
-  const mainBlocks = ownedFeatures(context, TABLE_MAIN_FEATURES).map((featureId) => renderFeatureBlock(context, featureId));
+function render1997TableSite(context: SiteContext, skills: HomepageSkills, content: HomepageContent): string {
+  const sidebar = ownedFeatures(context, content.sidebarFeatures).map((featureId) => renderFeatureBlock(context, featureId)).join('');
+  const mainBlocks = ownedFeatures(context, content.mainFeatures).map((featureId) => renderFeatureBlock(context, featureId));
   const intro = renderHomepageIntro(skills);
   const about = intro === '' ? [] : [`<section class="feature-block t97-about"><h2 class="feature-heading">About me</h2>${intro}</section>`];
   return `<div class="${homepageClasses(skills)}">
-    <div class="t97-header">${renderHomepageTitle(skills)}</div>
+    <div class="t97-header">${renderHomepageTitle(skills, content.title)}</div>
     <div class="t97-table">
       <nav class="t97-nav"><p class="t97-nav-title">~ Navigation ~</p><ul class="t97-links">${renderNavLinks(skills)}</ul>${sidebar}</nav>
       <div class="t97-main">${interleaveBanners([...about, ...mainBlocks], context.state.adCount)}</div>
@@ -269,15 +292,19 @@ function render1997TableSite(context: SiteContext, skills: HomepageSkills): stri
 }
 
 /** Before tables: everything stacks under the previous thing, which is exactly how it was. */
-function render1997StackedSite(context: SiteContext, skills: HomepageSkills): string {
-  const blocks = ownedFeatures(context, FEATURE_IDS).map((featureId) => renderFeatureBlock(context, featureId));
-  const content = blocks.length === 0 && context.state.adCount === 0 ? '' : interleaveBanners(blocks, context.state.adCount);
-  return `<div class="${homepageClasses(skills)}">${renderHomepageTitle(skills)}${renderHomepageIntro(skills)}${content}${renderHomepageFooter(skills)}</div>`;
+function render1997StackedSite(context: SiteContext, skills: HomepageSkills, content: HomepageContent): string {
+  const blocks = ownedFeatures(context, [...content.mainFeatures, ...content.sidebarFeatures]).map((featureId) => renderFeatureBlock(context, featureId));
+  const body = blocks.length === 0 && context.state.adCount === 0 ? '' : interleaveBanners(blocks, context.state.adCount);
+  return `<div class="${homepageClasses(skills)}">${renderHomepageTitle(skills, content.title)}${renderHomepageIntro(skills)}${body}${renderHomepageFooter(skills)}</div>`;
+}
+
+function renderOldSchoolPage(context: SiteContext, content: (skills: HomepageSkills) => HomepageContent): string {
+  const skills = readHomepageSkills(context.state);
+  return skills.tables ? render1997TableSite(context, skills, content(skills)) : render1997StackedSite(context, skills, content(skills));
 }
 
 function render1997Site(context: SiteContext): string {
-  const skills = readHomepageSkills(context.state);
-  return skills.tables ? render1997TableSite(context, skills) : render1997StackedSite(context, skills);
+  return renderOldSchoolPage(context, homepage1997Content);
 }
 
 const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['blog', 'comments'];
@@ -292,10 +319,16 @@ function renderSponsoredLinks(adCount: number): string {
 }
 
 function render2005Site(context: SiteContext): string {
+  const knowsCss = context.state.purchasedUpgradeIds.includes('learn-css');
+  return knowsCss ? render2005DivSite(context) : renderOldSchoolPage(context, legacy2005Content);
+}
+
+function render2005DivSite(context: SiteContext): string {
+  const look = context.state.purchasedUpgradeIds.includes('web2-design') ? 'is-glossy' : 'is-plain';
   const main = ownedFeatures(context, WEB2_MAIN_FEATURES).map((featureId) => renderFeatureBlock(context, featureId)).join('');
   const sidebar = ownedFeatures(context, WEB2_SIDEBAR_FEATURES).map((featureId) => renderFeatureBlock(context, featureId)).join('');
   const intro = main === '' ? '<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new myhomepage!</h2><p>We relaunched. Start a blog to fill this space.</p></section>' : main;
-  return `<div class="site-2005"><header class="w2-header"><span class="w2-logo">myhomepage</span><span class="w2-beta"><span>beta</span></span><nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state.adCount)}${sidebar}</aside></div><footer class="w2-footer">© 2005 myhomepage · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
+  return `<div class="site-2005 ${look}"><header class="w2-header"><span class="w2-logo">myhomepage</span><span class="w2-beta"><span>beta</span></span><nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state.adCount)}${sidebar}</aside></div><footer class="w2-footer">© 2005 myhomepage · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
 }
 
 const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> = {
@@ -316,6 +349,6 @@ export function calculateSiteSignature(state: GameState): string {
         : `${infection.id}:clicks${infection.cleanClicksRemaining}`,
     )
     .join(',');
-  const skills = Object.values(readHomepageSkills(state)).map((known) => (known ? '1' : '0')).join('');
+  const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
   return `${state.eraId}|${skills}|${levels}|${state.adCount}|${infections}`;
 }

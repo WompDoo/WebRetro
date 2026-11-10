@@ -1,3 +1,4 @@
+import { POPUP_SCAM_MONEY_SHARE } from './constants';
 import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
 import { getFeatureDisplayName } from './content/features';
@@ -128,6 +129,18 @@ export function toggleDefense(state: GameState, defenseId: DefenseId): GameState
 
 export function closePopup(state: GameState, popupId: number): GameState {
   return { ...state, popups: state.popups.filter((popup) => popup.id !== popupId) };
+}
+
+export interface PopupScamResult {
+  readonly state: GameState;
+  readonly moneyLost: number;
+}
+
+/** The player clicked the tempting button instead of closing the pop-up. */
+export function fallForPopupScam(state: GameState, popupId: number): PopupScamResult {
+  if (!state.popups.some((popup) => popup.id === popupId)) return { state, moneyLost: 0 };
+  const moneyLost = state.money * POPUP_SCAM_MONEY_SHARE;
+  return { state: closePopup(spend(state, moneyLost), popupId), moneyLost };
 }
 
 const CLEANUP_MESSAGES: Readonly<Record<Infection['kind'], (featureName: string) => string>> = {

@@ -19,6 +19,8 @@ export type UpgradeId =
   | 'cgi-forms'
   | 'table-layouts'
   | 'embed-tag'
+  | 'learn-css'
+  | 'web2-design'
   | 'learn-ajax'
   | 'learn-rss'
   | 'counter-starts-at-ten-thousand'
