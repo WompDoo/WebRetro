@@ -11,6 +11,7 @@ import {
   createInitialGameState,
   HOSTING_TIERS,
   isSiteDown,
+  toggleFeature,
   upgradeHosting,
 } from '../src/engine';
 import type { GameState } from '../src/engine';
@@ -43,6 +44,34 @@ describe('page load', () => {
     const heavy: GameState = { ...fresh(), purchasedUpgradeIds: ['img-tag', 'embed-tag'], adCount: 6, featureLevels: { ...fresh().featureLevels, 'hit-counter': 1, 'midi-player': 40 } };
     assert.ok(calculateLoadTimeSeconds(heavy) > 30);
     assert.ok(calculatePerformanceTrafficFactor(heavy) < 1);
+  });
+});
+
+describe('switching the Flash intro off', () => {
+  const withIntro = (): GameState => web2(2, {
+    purchasedUpgradeIds: ['learn-php', 'learn-flash'],
+    featureLevels: { ...fresh().featureLevels, blog: 2, 'flash-intro': 1 },
+  });
+
+  it('removes its page weight and its visitors, and keeps its level', () => {
+    const switchedOff = toggleFeature(withIntro(), 'flash-intro');
+    assert.ok(calculatePageWeightKb(switchedOff) < calculatePageWeightKb(withIntro()));
+    assert.equal(switchedOff.featureLevels['flash-intro'], 1);
+  });
+
+  it('can be switched back on', () => {
+    const backOn = toggleFeature(toggleFeature(withIntro(), 'flash-intro'), 'flash-intro');
+    assert.equal(calculatePageWeightKb(backOn), calculatePageWeightKb(withIntro()));
+  });
+
+  it('does nothing for a feature that is not switchable', () => {
+    const state = withIntro();
+    assert.equal(toggleFeature(state, 'blog'), state);
+  });
+
+  it('does nothing for an intro you have not built', () => {
+    const notBuilt = fresh();
+    assert.equal(toggleFeature(notBuilt, 'flash-intro'), notBuilt);
   });
 });
 

@@ -114,9 +114,13 @@ export function calculateFeatureVisitorsPerLevel(state: GameState, featureId: Fe
   );
 }
 
+export function isFeatureSwitchedOff(state: GameState, featureId: FeatureId): boolean {
+  return state.switchedOffFeatureIds.includes(featureId);
+}
+
 export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
-  const infectionFactor = isFeatureInfected(state, featureId) ? NO_TRAFFIC : NEUTRAL_FACTOR;
-  return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * infectionFactor;
+  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId);
+  return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * (isProducing ? NEUTRAL_FACTOR : NO_TRAFFIC);
 }
 
 function calculateBaseVisitorsPerSecond(state: GameState): number {
@@ -180,7 +184,8 @@ export function calculateServerLoad(state: GameState): number {
 function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): number {
   const definition = FEATURES_BY_ID[featureId];
   const level = state.featureLevels[featureId];
-  return level > 0 ? definition.pageWeightKb + definition.pageWeightKbPerLevel * level : 0;
+  const isOnPage = level > 0 && !isFeatureSwitchedOff(state, featureId);
+  return isOnPage ? definition.pageWeightKb + definition.pageWeightKbPerLevel * level : 0;
 }
 
 export function calculatePageWeightKb(state: GameState): number {

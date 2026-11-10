@@ -28,6 +28,7 @@ import {
   getUnlockedFeatureIds,
   isEraUnlocked,
   isFeatureBuildable,
+  isFeatureSwitchedOff,
   UPGRADES_BY_ID,
 } from '../engine';
 import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, UpgradeEffect, UpgradeId } from '../engine';
@@ -83,12 +84,18 @@ function renderFeatureRow(state: GameState, featureId: FeatureId): string {
     ? renderBuildableEffect(state, featureId)
     : `<p class="shop-effect is-requirement">Requires: ${escapeHtml(skillName(FEATURES_BY_ID[featureId].requiredSkillId))}</p>`;
   const button = isBuildable ? buyButton('buy-feature', featureId, calculateNextFeatureCost(state, featureId)) : lockedButton();
+  const isSwitchable = FEATURES_BY_ID[featureId].isSwitchable && level > 0;
+  const isOn = !isFeatureSwitchedOff(state, featureId);
+  const toggle = isSwitchable
+    ? `<div class="feature-controls"><span>${isOn ? 'Running on your page' : 'Switched off: no visitors, no page weight'}</span><button type="button" class="toggle-button${isOn ? ' is-on' : ''}" data-action="toggle-feature" data-id="${featureId}" aria-pressed="${isOn}">${isOn ? 'On' : 'Off'}</button></div>`
+    : '';
   return `<article class="shop-row${isBuildable ? '' : ' is-locked'}">
     <div class="shop-icon">${FEATURE_ICONS[featureId]}</div>
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(getFeatureDisplayName(featureId, state.eraId))} ${levelChip}</h3>
       <p class="shop-desc">${escapeHtml(FEATURES_BY_ID[featureId].description)}</p>
       ${effect}
+      ${toggle}
     </div>
     ${button}
   </article>`;
@@ -329,6 +336,7 @@ export function calculateShopSignature(state: GameState, tab: ShopTab): string {
     state.purchasedUpgradeIds.join(','),
     state.ownedDefenseIds.join(','),
     state.enabledDefenseIds.join(','),
+    state.switchedOffFeatureIds.join(','),
     state.hostingTier,
     state.eraId === 'web2-2005' ? Math.round(calculateServerLoad(state) * 20) : 0,
     getRevealedBoostIds(state).join(','),

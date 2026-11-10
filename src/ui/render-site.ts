@@ -265,7 +265,7 @@ function renderFeatureBlock(context: SiteContext, featureId: FeatureId): string 
 }
 
 function ownedFeatures(context: SiteContext, order: readonly FeatureId[]): readonly FeatureId[] {
-  return order.filter((featureId) => levelOf(context, featureId) > 0);
+  return order.filter((featureId) => levelOf(context, featureId) > 0 && !context.state.switchedOffFeatureIds.includes(featureId));
 }
 
 function renderBanner(index: number): string {
@@ -478,5 +478,5 @@ export function calculateSiteSignature(state: GameState): string {
     .join(',');
   const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
   const boosts = state.purchasedUpgradeIds.length;
-  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.adCount}|${infections}|${isSiteDown(state) ? 'down' : 'up'}`;
+  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.adCount}|${infections}|${isSiteDown(state) ? 'down' : 'up'}`;
 }

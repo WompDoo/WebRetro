@@ -29,6 +29,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 4,
     pageWeightKbPerLevel: 0,
     requiredSkillId: 'img-tag',
+    isSwitchable: false,
   },
   'under-construction': {
     id: 'under-construction',
@@ -42,6 +43,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 8,
     pageWeightKbPerLevel: 1,
     requiredSkillId: 'img-tag',
+    isSwitchable: false,
   },
   guestbook: {
     id: 'guestbook',
@@ -55,6 +57,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 10,
     pageWeightKbPerLevel: 1,
     requiredSkillId: 'cgi-forms',
+    isSwitchable: false,
   },
   'midi-player': {
     id: 'midi-player',
@@ -68,6 +71,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 30,
     pageWeightKbPerLevel: 2,
     requiredSkillId: 'embed-tag',
+    isSwitchable: false,
   },
   webring: {
     id: 'webring',
@@ -81,6 +85,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 6,
     pageWeightKbPerLevel: 0,
     requiredSkillId: 'hyperlinks',
+    isSwitchable: false,
   },
   blog: {
     id: 'blog',
@@ -94,6 +99,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 40,
     pageWeightKbPerLevel: 2,
     requiredSkillId: 'learn-php',
+    isSwitchable: false,
   },
   forum: {
     id: 'forum',
@@ -107,6 +113,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 60,
     pageWeightKbPerLevel: 2,
     requiredSkillId: 'learn-php',
+    isSwitchable: false,
   },
   'photo-gallery': {
     id: 'photo-gallery',
@@ -120,6 +127,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 150,
     pageWeightKbPerLevel: 20,
     requiredSkillId: 'learn-jquery',
+    isSwitchable: false,
   },
   'flash-intro': {
     id: 'flash-intro',
@@ -133,6 +141,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 1_200,
     pageWeightKbPerLevel: 150,
     requiredSkillId: 'learn-flash',
+    isSwitchable: true,
   },
   comments: {
     id: 'comments',
@@ -146,6 +155,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 20,
     pageWeightKbPerLevel: 1,
     requiredSkillId: 'learn-ajax',
+    isSwitchable: false,
   },
   'map-mashup': {
     id: 'map-mashup',
@@ -159,6 +169,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 120,
     pageWeightKbPerLevel: 5,
     requiredSkillId: 'learn-web-apis',
+    isSwitchable: false,
   },
   'tag-cloud': {
     id: 'tag-cloud',
@@ -172,6 +183,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKb: 8,
     pageWeightKbPerLevel: 0,
     requiredSkillId: 'learn-rss',
+    isSwitchable: false,
   },
 };
 

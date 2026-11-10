@@ -29,6 +29,7 @@ import {
   getAvailableSkillIds,
   getNextHostingTier,
   upgradeHosting,
+  toggleFeature,
   canUpgradeHosting,
   calculateLoadTimeSeconds,
   calculateServerLoad,
@@ -158,7 +159,11 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
   const hosting: PurchaseOption[] = nextTier === null
     ? []
     : [{ label: `hosting:${nextTier.id}`, cost: nextTier.cost, isRequiredForGate: false, apply: upgradeHosting, canApply: canUpgradeHosting, valueCost: nextTier.cost, valueApply: upgradeHosting }];
-  return [...features, ...skills, ...boosts, ...ads, ...defenses, ...hosting];
+  const switches = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0).map<PurchaseOption>((featureId) => {
+    const apply = (current: GameState): GameState => toggleFeature(current, featureId);
+    return { label: `switch:${featureId}`, cost: 0, isRequiredForGate: false, apply, canApply: () => true, valueCost: 0, valueApply: apply };
+  });
+  return [...features, ...skills, ...boosts, ...ads, ...defenses, ...hosting, ...switches];
 }
 
 function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
@@ -166,6 +171,8 @@ function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerPr
   const gain = effectiveIncome(option.valueApply({ ...state, money: option.valueCost }), profile) - income;
   const waitSeconds = Math.max(0, option.cost - state.money) / Math.max(income, Number.EPSILON);
   const paybackSeconds = gain > 0 ? option.valueCost / gain : Number.POSITIVE_INFINITY;
+  // A free switch is worth flipping only when it actually helps.
+  if (option.cost === 0) return gain > 0 ? 0 : Number.POSITIVE_INFINITY;
   const priority = option.isRequiredForGate ? REQUIRED_PURCHASE_PRIORITY : 1;
   const defenseBonus = option.label.startsWith('defense:') ? REQUIRED_PURCHASE_PRIORITY : 1;
   return (waitSeconds + paybackSeconds) * priority * defenseBonus;

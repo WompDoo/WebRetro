@@ -101,6 +101,8 @@ export interface FeatureDefinition {
   readonly pageWeightKbPerLevel: number;
   /** The skill you must learn before you can build this. */
   readonly requiredSkillId: UpgradeId | null;
+  /** Trade-off features you can switch off again (the Flash intro). Off: no visitors, no page weight. */
+  readonly isSwitchable: boolean;
 }
 
 export type UpgradeEffect =
@@ -227,6 +229,8 @@ export interface GameState {
   readonly featureLevels: Readonly<Record<FeatureId, number>>;
   readonly adCount: number;
   readonly purchasedUpgradeIds: readonly UpgradeId[];
+  /** Built features the player has switched off. They keep their levels. */
+  readonly switchedOffFeatureIds: readonly FeatureId[];
   readonly ownedDefenseIds: readonly DefenseId[];
   readonly enabledDefenseIds: readonly DefenseId[];
   readonly popups: readonly Popup[];
