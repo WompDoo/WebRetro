@@ -42,7 +42,7 @@ jobs:
         run: npm run sim
 
       - name: Upload the playable build
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: under-construction-${{ github.sha }}
           path: dist/under-construction.html
