@@ -1,5 +1,6 @@
 import { createInitialGameState, ERAS_BY_ID } from '../engine';
 import type { GameEvent, GameState, GameStep } from '../engine';
+import type { PlaytestSpeed } from './playtest';
 import type { BuyAmount, ShopTab } from './render-shop';
 
 export interface NewsItem {
@@ -26,6 +27,9 @@ interface UiStore {
   newsCounter: number;
   /** The newest news item seen on the phone's Inbox tab; anything newer counts as unread. */
   lastSeenNewsId: number;
+  /** The playtest panel: hidden from players unless asked for (?playtest, or five taps on the money). */
+  isPlaytestEnabled: boolean;
+  playtestSpeed: PlaytestSpeed;
 }
 
 const MAX_NEWS_ITEMS = 14;
@@ -49,6 +53,8 @@ export const store: UiStore = {
   news: [],
   newsCounter: 0,
   lastSeenNewsId: 0,
+  isPlaytestEnabled: false,
+  playtestSpeed: 1,
 };
 
 export function updateGame(update: (state: GameState) => GameState): void {
@@ -75,11 +81,16 @@ export function pickStartingMobileTab(game: GameState): MobileTab {
   return game.lifetimeEarnings > 0 ? 'site' : 'code';
 }
 
-export function startNewGame(): void {
-  store.game = createInitialGameState(createSeed());
+/** Swaps in another game (a new one, a playtest preset, a restored backup) and resets what the UI remembers. */
+export function replaceGame(game: GameState): void {
+  store.game = game;
   store.news = [];
   store.editorFile = null;
   store.mobileTab = pickStartingMobileTab(store.game);
+}
+
+export function startNewGame(): void {
+  replaceGame(createInitialGameState(createSeed()));
 }
 
 export function countUnreadNews(): number {

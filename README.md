@@ -15,6 +15,19 @@ npm run build      # writes dist/under-construction.html (one self-contained pag
 
 Open `dist/preview.html` in a browser to play locally.
 
+## Playtest
+
+A hidden panel for testing any era without playing up to it. Turn it on with `?playtest` in the address
+(for example `https://wompdoo.github.io/WebRetro/?playtest`), or tap the Money number five times quickly,
+which also works inside the claude.ai preview and on phones. A 🧪 Playtest button then stays in the corner.
+
+- **Jump to an era**: the start of any era, or its end with the checklist done and Launch ready. Presets are
+  built from the game's own data (`src/engine/playtest.ts`), and a test checks every end preset passes its gate.
+- **Your own game is safe**: the first jump backs it up; *Back to my own game* restores it.
+- **Money** (+10 minutes of income, ×10), **any minigame** on demand, a **pop-up** or a **traffic spike**,
+  and **game speed** 1×, 10× or 60× for testing idle play.
+- *Hide the playtest button* turns it off again.
+
 ## Develop
 
 ```bash

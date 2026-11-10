@@ -26,6 +26,7 @@ import { clearSave } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
+import { createPlaytestHandlers } from './playtest-actions';
 import { flashMoneyLoss } from './renderer';
 import type { Renderer } from './renderer';
 import type { MinigameModal } from './minigames/minigame-modal';
@@ -175,6 +176,7 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer),
     'keep-playing': () => hideOverlay(elements.endOverlay),
+    ...createPlaytestHandlers(renderer, minigame),
   };
 }
 

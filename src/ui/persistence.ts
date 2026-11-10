@@ -65,3 +65,56 @@ export function restoreGame(hotData: unknown): void {
   }
   store.game = fromHot;
 }
+
+const BACKUP_STORAGE_KEY = 'under-construction:save-backup';
+const PLAYTEST_FLAG_KEY = 'under-construction:playtest';
+
+/** Before the first playtest jump, your own game is copied aside so you can come back to it. */
+export function backUpOwnGameOnce(): void {
+  try {
+    if (window.localStorage.getItem(BACKUP_STORAGE_KEY) !== null) return;
+    window.localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify({ savedAtMs: Date.now(), game: store.game }));
+  } catch {
+    // Without storage there is no save to protect either.
+  }
+}
+
+export function hasOwnGameBackup(): boolean {
+  try {
+    return window.localStorage.getItem(BACKUP_STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/** Puts your own game back and forgets the backup. False when there was nothing to restore. */
+export function restoreOwnGame(): boolean {
+  try {
+    const raw = window.localStorage.getItem(BACKUP_STORAGE_KEY);
+    const restored = raw === null ? null : restoreGameState((JSON.parse(raw) as StoredSave).game, createSeed());
+    window.localStorage.removeItem(BACKUP_STORAGE_KEY);
+    if (restored === null) return false;
+    store.game = restored;
+    writeSave();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function readPlaytestFlag(): boolean {
+  try {
+    return window.localStorage.getItem(PLAYTEST_FLAG_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function writePlaytestFlag(isEnabled: boolean): void {
+  try {
+    if (isEnabled) window.localStorage.setItem(PLAYTEST_FLAG_KEY, '1');
+    else window.localStorage.removeItem(PLAYTEST_FLAG_KEY);
+  } catch {
+    // The flag just won't survive a reload.
+  }
+}
