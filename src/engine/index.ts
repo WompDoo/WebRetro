@@ -20,3 +20,4 @@ export * from './minigames/virus-scan';
 export * from './minigames/firewall';
 export * from './minigames/spam-sort';
 export * from './minigames/backup-restore';
+export * from './playtest';

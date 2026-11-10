@@ -4,7 +4,9 @@ import { createActionHandlers, createClickHandler, createKeydownHandler, writeCo
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, minigameElements } from './elements';
 import { installJavaScriptEffects } from './javascript-effects';
-import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, restoreGame, writeSave } from './persistence';
+import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readPlaytestFlag, restoreGame, writeSave } from './persistence';
+import { createTapCounter, isPlaytestRequested } from './playtest';
+import { openPlaytestPanel, setPlaytestEnabled } from './playtest-actions';
 import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
@@ -33,7 +35,8 @@ function tick(): void {
   const elapsedMs = Math.min(now - lastTickAt, MAX_OFFLINE_MS);
   lastTickAt = now;
   const mode: SimulationMode = elapsedMs > OFFLINE_THRESHOLD_MS ? 'offline' : 'live';
-  applyStep(advanceSimulation(store.game, elapsedMs, mode));
+  // Playtest speed runs more game time per tick; live or offline still depends on real time.
+  applyStep(advanceSimulation(store.game, elapsedMs * store.playtestSpeed, mode));
 }
 
 /** The difficulty is read when an attempt starts, so an infection can't get harder in the middle of a run. */
@@ -66,6 +69,13 @@ function start(hotData: unknown): void {
   });
   const renderer = createRenderer(editor);
   installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
+  setPlaytestEnabled(isPlaytestRequested(window.location) || readPlaytestFlag());
+  const countMoneyTap = createTapCounter(() => performance.now());
+  elements.statMoney.addEventListener('pointerdown', () => {
+    if (!countMoneyTap()) return;
+    setPlaytestEnabled(true);
+    openPlaytestPanel();
+  });
   document.addEventListener('click', createClickHandler(createActionHandlers({ minigame, renderer }), renderer));
   document.addEventListener('keydown', createKeydownHandler(minigame));
   document.addEventListener('visibilitychange', saveWhenHidden);

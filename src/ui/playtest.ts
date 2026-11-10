@@ -1,0 +1,86 @@
+import { ERA_IDS, ERAS_BY_ID, formatMoney, VIRUS_MINIGAME_IDS } from '../engine';
+import type { GameState, MinigameId } from '../engine';
+import { escapeHtml } from './dom';
+
+/** Game speed for idle testing: one real second runs this many game seconds. */
+export type PlaytestSpeed = 1 | 10 | 60;
+export const PLAYTEST_SPEEDS: readonly PlaytestSpeed[] = [1, 10, 60];
+export const PLAYTEST_INCOME_SECONDS = 600;
+export const PLAYTEST_MONEY_FACTOR = 10;
+
+const MINIGAME_LABELS: Readonly<Record<MinigameId, string>> = {
+  snake: 'Snake',
+  'virus-scan': 'Virus scan',
+  firewall: 'Firewall',
+  'spam-sort': 'Sort the comments',
+  'backup-restore': 'Restore a backup',
+};
+const MINIGAME_ORDER: readonly MinigameId[] = [...VIRUS_MINIGAME_IDS, 'spam-sort', 'backup-restore'];
+
+/** The tap gesture: five taps on the money within this long. */
+const UNLOCK_TAPS = 5;
+const UNLOCK_WINDOW_MS = 2_000;
+
+export interface PlaytestView {
+  readonly speed: PlaytestSpeed;
+  readonly hasBackup: boolean;
+}
+
+/** On when the address asks for it: ?playtest or #playtest. */
+export function isPlaytestRequested(location: Location): boolean {
+  return new URLSearchParams(location.search).has('playtest') || location.hash === '#playtest';
+}
+
+/** Counts quick taps on the money. Returns true on the fifth tap within two seconds. */
+export function createTapCounter(now: () => number): () => boolean {
+  let taps: readonly number[] = [];
+  return () => {
+    const at = now();
+    taps = [...taps.filter((tap) => at - tap < UNLOCK_WINDOW_MS), at];
+    const isUnlocked = taps.length >= UNLOCK_TAPS;
+    if (isUnlocked) taps = [];
+    return isUnlocked;
+  };
+}
+
+function button(action: string, id: string, label: string, extra = ''): string {
+  return `<button type="button" class="ghost-button" data-action="${action}" data-id="${escapeHtml(id)}"${extra}>${escapeHtml(label)}</button>`;
+}
+
+function renderEraJumps(state: GameState): string {
+  const rows = ERA_IDS.map((eraId) => {
+    const era = ERAS_BY_ID[eraId];
+    const current = state.eraId === eraId ? ' <span class="playtest-here">you are here</span>' : '';
+    return `<li class="playtest-era"><span><b>${era.year}</b> ${escapeHtml(era.name)}${current}</span><span class="playtest-buttons">${button('playtest-jump', `${eraId}:start`, 'Start')}${button('playtest-jump', `${eraId}:end`, 'End: ready to relaunch')}</span></li>`;
+  }).join('');
+  return `<h3 class="playtest-heading">Jump to an era</h3><ul class="playtest-eras">${rows}</ul>`;
+}
+
+function renderBackup(view: PlaytestView): string {
+  return view.hasBackup
+    ? `<p class="playtest-note">Your own game is backed up. ${button('playtest-restore', 'own', 'Back to my own game')}</p>`
+    : '<p class="playtest-note">Jumping replaces the game you’re playing; the first jump backs it up so you can come back.</p>';
+}
+
+function renderMoney(state: GameState): string {
+  return `<h3 class="playtest-heading">Money</h3><p class="playtest-buttons">${button('playtest-income', 'ten-minutes', '+10 minutes of income')}${button('playtest-money', 'times-ten', `Money ×${PLAYTEST_MONEY_FACTOR} (now ${formatMoney(state.money)})`)}</p>`;
+}
+
+function renderMinigames(): string {
+  const buttons = MINIGAME_ORDER.map((minigameId) => button('playtest-minigame', minigameId, MINIGAME_LABELS[minigameId])).join('');
+  return `<h3 class="playtest-heading">Play a minigame</h3><p class="playtest-buttons">${buttons}</p>`;
+}
+
+function renderHazards(state: GameState): string {
+  const noServer = ERAS_BY_ID[state.eraId].hasServerLoad ? '' : ' disabled title="1997 has no server to overload"';
+  return `<h3 class="playtest-heading">Hazards</h3><p class="playtest-buttons">${button('playtest-popup', 'popup', 'Pop-up')}${button('playtest-spike', 'spike', 'Traffic spike', noServer)}</p>`;
+}
+
+function renderSpeed(view: PlaytestView): string {
+  const buttons = PLAYTEST_SPEEDS.map((speed) => button('playtest-speed', String(speed), `${speed}×`, speed === view.speed ? ' aria-pressed="true"' : ' aria-pressed="false"')).join('');
+  return `<h3 class="playtest-heading">Game speed</h3><p class="playtest-buttons">${buttons}</p>`;
+}
+
+export function renderPlaytestPanel(state: GameState, view: PlaytestView): string {
+  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderSpeed(view)].join('');
+}

@@ -90,6 +90,19 @@
   <div class="overlay-card" id="story-card" role="dialog" aria-modal="true" aria-label="A new era"></div>
 </div>
 
+<button type="button" class="playtest-button" id="playtest-button" data-action="open-playtest" hidden>🧪 Playtest</button>
+
+<div class="overlay" id="playtest-overlay" hidden>
+  <div class="overlay-card playtest-card" role="dialog" aria-modal="true" aria-labelledby="playtest-title">
+    <h2 id="playtest-title">Playtest</h2>
+    <div class="playtest-body" id="playtest-body"></div>
+    <div class="overlay-actions">
+      <button type="button" class="ghost-button" data-action="disable-playtest">Hide the playtest button</button>
+      <button type="button" class="primary-button" data-action="close-playtest">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="reset-overlay" hidden>
   <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="reset-heading">
     <h2 id="reset-heading">Start over?</h2>

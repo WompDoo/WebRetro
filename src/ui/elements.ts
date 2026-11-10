@@ -31,6 +31,9 @@ export const elements = {
   resetOverlay: requireElement<HTMLElement>('#reset-overlay'),
   endOverlay: requireElement<HTMLElement>('#end-overlay'),
   endStats: requireElement<HTMLElement>('#end-stats'),
+  playtestButton: requireElement<HTMLElement>('#playtest-button'),
+  playtestOverlay: requireElement<HTMLElement>('#playtest-overlay'),
+  playtestBody: requireElement<HTMLElement>('#playtest-body'),
 };
 
 export const editorElements: CodeEditorElements = {

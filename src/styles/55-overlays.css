@@ -65,3 +65,17 @@
 .restore-backup:hover { border-color: var(--link); }
 .restore-backup.is-wrong { border-color: var(--hazard); opacity: 0.55; text-decoration: line-through; }
 .restore-time { font-weight: 700; white-space: nowrap; }
+/* Playtest: hidden from players; ?playtest or five taps on the money turns it on. */
+.playtest-button { position: fixed; right: 14px; bottom: 14px; z-index: 40; padding: 8px 14px; border: 2px solid var(--line); border-radius: 999px; background: var(--caution); color: var(--on-caution); font-weight: 700; box-shadow: var(--lift-small); cursor: pointer; }
+.playtest-card { max-width: 560px; max-height: calc(100dvh - 32px); overflow-y: auto; }
+.playtest-heading { margin: 14px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.playtest-eras { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.playtest-era { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; padding: 6px 8px; border: 2px solid var(--line-soft); border-radius: 6px; }
+.playtest-here { margin-left: 6px; padding: 0 6px; border-radius: 3px; background: var(--money); color: var(--panel); font-size: 11px; font-weight: 700; }
+.playtest-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.playtest-buttons [aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.playtest-note { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+@media (max-width: 780px) {
+  /* Above the bottom tabs. */
+  .playtest-button { bottom: calc(76px + env(safe-area-inset-bottom)); right: 10px; padding: 6px 12px; font-size: 13px; }
+}
