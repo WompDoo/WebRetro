@@ -37,6 +37,8 @@
 .toggle-button.is-on { background: var(--money); border-color: var(--money); color: var(--panel); }
 .visited-list { margin: 0; padding: 4px 14px 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .visited-link { color: var(--visited); text-decoration: underline; font-size: 13px; }
+.visited-link:hover { color: var(--link); }
+.visited-item { color: var(--ink-soft); font-size: 13px; }
 
 /* ---------- Shop: four tabs and locked rows ---------- */
 /* Equal fixed columns, and the badge floats on the corner, so a count appearing never resizes or moves a tab. */
@@ -47,3 +49,8 @@
 .shop-effect.is-requirement { color: var(--ink-soft); font-weight: 700; }
 .shop-effect.is-unlock { color: var(--money); }
 .feature-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--ink-soft); }
+/* Multi-buy: how many levels one click on a Build button buys. */
+.buy-amount { display: flex; align-items: center; gap: 6px; padding: 10px 14px 2px; }
+.buy-amount-label { margin-right: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.buy-amount-option { min-width: 44px; padding: 4px 10px; border: 2px solid var(--line); border-radius: 4px; background: var(--panel-sunken); font-family: var(--font-numbers); font-size: 13px; font-weight: 600; cursor: pointer; touch-action: manipulation; }
+.buy-amount-option.is-active { background: var(--ink); color: var(--panel); }

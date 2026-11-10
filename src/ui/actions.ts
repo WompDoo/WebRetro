@@ -1,7 +1,7 @@
 import {
   advanceEra,
   buyDefense,
-  buyFeature,
+  buyFeatureLevels,
   buyUpgrade,
   closePopup,
   DEFENSE_IDS,
@@ -24,8 +24,8 @@ import { elements } from './elements';
 import { hideOverlay, renderStory, showOverlay } from './overlays';
 import { clearSave } from './persistence';
 import { findPopupCopy } from './render-popups';
-import { SHOP_TABS } from './render-shop';
-import type { ShopTab } from './render-shop';
+import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
+import type { BuyAmount, ShopTab } from './render-shop';
 import { flashMoneyLoss } from './renderer';
 import type { Renderer } from './renderer';
 import type { MinigameModal } from './minigames/minigame-modal';
@@ -64,6 +64,12 @@ function isDefenseId(value: string): value is DefenseId {
 
 function isShopTab(value: string): value is ShopTab {
   return (SHOP_TABS as readonly string[]).includes(value);
+}
+
+const BUY_AMOUNT_VALUES: Readonly<Record<string, BuyAmount>> = Object.fromEntries(BUY_AMOUNTS.map((amount) => [String(amount), amount]));
+
+function isBuyAmount(value: string): value is `${BuyAmount}` {
+  return BUY_AMOUNTS.some((amount) => String(amount) === value);
 }
 
 function isMobileTab(value: string): value is MobileTab {
@@ -126,7 +132,10 @@ function resetGame(renderer: Renderer): void {
 /** Every clickable thing in the game carries data-action; this maps each action to what it does. */
 export function createActionHandlers({ minigame, renderer }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
   return {
-    'buy-feature': withId(isFeatureId, (id) => updateGame((state) => buyFeature(state, id))),
+    'buy-feature': withId(isFeatureId, (id) => updateGame((state) => buyFeatureLevels(state, id, store.buyAmount))),
+    'buy-amount': withId(isBuyAmount, (amount) => {
+      store.buyAmount = BUY_AMOUNT_VALUES[amount];
+    }),
     'buy-upgrade': withId(isUpgradeId, (id) => updateGame((state) => buyUpgrade(state, id))),
     'buy-defense': withId(isDefenseId, (id) => updateGame((state) => buyDefense(state, id))),
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),
@@ -147,6 +156,9 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
       store.shopTab = id;
       store.mobileTab = 'shop';
     }),
+    'editor-tab': (target) => {
+      store.editorFile = readId(target);
+    },
     'mobile-tab': withId(isMobileTab, (id) => {
       store.mobileTab = id;
     }),

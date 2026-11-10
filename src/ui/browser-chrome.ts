@@ -2,6 +2,7 @@ import { ERAS_BY_ID, getHostingTier, isTrafficSpikeCached } from '../engine';
 import type { EconomySnapshot, GameState, UpgradeId } from '../engine';
 import { ERA_PRESENTATION } from './presentation';
 import { siteName } from './sites';
+import { mainEditorFile } from './skill-code';
 
 /** Backend knowledge mostly shows up here: the address bar, the status bar and the editor. */
 
@@ -69,22 +70,37 @@ export function buildPerformanceReadout(state: GameState, economy: EconomySnapsh
     : `${weight} · ${era.connectionLabel}`;
 }
 
-export function buildEditorTitle(state: GameState): string {
-  const base = ERA_PRESENTATION[state.eraId].editorTitle;
+/** The title names the file you're in; with SVN, the revision too. */
+export function buildEditorTitle(state: GameState, fileName: string): string {
+  const base = ERA_PRESENTATION[state.eraId].editorTitle.replace(mainEditorFile(state.eraId), fileName);
   if (state.eraId !== 'web2-2005' || !knows(state, 'svn')) return base;
   const revision = SVN_FIRST_REVISION + Math.floor(state.keystrokes / KEYSTROKES_PER_REVISION);
-  return base.replace('blog.php', `blog.php (rev ${revision})`);
+  return base.replace(fileName, `${fileName} (rev ${revision})`);
 }
 
-export function buildEditorTabs(state: GameState): readonly string[] {
+/** The files open in the editor. Past five, the rest hide behind a "+N more" that isn't a file. */
+export interface EditorTabs {
+  readonly files: readonly string[];
+  readonly hiddenCount: number;
+}
+
+function listEditorFiles(state: GameState): readonly string[] {
   const base = ERA_PRESENTATION[state.eraId].editorTabs;
   if (state.eraId !== 'web2-2005') return base;
-  const tabs = [
+  return [
     ...base,
     ...(knows(state, 'learn-url-rewriting') ? ['.htaccess'] : []),
     ...(knows(state, 'rails') ? ['config/routes.rb'] : []),
     ...(knows(state, 'j2ee') ? J2EE_FILES : []),
   ];
-  const hidden = tabs.length - VISIBLE_EDITOR_TABS;
-  return hidden > 0 ? [...tabs.slice(0, VISIBLE_EDITOR_TABS), `+${hidden} more`] : tabs;
+}
+
+export function buildEditorTabs(state: GameState): EditorTabs {
+  const files = listEditorFiles(state);
+  return { files: files.slice(0, VISIBLE_EDITOR_TABS), hiddenCount: Math.max(0, files.length - VISIBLE_EDITOR_TABS) };
+}
+
+/** The file being edited: the one picked if it's still open, otherwise the era's main file. */
+export function resolveEditorFile(state: GameState, pickedFile: string | null): string {
+  return pickedFile !== null && buildEditorTabs(state).files.includes(pickedFile) ? pickedFile : mainEditorFile(state.eraId);
 }

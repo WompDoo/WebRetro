@@ -26,7 +26,9 @@ export interface CodeEditor {
   /** Swap in new code to type (after learning a skill). What's already on screen stays. */
   readonly setSource: (nextSource: string) => void;
   readonly setTitle: (title: string) => void;
-  readonly setTabs: (tabs: readonly string[]) => void;
+  /** Switches to another file: the screen clears and the new file is typed from the top. */
+  readonly openFile: (fileSource: string) => void;
+  readonly setTabs: (files: readonly string[], hiddenCount: number, activeFile: string) => void;
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
 }
 
@@ -192,10 +194,24 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     if (elements.title.textContent !== title) elements.title.textContent = title;
   };
 
-  const setTabs = (tabs: readonly string[]): void => {
-    elements.tabs.innerHTML = tabs.map((tab, index) => `<span class="editor-tab${index === 0 ? ' is-active' : ''}">${escapeHtml(tab)}</span>`).join('');
-    elements.tabs.hidden = tabs.length === 0;
+  const openFile = (fileSource: string): void => {
+    source = fileSource;
+    cursor = 0;
+    committed = '';
+    typo = null;
+    totalLines = 1;
+    render();
   };
 
-  return { setEra, setSource, setTitle, setTabs, updateRate };
+  /** Tabs are real buttons: players click them, so they have to switch files. */
+  const setTabs = (files: readonly string[], hiddenCount: number, activeFile: string): void => {
+    const tabs = files.map(
+      (file) => `<button type="button" class="editor-tab${file === activeFile ? ' is-active' : ''}" data-action="editor-tab" data-id="${escapeHtml(file)}" aria-pressed="${file === activeFile}">${escapeHtml(file)}</button>`,
+    );
+    const more = hiddenCount > 0 ? [`<span class="editor-tab is-more" title="Enterprise Java: ${hiddenCount} more XML files">+${hiddenCount} more</span>`] : [];
+    elements.tabs.innerHTML = [...tabs, ...more].join('');
+    elements.tabs.hidden = files.length === 0;
+  };
+
+  return { setEra, setSource, openFile, setTitle, setTabs, updateRate };
 }

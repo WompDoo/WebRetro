@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   advanceHazards,
+  buyFeature,
+  buyFeatureLevels,
+  calculateFeatureLevelsCost,
+  calculateNextFeatureCost,
   calculateDemandVisitorsPerSecond,
   calculateLoadTimeSeconds,
   calculatePageWeightKb,
@@ -115,5 +119,30 @@ describe('SQL injection', () => {
   it('never happens once you use prepared statements', () => {
     const safe = due(web2(3, { purchasedUpgradeIds: ['learn-php', 'prepared-statements'] }));
     assert.equal(advanceHazards(safe, 100).state.infections.length, 0);
+  });
+});
+
+describe('multi-buy', () => {
+  const rich = (): GameState => ({ ...fresh(), money: 1e9, purchasedUpgradeIds: ['img-tag'], featureLevels: { ...fresh().featureLevels, 'hit-counter': 3 } });
+
+  it('costs what the levels cost one at a time', () => {
+    const singles = [0, 1, 2, 3, 4].reduce<{ state: GameState; total: number }>(
+      (sum) => ({ state: buyFeature(sum.state, 'hit-counter'), total: sum.total + calculateNextFeatureCost(sum.state, 'hit-counter') }),
+      { state: rich(), total: 0 },
+    );
+    assert.equal(calculateFeatureLevelsCost(rich(), 'hit-counter', 5), singles.total);
+    assert.equal(buyFeatureLevels(rich(), 'hit-counter', 5).money, singles.state.money);
+  });
+
+  it('buys all the levels or none', () => {
+    const tenCost = calculateFeatureLevelsCost(rich(), 'hit-counter', 10);
+    const almost = { ...rich(), money: tenCost - 1 };
+    assert.equal(buyFeatureLevels(almost, 'hit-counter', 10), almost);
+    assert.equal(buyFeatureLevels({ ...rich(), money: tenCost }, 'hit-counter', 10).featureLevels['hit-counter'], 13);
+  });
+
+  it('respects the skill a feature needs', () => {
+    const unskilled = { ...rich(), purchasedUpgradeIds: [] };
+    assert.equal(buyFeatureLevels(unskilled, 'hit-counter', 5), unskilled);
   });
 });
