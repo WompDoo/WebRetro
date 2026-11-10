@@ -10,8 +10,8 @@
     "test": "node build.mjs --tests && node --test dist/tests/*.test.cjs"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
-    "esbuild": "^0.24.0",
-    "typescript": "^5.6.3"
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
   }
 }
