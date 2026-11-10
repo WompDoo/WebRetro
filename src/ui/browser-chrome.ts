@@ -1,4 +1,4 @@
-import { ERAS_BY_ID, getHostingTier } from '../engine';
+import { ERAS_BY_ID, getHostingTier, isTrafficSpikeCached } from '../engine';
 import type { EconomySnapshot, GameState, UpgradeId } from '../engine';
 import { ERA_PRESENTATION } from './presentation';
 import { siteName } from './sites';
@@ -52,7 +52,8 @@ export function buildStatusText(state: GameState, economy: EconomySnapshot): str
   if (economy.isSiteDown) return '503 Service Unavailable';
   if (state.eraId === 'homepage-1997' && knows(state, 'learn-javascript')) return JAVASCRIPT_STATUS_TEXT;
   const done = state.eraId === 'homepage-1997' ? 'Document: Done' : 'Done';
-  return `${done} (${formatSeconds(economy.loadTimeSeconds)})`;
+  const cache = isTrafficSpikeCached(state) ? ' · served from cache' : '';
+  return `${done} (${formatSeconds(economy.loadTimeSeconds)})${cache}`;
 }
 
 function renderServerMeter(serverLoad: number): string {

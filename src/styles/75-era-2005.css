@@ -95,16 +95,20 @@
 .flash-note { opacity: 0.7; }
 
 /* ---------- Photo gallery with lightbox ---------- */
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 6px; }
-.thumb { display: block; aspect-ratio: 1; border: 2px solid #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+.gallery-meta { margin: 0 0 8px; font-size: 11px; opacity: 0.8; }
+.gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.photo { margin: 0; }
+.photo-name { margin-top: 3px; font-size: 10px; text-align: center; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thumb { display: block; aspect-ratio: 4 / 3; border: 3px solid #FFFFFF; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 .thumb--0 { background: linear-gradient(#FFB86B 0 55%, #2E5E8C 55%); }
 .thumb--1 { background: radial-gradient(circle at 70% 30%, #FFF6A8 0 12%, transparent 13%), linear-gradient(#7CC4FF, #2E7D32 60%); }
 .thumb--2 { background: linear-gradient(135deg, #8E9EAB, #EEF2F3); }
 .thumb--3 { background: radial-gradient(circle at 50% 60%, #6D4C41 0 22%, transparent 23%), linear-gradient(#F5E6CA, #E0C9A6); }
 .thumb--4 { background: linear-gradient(#1A237E, #000000 70%), #000000; }
 .thumb--5 { background: repeating-linear-gradient(90deg, #C62828 0 10px, #FFEBEE 10px 20px); }
-.lightbox { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; align-content: center; gap: 6px; background: rgba(0, 0, 0, 0.82); animation: lightbox-in 300ms ease-out; }
-.thumb.is-large { width: min(70%, 220px); border-width: 6px; }
+.lightbox { position: absolute; inset: 0; z-index: 1; container-type: size; display: grid; place-items: center; align-content: center; gap: 6px; background: rgba(0, 0, 0, 0.82); animation: lightbox-in 300ms ease-out; }
+/* The lightbox is a size container: the photo fits the block's width and height, caption included. */
+.thumb.is-large { width: min(85cqw, 400px, calc((100cqh - 56px) * 4 / 3)); border-width: 8px; }
 .lightbox-caption { color: #FFFFFF; font-size: 11px; font-family: Verdana, sans-serif; }
 @keyframes lightbox-in { from { opacity: 0; } }
 
@@ -126,6 +130,11 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .comment-list .comment:first-child { animation: yellow-fade 7s ease-out infinite; }
 @keyframes yellow-fade { 0% { background: #FFF59D; } 30%, 100% { background: transparent; } }
+/* CAPTCHA defense: the box commenters have to get past. */
+.captcha-box { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; margin-top: 8px; padding: 6px 8px; border: 1px dashed #B0B0B0; background: #FAFAFA; font-size: 11px; color: #444444; }
+.captcha-word { grid-row: span 2; padding: 3px 10px; background: repeating-linear-gradient(-30deg, #E8E8E8 0 4px, #D2D2D2 4px 6px); color: #333333; font: italic 700 18px/1 Georgia, 'Times New Roman', serif; letter-spacing: 3px; text-decoration: line-through; transform: skewX(-12deg) rotate(-3deg); }
+.captcha-input { padding: 2px 6px; border: 1px solid #B0B0B0; background: #FFFFFF; color: #888888; }
+.captcha-note { color: #3E8E1C; font-weight: 700; }
 
 /* ---------- IE6, glitter and badges ---------- */
 .needs-ie6-fix .avatar, .needs-ie6-fix .map-pin { box-shadow: 0 0 0 5px #BDBDBD; }

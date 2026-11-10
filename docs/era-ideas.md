@@ -53,7 +53,8 @@ Done (4.2 s) · 182 KB · Server ▮▮▮▮▮▮▯▯ 74%
 
 ## 2005 Web 2.0: expansion (built)
 
-What exists: Learn CSS, PHP and MySQL, the Web 2.0 look, AJAX, RSS; blog, comments, tag cloud; spam; CAPTCHA.
+What exists: Learn CSS, PHP and MySQL, the Web 2.0 look, AJAX, RSS; blog, comments, tag cloud; spam; CAPTCHA;
+memcached, a CDN and a static page cache as server boosts.
 
 | Idea | Kind | What you see |
 |---|---|---|
@@ -71,7 +72,7 @@ What exists: Learn CSS, PHP and MySQL, the Web 2.0 look, AJAX, RSS; blog, commen
 | SVN | boost (backend) | editor title `blog.php (rev 142)`, the occasional "Committed revision 143" |
 | Rails | skill or boost (backend) | the editor switches to Ruby and gains a `config/routes.rb` tab |
 | J2EE | joke boost (backend) | the editor's tabs explode into 14 XML files to print Hello World |
-| Hosting tiers | boosts (backend) | shared hosting → VPS → dedicated → "the cloud"; your own domain in the URL; server meter capacity |
+| Hosting ladder | Ops tab (backend) | ten dated steps from shared hosting (2001) to a second data center (2008), then extra racks; see below |
 | SQL injection | hazard (backend) | a PHP error printed in your blog ("Warning: mysql_fetch_array(): supplied argument is not a valid MySQL result resource on line 42") and a `'; DROP TABLE comments;--` comment |
 | Front-page traffic spike | hazard (backend) | traffic surges; without capacity the whole site becomes a 503 page until it passes |
 
@@ -95,7 +96,8 @@ responsive design. Flash is dead: the Flash intro and the MIDI player show a puz
 
 **Backend**
 - Node.js and npm, MongoDB ("is it web scale?"), REST and JSON APIs.
-- The cloud: `git push` deploys, object storage, a CDN.
+- The cloud: `git push` deploys, object storage, autoscaling. It replaces the 2005 racks as the hosting
+  ladder (moved here from 2005: the cloud took off around 2010, not in 2005).
 - OAuth "Sign in with…" buttons (parody social networks).
 - Sass in the editor, Grunt build files.
 
@@ -172,6 +174,74 @@ shows up in it.
 
 **Ending:** acquisition offers from parody tech giants, based on what you built, plus a "refuse to sell" ending.
 
+## The 2005 hosting ladder (built)
+
+How a growing site scaled between 2001 and 2009, in the order people did it. Each step carries about 2.3×
+the last; the year is when that step became the usual next move.
+
+| Year | Step | Capacity (visitors/s) |
+|---|---|---|
+| 2001 | Shared hosting | 15K |
+| 2002 | Business hosting plan ("unlimited" bandwidth) | 35K |
+| 2003 | Virtual private server | 80K |
+| 2004 | Dedicated server | 190K |
+| 2004 | Separate database server | 440K |
+| 2005 | Load balancer and three web servers | 1M |
+| 2005 | Database replicas | 2.3M |
+| 2006 | Colocation rack | 5.3M |
+| 2007 | Sharded database | 12M |
+| 2008 | Second data center | 28M |
+| 2009 | +1 rack, +2 racks, … (repeatable) | +6M each |
+
+- **There is always a next step.** Demand keeps growing as long as you buy features, so any fixed top tier
+  breaks eventually (it did: playing on after the ending pushed the old "cloud" tier past 200%). Racks keep
+  going; their price is what stops you.
+- **Efficiency is the second lever.** Memcached and a CDN each halve the server load per visitor, so the
+  same machines carry 4×. A static page cache makes traffic spikes harmless: they put no load on the
+  server, but you still only earn from what your hosting carries (a cache is protection, not a jackpot).
+
+## Hazards: every problem has an active fix and a passive fix
+
+| Hazard | Active fix (you, now) | Passive fix (money, with a trade-off) |
+|---|---|---|
+| Pop-up | click the × | Premium ad network: ads pay 25% less |
+| Virus | the snake minigame | Antivirus: 10% of revenue, cleans after 6 s |
+| Spam flood | 4 clicks | CAPTCHA: comments bring 10% fewer visitors |
+| SQL injection | 3 clicks to restore | Learn prepared statements (a skill, no downside) |
+| Traffic spike | none | Hosting headroom, or the static page cache |
+
+A defense must show what it protects, not only what it costs: the shop lists both lines, and CAPTCHA puts
+a visible CAPTCHA box under the comments. Before that it read as a pure cost.
+
+## Proposal: a minigame per hazard
+
+The snake is the only hazard with a real active fix; the others are click-N-times. Short task minigames,
+like the ones in party games where everyone does chores, would give each hazard its own 5–15 second task.
+All web-themed and original:
+
+| Hazard | Minigame idea | Feel |
+|---|---|---|
+| Virus (1997) | Snake (exists) | arcade |
+| Spam flood | Sort the comments: swipe spam to the trash, real comments to the page | fast sorting |
+| SQL injection | Restore from backup: drag the right dated backup into the database slot | matching |
+| Server overload | Rewire the rack: connect each server to the matching switch port by color | connecting |
+| Traffic spike | Hold the line: keep a load meter in the green by tapping before it peaks | timing |
+| Broken build (2018) | Untangle `node_modules`: click the duplicate packages | spotting |
+| Prompt injection (2024) | Find the guestbook entry that says "ignore previous instructions" | spotting |
+
+Design rules:
+- **Same contract as the snake**: a pure engine module (state in, state out, unit-tested) plus a thin modal.
+  `snake.ts` and `snake-modal.ts` become the template; a shared `MinigameModal` shell does open, close,
+  retry and win.
+- **Short and optional.** Every minigame has a passive fix you can buy instead, so it is never a chore wall.
+- **Scales with the problem.** Like the virus food, an older infection makes its minigame a little harder.
+- **One input model.** Click/tap and drag only, so every minigame works on a phone (needed for the mobile
+  layout) and later gets keyboard support from the options menu.
+- **Era-styled.** The 1997 games look like Windows 95 dialogs, 2005 like glossy widgets.
+
+Suggested order: build the shared modal shell and the spam sorter first (spam already exists and its fix is the
+weakest), then SQL restore, then rack wiring together with a server-overload hazard.
+
 ## Balance notes
 
 - **Late 2005 used to snowball** (income ×24 in one simulated minute, era over in 5 minutes). Fixed by
@@ -183,6 +253,9 @@ shows up in it.
 - **The Flash intro can be switched off.** Switchable features keep their levels; switched off they add
   no visitors and no page weight. The 2011 scroll-jacking toggle can reuse this.
 - The simulation prints each player's steepest minute (income growth within one minute) to spot snowballs.
+- **The old top hosting tier was hiding a snowball.** With cheap capacity, demand jumped ×20 in one
+  minute at the end of 2005: the $100M "cloud" was the real brake. The dated ladder brakes with smaller steps
+  instead: steepest minute ×6.7 (active) and ×4.2 (relaxed), 2005 takes 11–13 minutes.
 
 ## Pop-up rules (all eras)
 
