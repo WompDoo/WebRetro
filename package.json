@@ -1,0 +1,17 @@
+{
+  "name": "under-construction",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Incremental game: build a website from 1997 to today.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node build.mjs",
+    "sim": "node build.mjs --sim-only && node dist/balance-sim.cjs",
+    "test": "node build.mjs --tests && node --test dist/tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3"
+  }
+}
