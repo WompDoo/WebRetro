@@ -58,6 +58,10 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'social-plugins',
   'learn-nodejs',
   'learn-bcrypt',
+  'learn-masonry',
+  'parallax-scrolling',
+  'retina-images',
+  'app-banner',
 ];
 
 export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
@@ -604,6 +608,39 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     effects: [{ kind: 'keystroke-value-multiplier', factor: 1.2 }],
     requiredFeatureId: null,
   },
+  'learn-masonry': {
+    id: 'learn-masonry',
+    kind: 'skill',
+    eraId: 'social-2011',
+    name: 'Learn jQuery Masonry',
+    description: 'Photos tile like bricks of different heights, no gaps. Every photo album looks like this now, and people scroll them for hours.',
+    cost: 2_000_000_000,
+    pageWeightKb: 25,
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'photo-gallery', factor: 1.6 }],
+    requiredFeatureId: 'photo-gallery',
+  },
+  'parallax-scrolling': {
+    id: 'parallax-scrolling',
+    kind: 'skill',
+    eraId: 'social-2011',
+    name: 'Learn parallax scrolling',
+    description: 'Background layers drift slower than the page as you scroll. Depth! It takes big background images. Unlocks the scroll-jacking one-pager.',
+    cost: 3_000_000_000,
+    pageWeightKb: 450,
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.08 }],
+    requiredFeatureId: null,
+  },
+  'retina-images': {
+    id: 'retina-images',
+    kind: 'skill',
+    eraId: 'social-2011',
+    name: 'Serve @2x images for retina screens',
+    description: 'The new phones have screens so sharp your photos look blurry on them. Images at twice the size fix it, at twice the weight.',
+    cost: 1_200_000_000,
+    pageWeightKb: 300,
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
+    requiredFeatureId: null,
+  },
   // ---------- 2005 boosts ----------
   'syntax-highlighting': {
     id: 'syntax-highlighting',
@@ -681,5 +718,17 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     pageWeightKb: 0,
     effects: [{ kind: 'feature-traffic-multiplier', featureId: 'tag-cloud', factor: 2 }],
     requiredFeatureId: 'tag-cloud',
+  },
+  // ---------- 2011 boosts ----------
+  'app-banner': {
+    id: 'app-banner',
+    kind: 'boost',
+    eraId: 'social-2011',
+    name: 'Add a "Get our app!" banner',
+    description: 'A banner across the top of your page that pushes your app. App installs pay well; some visitors find it as annoying as a pop-up.',
+    cost: 5_000_000_000,
+    pageWeightKb: 15,
+    effects: [{ kind: 'ad-value-multiplier', factor: 1.2 }, { kind: 'global-traffic-multiplier', factor: 0.97 }],
+    requiredFeatureId: null,
   },
 };

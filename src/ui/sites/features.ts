@@ -258,6 +258,21 @@ const renderActivityFeed: FeatureRenderer = (context) => {
   return `${heading(context, 'activity-feed', 'Live activity')}<ul class="feed-list">${items}<li class="feed-more"><span class="spinner" aria-hidden="true"></span>Loading more…</li></ul>`;
 };
 
+const ONE_PAGER_CHAPTERS: readonly string[] = ['Who we are', 'What we make', 'Why it matters', 'Where we’re going', 'Say hello'];
+const BASE_CHAPTERS = 2;
+const AWARDS_PER_LEVEL = 3;
+
+/** The scroll-jacking one-pager: full-height chapters the page snaps to, and a row of dots to show where you are. */
+const renderOnePager: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'one-pager');
+  const chapters = ONE_PAGER_CHAPTERS.slice(0, BASE_CHAPTERS + level);
+  const sections = chapters
+    .map((title, index) => `<section class="one-pager-chapter one-pager-chapter--${index % ONE_PAGER_CHAPTERS.length}"><span class="one-pager-number">0${index + 1}</span><h3>${escapeHtml(title)}</h3><span class="one-pager-scroll">Scroll ↓</span></section>`)
+    .join('');
+  const dots = chapters.map((_, index) => `<i${index === 0 ? ' class="is-current"' : ''}></i>`).join('');
+  return `${heading(context, 'one-pager', 'Our story')}<div class="one-pager">${sections}<nav class="one-pager-dots" aria-hidden="true">${dots}</nav></div><p class="post-meta">Site of the Day · ${level * AWARDS_PER_LEVEL} design awards</p>`;
+};
+
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'hit-counter': renderHitCounter,
@@ -275,6 +290,7 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'share-buttons': renderShareButtons,
   'video-player': renderVideoPlayer,
   'activity-feed': renderActivityFeed,
+  'one-pager': renderOnePager,
 };
 
 /** Browsers in 2011: the feature is still on the page, but its plugin isn't. */

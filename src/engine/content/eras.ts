@@ -42,7 +42,7 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
 
 const HOMEPAGE_MIGRATION_COST = 160_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
-const SOCIAL_MIGRATION_COST = 250_000_000_000;
+const SOCIAL_MIGRATION_COST = 450_000_000_000;
 
 export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
   'homepage-1997': {
@@ -115,7 +115,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     gateRequirements: [
       requireEveryFeatureOf('social-2011', 2011),
       requireFeatureLevel('share-buttons', 15),
-      requireVisitorsPerSecond(500_000_000),
+      requireVisitorsPerSecond(800_000_000),
       requireMigrationBudget(SOCIAL_MIGRATION_COST),
     ],
     adLabel: 'Sponsored post',

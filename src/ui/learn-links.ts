@@ -39,6 +39,10 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'social-plugins': `${WIKIPEDIA}/Like_button`,
   'learn-nodejs': 'https://nodejs.org/en/learn/getting-started/introduction-to-nodejs',
   'learn-bcrypt': 'https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html',
+  'learn-masonry': 'https://masonry.desandro.com/',
+  'parallax-scrolling': 'https://en.wikipedia.org/wiki/Parallax_scrolling',
+  'retina-images': 'https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio',
+  'app-banner': null,
   // 1997 boosts
   'counter-starts-at-ten-thousand': null,
   'html-validator': 'https://validator.w3.org/',

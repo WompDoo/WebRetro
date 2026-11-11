@@ -19,6 +19,8 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'share-buttons': svg('<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/>'),
   'video-player': svg('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="m10 9 5 3-5 3Z"/>'),
   'activity-feed': svg('<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="1.5"/>'),
+  // A tall page with an arrow pulling you down it.
+  'one-pager': svg('<rect x="6" y="2" width="12" height="20" rx="1"/><path d="M12 7v8M9 12l3 3 3-3"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {

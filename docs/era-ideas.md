@@ -95,7 +95,7 @@ memcached, a CDN and a static page cache as server boosts.
 
 **Built (the core):**
 - The relaunch story ("Everyone has a phone now"), the checklist (every 2011 feature, Like and share buttons
-  level 15, 500M visitors/s, $250B) and the new ending: 2011 is the last era of the prototype for now.
+  level 15, 800M visitors/s, $450B) and the new ending: 2011 is the last era of the prototype for now.
 - **Phones:** four in ten visitors are on a phone, and three in four of them leave until you learn responsive
   design. The browser's Phone switch shows them the page: shrunk from desktop width, then fitting.
 - **Retired at the relaunch:** the hit counter, the beta sticker, the blogroll, the tag cloud and the Flash intro.
@@ -114,14 +114,20 @@ memcached, a CDN and a static page cache as server boosts.
 - **Hazards:** password leaks (the forum's or the wall's user table on a paste site; Hash passwords with bcrypt
   ends them) and DDoS attacks (a botnet floods the busiest page; DDoS protection, a scrubbing service that takes
   5% of revenue, stops them). Both reuse the infection plumbing: tickets, phone banners, minigames, quick fixes.
+- **Looks**, each a trade-off:
+  - *Learn jQuery Masonry*: photo albums tile like bricks; album traffic ×1.6.
+  - *Learn parallax scrolling*: a layered landscape in the hero drifts slower than the page (a scroll listener sets
+    `--site-scroll`; CSS moves the layers with `transform`); all traffic ×1.08 for 450 KB of background images.
+  - *Scroll-jacking one-pager*: a switchable 2011 feature (needs parallax). Full-height chapters the page snaps to,
+    "Site of the Day" awards, and 900 KB that phones feel in their load time and mobile score.
+  - *Serve @2x images*: until you do, photos are blurry on phones (the phone view and real phones show it;
+    desktops never notice). All traffic ×1.05 for 300 KB more.
+  - *"Get our app!" banner* (a boost): ad value ×1.2, all traffic ×0.97.
 - **Performance:** "Grade B · Mobile 69/100" in the status bar. Pop-ups: like-gates, app banners, the first cookie
   notices, phishing through a friend's chat. The issue tracker becomes Mentions: complaints posted at you.
 
 **Still to build (the content PR):**
-- **Looks:** masonry tiles (`$('.grid').masonry(...)`, a jQuery plugin), parallax scrolling (animate only
-  `transform`), a scroll-jacking one-pager as a switch (more traffic from "Site of the Day" awards, some visitors
-  leave; reuses `isSwitchable`), retina images blurry until `@2x`, skeuomorphic textures (leather, linen,
-  stitching) for 2018 to strip away, a "Get our app!" banner.
+- **Skeuomorphic textures** (leather, linen, stitching): parked until 2018, whose relaunch strips them away.
 - **Backend:** MongoDB ("is it web scale?"), REST and JSON APIs, `git push` deploys and autoscaling as cloud
   boosts, "Sign in with…" buttons (parody networks), Sass and Grunt files in the editor.
 
@@ -309,6 +315,9 @@ like viruses and DDoS have, can come later for the others.
 
 ## Balance notes
 
+- **End goals scale with content.** Every 2011 batch reruns the sim and moves the goals so the era keeps its length:
+  the looks batch added multipliers and a feature, and 2011 dropped to 9.5–11.4 minutes, so the goals went from
+  500M visitors/s and $250B to 800M and $450B (back to 10.7–12.8). "Every 2011 feature" grows on its own.
 - **2011 pacing:** 11–13 minutes for the scripted players, like the other eras. Retiring the tag cloud and the
   Flash intro took their traffic away (relaxed 12 → 17 minutes); the 2011 features bring half as much again
   (share buttons 750K, video 2.25M, activity feed 6M visitors/s per level) to win it back. The visitor gate
