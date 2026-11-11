@@ -9,7 +9,7 @@ import {
 } from './constants';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
-import { getEnabledDefenses, hasTrafficSpikeCache, isFeatureInfected, isFeatureOnPage } from './economy';
+import { calculateFeatureVisitorsPerSecond, getEnabledDefenses, hasTrafficSpikeCache, isEraUnlocked, isFeatureInfected, isFeatureOnPage } from './economy';
 import { drawRandoms, interpolateRange } from './random';
 import type {
   FeatureId,
@@ -20,7 +20,6 @@ import type {
   Infection,
   InfectionKind,
   MinigameId,
-  VirusMinigameId,
 } from './types';
 
 interface HazardRule {
@@ -53,28 +52,28 @@ function addInfection(state: GameState, infection: Infection): GameState {
   return { ...state, infections: [...state.infections, infection] };
 }
 
-/** Each virus loads one of these at random. */
-export const VIRUS_MINIGAME_IDS: readonly VirusMinigameId[] = ['snake', 'virus-scan', 'firewall'];
-/** The other infections always get the same game: it is what fixing that problem looks like. */
-export const INFECTION_MINIGAMES: Readonly<Record<Exclude<InfectionKind, 'virus'>, MinigameId>> = {
-  spam: 'spam-sort',
-  'sql-injection': 'backup-restore',
+/**
+ * The games that fix each kind of infection. One is rolled when the infection appears, so a kind that comes back
+ * often (viruses, botnets) doesn't play the same game every time. The first is the one old saves fall back to.
+ */
+export const INFECTION_MINIGAMES: Readonly<Record<InfectionKind, readonly [MinigameId, ...MinigameId[]]>> = {
+  virus: ['snake', 'virus-scan', 'firewall'],
+  spam: ['spam-sort'],
+  'sql-injection': ['backup-restore'],
+  'password-leak': ['reset-passwords'],
+  ddos: ['close-gates', 'cross-traffic'],
 };
 
-export function pickVirusMinigame(roll: number): VirusMinigameId {
-  return VIRUS_MINIGAME_IDS[Math.floor(roll * VIRUS_MINIGAME_IDS.length)] ?? 'snake';
+/** Every minigame, in the order the playtest panel lists them. */
+export const MINIGAME_IDS: readonly MinigameId[] = Object.values(INFECTION_MINIGAMES).flat();
+
+export function pickMinigame(kind: InfectionKind, roll: number): MinigameId {
+  const [first, ...rest] = INFECTION_MINIGAMES[kind];
+  return [first, ...rest][Math.floor(roll * (rest.length + 1))] ?? first;
 }
 
-function createVirus(id: number, featureId: FeatureId, minigameRoll: number): Infection {
-  return { id, kind: 'virus', featureId, ageMs: 0, minigameId: pickVirusMinigame(minigameRoll) };
-}
-
-function createSpam(id: number): Infection {
-  return { id, kind: 'spam', featureId: 'comments', ageMs: 0, minigameId: INFECTION_MINIGAMES.spam };
-}
-
-function createSqlInjection(id: number, featureId: FeatureId): Infection {
-  return { id, kind: 'sql-injection', featureId, ageMs: 0, minigameId: INFECTION_MINIGAMES['sql-injection'] };
+function createInfection(id: number, kind: InfectionKind, featureId: FeatureId, minigameRoll: number): Infection {
+  return { id, kind, featureId, ageMs: 0, minigameId: pickMinigame(kind, minigameRoll) };
 }
 
 /** Anything backed by the database can have its table dropped. */
@@ -82,6 +81,21 @@ const DATABASE_FEATURES: readonly FeatureId[] = ['blog', 'comments', 'forum'];
 
 function findSqlTargets(state: GameState): readonly FeatureId[] {
   return DATABASE_FEATURES.filter((featureId) => state.featureLevels[featureId] > 0 && !isFeatureInfected(state, featureId));
+}
+
+/** Anything people log into can have its user table leaked. */
+const ACCOUNT_FEATURES: readonly FeatureId[] = ['forum', 'guestbook'];
+
+function findLeakTargets(state: GameState): readonly FeatureId[] {
+  return ACCOUNT_FEATURES.filter((featureId) => isFeatureOnPage(state, featureId) && !isFeatureInfected(state, featureId));
+}
+
+/** A botnet goes for what's popular: the page bringing the most visitors. */
+function findBusiestFeature(state: GameState): FeatureId | null {
+  const ranked = [...findInfectableFeatureIds(state)].sort(
+    (first, second) => calculateFeatureVisitorsPerSecond(state, second) - calculateFeatureVisitorsPerSecond(state, first),
+  );
+  return ranked[0] ?? null;
 }
 
 /** 1 to 3: how hard this infection's minigame is right now. It grows the longer the infection stays. */
@@ -138,7 +152,7 @@ const VIRUS_RULE: HazardRule = {
     const featureId = candidates[Math.floor(rollAt(rolls, 0) * candidates.length)] ?? 'hit-counter';
     const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
     return {
-      state: addInfection(state, createVirus(entityId, featureId, rollAt(rolls, 1))),
+      state: addInfection(state, createInfection(entityId, 'virus', featureId, rollAt(rolls, 1))),
       events: hazardEvent(`A virus infected your ${featureName}. It brings in no visitors until you beat it, and it gets harder the longer you wait.`),
     };
   },
@@ -149,8 +163,8 @@ const SPAM_RULE: HazardRule = {
   intervalRangeMs: [120_000, 200_000],
   isActive: (state) => state.featureLevels.comments > 0 && countInfections(state, 'spam') === 0,
   countdownSpeed: () => NORMAL_SPEED,
-  spawn: (state, _rolls, entityId) => ({
-    state: addInfection(state, createSpam(entityId)),
+  spawn: (state, rolls, entityId) => ({
+    state: addInfection(state, createInfection(entityId, 'spam', 'comments', rollAt(rolls, 0))),
     events: hazardEvent('Spam bots flooded your comments. Real readers left until you sort it out.'),
   }),
 };
@@ -168,7 +182,7 @@ const SQL_INJECTION_RULE: HazardRule = {
     const featureId = targets[Math.floor(rollAt(rolls, 0) * targets.length)] ?? 'blog';
     const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
     return {
-      state: addInfection(state, createSqlInjection(entityId, featureId)),
+      state: addInfection(state, createInfection(entityId, 'sql-injection', featureId, rollAt(rolls, 1))),
       events: hazardEvent(`Someone typed '; DROP TABLE into a form. Your ${featureName} is broken until you restore it from a backup.`),
     };
   },
@@ -187,7 +201,44 @@ const TRAFFIC_SPIKE_RULE: HazardRule = {
   }),
 };
 
-const HAZARD_RULES: readonly HazardRule[] = [POPUP_RULE, VIRUS_RULE, SPAM_RULE, SQL_INJECTION_RULE, TRAFFIC_SPIKE_RULE];
+/** 2011: password dumps on paste sites. Hashing with bcrypt ends them. */
+const PASSWORD_LEAK_RULE: HazardRule = {
+  kind: 'password-leak',
+  intervalRangeMs: [260_000, 400_000],
+  isActive: (state) =>
+    isEraUnlocked(state, 'social-2011') &&
+    !state.purchasedUpgradeIds.includes('learn-bcrypt') &&
+    countInfections(state, 'password-leak') === 0 &&
+    findLeakTargets(state).length > 0,
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state, rolls, entityId) => {
+    const targets = findLeakTargets(state);
+    const featureId = targets[Math.floor(rollAt(rolls, 0) * targets.length)] ?? 'forum';
+    const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
+    return {
+      state: addInfection(state, createInfection(entityId, 'password-leak', featureId, rollAt(rolls, 1))),
+      events: hazardEvent(`Your ${featureName}'s user table turned up on a paste site, passwords in plain text. Nobody logs in until you reset them.`),
+    };
+  },
+};
+
+/** 2011: botnets for hire. They flood the busiest page until you shut them out, or pay someone to. */
+const DDOS_RULE: HazardRule = {
+  kind: 'ddos',
+  intervalRangeMs: [240_000, 360_000],
+  isActive: (state) => isEraUnlocked(state, 'social-2011') && countInfections(state, 'ddos') === 0 && findBusiestFeature(state) !== null,
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state, rolls, entityId) => {
+    const featureId = findBusiestFeature(state) ?? 'blog';
+    const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
+    return {
+      state: addInfection(state, createInfection(entityId, 'ddos', featureId, rollAt(rolls, 0))),
+      events: hazardEvent(`A botnet is flooding your ${featureName} with fake requests. Real visitors can't get through until you shut the attack out.`),
+    };
+  },
+};
+
+const HAZARD_RULES: readonly HazardRule[] = [POPUP_RULE, VIRUS_RULE, SPAM_RULE, SQL_INJECTION_RULE, TRAFFIC_SPIKE_RULE, PASSWORD_LEAK_RULE, DDOS_RULE];
 
 export function isHazardPrevented(state: GameState, kind: HazardKind): boolean {
   return getEnabledDefenses(state).some(

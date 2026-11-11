@@ -10,6 +10,9 @@ export const INITIAL_HAZARD_COUNTDOWNS_MS: Readonly<Record<HazardKind, number>> 
   spam: 30_000,
   'sql-injection': 90_000,
   'traffic-spike': 150_000,
+  // 2011's hazards: the first of each lands a few minutes into the era, after the relaunch has settled.
+  'password-leak': 210_000,
+  ddos: 150_000,
 };
 
 const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {

@@ -118,6 +118,9 @@ const SOCIAL_CODE: EraCode = {
     'social-plugins': {
       'app.js': ['(function(d) {', '  var js = d.createElement("script");', '  js.src = "//connect.facespace.example/en_US/all.js#xfbml=1";', '  d.getElementsByTagName("head")[0].appendChild(js);', '}(document));', '// copied from the top answer (247 votes)'],
     },
+    'learn-bcrypt': {
+      'server.js': ['var bcrypt = require("bcrypt");', 'bcrypt.hash(password, 10, function (err, hash) {', '  db.users.update({ name: name }, { $set: { password: hash } }); // no more plain text', '});'],
+    },
     'learn-nodejs': {
       'server.js': ['var app = require("express")();', 'var server = require("http").createServer(app);', 'var io = require("socket.io").listen(server);', 'io.sockets.on("connection", function (socket) {', '  socket.on("like", function (data) {', '    io.sockets.emit("activity", data); // callback inside a callback inside a callback', '  });', '});', 'server.listen(3000);'],
     },

@@ -189,6 +189,9 @@ const CLEANUP_MESSAGES: Readonly<Record<MinigameId, (featureName: string) => str
   firewall: (featureName) => `Your firewall smashed the virus out of your ${featureName}.`,
   'spam-sort': (featureName) => `You sorted the spam out of your ${featureName}.`,
   'backup-restore': (featureName) => `You restored your ${featureName} from the right backup.`,
+  'reset-passwords': (featureName) => `Every leaked ${featureName} password is reset. The crackers gave up.`,
+  'close-gates': (featureName) => `You shut the botnet out of your ${featureName}. Real visitors are back.`,
+  'cross-traffic': (featureName) => `You got through the flood and switched on rate limiting. Your ${featureName} is back.`,
 };
 
 function describeCleanup(infection: Infection, eraId: EraId): GameEvent {

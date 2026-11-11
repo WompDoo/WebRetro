@@ -19,8 +19,8 @@ import {
   upgradeHosting,
 } from '../src/engine';
 import type { GameState } from '../src/engine';
+import { QUIET_HAZARDS } from './quiet-hazards';
 
-const QUIET_HAZARDS = { popup: 9e9, virus: 9e9, spam: 9e9, 'sql-injection': 9e9, 'traffic-spike': 9e9 };
 const fresh = (): GameState => ({ ...createInitialGameState(1), hazardCountdownsMs: QUIET_HAZARDS });
 const web2 = (blogLevel: number, extra: Partial<GameState> = {}): GameState => ({
   ...fresh(),

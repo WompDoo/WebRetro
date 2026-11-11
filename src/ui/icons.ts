@@ -25,6 +25,8 @@ export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
   antivirus: svg('<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/>'),
   'premium-ad-network': svg('<path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4l-5.2 2.7 1-5.8L3.5 9.2l5.9-.9Z"/>'),
   captcha: svg('<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M6 14c1.5-4 3-4 4 0s2.5 4 4 0 2.5-4 4 0"/>'),
+  // A cloud with a filter under it: attack traffic is scrubbed before it reaches you.
+  'ddos-protection': svg('<path d="M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 15Z"/><path d="M8 19h8M10 22h4"/>'),
 };
 
 export const AD_ICON = svg('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 14l1.5-4L9 14M6.5 12.8h2M12 10v4h1.5a2 2 0 0 0 0-4Z"/>');

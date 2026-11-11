@@ -23,7 +23,7 @@ function hasCompatibleShape(value: Record<string, unknown>): boolean {
  */
 /** Saves from before the minigames have infections without a game: give them the classic one. */
 function withMinigame(infection: Infection): Infection {
-  const fallback: MinigameId = infection.kind === 'virus' ? 'snake' : INFECTION_MINIGAMES[infection.kind];
+  const [fallback]: readonly MinigameId[] = INFECTION_MINIGAMES[infection.kind];
   return { id: infection.id, kind: infection.kind, featureId: infection.featureId, ageMs: infection.ageMs, minigameId: infection.minigameId ?? fallback };
 }
 

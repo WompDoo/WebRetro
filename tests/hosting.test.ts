@@ -17,8 +17,8 @@ import {
   TRAFFIC_SPIKE_DURATION_MS,
 } from '../src/engine';
 import type { GameState, UpgradeId } from '../src/engine';
+import { QUIET_HAZARDS } from './quiet-hazards';
 
-const QUIET_HAZARDS = { popup: 9e9, virus: 9e9, spam: 9e9, 'sql-injection': 9e9, 'traffic-spike': 9e9 };
 const fresh = (): GameState => ({ ...createInitialGameState(1), hazardCountdownsMs: QUIET_HAZARDS });
 /** A 2005 blog big enough to keep shared hosting busy. */
 const busyBlog = (upgrades: readonly UpgradeId[] = [], extra: Partial<GameState> = {}): GameState => ({

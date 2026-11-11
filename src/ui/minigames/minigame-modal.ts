@@ -3,8 +3,11 @@ import type { EraId, MinigameId } from '../../engine';
 import { setTextIfChanged } from '../dom';
 import { ERA_PRESENTATION } from '../presentation';
 import { backupRestoreView } from './backup-restore-view';
+import { closeGatesView } from './close-gates-view';
+import { crossTrafficView } from './cross-traffic-view';
 import { firewallView } from './firewall-view';
 import { snakeView } from './snake-view';
+import { resetPasswordsView } from './reset-passwords-view';
 import { spamSortView } from './spam-sort-view';
 import type { MinigameSession, MinigameTarget, MinigameView } from './types';
 import { virusScanView } from './virus-scan-view';
@@ -41,11 +44,17 @@ const VIEWS: Readonly<Record<MinigameId, MinigameView>> = {
   firewall: firewallView,
   'spam-sort': spamSortView,
   'backup-restore': backupRestoreView,
+  'reset-passwords': resetPasswordsView,
+  'close-gates': closeGatesView,
+  'cross-traffic': crossTrafficView,
 };
 
 const OTHER_TITLES: Readonly<Record<Exclude<MinigameId, 'snake' | 'virus-scan' | 'firewall'>, string>> = {
   'spam-sort': 'moderate_comments.php',
   'backup-restore': 'mysql_restore.sh',
+  'reset-passwords': 'Admin · Users · Force password reset',
+  'close-gates': 'Cloud console · Firewall rules',
+  'cross-traffic': 'ssh admin@server · rate limiting',
 };
 
 const CLOSE_AFTER_WIN_MS = 900;

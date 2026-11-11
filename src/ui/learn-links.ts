@@ -38,6 +38,7 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'html5-media': `${MDN}/Web/HTML/Element/video`,
   'social-plugins': `${WIKIPEDIA}/Like_button`,
   'learn-nodejs': 'https://nodejs.org/en/learn/getting-started/introduction-to-nodejs',
+  'learn-bcrypt': 'https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html',
   // 1997 boosts
   'counter-starts-at-ten-thousand': null,
   'html-validator': 'https://validator.w3.org/',
