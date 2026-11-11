@@ -21,6 +21,6 @@ export * from './minigames/firewall';
 export * from './minigames/spam-sort';
 export * from './minigames/backup-restore';
 export * from './minigames/reset-passwords';
-export * from './minigames/close-gates';
+export * from './minigames/reroute-traffic';
 export * from './minigames/cross-traffic';
 export * from './playtest';

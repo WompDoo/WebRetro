@@ -1,27 +1,27 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  advanceCloseGates,
   advanceCrossTraffic,
   createCrossTrafficGame,
   CROSS_TRAFFIC_MAX_HITS,
+  CROSS_TRAFFIC_PACKET_SIZE,
   isCrossTrafficHit,
   moveCrossTraffic,
   serverRow,
   advanceHazards,
   advanceResetPasswords,
   calculateFeatureVisitorsPerSecond,
-  CLOSE_GATES_MAX_BOTS_THROUGH,
-  CLOSE_GATES_MAX_TURNED_AWAY,
-  createCloseGatesGame,
+  createRerouteGame,
+  findConnectedTiles,
+  isRouteComplete,
+  planRouteSolution,
   createInitialGameState,
   createResetPasswordsGame,
-  GATE_POSITION,
   MINIGAME_IDS,
   resetAccountPassword,
-  toggleGate,
+  turnRouteTile,
 } from '../src/engine';
-import type { CloseGatesGame, CrossMove, CrossTrafficGame, GameState, HazardKind, ResetPasswordsGame } from '../src/engine';
+import type { CrossMove, CrossTrafficGame, GameState, HazardKind, RerouteGame, ResetPasswordsGame } from '../src/engine';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
 const SEED = 42;
@@ -65,7 +65,7 @@ describe('2011 hazards', () => {
 
   it('lists every minigame once, the new ones included', () => {
     assert.equal(new Set(MINIGAME_IDS).size, MINIGAME_IDS.length);
-    assert.ok(MINIGAME_IDS.includes('reset-passwords') && MINIGAME_IDS.includes('close-gates'));
+    assert.ok(MINIGAME_IDS.includes('reset-passwords') && MINIGAME_IDS.includes('reroute-traffic'));
   });
 });
 
@@ -112,54 +112,53 @@ describe('Reset the passwords', () => {
   });
 });
 
-function runGates(game: CloseGatesGame, totalMs: number, play: (current: CloseGatesGame) => CloseGatesGame): CloseGatesGame {
-  return Array.from({ length: Math.ceil(totalMs / FRAME_MS) }).reduce<CloseGatesGame>((current) => play(advanceCloseGates(current, FRAME_MS)), game);
+/** Turns a tile until it sits at the wanted rotation. */
+function turnTo(game: RerouteGame, key: string, rotation: number): RerouteGame {
+  const [column = 0, row = 0] = key.split(',').map(Number);
+  const current = game.tiles[row]?.[column]?.rotation ?? 0;
+  const quarterTurns = (rotation - current + 4) % 4;
+  return Array.from({ length: quarterTurns }).reduce<RerouteGame>((turned) => turnRouteTile(turned, { column, row }), game);
 }
 
-/** The winning habit: each lane's gate is shut exactly when the next thing coming at it is a bot. */
-function gateForWhatsNext(game: CloseGatesGame): CloseGatesGame {
-  return game.closedLanes.reduce<CloseGatesGame>((current, isClosed, lane) => {
-    const next = current.requests.filter((request) => request.lane === lane && !request.hasPassedGate).sort((first, second) => second.position - first.position)[0];
-    const shouldClose = next?.isBot ?? false;
-    return shouldClose === isClosed ? current : toggleGate(current, lane);
-  }, game);
+function solve(difficulty: number, seed: number): RerouteGame {
+  const solution = planRouteSolution(difficulty, seed);
+  return [...solution.entries()].reduce((game, [key, rotation]) => turnTo(game, key, rotation), createRerouteGame(difficulty, seed));
 }
 
-describe('Close the gates', () => {
-  it('waits for the first click, then the attack starts', () => {
-    const game = createCloseGatesGame(1, SEED);
-    assert.equal(game.status, 'waiting');
-    assert.deepEqual(advanceCloseGates(game, 1_000), game);
-    assert.equal(toggleGate(game, 0).status, 'running');
+describe('Reroute the traffic', () => {
+  it('starts scrambled, every time', () => {
+    [1, 2, 3].forEach((difficulty) => [SEED, 7, 1234, 99].forEach((seed) => assert.ok(!isRouteComplete(createRerouteGame(difficulty, seed)), `${difficulty}/${seed}`)));
   });
 
-  it('loses to the bots with every gate left open', () => {
-    const started = toggleGate(toggleGate(createCloseGatesGame(1, SEED), 0), 0);
-    const played = runGates(started, started.durationMs, (current) => current);
-    assert.equal(played.status, 'lost');
-    assert.ok(played.botsThrough >= CLOSE_GATES_MAX_BOTS_THROUGH);
+  it('can always be solved: turning the route tiles into place wins, at every difficulty and seed', () => {
+    [1, 2, 3].forEach((difficulty) =>
+      [SEED, 7, 1234, 99, 5].forEach((seed) => {
+        const solved = solve(difficulty, seed);
+        assert.equal(solved.status, 'won', `${difficulty}/${seed}`);
+        assert.ok(solved.moves > 0);
+      }),
+    );
   });
 
-  it('loses the visitors with every gate shut', () => {
-    const shut = [0, 1, 2].reduce((current, lane) => toggleGate(current, lane), createCloseGatesGame(1, SEED));
-    const played = runGates(shut, shut.durationMs, (current) => current);
-    assert.equal(played.status, 'lost');
-    assert.ok(played.visitorsTurnedAway >= CLOSE_GATES_MAX_TURNED_AWAY);
+  it('turns one tile a quarter at a time, and counts the turns', () => {
+    const game = createRerouteGame(1, SEED);
+    const turned = turnRouteTile(game, { column: 1, row: 1 });
+    assert.equal(turned.tiles[1]?.[1]?.rotation, ((game.tiles[1]?.[1]?.rotation ?? 0) + 1) % 4);
+    assert.equal(turned.moves, 1);
   });
 
-  it('is won by shutting each gate just for the bots, at every difficulty', () => {
-    [1, 2, 3].forEach((difficulty) => {
-      const started = toggleGate(toggleGate(createCloseGatesGame(difficulty, SEED), 0), 0);
-      const played = runGates(started, started.durationMs + FRAME_MS, gateForWhatsNext);
-      assert.equal(played.status, 'won', `difficulty ${difficulty}`);
-      assert.ok(played.botsBlocked > 0);
-    });
+  it('lights the cable that reaches the Internet, and nothing reached means nothing lit', () => {
+    const solved = solve(2, SEED);
+    assert.ok(findConnectedTiles(solved).size >= solved.columns);
+    const unplugged = { ...solved, tiles: solved.tiles.map((row) => row.map((tile) => ({ ...tile, openings: [] }))) };
+    assert.equal(findConnectedTiles(unplugged).size, 0);
   });
 
-  it('decides each request at the gate, never twice', () => {
-    const started = toggleGate(toggleGate(createCloseGatesGame(1, SEED), 0), 0);
-    const played = runGates(started, 2_000, gateForWhatsNext);
-    played.requests.filter((request) => request.position >= GATE_POSITION).forEach((request) => assert.ok(request.hasPassedGate));
+  it('starts running with no clock to beat, on a bigger board at higher difficulty', () => {
+    const hard = createRerouteGame(3, SEED);
+    const easy = createRerouteGame(1, SEED);
+    assert.equal(hard.status, 'running');
+    assert.ok(hard.columns * hard.tiles.length > easy.columns * easy.tiles.length);
   });
 });
 
@@ -227,6 +226,17 @@ describe('Cross the traffic', () => {
         assert.equal(current.status, 'won', `difficulty ${difficulty}, seed ${seed}`);
       });
     });
+  });
+
+  it('only hits what you can see: a bot beside the packet, still inside its cell, misses', () => {
+    const column = 4;
+    const packetRight = column + 0.5 + CROSS_TRAFFIC_PACKET_SIZE / 2;
+    const withBotAt = (botLeft: number): CrossTrafficGame => {
+      const game = createCrossTrafficGame(1, SEED);
+      return { ...game, status: 'running', row: 1, column, lanes: game.lanes.map((lane, index) => (index === 0 ? { ...lane, botLength: 1, bots: [botLeft] } : lane)) };
+    };
+    assert.ok(!isCrossTrafficHit(withBotAt(packetRight + 0.01)), 'a bot just right of the packet');
+    assert.ok(isCrossTrafficHit(withBotAt(packetRight - 0.01)), 'a bot touching the packet');
   });
 
   it('gets harder: more lanes, faster bots, more crossings', () => {

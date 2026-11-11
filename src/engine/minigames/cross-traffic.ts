@@ -44,8 +44,12 @@ const CROSSINGS_PER_DIFFICULTY = 1;
 const SPEED_RANGE: readonly [number, number] = [1.0, 2.0];
 const SPEEDUP_PER_DIFFICULTY = 0.15;
 const SHORT_BOT = 1;
-/** A bot has to cover this much of your cell to count: grazing the edge doesn't. */
-const HIT_TOLERANCE = 0.15;
+/**
+ * Your connection is this wide, in cells, centred in its cell. It is drawn exactly this size too: a bot only
+ * hits what you can see, so a gap that looks big enough is big enough.
+ */
+export const CROSS_TRAFFIC_PACKET_SIZE = 0.45;
+const CELL_CENTRE = 0.5;
 const ROLLS_PER_LANE = 3;
 
 const MOVES: Readonly<Record<CrossMove, readonly [number, number]>> = { up: [0, 1], down: [0, -1], left: [-1, 0], right: [1, 0] };
@@ -87,14 +91,15 @@ export function serverRow(game: CrossTrafficGame): number {
   return game.lanes.length + 1;
 }
 
-function overlapsCell(botLeft: number, botLength: number, column: number): boolean {
-  return botLeft < column + 1 - HIT_TOLERANCE && botLeft + botLength > column + HIT_TOLERANCE;
+function overlapsPacket(botLeft: number, botLength: number, column: number): boolean {
+  const packetLeft = column + CELL_CENTRE - CROSS_TRAFFIC_PACKET_SIZE / 2;
+  return botLeft < packetLeft + CROSS_TRAFFIC_PACKET_SIZE && botLeft + botLength > packetLeft;
 }
 
 /** Row 0 and the server row have no lane, so nothing can hit you there. */
 export function isCrossTrafficHit(game: CrossTrafficGame): boolean {
   const lane = game.lanes[game.row - 1];
-  return lane !== undefined && lane.bots.some((botLeft) => overlapsCell(botLeft, lane.botLength, game.column));
+  return lane !== undefined && lane.bots.some((botLeft) => overlapsPacket(botLeft, lane.botLength, game.column));
 }
 
 function backToStart(game: CrossTrafficGame): CrossTrafficGame {

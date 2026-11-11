@@ -38,8 +38,8 @@ describe('infection difficulty', () => {
 });
 
 describe('which game a botnet loads', () => {
-  it('rolls between closing the gates and crossing the traffic', () => {
-    assert.deepEqual([0, 0.99].map((roll) => pickMinigame('ddos', roll)), ['close-gates', 'cross-traffic']);
+  it('rolls between rerouting the traffic and crossing it', () => {
+    assert.deepEqual([0, 0.99].map((roll) => pickMinigame('ddos', roll)), ['reroute-traffic', 'cross-traffic']);
   });
 
   it('always gives the single-game kinds their game', () => {

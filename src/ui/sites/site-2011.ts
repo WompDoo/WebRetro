@@ -32,9 +32,35 @@ function renderLookClasses(context: SiteContext): string {
   return [...skills, ...onePager].map((className) => ` ${className}`).join('');
 }
 
-/** Once "Sign in with…" is built, the navbar offers it too. */
+/** Anything people log into. Once one is on the page, the navbar has a sign-in form. */
+const ACCOUNT_FEATURES: readonly FeatureId[] = ['forum', 'guestbook', 'social-login'];
+/** A padlock, drawn: bcrypt's mark on the password field. */
+const LOCK_ICON = '<svg class="bs-lock" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="3" y="7" width="10" height="8" rx="1.5" fill="currentColor"/><path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+
+function isPasswordLeaked(state: GameState): boolean {
+  return state.infections.some((infection) => infection.kind === 'password-leak');
+}
+
+/** The password field says what's true of your passwords: leaked, hashed, or neither. */
+function renderPasswordField(state: GameState): string {
+  const states: readonly (readonly [boolean, string])[] = [
+    [isPasswordLeaked(state), '<span class="bs-input is-password is-leaked">Reset your password!</span>'],
+    [knows(state, 'learn-bcrypt'), `<span class="bs-input is-password is-hashed">Password${LOCK_ICON}<em>bcrypt</em></span>`],
+  ];
+  return states.find(([applies]) => applies)?.[1] ?? '<span class="bs-input is-password">Password</span>';
+}
+
+function renderFacespaceButton(context: SiteContext): string {
+  return ownedFeatures(context, ['social-login']).length > 0 ? '<span class="bs-button is-facespace" title="Sign in with Facespace">f</span>' : '';
+}
+
+/** Bootstrap 2's hero template had exactly this: email and password in the navbar. */
+function renderSignInForm(context: SiteContext): string {
+  return `<span class="bs-navbar-form"><span class="bs-input">Email</span>${renderPasswordField(context.state)}<span class="bs-button">Sign in</span>${renderFacespaceButton(context)}</span>`;
+}
+
 function renderSignIn(context: SiteContext): string {
-  return ownedFeatures(context, ['social-login']).length > 0 ? 'Sign in with Facespace' : 'Sign in';
+  return ownedFeatures(context, ACCOUNT_FEATURES).length > 0 ? renderSignInForm(context) : '<span class="bs-signin">Sign in</span>';
 }
 
 /** "Get our app!": across the top of the page, above even the navbar. */
@@ -56,7 +82,7 @@ function renderBootstrapSite(context: SiteContext): string {
   const nav = NAV_ITEMS.map((item, index) => `<span${index === 0 ? ' class="is-active"' : ''}>${item}</span>`).join('');
   return `<div class="site-2011${renderLookClasses(context)}">
     ${renderAppBanner(context)}
-    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteName(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span><span class="bs-signin">${renderSignIn(context)}</span></header>
+    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteName(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderSignIn(context)}</header>
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${sidebar}</aside></div>
     <footer class="bs-footer">© ${siteName(context.state)} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>

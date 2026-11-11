@@ -8,6 +8,6 @@ export const MINIGAME_NAMES: Readonly<Record<MinigameId, string>> = {
   'spam-sort': 'Sort the comments',
   'backup-restore': 'Restore a backup',
   'reset-passwords': 'Reset the passwords',
-  'close-gates': 'Close the gates',
+  'reroute-traffic': 'Reroute the traffic',
   'cross-traffic': 'Cross the traffic',
 };

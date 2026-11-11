@@ -190,7 +190,7 @@ const CLEANUP_MESSAGES: Readonly<Record<MinigameId, (featureName: string) => str
   'spam-sort': (featureName) => `You sorted the spam out of your ${featureName}.`,
   'backup-restore': (featureName) => `You restored your ${featureName} from the right backup.`,
   'reset-passwords': (featureName) => `Every leaked ${featureName} password is reset. The crackers gave up.`,
-  'close-gates': (featureName) => `You shut the botnet out of your ${featureName}. Real visitors are back.`,
+  'reroute-traffic': (featureName) => `You rerouted the flood through the scrubbing centre. Your ${featureName} is back.`,
   'cross-traffic': (featureName) => `You got through the flood and switched on rate limiting. Your ${featureName} is back.`,
 };
 
