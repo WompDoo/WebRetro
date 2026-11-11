@@ -7,7 +7,31 @@
 .w2-nav span { padding: 5px 12px; background: #4F80B3; color: #FFFFFF; font-weight: 700; }
 .w2-nav .is-active { background: #FFFFFF; color: #336699; }
 .w2-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px); gap: 14px; padding: 14px; align-items: start; }
-@container (max-width: 560px) { .w2-columns { grid-template-columns: minmax(0, 1fr); } }
+/*
+ * Narrow screens: one column. The two columns dissolve and their blocks interleave, so each sidebar widget sits
+ * near the content it goes with instead of all of them waiting at the bottom. The markup stays the same.
+ */
+@container (max-width: 560px) {
+  .w2-columns { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+  .w2-columns > .w2-main, .w2-columns > .w2-sidebar { display: contents; }
+  .w2-columns .feature-block { order: 50; }
+  .w2-columns .w2-intro, .w2-columns [data-feature="flash-intro"] { order: 1; }
+  .w2-columns [data-feature="blog"] { order: 2; }
+  .w2-columns [data-feature="video-player"] { order: 3; }
+  .w2-columns .sponsored { order: 4; }
+  .w2-columns [data-feature="comments"] { order: 5; }
+  .w2-columns [data-feature="guestbook"] { order: 6; }
+  .w2-columns [data-feature="photo-gallery"] { order: 7; }
+  .w2-columns [data-feature="tag-cloud"] { order: 8; }
+  .w2-columns [data-feature="forum"] { order: 9; }
+  .w2-columns [data-feature="share-buttons"] { order: 10; }
+  .w2-columns [data-feature="activity-feed"] { order: 11; }
+  .w2-columns [data-feature="map-mashup"] { order: 12; }
+  .w2-columns [data-feature="midi-player"] { order: 13; }
+  .w2-columns [data-feature="webring"] { order: 14; }
+  .w2-columns [data-feature="hit-counter"] { order: 15; }
+  .w2-columns [data-feature="under-construction"] { order: 16; }
+}
 .w2-main, .w2-sidebar { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .site-2005 .feature-block { position: relative; min-height: 70px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #CCCCCC; overflow: hidden; }
 .site-2005 .feature-heading { margin: -10px -12px 10px; padding: 5px 12px; font-size: 13px; color: #336699; background: #F0F0F0; border-bottom: 1px solid #CCCCCC; }
