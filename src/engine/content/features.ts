@@ -273,7 +273,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     eraId: 'social-2011',
     name: 'Scroll-jacking one-pager',
     laterEraNames: {},
-    description: 'Your story in big full-colour chapters that snap into place one at a time. Design blogs make it "Site of the Day". Everyone else waits for it to load, especially on phones.',
+    description: 'Your story in big full-colour chapters. Scroll down and the page stops while the chapters slide past sideways; only after the last does it move on. Design blogs make it "Site of the Day". Everyone else waits for it, especially on phones.',
     baseCost: 10_000_000_000,
     visitorsPerSecondPerLevel: 2_500_000,
     synergy: null,
