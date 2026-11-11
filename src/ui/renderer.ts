@@ -88,7 +88,7 @@ function renderBrowserStatus(editor: CodeEditor): void {
   elements.browserStatusbar.dataset['performance'] = classifyPerformance(store.game, economy);
   editor.setTitle(buildEditorTitle(store.game, resolveEditorFile(store.game, store.editorFile)));
   const caption = buildPhoneCaption(store.game, economy.loadTimeSeconds);
-  setHtmlIfChanged(elements.deviceCaption, `<b class="device-caption-title">${escapeHtml(caption.headline)}</b><span>${escapeHtml(caption.detail)}</span>`);
+  setHtmlIfChanged(elements.deviceCaption, `<b class="device-caption-title">${escapeHtml(caption.headline)}</b><span>${escapeHtml(caption.detail)}</span><span class="device-caption-hint">Swipe the screen to scroll.</span>`);
 }
 
 /**

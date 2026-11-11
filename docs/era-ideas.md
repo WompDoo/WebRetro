@@ -37,6 +37,8 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   phone (`[data-era] .device-frame`), not the mechanism. On the phone, pop-ups fill the screen (interstitials)
   and infections arrive as notification banners at the phone's own size, so they can be tapped even when
   the page is shrunk; tapping one opens its minigame. Banners sit above the pop-ups, never over their ×.
+  The phone scrolls by swiping, not with a scrollbar: drag the screen, flick it and it glides to a stop. The page
+  follows the pointer exactly at any zoom; a press that barely moves is still a tap (`src/ui/swipe.ts`).
 - **Real company names stay out of the game.** Technologies are fine (PHP, React); companies get
   parody names ("Sign in with Facespace").
 
