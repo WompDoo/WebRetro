@@ -1,4 +1,4 @@
-import type { EraId, HostingTierDefinition } from '../types';
+import type { EraId, HostingTierDefinition, HostingTierId } from '../types';
 
 const FIRST_EXTRA_RACK = 1;
 /** Far more racks than anyone can afford: the price, not the list, is what stops you. */
@@ -120,44 +120,91 @@ function createExtraRackTier(racks: number): HostingTierDefinition {
 /** After the second data center you add racks, so there is always a next step: money can always buy capacity. */
 const EXTRA_RACK_TIERS: readonly HostingTierDefinition[] = Array.from({ length: MAX_EXTRA_RACKS }, (_, index) => createExtraRackTier(FIRST_EXTRA_RACK + index));
 
-const FIRST_CLOUD_INSTANCES = 2;
-const CLOUD_STEPS = 60;
-const CAPACITY_PER_INSTANCE = 12_000_000;
-/** Each step adds about a quarter more instances, and costs a little more than a quarter more than the last. */
-const INSTANCE_GROWTH = 1.25;
-const SECOND_STEP_COST = 400_000_000;
-const STEP_COST_GROWTH = 1.4;
+/**
+ * From 2011 on, capacity comes in units rented by the minute: cloud instances, then Kubernetes pods. A ladder
+ * starts free at a few units and grows about a quarter per step, each step costing a little more than the last.
+ */
+interface ScalingLadder {
+  readonly eraId: EraId;
+  readonly year: number;
+  readonly firstUnits: number;
+  readonly steps: number;
+  readonly capacityPerUnit: number;
+  readonly unitGrowth: number;
+  readonly secondStepCost: number;
+  readonly stepCostGrowth: number;
+  readonly createId: (units: number) => HostingTierId;
+  readonly createName: (units: number) => string;
+  /** What the relaunch gives you, then what every step after it says. */
+  readonly firstDescription: string;
+  readonly laterDescription: string;
+}
 
 /** 2, 3, 4, … then about a quarter more each step, never repeating a count. */
-function countCloudInstances(): readonly number[] {
-  return Array.from({ length: CLOUD_STEPS }).reduce<readonly number[]>((counts, _, step) => {
-    const previous = counts[counts.length - 1] ?? FIRST_CLOUD_INSTANCES - 1;
-    return [...counts, Math.max(previous + 1, Math.round(FIRST_CLOUD_INSTANCES * INSTANCE_GROWTH ** step))];
+function countUnits(ladder: ScalingLadder): readonly number[] {
+  return Array.from({ length: ladder.steps }).reduce<readonly number[]>((counts, _, step) => {
+    const previous = counts[counts.length - 1] ?? ladder.firstUnits - 1;
+    return [...counts, Math.max(previous + 1, Math.round(ladder.firstUnits * ladder.unitGrowth ** step))];
   }, []);
 }
 
-function describeCloudTier(step: number): string {
-  return step === 0
-    ? 'The relaunch moved you to “the cloud”: someone else’s computers, rented by the hour. No more racks.'
-    : 'More instances, up in a minute. The bill arrives at the end of the month.';
+function describeStep(ladder: ScalingLadder, step: number): string {
+  return step === 0 ? ladder.firstDescription : ladder.laterDescription;
 }
 
-function createCloudTier(instances: number, step: number): HostingTierDefinition {
+function priceStep(ladder: ScalingLadder, step: number): number {
+  return step === 0 ? 0 : Math.round(ladder.secondStepCost * ladder.stepCostGrowth ** (step - 1));
+}
+
+function createScalingTier(ladder: ScalingLadder, units: number, step: number): HostingTierDefinition {
   return {
-    id: `cloud-${instances}`,
-    eraId: 'social-2011',
-    year: 2011,
-    name: `The cloud: ${instances} instances`,
-    description: describeCloudTier(step),
-    cost: step === 0 ? 0 : Math.round(SECOND_STEP_COST * STEP_COST_GROWTH ** (step - 1)),
-    capacityVisitorsPerSecond: instances * CAPACITY_PER_INSTANCE,
+    id: ladder.createId(units),
+    eraId: ladder.eraId,
+    year: ladder.year,
+    name: ladder.createName(units),
+    description: describeStep(ladder, step),
+    cost: priceStep(ladder, step),
+    capacityVisitorsPerSecond: units * ladder.capacityPerUnit,
   };
 }
 
-/** 2011: the cloud replaces the 2005 racks. It starts with two instances and keeps scaling. */
-const CLOUD_TIERS: readonly HostingTierDefinition[] = countCloudInstances().map((instances, step) => createCloudTier(instances, step));
+function buildLadder(ladder: ScalingLadder): readonly HostingTierDefinition[] {
+  return countUnits(ladder).map((units, step) => createScalingTier(ladder, units, step));
+}
 
-export const HOSTING_TIERS: readonly HostingTierDefinition[] = [...NAMED_TIERS, ...EXTRA_RACK_TIERS, ...CLOUD_TIERS];
+/** 2011: the cloud replaces the 2005 racks. It starts with two instances and keeps scaling. */
+const CLOUD_TIERS = buildLadder({
+  eraId: 'social-2011',
+  year: 2011,
+  firstUnits: 2,
+  steps: 60,
+  capacityPerUnit: 12_000_000,
+  unitGrowth: 1.25,
+  secondStepCost: 400_000_000,
+  stepCostGrowth: 1.4,
+  createId: (instances) => `cloud-${instances}`,
+  createName: (instances) => `The cloud: ${instances} instances`,
+  firstDescription: 'The relaunch moved you to “the cloud”: someone else’s computers, rented by the hour. No more racks.',
+  laterDescription: 'More instances, up in a minute. The bill arrives at the end of the month.',
+});
+
+/** 2018: everything runs in containers, and Kubernetes decides where. It starts with three pods. */
+const POD_TIERS = buildLadder({
+  eraId: 'platform-2018',
+  year: 2018,
+  firstUnits: 3,
+  steps: 60,
+  capacityPerUnit: 2_000_000_000,
+  unitGrowth: 1.25,
+  secondStepCost: 40_000_000_000,
+  stepCostGrowth: 1.4,
+  createId: (pods) => `pods-${pods}`,
+  createName: (pods) => `Kubernetes: ${pods} pods`,
+  firstDescription: 'The relaunch packed your site into containers and handed them to Kubernetes. Nobody on the team fully understands the YAML.',
+  laterDescription: 'More replicas. Kubernetes finds them somewhere to run, eventually.',
+});
+
+export const HOSTING_TIERS: readonly HostingTierDefinition[] = [...NAMED_TIERS, ...EXTRA_RACK_TIERS, ...CLOUD_TIERS, ...POD_TIERS];
 
 /** Each era has its own ladder: your 2005 racks don't come along to the cloud. */
 export function getEraHostingTiers(eraId: EraId): readonly HostingTierDefinition[] {

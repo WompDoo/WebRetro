@@ -1,5 +1,5 @@
-import { addPlaytestIncome, addPlaytestInfection, addPlaytestPopup, createPlaytestState, ERA_IDS, ERAS_BY_ID, MINIGAME_IDS, startPlaytestTrafficSpike } from '../engine';
-import type { EraId, MinigameId, PlaytestStage } from '../engine';
+import { addPlaytestIncome, addPlaytestInfection, addPlaytestPopup, createPlaytestState, ERA_IDS, ERAS_BY_ID, findChosenFramework, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, MINIGAME_IDS, startPlaytestTrafficSpike } from '../engine';
+import type { EraId, FrameworkId, MinigameId, PlaytestStage } from '../engine';
 import { elements } from './elements';
 import type { MinigameModal } from './minigames/minigame-modal';
 import { hideOverlay, showOverlay } from './overlays';
@@ -55,10 +55,22 @@ function afterGameSwap(renderer: Renderer, minigame: MinigameModal, message: str
   writeSave();
 }
 
-function jumpTo(eraId: EraId, stage: PlaytestStage, renderer: Renderer, minigame: MinigameModal): void {
+/** Presets name a framework from 2018 on ("platform-2018:end:angular"); earlier ones don't, and React stands in. */
+function readFramework(value: string): FrameworkId {
+  return FRAMEWORK_IDS.find((frameworkId) => frameworkId === value) ?? 'react';
+}
+
+/** Says which framework the jump picked, once the game has one. */
+function describeJump(stage: PlaytestStage, eraId: EraId): string {
+  const framework = findChosenFramework(store.game);
+  const picked = framework === null ? '' : ` with ${FRAMEWORKS_BY_ID[framework].name}`;
+  return `Playtest: jumped to ${STAGE_NAMES[stage]} of ${ERAS_BY_ID[eraId].year}${picked}. Your own game is backed up.`;
+}
+
+function jumpTo(eraId: EraId, stage: PlaytestStage, framework: FrameworkId, renderer: Renderer, minigame: MinigameModal): void {
   backUpOwnGameOnce();
-  replaceGame(createPlaytestState(eraId, stage, createSeed()));
-  afterGameSwap(renderer, minigame, `Playtest: jumped to ${STAGE_NAMES[stage]} of ${ERAS_BY_ID[eraId].year}. Your own game is backed up.`);
+  replaceGame(createPlaytestState(eraId, stage, createSeed(), framework));
+  afterGameSwap(renderer, minigame, describeJump(stage, eraId));
 }
 
 function playMinigame(minigameId: MinigameId, minigame: MinigameModal): void {
@@ -82,8 +94,8 @@ export function createPlaytestHandlers(renderer: Renderer, minigame: MinigameMod
       store.playtestSpeed = 1;
     },
     'playtest-jump': (target) => {
-      const [eraId = '', stage = ''] = readId(target).split(':');
-      if (isEraId(eraId) && isStage(stage)) jumpTo(eraId, stage, renderer, minigame);
+      const [eraId = '', stage = '', framework = ''] = readId(target).split(':');
+      if (isEraId(eraId) && isStage(stage)) jumpTo(eraId, stage, readFramework(framework), renderer, minigame);
     },
     'playtest-restore': () => {
       const isRestored = restoreOwnGame();

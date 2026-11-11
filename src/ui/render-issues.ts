@@ -53,10 +53,21 @@ function renderMention(issue: Issue, state: GameState, nowMs: number): string {
   </li>`;
 }
 
+/** 2018: a board of tickets with keys, priorities and story points, all assigned to you. */
+function renderTicket(issue: Issue, state: GameState, nowMs: number): string {
+  const priority = issue.severity === 'critical' ? 'Highest' : 'High';
+  return `<li class="issue issue--ticket" data-severity="${issue.severity}">
+    <span class="issue-head"><span class="ticket-key">MYH-${issue.number}</span><span class="ticket-priority">${priority}</span><span class="ticket-status">To do</span></span>
+    <span class="issue-title">${escapeHtml(issue.title)}</span>
+    ${renderMeta(issue, state, nowMs)}${renderActions(issue)}
+  </li>`;
+}
+
 const TRACKER_STYLES: Readonly<Record<EraId, TrackerStyle>> = {
   'homepage-1997': { panelTitle: 'Inbox', emptyText: 'No new mail.', renderIssue: renderEmail },
   'web2-2005': { panelTitle: 'Issues', emptyText: 'No open bugs. Ship it!', renderIssue: renderBug },
   'social-2011': { panelTitle: 'Mentions', emptyText: 'Nobody is complaining about you. For now.', renderIssue: renderMention },
+  'platform-2018': { panelTitle: 'Board', emptyText: 'Board is clear. Time for a retro.', renderIssue: renderTicket },
 };
 
 export function issuePanelTitle(eraId: EraId): string {

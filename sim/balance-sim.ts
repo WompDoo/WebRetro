@@ -49,9 +49,13 @@ import {
   cleanInfection,
   UPGRADES_BY_ID,
   writeCode,
+  findFrameworkPickedBy,
+  FRAMEWORK_IDS,
   type EraId,
+  type FrameworkId,
   type GameState,
   type Infection,
+  type UpgradeId,
 } from '../src/engine';
 
 interface PlayerProfile {
@@ -59,6 +63,19 @@ interface PlayerProfile {
   readonly keystrokesPerSecond: number;
   readonly reactionMs: number;
   readonly buysDefenses: boolean;
+  /** 2018's framework wars: the bot would always pick the best payback, so each run is told which one. */
+  readonly framework: FrameworkId;
+}
+
+/** Where a run is when it relaunches into an era: the other frameworks' runs start from here. */
+interface EraEntry {
+  readonly state: GameState;
+  readonly now: number;
+}
+
+interface RunResult {
+  readonly reports: readonly EraReport[];
+  readonly entry2018: EraEntry | null;
 }
 
 interface PurchaseOption {
@@ -97,9 +114,18 @@ const SEED = 1997;
 const MIN_REVENUE_FOR_GROWTH = 100;
 
 const PROFILES: readonly PlayerProfile[] = [
-  { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false },
-  { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true },
+  { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false, framework: 'react' },
+  { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true, framework: 'angular' },
 ];
+const FRAMEWORK_ERA: EraId = 'platform-2018';
+/** Every framework has to be as good a pick as the others: 2018 may take at most this much longer with one. */
+const MAX_FRAMEWORK_SPREAD_MS = 2 * 60 * 1000;
+
+/** Only the profile's framework is on its shopping list. */
+function isOtherFramework(skillId: UpgradeId, profile: PlayerProfile): boolean {
+  const framework = findFrameworkPickedBy(skillId);
+  return framework !== null && framework !== profile.framework;
+}
 
 /**
  * Income without the passing hazards (infections, pop-ups, traffic spikes, the quick-fix bonus). Growth is
@@ -141,7 +167,7 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
       };
       return { label: `feature:${featureId}`, cost, isRequiredForGate: isGateFeature(state, featureId), apply, canApply: (current) => canBuyFeature(current, featureId), valueCost: cost + adCost, valueApply };
     });
-  const skills = getAvailableSkillIds(state).map<PurchaseOption>((skillId) => {
+  const skills = getAvailableSkillIds(state).filter((skillId) => !isOtherFramework(skillId, profile)).map<PurchaseOption>((skillId) => {
     const learn = (current: GameState): GameState => buyUpgrade(current, skillId);
     const unlocked = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].requiredSkillId === skillId && isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId));
     const firstFeature = unlocked[0];
@@ -241,11 +267,12 @@ function typeKeystrokes(state: GameState, count: number): GameState {
   return Array.from({ length: count }).reduce<GameState>((current) => writeCode(current).state, state);
 }
 
-function runProfile(profile: PlayerProfile): readonly EraReport[] {
-  let state = createInitialGameState(SEED);
-  let now = 0;
+function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
+  let state = start.state;
+  let now = start.now;
+  let entry2018: EraEntry | null = null;
   let typingDebt = 0;
-  let eraStartedAt = 0;
+  let eraStartedAt = start.now;
   let minigameMsThisEra = 0;
   let revenueAMinuteAgo = 0;
   let steepestMinute = { ratio: 1, atMinute: 0 };
@@ -303,6 +330,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
       );
       reportTradeIn(profile.name, state);
       state = advanceEra(state);
+      if (state.eraId === FRAMEWORK_ERA && entry2018 === null) entry2018 = { state, now };
       eraStartedAt = now;
       minigameMsThisEra = 0;
     }
@@ -316,7 +344,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
   console.log(`  [${profile.name}] steepest minute: underlying income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
   console.log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
-  return reports;
+  return { reports, entry2018 };
 }
 
 /** What the relaunch pays back for retired features, in seconds of the income the player has right then. */
@@ -328,24 +356,70 @@ function reportTradeIn(profileName: string, state: GameState): void {
   console.log(`  [${profileName}] trade-in at the relaunch into ${nextEraId}: ${formatMoney(tradeIn)}, ${seconds.toFixed(1)} s of income`);
 }
 
-console.log('Balance simulation');
-const stuckProfiles = PROFILES.filter((profile) => {
-  const reports = runProfile(profile);
+function printReports(name: string, reports: readonly EraReport[]): void {
   reports.forEach((report) =>
     console.log(
-      `  [${profile.name}] ${report.eraId}: ${(report.durationMs / MS_PER_MINUTE).toFixed(1)} min, ` +
+      `  [${name}] ${report.eraId}: ${(report.durationMs / MS_PER_MINUTE).toFixed(1)} min, ` +
         `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end, ` +
         `minigames = ${(report.minigameShare * 100).toFixed(0)}% of play time`,
     ),
   );
-  return reports.length < ERA_IDS.length;
-});
+}
 
-// CI check: every scripted player has to finish every era. Timing is reported, never enforced.
+function find2018Minutes(reports: readonly EraReport[]): number | null {
+  const report = reports.find((candidate) => candidate.eraId === FRAMEWORK_ERA);
+  return report === undefined ? null : report.durationMs;
+}
+
+interface ProfileOutcome {
+  readonly name: string;
+  readonly finishedEveryEra: boolean;
+  /** 2018's duration with each framework; null where that run never finished 2018. */
+  readonly frameworkDurationsMs: readonly (number | null)[];
+}
+
+/** The full run with the profile's own framework, then 2018 again from the same relaunch with each other one. */
+function playProfile(profile: PlayerProfile): ProfileOutcome {
+  const full = runProfile(profile, { state: createInitialGameState(SEED), now: 0 });
+  printReports(profile.name, full.reports);
+  const others = FRAMEWORK_IDS.filter((framework) => framework !== profile.framework);
+  const branches = full.entry2018 === null ? [] : others.map((framework) => {
+    const branch = { ...profile, name: `${profile.name}/${framework}`, framework };
+    const result = runProfile(branch, full.entry2018 ?? { state: createInitialGameState(SEED), now: 0 });
+    printReports(branch.name, result.reports);
+    return result.reports;
+  });
+  const finishedBranches = branches.every((reports) => find2018Minutes(reports) !== null);
+  return {
+    name: profile.name,
+    finishedEveryEra: full.reports.length === ERA_IDS.length && finishedBranches && branches.length === others.length,
+    frameworkDurationsMs: [find2018Minutes(full.reports), ...branches.map(find2018Minutes)],
+  };
+}
+
+function measureSpread(durations: readonly (number | null)[]): number {
+  const finished = durations.filter((duration): duration is number => duration !== null);
+  return finished.length === 0 ? 0 : Math.max(...finished) - Math.min(...finished);
+}
+
+console.log('Balance simulation');
+const outcomes = PROFILES.map(playProfile);
+const stuckProfiles = outcomes.filter((outcome) => !outcome.finishedEveryEra);
+const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworkDurationsMs) > MAX_FRAMEWORK_SPREAD_MS);
+outcomes.forEach((outcome) =>
+  console.log(`  [${outcome.name}] 2018 by framework: ${outcome.frameworkDurationsMs.map((ms) => (ms === null ? 'stuck' : `${(ms / MS_PER_MINUTE).toFixed(1)} min`)).join(' · ')} (own pick first)`),
+);
+
+// CI checks: every scripted player has to finish every era with every framework, and no framework may be a
+// clearly worse pick. Other timing is reported, never enforced.
 if (stuckProfiles.length > 0) {
-  const names = stuckProfiles.map((profile) => profile.name).join(', ');
+  const names = stuckProfiles.map((outcome) => outcome.name).join(', ');
   console.error(`FAILED: ${names} could not finish every era within ${MAX_SIMULATED_MS / MS_PER_MINUTE} simulated minutes.`);
   process.exitCode = 1;
+} else if (lopsided.length > 0) {
+  const names = lopsided.map((outcome) => outcome.name).join(', ');
+  console.error(`FAILED: for ${names}, one framework makes 2018 more than ${MAX_FRAMEWORK_SPREAD_MS / MS_PER_MINUTE} minutes slower than another.`);
+  process.exitCode = 1;
 } else {
-  console.log(`OK: every player finished all ${ERA_IDS.length} eras.`);
+  console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_MS / MS_PER_MINUTE} minutes of each other.`);
 }

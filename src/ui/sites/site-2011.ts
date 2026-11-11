@@ -1,13 +1,16 @@
-import { ERAS_BY_ID } from '../../engine';
+import { ERAS_BY_ID, getActiveUpgradeIds, isFeaturePluginDead } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml } from '../dom';
-import { ownedFeatures, renderFeatureBlocks, renderFeatureSection, renderSignInWithButtons } from './features';
+import { ownedFeatures, renderDeadNotice, renderFeatureBlocks, renderFeatureSection, renderSignInWithButtons } from './features';
 import { siteName } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2005Site } from './site-2005';
 
-/** Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no place here. */
-const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['video-player', 'blog', 'comments', 'photo-gallery', 'forum'];
+/**
+ * Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no
+ * place here. In 2018, before a framework rewrites the site, the new features squeeze in here too.
+ */
+const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'video-player', 'blog', 'pricing-table', 'comments', 'photo-gallery', 'forum'];
 /** The span4 sidebar: small widgets, each in a well. */
 /** Sign in with… isn't listed: its buttons go in the sign-in box. Maps were sidebar widgets. */
 const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['share-buttons', 'activity-feed', 'guestbook', 'map-mashup', 'midi-player'];
@@ -15,8 +18,9 @@ const NAV_ITEMS: readonly string[] = ['Home', 'Blog', 'Photos', 'About'];
 /** The three supporting columns under the hero, before you've built anything to put there. */
 const PLACEHOLDER_COLUMNS: readonly string[] = ['Heading', 'Heading', 'Heading'];
 
+/** Learned or bought, and still working: a boost that went out of fashion leaves the page. */
 function knows(state: GameState, upgradeId: UpgradeId): boolean {
-  return state.purchasedUpgradeIds.includes(upgradeId);
+  return getActiveUpgradeIds(state).includes(upgradeId);
 }
 
 /** What each 2011 look skill does to the page: a class, styled in 80-era-2011.css. */
@@ -40,9 +44,19 @@ function isPasswordLeaked(state: GameState): boolean {
   return state.infections.some((infection) => infection.kind === 'password-leak');
 }
 
+/** Sign in with… is on the page and its networks still let it work. */
+function hasWorkingSocialLogin(context: SiteContext): boolean {
+  return ownedFeatures(context, ['social-login']).length > 0 && !isFeaturePluginDead(context.state, 'social-login');
+}
+
 /** The navbar keeps a short link: it has to fit beside the menu at every width. */
 function renderNavbarSignIn(context: SiteContext): string {
-  return `<span class="bs-signin">${ownedFeatures(context, ['social-login']).length > 0 ? 'Sign in with Facespace' : 'Sign in'}</span>`;
+  return `<span class="bs-signin">${hasWorkingSocialLogin(context) ? 'Sign in with Facespace' : 'Sign in'}</span>`;
+}
+
+/** The buttons under the form, or what's left of them once Facespace switched off its API. */
+function renderSignInWithOptions(context: SiteContext): string {
+  return isFeaturePluginDead(context.state, 'social-login') ? renderDeadNotice('social-login') : renderSignInWithButtons(context);
 }
 
 /**
@@ -66,7 +80,7 @@ function renderSignInForm(state: GameState): string {
 function renderSignInBox(context: SiteContext): string {
   const form = renderSignInForm(context.state);
   return ownedFeatures(context, ['social-login']).length > 0
-    ? renderFeatureSection(context, 'social-login', `${form}<p class="bs-or">or</p>${renderSignInWithButtons(context)}`, ' bs-signin-box')
+    ? renderFeatureSection(context, 'social-login', `${form}<p class="bs-or">or</p>${renderSignInWithOptions(context)}`, ' bs-signin-box')
     : `<section class="feature-block bs-signin-box">${form}</section>`;
 }
 
@@ -105,6 +119,7 @@ function renderBootstrapSite(context: SiteContext): string {
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${sidebar}</aside></div>
     <footer class="bs-footer">© ${siteName(context.state)} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
+    ${renderFeatureBlocks(context, ['live-chat']).join('')}
   </div>`;
 }
 

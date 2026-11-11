@@ -5,6 +5,7 @@ import type { SiteContext } from './site-context';
 import { render1997Site } from './site-1997';
 import { render2005Site } from './site-2005';
 import { render2011Site } from './site-2011';
+import { render2018Site } from './site-2018';
 
 export { siteName } from './site-context';
 export { renderLiveSlotText, updateLiveSlots } from './live-slots';
@@ -14,10 +15,21 @@ const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> 
   'homepage-1997': render1997Site,
   'web2-2005': render2005Site,
   'social-2011': render2011Site,
+  'platform-2018': render2018Site,
 };
 
-function renderServiceUnavailable(state: GameState): string {
+function renderApacheUnavailable(state: GameState): string {
   return `<div class="site-down"><h1>Service Temporarily Unavailable</h1><p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p><hr><address>Apache/2.0.54 (Unix) PHP/4.4.0 Server at www.${siteName(state)}.com Port 80</address></div>`;
+}
+
+/** 2018: the load balancer in front of Kubernetes answers, and the pods behind it don't. */
+function renderIngressUnavailable(): string {
+  return '<div class="site-down is-ingress"><h1>503 Service Temporarily Unavailable</h1><p>upstream connect error or disconnect/reset before headers. reset reason: overflow</p><hr><center>nginx/1.15.2</center></div>';
+}
+
+/** Whoever answers when your servers can't: Apache until 2011, the Kubernetes ingress after. */
+function renderServiceUnavailable(state: GameState): string {
+  return state.eraId === 'platform-2018' ? renderIngressUnavailable() : renderApacheUnavailable(state);
 }
 
 export function renderSite(state: GameState, nowMs: number): string {

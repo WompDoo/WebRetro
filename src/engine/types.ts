@@ -1,4 +1,7 @@
-export type EraId = 'homepage-1997' | 'web2-2005' | 'social-2011';
+export type EraId = 'homepage-1997' | 'web2-2005' | 'social-2011' | 'platform-2018';
+
+/** 2018's framework wars: a site picks one, and it shapes everything after. */
+export type FrameworkId = 'react' | 'angular' | 'vue';
 
 export type FeatureId =
   | 'hit-counter'
@@ -17,7 +20,10 @@ export type FeatureId =
   | 'video-player'
   | 'activity-feed'
   | 'one-pager'
-  | 'social-login';
+  | 'social-login'
+  | 'stories'
+  | 'pricing-table'
+  | 'live-chat';
 
 export type UpgradeId =
   | 'img-tag'
@@ -84,7 +90,20 @@ export type UpgradeId =
   | 'learn-sass'
   | 'mongodb'
   | 'git-push-deploys'
-  | 'autoscaling';
+  | 'autoscaling'
+  | 'learn-react'
+  | 'learn-angular'
+  | 'learn-vue'
+  | 'nextjs-ssr'
+  | 'angular-universal'
+  | 'nuxt-ssr'
+  | 'mobile-first'
+  | 'learn-payments'
+  | 'learn-websockets'
+  | 'learn-oauth'
+  | 'code-splitting'
+  | 'lazy-loading'
+  | 'growth-hacking';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 export type UpgradeKind = 'skill' | 'boost';
@@ -92,7 +111,7 @@ export type UpgradeKind = 'skill' | 'boost';
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection';
 export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos';
 export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos';
-/** 2005: the named 2001–2009 steps, then extra racks one at a time. 2011: cloud instances, one at a time. */
+/** 2005: the named 2001–2009 steps, then extra racks one at a time. 2011: cloud instances. 2018: Kubernetes pods. */
 export type HostingTierId =
   | 'shared-hosting'
   | 'business-hosting'
@@ -105,7 +124,8 @@ export type HostingTierId =
   | 'sharded-database'
   | 'second-data-center'
   | `extra-racks-${number}`
-  | `cloud-${number}`;
+  | `cloud-${number}`
+  | `pods-${number}`;
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
@@ -169,7 +189,14 @@ export type UpgradeEffect =
   /** Traffic spikes are served from a static copy and put no load on the server. */
   | { readonly kind: 'traffic-spike-cache' }
   /** The page fits on phones, so phone visitors stop bouncing. */
-  | { readonly kind: 'mobile-friendly' };
+  | { readonly kind: 'mobile-friendly' }
+  /**
+   * A single-page app: the browser gets an empty page and builds it with JavaScript. Until the server renders
+   * it too, the page is blank while the bundle loads and runs, and search engines index the blank page.
+   */
+  | { readonly kind: 'client-side-rendering' }
+  /** The server sends the page already rendered: it shows at once, and search engines can read it. */
+  | { readonly kind: 'server-side-rendering' };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;

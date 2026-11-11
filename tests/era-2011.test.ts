@@ -200,9 +200,9 @@ describe('2011: a trade-in for what retires', () => {
 });
 
 describe('2011: the era itself', () => {
-  it('follows 2005 and is the last era of the prototype for now', () => {
+  it('follows 2005 and relaunches into 2018', () => {
     assert.equal(ERAS_BY_ID['web2-2005'].nextEraId, 'social-2011');
-    assert.equal(ERAS_BY_ID['social-2011'].nextEraId, null);
+    assert.equal(ERAS_BY_ID['social-2011'].nextEraId, 'platform-2018');
   });
 
   it('types an HTML5 page that turns into Bootstrap, with media queries in style.css', () => {

@@ -20,6 +20,7 @@ const WEBRING_SITES_PER_LEVEL = 12;
 const BLOGROLL_BASE_LINKS = 2;
 const EQUALIZER_BARS = 5;
 const AVATAR_COLORS: readonly string[] = ['#5C9E2E', '#2A6FB0', '#E07A00', '#9B4DCA', '#C9342E'];
+const FALLBACK_AVATAR_COLOR = '#2A6FB0';
 const TAG_SIZES_PX: readonly number[] = [11, 13, 15, 18, 22];
 const FALLBACK_MESSAGE: MessageCopy = { author: 'someone', text: 'hi' };
 
@@ -290,6 +291,46 @@ const renderOnePager: FeatureRenderer = (context) => {
   return `${heading(context, 'one-pager', 'Our story')}<div class="one-pager" style="--chapters:${chapters.length}"><div class="one-pager-pin"><div class="one-pager-track">${sections}</div><nav class="one-pager-dots" aria-hidden="true">${dots}</nav></div></div><p class="post-meta">Site of the Day · ${level * AWARDS_PER_LEVEL} design awards</p>`;
 };
 
+const STORY_AUTHORS: readonly string[] = ['Your story', 'jess.codes', 'mike_t', 'priya', 'dev_dan', 'anna.k', 'growth_guru', 'sam.k', 'leo', 'nina'];
+const BASE_STORIES = 3;
+
+/** A row of faces in coloured rings at the top: tap one, watch it, it's gone tomorrow. */
+const renderStories: FeatureRenderer = (context) => {
+  const count = Math.min(BASE_STORIES + levelOf(context, 'stories'), STORY_AUTHORS.length);
+  const stories = STORY_AUTHORS.slice(0, count)
+    .map((author, index) => `<span class="story${index === 0 ? ' is-yours' : ''}"><span class="story-ring"><span class="story-face" style="--avatar:${pickCyclic(AVATAR_COLORS, index, FALLBACK_AVATAR_COLOR)}">${escapeHtml(author.charAt(0).toUpperCase())}</span></span><span class="story-name">${escapeHtml(author)}</span></span>`)
+    .join('');
+  return `${heading(context, 'stories')}<div class="stories">${stories}</div>`;
+};
+
+interface PricingPlan {
+  readonly name: string;
+  readonly price: string;
+  readonly perks: readonly string[];
+  readonly isHighlighted: boolean;
+}
+
+const PRICING_PLANS: readonly PricingPlan[] = [
+  { name: 'Free', price: '$0', perks: ['1 project', 'Community support', 'Our logo on your page'], isHighlighted: false },
+  { name: 'Pro', price: '$12/mo', perks: ['Unlimited projects', 'Priority support', 'Dark mode'], isHighlighted: true },
+  { name: 'Enterprise', price: 'Contact us', perks: ['Single sign-on', 'A person who answers', 'An invoice'], isHighlighted: false },
+];
+const TEAMS_PER_LEVEL = 340;
+
+function renderPricingPlan(plan: PricingPlan): string {
+  const badge = plan.isHighlighted ? '<span class="plan-badge">Most popular</span>' : '';
+  const perks = plan.perks.map((perk) => `<li>${escapeHtml(perk)}</li>`).join('');
+  return `<div class="plan${plan.isHighlighted ? ' is-highlighted' : ''}">${badge}<b class="plan-name">${escapeHtml(plan.name)}</b><span class="plan-price">${escapeHtml(plan.price)}</span><ul class="plan-perks">${perks}</ul><span class="plan-button">Start free trial</span></div>`;
+}
+
+/** Free, Pro, Enterprise. The middle one is highlighted: it's the one they want you to pick. */
+const renderPricingTable: FeatureRenderer = (context) =>
+  `${heading(context, 'pricing-table', 'Pricing')}<div class="pricing">${PRICING_PLANS.map(renderPricingPlan).join('')}</div><p class="post-meta">${formatCompactNumber(levelOf(context, 'pricing-table') * TEAMS_PER_LEVEL)} teams started a trial this week</p>`;
+
+/** The bubble in the corner. Its count of unread messages only goes up. */
+const renderLiveChat: FeatureRenderer = (context) =>
+  `<span class="chat-bubble"><span class="chat-avatar" aria-hidden="true">S</span><span class="chat-text"><b>Sam from ${escapeHtml(siteName(context.state))}</b>Hi! 👋 Any questions?</span><span class="chat-unread">${levelOf(context, 'live-chat')}</span></span>`;
+
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'hit-counter': renderHitCounter,
@@ -309,13 +350,43 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'activity-feed': renderActivityFeed,
   'one-pager': renderOnePager,
   'social-login': renderSocialLogin,
+  stories: renderStories,
+  'pricing-table': renderPricingTable,
+  'live-chat': renderLiveChat,
 };
 
-/** Browsers in 2011: the feature is still on the page, but its plugin isn't. */
-function renderMissingPlugin(context: SiteContext, featureId: FeatureId): string {
+interface DeadFeatureCopy {
+  readonly icon: string;
+  readonly title: string;
+  readonly body: string;
+}
+
+/** Flash in 2011: the browser no longer runs the plugin. */
+const MISSING_PLUGIN_COPY: DeadFeatureCopy = { icon: '🧩', title: 'Missing plug-in', body: 'This content needs a plug-in your browser doesn’t support.' };
+
+/** Features that died some other way than a browser plugin. */
+const DEAD_FEATURE_COPY: Readonly<Partial<Record<FeatureId, DeadFeatureCopy>>> = {
+  'social-login': { icon: '⚠️', title: 'This app is no longer available', body: 'Facespace switched off the login API this site used.' },
+};
+
+function findDeadCopy(featureId: FeatureId): DeadFeatureCopy {
+  return DEAD_FEATURE_COPY[featureId] ?? MISSING_PLUGIN_COPY;
+}
+
+function describeRebuild(featureId: FeatureId): string {
   const plugin = FEATURES_BY_ID[featureId].pluginDiesIn;
-  const fix = plugin === null ? 'a newer version' : UPGRADES_BY_ID[plugin.rebuiltWith].name;
-  return `${heading(context, featureId)}<div class="plugin-missing"><span class="plugin-icon" aria-hidden="true">🧩</span><b>Missing plug-in</b><span>This content needs a plug-in your browser doesn’t support.</span><span class="plugin-fix">Rebuild it: ${escapeHtml(fix)}</span></div>`;
+  return plugin === null ? 'a newer version' : UPGRADES_BY_ID[plugin.rebuiltWith].name;
+}
+
+/** The box a dead feature leaves on the page, and the skill that rebuilds it. Layouts with their own block use it too. */
+export function renderDeadNotice(featureId: FeatureId): string {
+  const copy = findDeadCopy(featureId);
+  return `<div class="plugin-missing"><span class="plugin-icon" aria-hidden="true">${copy.icon}</span><b>${escapeHtml(copy.title)}</b><span>${escapeHtml(copy.body)}</span><span class="plugin-fix">Rebuild it: ${escapeHtml(describeRebuild(featureId))}</span></div>`;
+}
+
+/** Still built, still on the page, but whatever it ran on is gone. */
+function renderMissingPlugin(context: SiteContext, featureId: FeatureId): string {
+  return `${heading(context, featureId)}${renderDeadNotice(featureId)}`;
 }
 
 /** A feature's section around any content, with the overlay when the feature is infected. Layouts can bring their own content. */

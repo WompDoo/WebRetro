@@ -10,7 +10,7 @@ const web2 = (skills: readonly UpgradeId[]): GameState => ({ ...createInitialGam
 
 describe('editor files in 2005', () => {
   it('starts in blog.php, with style.css and ajax.js waiting for their skills', () => {
-    assert.equal(mainEditorFile('web2-2005'), 'blog.php');
+    assert.equal(mainEditorFile(web2([])), 'blog.php');
     assert.match(buildEditorSource(web2([]), 'style.css'), /still empty/);
     assert.match(buildEditorSource(web2([]), 'ajax.js'), /nothing here yet/);
   });

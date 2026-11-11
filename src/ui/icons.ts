@@ -23,6 +23,12 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'one-pager': svg('<rect x="6" y="2" width="12" height="20" rx="1"/><path d="M12 7v8M9 12l3 3 3-3"/>'),
   // A person and an arrow going in: join with an account you already have.
   'social-login': svg('<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 9h6M18 6l3 3-3 3"/>'),
+  // A face in a ring, and the next one peeking in.
+  stories: svg('<circle cx="9" cy="12" r="6"/><circle cx="9" cy="12" r="3.5"/><path d="M17 7.5a6 6 0 0 1 0 9"/>'),
+  // Three plans, the middle one taller.
+  'pricing-table': svg('<rect x="2" y="7" width="6" height="12" rx="1"/><rect x="9" y="4" width="6" height="16" rx="1"/><rect x="16" y="7" width="6" height="12" rx="1"/>'),
+  // The bubble in the corner, with its unread dot.
+  'live-chat': svg('<path d="M4 5h13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-5 4Z"/><circle cx="19.5" cy="5.5" r="2.5"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {

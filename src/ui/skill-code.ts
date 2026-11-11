@@ -1,5 +1,5 @@
-import { UPGRADE_IDS } from '../engine';
-import type { EraId, GameState, UpgradeId } from '../engine';
+import { findChosenFramework, UPGRADE_IDS } from '../engine';
+import type { EraId, FrameworkId, GameState, UpgradeId } from '../engine';
 
 /**
  * The code you type is the code you know. In 1997 it starts as Hello World; in 2005 it starts
@@ -144,11 +144,140 @@ const SOCIAL_CODE: EraCode = {
   closing: ['</body>', '</html>', ''],
 };
 
+/** What every 2018 framework's npm, server and stylesheet get from the skills that aren't about the framework. */
+const PLATFORM_SHARED_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<string, readonly string[]>>>>> = {
+  'mobile-first': {
+    'styles.scss': ['// mobile first: the phone layout is the default, desktops get the extras', '.stories { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }', '@media (min-width: 768px) {', '  .pricing { grid-template-columns: repeat(3, 1fr); }', '}'],
+  },
+  'learn-payments': {
+    terminal: ['$ npm install checkout-js', '+ checkout-js@3.2.0', 'added 1 package and audited 31872 packages in 6.1s'],
+    'api/checkout.js': ['export default async function checkout(req, res) {', '  const session = await payments.sessions.create({ plan: req.body.plan, trialDays: 14 });', '  res.json({ url: session.url }); // a free trial that asks for a card', '}'],
+  },
+  'learn-oauth': {
+    terminal: ['$ npm install passport passport-oauth2 jsonwebtoken', '+ passport@0.4.0', '+ jsonwebtoken@8.3.0', 'added 14 packages and audited 31886 packages in 7.4s'],
+    'server.js': ['app.get("/auth/callback", async (req, res) => {', '  const { access_token, refresh_token } = await oauth.exchange(req.query.code);', '  res.cookie("session", jwt.sign({ sub: user.id }, SECRET, { expiresIn: "1h" }), { httpOnly: true });', '});'],
+  },
+  'learn-websockets': {
+    terminal: ['$ npm install socket.io', '+ socket.io@2.1.1', 'added 47 packages and audited 31933 packages in 8.9s'],
+    'server.js': ['const io = require("socket.io")(server);', 'io.on("connection", (socket) => {', '  socket.emit("chat", "Hi! 👋 Any questions?"); // a bot, until someone answers', '});'],
+  },
+};
+
+const NPM_AUDIT_LINES: readonly string[] = ['found 1203 vulnerabilities (409 low, 711 moderate, 83 high)', '  run `npm audit fix` to fix them, or `npm audit` for details'];
+
+const PLATFORM_EMPTY_FILES: Readonly<Record<string, string>> = {
+  terminal: '$ npm install\naudited 31871 packages in 41.2s\n',
+  'styles.scss': '// styles.scss: the 2011 styles, still. Design mobile first to start over from the phone.\n',
+};
+
+/** 2018 before a framework: the 2011 page, with npm doing the typing. */
+const PLATFORM_CODE: EraCode = {
+  mainFile: 'index.html',
+  opening: ['<!DOCTYPE html>', '<html lang="en">', '<head>', '<meta charset="utf-8">', '<meta name="viewport" content="width=device-width, initial-scale=1">', '<title>myhomepage</title>'],
+  legacy: ['<link href="css/bootstrap.min.css" rel="stylesheet">', '<script src="js/jquery-1.7.2.min.js"></script>', '</head>', '<body>', '<div class="container">', '  <div class="hero-unit"><h1>Hello, world!</h1></div>', '  <!-- 4,000 lines of jQuery below. TODO: pick a framework -->', '</div>'],
+  legacyReplacedBy: null,
+  skills: {},
+  files: PLATFORM_SHARED_FILES,
+  emptyFile: (fileName) => PLATFORM_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
+  closing: ['</body>', '</html>', ''],
+};
+
+const REACT_CODE: EraCode = {
+  mainFile: 'App.jsx',
+  opening: ["import React, { Component } from 'react';", "import { connect } from 'react-redux';", "import { Hero, Stories, PricingTable, ChatBubble } from './components';", "import './App.css';", '', 'class App extends Component {', '  render() {', '    return (', '      <div className="App">', '        <Hero title="The all-in-one platform for everything" />', '        {this.props.posts.map(post => <Post key={post.id} {...post} />)}'],
+  legacy: [],
+  legacyReplacedBy: null,
+  skills: {
+    'mobile-first': ['        <Stories items={this.props.stories} />'],
+    'learn-payments': ['        <PricingTable plans={["Free", "Pro", "Enterprise"]} highlighted="Pro" />'],
+    'learn-websockets': ['        <ChatBubble greeting="Hi! 👋 Any questions?" />'],
+  },
+  files: {
+    ...PLATFORM_SHARED_FILES,
+    'learn-react': {
+      terminal: ['$ npx create-react-app myhomepage', '$ npm install redux react-redux react-router-dom redux-thunk', '+ react@16.4.1', '+ react-redux@5.0.7', 'added 1203 packages from 754 contributors in 48.2s', ...NPM_AUDIT_LINES],
+    },
+    'nextjs-ssr': {
+      'pages/index.js': ['export default class Index extends React.Component {', '  static async getInitialProps() {', '    return { posts: await fetchPosts() }; // runs on the server: no window, no document', '  }', '  render() { return <App posts={this.props.posts} />; }', '}'],
+      terminal: ['$ npm install next', '+ next@7.0.0', 'added 382 packages in 31.0s'],
+    },
+  },
+  emptyFile: (fileName) => PLATFORM_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
+  closing: ['      </div>', '    );', '  }', '}', '', 'const mapStateToProps = state => ({ posts: state.posts, stories: state.stories });', 'export default connect(mapStateToProps)(App);', ''],
+};
+
+const ANGULAR_CODE: EraCode = {
+  mainFile: 'app.component.ts',
+  opening: ["import { Component, OnInit } from '@angular/core';", "import { Observable } from 'rxjs';", "import { PostService } from './post.service';", '', '@Component({', "  selector: 'app-root',", "  templateUrl: './app.component.html',", "  styleUrls: ['./app.component.scss']", '})', 'export class AppComponent implements OnInit {', '  posts$: Observable<Post[]>;'],
+  legacy: [],
+  legacyReplacedBy: null,
+  skills: {
+    'mobile-first': ['  stories$ = this.storyService.today();'],
+    'learn-payments': ["  plans: Plan[] = [{ name: 'Free' }, { name: 'Pro', highlighted: true }, { name: 'Enterprise' }];"],
+    'learn-websockets': ['  messages$ = webSocket<Message>(environment.chatUrl);'],
+    'angular-universal': ['  // rendered on the server first: no window, no document, no localStorage. Ask isPlatformBrowser() first.'],
+  },
+  files: {
+    ...PLATFORM_SHARED_FILES,
+    'learn-angular': {
+      'app.component.html': ['<app-hero title="The all-in-one platform for everything"></app-hero>', '<app-post *ngFor="let post of posts$ | async" [post]="post"></app-post>'],
+      'app.module.ts': ['@NgModule({', '  declarations: [AppComponent, HeroComponent, PostComponent],', '  imports: [BrowserModule, HttpClientModule],', '  providers: [PostService],', '  bootstrap: [AppComponent]', '})', 'export class AppModule {}'],
+      terminal: ['$ ng new myhomepage --style=scss --routing', '$ ng generate component hero', 'CREATE src/app/hero/hero.component.scss (0 bytes)', 'CREATE src/app/hero/hero.component.html (23 bytes)', 'CREATE src/app/hero/hero.component.spec.ts (614 bytes)', 'CREATE src/app/hero/hero.component.ts (262 bytes)', 'UPDATE src/app/app.module.ts (388 bytes)'],
+    },
+    'mobile-first': { ...PLATFORM_SHARED_FILES['mobile-first'], 'app.component.html': ['<app-stories [stories]="stories$ | async"></app-stories>'] },
+    'learn-payments': { ...PLATFORM_SHARED_FILES['learn-payments'], 'app.component.html': ['<app-pricing-table [plans]="plans"></app-pricing-table>'] },
+    'learn-websockets': { ...PLATFORM_SHARED_FILES['learn-websockets'], 'app.component.html': ['<app-chat-bubble [messages]="messages$ | async"></app-chat-bubble>'] },
+    'angular-universal': {
+      'app.server.module.ts': ['@NgModule({', '  imports: [AppModule, ServerModule, ModuleMapLoaderModule],', '  bootstrap: [AppComponent]', '})', 'export class AppServerModule {}'],
+      terminal: ['$ ng generate universal --client-project myhomepage', 'CREATE src/main.server.ts (220 bytes)', 'CREATE src/app/app.server.module.ts (318 bytes)', 'UPDATE angular.json (4207 bytes)'],
+    },
+  },
+  emptyFile: (fileName) => PLATFORM_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
+  closing: ['', '  constructor(private postService: PostService) {}', '', '  ngOnInit(): void {', '    this.posts$ = this.postService.getPosts();', '  }', '}', ''],
+};
+
+const VUE_CODE: EraCode = {
+  mainFile: 'App.vue',
+  opening: ['<template>', '  <div id="app">', '    <hero title="The all-in-one platform for everything"></hero>', '    <post v-for="post in posts" :key="post.id" :post="post"></post>'],
+  legacy: [],
+  legacyReplacedBy: null,
+  skills: {
+    'mobile-first': ['    <stories :items="stories"></stories>'],
+    'learn-payments': ['    <pricing-table :plans="plans" highlighted="Pro"></pricing-table>'],
+    'learn-websockets': ['    <chat-bubble greeting="Hi! 👋 Any questions?"></chat-bubble>'],
+  },
+  files: {
+    ...PLATFORM_SHARED_FILES,
+    'learn-vue': {
+      terminal: ['$ npm install -g @vue/cli', '$ vue create myhomepage', '? Please pick a preset: default (babel, eslint)', '🎉  Successfully created project myhomepage.', '$ npm run serve'],
+    },
+    'nuxt-ssr': {
+      'pages/index.vue': ['<script>', 'export default {', '  async asyncData({ $axios }) {', "    return { posts: await $axios.$get('/api/posts') }; // runs on the server first", '  }', '};', '</script>'],
+      terminal: ['$ npx create-nuxt-app myhomepage', '✨  Generating Nuxt.js project in myhomepage'],
+    },
+  },
+  emptyFile: (fileName) => PLATFORM_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
+  closing: ['  </div>', '</template>', '', '<script>', 'export default {', "  name: 'App',", '  data() {', '    return { posts: [], stories: [], plans: [] };', '  },', '  async created() {', "    this.posts = await fetch('/api/posts').then(response => response.json());", '  }', '};', '</script>', '', '<style scoped>', '#app { font-family: Avenir, Helvetica, Arial, sans-serif; }', '</style>', ''],
+};
+
 const ERA_CODE: Readonly<Record<EraId, EraCode>> = {
   'homepage-1997': HOMEPAGE_CODE,
   'web2-2005': WEB2_CODE,
   'social-2011': SOCIAL_CODE,
+  'platform-2018': PLATFORM_CODE,
 };
+
+/** Once a framework is picked, its code replaces the era's: the rewrite starts from an empty main file. */
+const FRAMEWORK_CODE: Readonly<Record<FrameworkId, EraCode>> = {
+  react: REACT_CODE,
+  angular: ANGULAR_CODE,
+  vue: VUE_CODE,
+};
+
+function codeFor(state: GameState): EraCode {
+  const framework = findChosenFramework(state);
+  return framework === null ? ERA_CODE[state.eraId] : FRAMEWORK_CODE[framework];
+}
 
 function knowsSkill(state: GameState, skillId: UpgradeId | null): boolean {
   return skillId !== null && state.purchasedUpgradeIds.includes(skillId);
@@ -158,8 +287,8 @@ function learnedSkills(state: GameState): readonly UpgradeId[] {
   return UPGRADE_IDS.filter((upgradeId) => knowsSkill(state, upgradeId));
 }
 
-export function mainEditorFile(eraId: EraId): string {
-  return ERA_CODE[eraId].mainFile;
+export function mainEditorFile(state: GameState): string {
+  return codeFor(state).mainFile;
 }
 
 function buildMainFile(state: GameState, code: EraCode): string {
@@ -175,6 +304,6 @@ function buildOtherFile(state: GameState, code: EraCode, fileName: string): stri
 
 /** The code typed into one file: the main file holds the page, the others what your skills put there. */
 export function buildEditorSource(state: GameState, fileName: string): string {
-  const code = ERA_CODE[state.eraId];
+  const code = codeFor(state);
   return fileName === code.mainFile ? buildMainFile(state, code) : buildOtherFile(state, code, fileName);
 }

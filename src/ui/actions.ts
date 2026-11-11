@@ -17,12 +17,14 @@ import {
   upgradeHosting,
   UPGRADE_IDS,
   writeCode,
+  findChosenFramework,
 } from '../engine';
-import type { DefenseId, FeatureId, UpgradeId } from '../engine';
+import type { DefenseId, FeatureId, FrameworkId, UpgradeId } from '../engine';
 import { DEVICE_VIEWS } from './browser-chrome';
 import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
 import { elements } from './elements';
+import { FRAMEWORK_PRESENTATION } from './framework-presentation';
 import { hideOverlay, renderStory, showOverlay } from './overlays';
 import { clearSave, writePreferences } from './persistence';
 import { findPopupCopy } from './render-popups';
@@ -140,6 +142,18 @@ function resetGame(renderer: Renderer): void {
   hideOverlay(elements.endOverlay);
 }
 
+/** The framework wars: the moment you pick a side, someone posts that it's dead. */
+function announceFrameworkPick(before: FrameworkId | null): void {
+  const after = findChosenFramework(store.game);
+  if (before === null && after !== null) pushMessage(FRAMEWORK_PRESENTATION[after].deathNotice);
+}
+
+function buyUpgradeAndAnnounce(upgradeId: UpgradeId): void {
+  const before = findChosenFramework(store.game);
+  updateGame((state) => buyUpgrade(state, upgradeId));
+  announceFrameworkPick(before);
+}
+
 /** Every clickable thing in the game carries data-action; this maps each action to what it does. */
 export function createActionHandlers({ minigame, renderer }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
   return {
@@ -147,7 +161,7 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'buy-amount': withId(isBuyAmount, (amount) => {
       store.buyAmount = BUY_AMOUNT_VALUES[amount];
     }),
-    'buy-upgrade': withId(isUpgradeId, (id) => updateGame((state) => buyUpgrade(state, id))),
+    'buy-upgrade': withId(isUpgradeId, buyUpgradeAndAnnounce),
     'buy-defense': withId(isDefenseId, (id) => updateGame((state) => buyDefense(state, id))),
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),
     'toggle-feature': withId(isFeatureId, (id) => updateGame((state) => toggleFeature(state, id))),
