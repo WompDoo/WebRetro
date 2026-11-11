@@ -278,12 +278,13 @@ const AWARDS_PER_LEVEL = 3;
 /**
  * The scroll-jacking one-pager: scrolling down stops moving the page and slides the chapters sideways instead,
  * until the last one; then the page moves on. The section is as tall as that scrolling; the band inside sticks.
+ * With scroll-jacking switched off in the shop, the same markup is a band in the page's flow that a click reads on.
  */
 const renderOnePager: FeatureRenderer = (context) => {
   const level = levelOf(context, 'one-pager');
   const chapters = ONE_PAGER_CHAPTERS.slice(0, BASE_CHAPTERS + level);
   const sections = chapters
-    .map((title, index) => `<section class="one-pager-chapter one-pager-chapter--${index % ONE_PAGER_CHAPTERS.length}"><span class="one-pager-number">0${index + 1}</span><h3>${escapeHtml(title)}</h3><span class="one-pager-scroll" aria-hidden="true">Scroll ↓</span></section>`)
+    .map((title, index) => `<section class="one-pager-chapter one-pager-chapter--${index % ONE_PAGER_CHAPTERS.length}"><span class="one-pager-number">0${index + 1}</span><h3>${escapeHtml(title)}</h3><span class="one-pager-scroll" aria-hidden="true">Scroll ↓</span><span class="one-pager-next" aria-hidden="true">Next →</span></section>`)
     .join('');
   const dots = chapters.map((_, index) => `<i${index === 0 ? ' class="is-current"' : ''}></i>`).join('');
   return `${heading(context, 'one-pager', 'Our story')}<div class="one-pager" style="--chapters:${chapters.length}"><div class="one-pager-pin"><div class="one-pager-track">${sections}</div><nav class="one-pager-dots" aria-hidden="true">${dots}</nav></div></div><p class="post-meta">Site of the Day · ${level * AWARDS_PER_LEVEL} design awards</p>`;

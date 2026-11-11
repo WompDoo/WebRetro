@@ -1,5 +1,5 @@
-import { calculateStoryProgress, clampToGesture, createStoryZone, easeInOut, findJackedStop, findSettleStop } from './scroll-jack';
-import type { StoryZone } from './scroll-jack';
+import { BEFORE_STORY, calculateStoryProgress, clampToGesture, createStoryZone, easeInOut, findJackedStop, findSettleStop, placeReader } from './scroll-jack';
+import type { ReaderPlace, StoryBox, StoryZone } from './scroll-jack';
 
 /** How long one jacked step takes. However hard you scroll, this is the pace. */
 const STEP_MS = 700;
@@ -16,6 +16,8 @@ interface Story {
   readonly track: HTMLElement;
   readonly dots: readonly Element[];
   readonly chapters: number;
+  /** The section's height: screen-tall plus the scrolling it takes over, or just the band when that's off. */
+  readonly height: number;
   readonly zone: StoryZone;
 }
 
@@ -31,8 +33,9 @@ function layoutTop(element: Element | null, site: HTMLElement): number {
 /** The track fills the pinned band, so the section's height beyond the track's is the scrolling it takes over. */
 function buildStory(element: HTMLElement, track: HTMLElement, site: HTMLElement): Story {
   const chapters = element.querySelectorAll('.one-pager-chapter').length;
-  const zone = createStoryZone(layoutTop(element, site), element.offsetHeight - track.offsetHeight, chapters, site.clientHeight);
-  return { element, track, dots: [...element.querySelectorAll('.one-pager-dots i')], chapters, zone };
+  const height = element.offsetHeight;
+  const zone = createStoryZone(layoutTop(element, site), height - track.offsetHeight, chapters, site.clientHeight);
+  return { element, track, dots: [...element.querySelectorAll('.one-pager-dots i')], chapters, height, zone };
 }
 
 function readStory(element: HTMLElement, site: HTMLElement): Story | null {
@@ -45,12 +48,61 @@ function findStory(site: HTMLElement): Story | null {
   return element === null ? null : readStory(element, site);
 }
 
+/** The shop's comfort switch, mirrored on #site by the renderer. Until it is, scroll-jacking is on. */
+function isScrollJackingOn(site: HTMLElement): boolean {
+  return site.dataset['scrollJacking'] !== 'off';
+}
+
+function lastChapterIndex(story: Story): number {
+  return Math.max(1, story.chapters - 1);
+}
+
+/** Slides the track to a chapter, or between two (a fraction); the dots follow the nearest. */
+function showChapterPosition(story: Story, position: number): void {
+  story.track.style.transform = `translateX(${-position * story.track.clientWidth}px)`;
+  story.dots.forEach((dot, index) => dot.classList.toggle('is-current', index === Math.round(position)));
+}
+
 /** The page's scroll position, turned into the chapters' sideways position. */
 function slideStory(story: Story, scrollTop: number): void {
-  const progress = calculateStoryProgress(scrollTop, story.zone);
-  const lastChapter = Math.max(1, story.chapters - 1);
-  story.track.style.transform = `translateX(${-progress * lastChapter * story.track.clientWidth}px)`;
-  story.dots.forEach((dot, index) => dot.classList.toggle('is-current', index === Math.round(progress * lastChapter)));
+  showChapterPosition(story, calculateStoryProgress(scrollTop, story.zone) * lastChapterIndex(story));
+}
+
+/** The chapter the page's scroll position shows, while scroll-jacking is on. */
+function findJackedChapter(story: Story, scrollTop: number): number {
+  return Math.round(calculateStoryProgress(scrollTop, story.zone) * lastChapterIndex(story));
+}
+
+function storyBox(story: Story): StoryBox {
+  return { top: story.zone.start, height: story.height };
+}
+
+/**
+ * With scroll-jacking switched off, the story is a band in the page's flow and the page scrolls past it as usual.
+ * A click reads on, and the last chapter goes back to the first. The chapter lives here: the band is re-rendered.
+ */
+class StoryReader {
+  private chapter = 0;
+
+  readOn(story: Story): void {
+    this.chapter = (this.chapter + 1) % Math.max(1, story.chapters);
+    // Only a click slides: a re-rendered band shows its chapter at once.
+    story.element.classList.add('is-turning');
+    this.show(story);
+  }
+
+  show(story: Story): void {
+    showChapterPosition(story, this.chapter % Math.max(1, story.chapters));
+  }
+
+  currentChapter(): number {
+    return this.chapter;
+  }
+
+  /** Switching off in the middle of the story keeps the chapter the reader was on. */
+  goTo(chapter: number): void {
+    this.chapter = chapter;
+  }
 }
 
 function wheelPixels(event: WheelEvent): number {
@@ -102,6 +154,9 @@ class StoryPace {
   private lastTop: number;
   private isPointerDown = false;
   private settleTimer = 0;
+  /** Right after the layout changes, the browser may move the page itself; that isn't the reader scrolling. */
+  private isLayoutSettling = false;
+  private settlingFrame = 0;
 
   constructor(site: HTMLElement) {
     this.site = site;
@@ -136,9 +191,42 @@ class StoryPace {
 
   /** Every scroll, whoever made it: the page's own steps pass, everything else is held to the pace. */
   follow(story: Story): void {
-    if (!this.isAnimating) this.pace(story);
+    if (this.isPaceable()) this.pace(story);
     slideStory(story, this.site.scrollTop);
+    this.notice();
+  }
+
+  /** Where the page is, so the next gesture is measured from there; kept up even while scroll-jacking is off. */
+  notice(): void {
     this.lastTop = this.site.scrollTop;
+  }
+
+  /**
+   * The layout just changed (a re-render, a resize, the switch). When content above the reader grows or shrinks,
+   * the browser moves the page to keep their place, and that move must not count as a gesture. It arrives with the
+   * next frame or the one after, depending on when the change happened, so the page goes unpaced until then.
+   */
+  resync(): void {
+    this.isLayoutSettling = true;
+    window.cancelAnimationFrame(this.settlingFrame);
+    this.settlingFrame = window.requestAnimationFrame(() => {
+      this.settlingFrame = window.requestAnimationFrame(() => {
+        this.isLayoutSettling = false;
+      });
+    });
+  }
+
+  /** The switch was flipped: whatever the page was doing stops, and it starts over where it is. */
+  reset(): void {
+    window.cancelAnimationFrame(this.animation);
+    window.clearTimeout(this.settleTimer);
+    this.isAnimating = false;
+    this.lockedUntil = 0;
+    this.resync();
+  }
+
+  private isPaceable(): boolean {
+    return !this.isAnimating && !this.isLayoutSettling;
   }
 
   private isLocked(): boolean {
@@ -219,27 +307,84 @@ class StoryPace {
 /**
  * The scroll-jacking one-pager. While its band is pinned, the page's scrolling slides the chapters sideways,
  * and the page sets the pace: one chapter per gesture, each step taking STEP_MS, whatever did the scrolling.
- * A click on a chapter moves on one too.
+ * A click on a chapter moves on one too. The shop can switch the scroll-jacking off (it's funny twice): the
+ * story stays, as a band the page scrolls past and a click reads on. Flipping the switch keeps the reader's place.
  */
 export function installStoryChapters(site: HTMLElement): void {
   const pace = new StoryPace(site);
+  const reader = new StoryReader();
+  const isJacking = (): boolean => isScrollJackingOn(site);
   const withStory = (use: (story: Story) => void) => (): void => {
     const story = findStory(site);
     if (story !== null) use(story);
   };
 
-  site.addEventListener('wheel', (event) => withStory((story) => pace.wheel(event, story))(), { passive: false });
+  // Where the reader is, kept up to date: when the switch flips, the old layout is already gone.
+  let place: ReaderPlace = BEFORE_STORY;
+  let placeChapter = 0;
+  const chapterOf = (story: Story): number => (isJacking() ? findJackedChapter(story, site.scrollTop) : reader.currentChapter());
+  const rememberPlace = (story: Story): void => {
+    placeChapter = chapterOf(story);
+    place = placeReader(site.scrollTop, storyBox(story), placeChapter);
+  };
+  const showStory = (story: Story): void => {
+    if (isJacking()) slideStory(story, site.scrollTop);
+    else reader.show(story);
+    rememberPlace(story);
+  };
+  const keepPlace = (story: Story): void => {
+    reader.goTo(placeChapter);
+    site.scrollTop = place.findTop(site.scrollTop, storyBox(story), story.zone);
+    showStory(story);
+  };
+  const turnChapter = (story: Story): void => {
+    if (isJacking()) pace.clickChapter(story);
+    else reader.readOn(story);
+  };
+  const followScroll = (story: Story): void => {
+    if (isJacking()) pace.follow(story);
+    else pace.notice();
+    rememberPlace(story);
+  };
+
+  site.addEventListener(
+    'wheel',
+    (event) =>
+      withStory((story) => {
+        if (isJacking()) pace.wheel(event, story);
+      })(),
+    { passive: false },
+  );
   site.addEventListener('click', (event) => {
     const story = findClickedStory(event.target, site);
-    if (story !== null) pace.clickChapter(story);
+    if (story !== null) turnChapter(story);
   });
-  site.addEventListener('pointerdown', () => pace.pressPointer());
-  window.addEventListener('pointerup', () => pace.releasePointer());
-  window.addEventListener('pointercancel', () => pace.releasePointer());
+  site.addEventListener('pointerdown', () => {
+    if (isJacking()) pace.pressPointer();
+  });
+  const releasePointer = (): void => {
+    if (isJacking()) pace.releasePointer();
+  };
+  window.addEventListener('pointerup', releasePointer);
+  window.addEventListener('pointercancel', releasePointer);
+  site.addEventListener('scroll', withStory(followScroll), { passive: true });
 
-  new ResizeObserver(() => publishViewportHeight(site)).observe(site);
-  site.addEventListener('scroll', withStory((story) => pace.follow(story)), { passive: true });
-  // The site is re-rendered often; a fresh story starts where the page is. Re-renders aren't scrolling,
-  // so they don't count towards a gesture.
-  new MutationObserver(withStory((story) => slideStory(story, site.scrollTop))).observe(site, { childList: true });
+  // A resize (the phone view, the window) changes the band's height and moves the page under the reader.
+  new ResizeObserver(() => {
+    publishViewportHeight(site);
+    pace.resync();
+    withStory(rememberPlace)();
+  }).observe(site);
+  // The site is re-rendered when the game changes it; a fresh story starts where the page is. A re-render can
+  // move the page too, and that isn't the reader scrolling either.
+  new MutationObserver(() => {
+    pace.resync();
+    withStory(showStory)();
+  }).observe(site, { childList: true });
+  // The shop's switch. The browser can't keep the reader's place itself (it doesn't anchor scrolling across a
+  // change from sticky), so the remembered place does: whatever the page was doing stops, and it lands there.
+  new MutationObserver(() => {
+    pace.reset();
+    withStory(keepPlace)();
+  }).observe(site, { attributes: true, attributeFilter: ['data-scroll-jacking'] });
 }

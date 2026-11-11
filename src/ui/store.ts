@@ -26,6 +26,11 @@ interface UiStore {
   deviceView: DeviceView;
   /** Phones show the objective as one line until you tap it open. */
   isGoalOpen: boolean;
+  /**
+   * The player's comfort switch for the one-pager: off, the story stays (and earns the same) but stops taking
+   * over the page's scrolling. Saved apart from the game, so a new game or a playtest jump keeps it.
+   */
+  isScrollJackingOn: boolean;
   news: readonly NewsItem[];
   newsCounter: number;
   /** The newest news item seen on the phone's Inbox tab; anything newer counts as unread. */
@@ -54,6 +59,7 @@ export const store: UiStore = {
   mobileTab: 'code',
   deviceView: 'desktop',
   isGoalOpen: false,
+  isScrollJackingOn: true,
   news: [],
   newsCounter: 0,
   lastSeenNewsId: 0,

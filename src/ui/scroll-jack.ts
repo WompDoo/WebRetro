@@ -115,6 +115,44 @@ export function findSettleStop(scrollTop: number, zone: StoryZone): number | nul
   return isBetweenStops(scrollTop, zone) ? nearestStop(scrollTop, zone) : null;
 }
 
+/** The story section's box in the page: its top is where the zone starts. */
+export interface StoryBox {
+  readonly top: number;
+  readonly height: number;
+}
+
+/**
+ * Where the reader is relative to the story, remembered so a change to the story's layout (switching the
+ * scroll-jacking on or off) can keep their place. Each place knows where the page goes in the new layout.
+ */
+export interface ReaderPlace {
+  readonly kind: 'before' | 'in-story' | 'after';
+  readonly findTop: (scrollTop: number, box: StoryBox, zone: StoryZone) => number;
+}
+
+/** Nothing above the reader changed. */
+export const BEFORE_STORY: ReaderPlace = { kind: 'before', findTop: (scrollTop) => scrollTop };
+
+/** The same chapter: its stop, or the band's top when there's no scrolling to stop at. */
+function inStory(chapter: number): ReaderPlace {
+  return { kind: 'in-story', findTop: (_scrollTop, _box, zone) => zone.stops[chapter] ?? zone.start };
+}
+
+/** What comes after the story stays where it was on screen. */
+function afterStory(offset: number): ReaderPlace {
+  return { kind: 'after', findTop: (_scrollTop, box) => box.top + box.height + offset };
+}
+
+function placeAtOrPastStory(scrollTop: number, box: StoryBox, chapter: number): ReaderPlace {
+  const storyEnd = box.top + box.height;
+  return scrollTop >= storyEnd ? afterStory(scrollTop - storyEnd) : inStory(chapter);
+}
+
+/** Before the story, in it (on a chapter), or past it (this far past where it ends). */
+export function placeReader(scrollTop: number, box: StoryBox, chapter: number): ReaderPlace {
+  return scrollTop < box.top ? BEFORE_STORY : placeAtOrPastStory(scrollTop, box, chapter);
+}
+
 const HALFWAY = 0.5;
 
 /** Slow in, slow out (the standard quadratic ease): the eased fraction of a step's animation. */

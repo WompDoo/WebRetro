@@ -24,7 +24,7 @@ import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
 import { elements } from './elements';
 import { hideOverlay, renderStory, showOverlay } from './overlays';
-import { clearSave } from './persistence';
+import { clearSave, writePreferences } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
@@ -151,6 +151,10 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'buy-defense': withId(isDefenseId, (id) => updateGame((state) => buyDefense(state, id))),
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),
     'toggle-feature': withId(isFeatureId, (id) => updateGame((state) => toggleFeature(state, id))),
+    'toggle-scroll-jacking': () => {
+      store.isScrollJackingOn = !store.isScrollJackingOn;
+      writePreferences();
+    },
     'place-ad': () => updateGame(placeAd),
     'remove-ad': () => updateGame(removeAd),
     'upgrade-hosting': () => updateGame(upgradeHosting),

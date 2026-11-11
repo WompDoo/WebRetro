@@ -21,6 +21,7 @@ import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
 import { calculatePopupSignature, syncPopups } from './render-popups';
 import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
+import type { ShopView } from './render-shop';
 import { listIssues } from './issues';
 import type { Issue } from './issues';
 import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './render-issues';
@@ -175,9 +176,27 @@ function renderTabBadges(issues: readonly Issue[]): void {
   });
 }
 
+function readShopView(): ShopView {
+  return { buyAmount: store.buyAmount, isScrollJackingOn: store.isScrollJackingOn };
+}
+
 function renderShop(): void {
   setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab));
-  elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab, { buyAmount: store.buyAmount });
+  elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab, readShopView());
+}
+
+/**
+ * The one-pager's scroll-jacking switch, mirrored on #site for its CSS and script. #site outlives re-renders, so
+ * flipping it doesn't re-render the page. Only a change is written: even an unchanged value would wake the
+ * story's observer.
+ */
+function renderScrollJackingSwitch(): void {
+  const value = describeSwitch(store.isScrollJackingOn);
+  if (elements.site.dataset['scrollJacking'] !== value) elements.site.dataset['scrollJacking'] = value;
+}
+
+function describeSwitch(isOn: boolean): 'on' | 'off' {
+  return isOn ? 'on' : 'off';
 }
 
 function updateShopAffordability(): void {
@@ -231,7 +250,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
     renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}`, () => renderSkillChrome(editor, file));
     renderWhenChanged('site', calculateSiteSignature(store.game), renderSiteAndReload);
     renderWhenChanged('popups', calculatePopupSignature(store.game), () => syncPopups(elements.popupLayer, store.game));
-    renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, { buyAmount: store.buyAmount }), renderShop);
+    renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, readShopView()), renderShop);
     renderWhenChanged('goal', calculateGoalSignature(store.game), () => {
       elements.goalBody.innerHTML = renderGoal(store.game);
     });
@@ -243,6 +262,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
     });
     renderWhenChanged('news', store.news.map((item) => item.id).join(','), renderNewsList);
     renderDeviceView(issues);
+    renderScrollJackingSwitch();
     renderMobileChrome();
     showEndCardOnce();
   };

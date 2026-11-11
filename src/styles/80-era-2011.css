@@ -102,7 +102,7 @@
   .site-2011.is-responsive [data-feature="map-mashup"] { order: 10; }
   .site-2011.is-responsive [data-feature="midi-player"] { order: 11; }
   .site-2011.is-responsive .bs-story { margin: 12px 12px 0; }
-  .site-2011.is-responsive .one-pager { --scroll-per-chapter: 260px; }
+  .site-2011.is-responsive .one-pager { --scroll-per-chapter: 260px; --reading-band-height: 220px; }
   .site-2011.is-responsive .bs-hero { margin: 12px 12px 0; padding: 20px; }
   .site-2011.is-responsive .bs-row { padding: 12px; }
   .site-2011.is-responsive .bs-footer { margin-inline: 12px; }
@@ -228,7 +228,7 @@
 .bs-story { margin: 20px 20px 0; }
 .bs-story .feature-block { overflow: visible; }
 /* The band fills the screen while it holds the page, the way these sites did. The fallback is for before the script runs. */
-.one-pager { --pin-height: var(--site-viewport-height, 280px); --scroll-per-chapter: 320px; height: calc(var(--pin-height) + (var(--chapters, 1) - 1) * var(--scroll-per-chapter)); }
+.one-pager { --pin-height: var(--site-viewport-height, 280px); --scroll-per-chapter: 320px; --reading-band-height: 280px; height: calc(var(--pin-height) + (var(--chapters, 1) - 1) * var(--scroll-per-chapter)); }
 .one-pager-pin { position: sticky; top: 0; height: var(--pin-height); overflow: hidden; border-radius: 6px; }
 .one-pager-track { display: flex; height: 100%; will-change: transform; }
 .one-pager-chapter {
@@ -244,6 +244,18 @@
 /* "Scroll ↓" on a band that moves sideways: that's the joke. */
 .one-pager-scroll { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: 0.8; animation: one-pager-nudge 1.4s ease-in-out infinite; }
 .one-pager-chapter:last-child .one-pager-scroll { display: none; }
+.one-pager-next { display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: 0.8; }
+
+/*
+ * Scroll-jacking switched off in the shop: the story is a band in the page's flow, not screen-tall (one you had to
+ * scroll past would be the annoyance again), and a click on it reads on. Only a click slides it: a re-rendered band
+ * shows its chapter at once.
+ */
+.site[data-scroll-jacking="off"] .one-pager { height: auto; }
+.site[data-scroll-jacking="off"] .one-pager-pin { position: relative; height: var(--reading-band-height); }
+.site[data-scroll-jacking="off"] .one-pager.is-turning .one-pager-track { transition: transform 450ms ease-in-out; }
+.site[data-scroll-jacking="off"] .one-pager-scroll { display: none; }
+.site[data-scroll-jacking="off"] .one-pager-chapter:not(:last-child) .one-pager-next { display: block; }
 @keyframes one-pager-nudge { 50% { transform: translate(-50%, 4px); } }
 .one-pager-dots { position: absolute; bottom: 12px; left: 50%; display: flex; gap: 6px; transform: translateX(-50%); pointer-events: none; }
 .one-pager-dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid #FFFFFF; }
@@ -255,7 +267,7 @@
 .bs-app-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(#0088CC, #0044CC); color: #FFFFFF; font-weight: 700; font-size: 16px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
 .bs-app-text { display: grid; line-height: 1.3; }
 .bs-app-view { margin-left: auto; padding: 4px 12px; border: 1px solid #7A7A7A; border-radius: 4px; background: linear-gradient(#FFFFFF, #E2E2E2); color: #0074CC; font-weight: 700; }
-@media (prefers-reduced-motion: reduce) { .one-pager-scroll { animation: none; } .bs-hero-far, .bs-hero-near { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .one-pager-scroll { animation: none; } .site[data-scroll-jacking="off"] .one-pager.is-turning .one-pager-track { transition: none; } .bs-hero-far, .bs-hero-near { transform: none; } }
 
 /* "Sign in with…": one button per network. */
 .signin-buttons { display: grid; gap: 6px; }

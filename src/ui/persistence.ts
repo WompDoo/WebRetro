@@ -66,6 +66,51 @@ export function restoreGame(hotData: unknown): void {
   store.game = fromHot;
 }
 
+const PREFERENCES_STORAGE_KEY = 'under-construction:preferences';
+
+/** The player's own settings. They aren't part of any game: a new game, a playtest jump or a backup keeps them. */
+interface StoredPreferences {
+  readonly isScrollJackingOn: boolean;
+}
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isStoredPreferences(value: unknown): value is StoredPreferences {
+  return isRecord(value) && typeof value['isScrollJackingOn'] === 'boolean';
+}
+
+/** Throws on text that isn't JSON; JSON of the wrong shape is no preferences at all. */
+export function parsePreferences(raw: string): StoredPreferences | null {
+  const parsed: unknown = JSON.parse(raw);
+  return isStoredPreferences(parsed) ? parsed : null;
+}
+
+function readPreferences(): StoredPreferences | null {
+  try {
+    const raw = window.localStorage.getItem(PREFERENCES_STORAGE_KEY);
+    return raw === null ? null : parsePreferences(raw);
+  } catch {
+    // Blocked storage or a damaged entry: the defaults stand.
+    return null;
+  }
+}
+
+export function restorePreferences(): void {
+  const stored = readPreferences();
+  if (stored !== null) store.isScrollJackingOn = stored.isScrollJackingOn;
+}
+
+export function writePreferences(): void {
+  try {
+    const preferences: StoredPreferences = { isScrollJackingOn: store.isScrollJackingOn };
+    window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
+  } catch {
+    // Storage can be blocked (private windows, previews). The switch still works until the page closes.
+  }
+}
+
 const BACKUP_STORAGE_KEY = 'under-construction:save-backup';
 const PLAYTEST_FLAG_KEY = 'under-construction:playtest';
 

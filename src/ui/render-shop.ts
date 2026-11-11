@@ -82,6 +82,8 @@ export const BUY_AMOUNTS: readonly BuyAmount[] = [1, 5, 10];
 /** What the shop shows besides the game state. */
 export interface ShopView {
   readonly buyAmount: BuyAmount;
+  /** The player's comfort switch for the one-pager's scrolling: a setting, not part of the game. */
+  readonly isScrollJackingOn: boolean;
 }
 
 function renderBuyAmountPicker(buyAmount: BuyAmount): string {
@@ -107,7 +109,67 @@ function renderFeatureBuyButton(state: GameState, featureId: FeatureId, buyAmoun
   return buyButton('buy-feature', featureId, cost, buyAmount === 1 ? undefined : `${buyAmount}× ${formatMoney(cost)}`);
 }
 
-function renderFeatureRow(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
+function toggleButtonClass(isOn: boolean): string {
+  return isOn ? 'toggle-button is-on' : 'toggle-button';
+}
+
+function toggleButtonLabel(isOn: boolean): string {
+  return isOn ? 'On' : 'Off';
+}
+
+/** The On/Off pill every switch in the shop uses: features, defenses and the scroll-jacking. */
+function renderToggleButton(action: string, id: string, isOn: boolean): string {
+  return `<button type="button" class="${toggleButtonClass(isOn)}" data-action="${action}" data-id="${id}" aria-pressed="${isOn}">${toggleButtonLabel(isOn)}</button>`;
+}
+
+function renderControlRow(label: string, button: string): string {
+  return `<div class="feature-controls"><span>${escapeHtml(label)}</span>${button}</div>`;
+}
+
+function describeFeatureSwitch(isOn: boolean): string {
+  return isOn ? 'Running on your page' : 'Switched off: no visitors, no page weight';
+}
+
+function isSwitchableNow(state: GameState, featureId: FeatureId): boolean {
+  return FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0;
+}
+
+function renderFeatureSwitch(state: GameState, featureId: FeatureId): string {
+  const isOn = !isFeatureSwitchedOff(state, featureId);
+  return renderControlRow(describeFeatureSwitch(isOn), renderToggleButton('toggle-feature', featureId, isOn));
+}
+
+function renderFeatureSwitchIfSwitchable(state: GameState, featureId: FeatureId): string {
+  return isSwitchableNow(state, featureId) ? renderFeatureSwitch(state, featureId) : '';
+}
+
+/** The feature whose scrolling the player can switch off without switching off the feature. */
+const SCROLL_JACKING_FEATURE_ID: FeatureId = 'one-pager';
+
+function isFeatureRunning(state: GameState, featureId: FeatureId): boolean {
+  return state.featureLevels[featureId] > 0 && !isFeatureSwitchedOff(state, featureId);
+}
+
+/** Only while the story is on the page: switched off, or not built yet, there's no scrolling to switch. */
+function isScrollJackingSwitchShown(state: GameState, featureId: FeatureId): boolean {
+  return featureId === SCROLL_JACKING_FEATURE_ID && isFeatureRunning(state, featureId);
+}
+
+function describeScrollJackingSwitch(isOn: boolean): string {
+  return isOn ? 'Scroll-jacking: the page waits for the story' : 'Scroll-jacking off: normal scrolling, same visitors';
+}
+
+/** A comfort switch, not a trade-off: the story stays and earns the same, the page just stops taking over. */
+function renderScrollJackingSwitch(isOn: boolean): string {
+  return renderControlRow(describeScrollJackingSwitch(isOn), renderToggleButton('toggle-scroll-jacking', SCROLL_JACKING_FEATURE_ID, isOn));
+}
+
+function renderScrollJackingSwitchIfShown(state: GameState, featureId: FeatureId, view: ShopView): string {
+  return isScrollJackingSwitchShown(state, featureId) ? renderScrollJackingSwitch(view.isScrollJackingOn) : '';
+}
+
+function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView): string {
+  const { buyAmount } = view;
   const level = state.featureLevels[featureId];
   const isBuildable = isFeatureBuildable(state, featureId);
   const levelChip = level > 0 ? `<span class="level-chip">Lv ${level}</span>` : '<span class="level-chip is-new">New</span>';
@@ -115,11 +177,7 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, buyAmount: Buy
     ? renderBuildableEffect(state, featureId, buyAmount)
     : `<p class="shop-effect is-requirement">Requires: ${escapeHtml(skillName(FEATURES_BY_ID[featureId].requiredSkillId))}</p>`;
   const button = isBuildable ? renderFeatureBuyButton(state, featureId, buyAmount) : lockedButton();
-  const isSwitchable = FEATURES_BY_ID[featureId].isSwitchable && level > 0;
-  const isOn = !isFeatureSwitchedOff(state, featureId);
-  const toggle = isSwitchable
-    ? `<div class="feature-controls"><span>${isOn ? 'Running on your page' : 'Switched off: no visitors, no page weight'}</span><button type="button" class="toggle-button${isOn ? ' is-on' : ''}" data-action="toggle-feature" data-id="${featureId}" aria-pressed="${isOn}">${isOn ? 'On' : 'Off'}</button></div>`
-    : '';
+  const toggle = renderFeatureSwitchIfSwitchable(state, featureId) + renderScrollJackingSwitchIfShown(state, featureId, view);
   return `<article class="shop-row${isBuildable ? '' : ' is-locked'}">
     <div class="shop-icon">${FEATURE_ICONS[featureId]}</div>
     <div class="shop-info">
@@ -132,10 +190,10 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, buyAmount: Buy
   </article>`;
 }
 
-function renderFeatureGroup(state: GameState, eraId: EraId, buyAmount: BuyAmount): string {
+function renderFeatureGroup(state: GameState, eraId: EraId, view: ShopView): string {
   const featureIds = getUnlockedFeatureIds(state).filter((featureId) => FEATURES_BY_ID[featureId].eraId === eraId);
   const era = ERAS_BY_ID[eraId];
-  return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId, buyAmount)).join('')}`;
+  return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId, view)).join('')}`;
 }
 
 /** Features that went out of fashion: listed once, as history, not as things to buy. */
@@ -148,7 +206,7 @@ function renderRetiredFeatures(state: GameState): string {
 
 function renderBuildTab(state: GameState, view: ShopView): string {
   const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
-  return `${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view.buyAmount)).join('')}${renderRetiredFeatures(state)}`;
+  return `${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
 }
 
 // ---------- Effects ----------
@@ -306,8 +364,7 @@ function describeTradeOffs(defense: DefenseDefinition, eraId: EraId): string {
 
 function renderDefenseControl(state: GameState, defenseId: DefenseId): string {
   if (!state.ownedDefenseIds.includes(defenseId)) return buyButton('buy-defense', defenseId, DEFENSES_BY_ID[defenseId].cost);
-  const isOn = state.enabledDefenseIds.includes(defenseId);
-  return `<button type="button" class="toggle-button${isOn ? ' is-on' : ''}" data-action="toggle-defense" data-id="${defenseId}" aria-pressed="${isOn}">${isOn ? 'On' : 'Off'}</button>`;
+  return renderToggleButton('toggle-defense', defenseId, state.enabledDefenseIds.includes(defenseId));
 }
 
 function renderDefenseRow(state: GameState, defenseId: DefenseId): string {
@@ -412,6 +469,7 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
   return [
     tab,
     view.buyAmount,
+    view.isScrollJackingOn,
     state.eraId,
     Object.values(state.featureLevels).join(','),
     state.adCount,
