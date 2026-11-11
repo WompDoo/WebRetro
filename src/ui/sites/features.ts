@@ -164,6 +164,11 @@ const PIN_MARGIN = 8;
 const PIN_RANGE = 84;
 const MAP_PLACES: readonly string[] = ['Best pizza in town ★★★★☆', 'Free Wi-Fi café', 'Where I parked', 'Office (no AJAX here)'];
 
+/** After bcrypt, the forum says so: the one place visitors used to worry about. */
+function describePasswordStorage(context: SiteContext): string {
+  return context.state.purchasedUpgradeIds.includes('learn-bcrypt') ? ' · passwords hashed with bcrypt' : '';
+}
+
 const renderForum: FeatureRenderer = (context) => {
   const level = levelOf(context, 'forum');
   const count = Math.min(level + BASE_FORUM_THREADS, MAX_FORUM_THREADS);
@@ -173,7 +178,7 @@ const renderForum: FeatureRenderer = (context) => {
       return `<tr><td><span class="fake-link">${escapeHtml(thread)}</span></td><td>${replies}</td><td>${replies * FORUM_VIEWS_PER_REPLY}</td></tr>`;
     })
     .join('');
-  return `${heading(context, 'forum')}<table class="forum-table"><thead><tr><th>Topic</th><th>Replies</th><th>Views</th></tr></thead><tbody>${rows}</tbody></table><p class="forum-note">${level * FORUM_MEMBERS_PER_LEVEL} members · ${level * FORUM_ONLINE_PER_LEVEL} online</p>`;
+  return `${heading(context, 'forum')}<table class="forum-table"><thead><tr><th>Topic</th><th>Replies</th><th>Views</th></tr></thead><tbody>${rows}</tbody></table><p class="forum-note">${level * FORUM_MEMBERS_PER_LEVEL} members · ${level * FORUM_ONLINE_PER_LEVEL} online${describePasswordStorage(context)}</p>`;
 };
 
 const renderFlashIntro: FeatureRenderer = (context) =>

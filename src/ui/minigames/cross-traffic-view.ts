@@ -1,4 +1,4 @@
-import { advanceCrossTraffic, createCrossTrafficGame, CROSS_TRAFFIC_MAX_HITS, moveCrossTraffic, serverRow } from '../../engine';
+import { advanceCrossTraffic, createCrossTrafficGame, CROSS_TRAFFIC_MAX_HITS, CROSS_TRAFFIC_PACKET_SIZE, moveCrossTraffic, serverRow } from '../../engine';
 import type { CrossMove, CrossTrafficGame, MinigameStatus, TrafficLane } from '../../engine';
 import { plural } from './canvas';
 import type { MinigameView } from './types';
@@ -55,6 +55,8 @@ export const crossTrafficView: MinigameView = (stage, target, seed) => {
   const board = document.createElement('div');
   board.className = 'cross-board';
   board.style.setProperty('--rows', String(rows));
+  // The packet is drawn at the size the engine hits it with.
+  board.style.setProperty('--packet-size', String(CROSS_TRAFFIC_PACKET_SIZE));
   board.innerHTML = renderBoard(game);
   const pad = document.createElement('div');
   pad.className = 'cross-pad';

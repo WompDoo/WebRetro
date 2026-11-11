@@ -154,7 +154,7 @@ const MINIGAME_KINDS: Readonly<Record<MinigameId, InfectionKind>> = {
   'spam-sort': 'spam',
   'backup-restore': 'sql-injection',
   'reset-passwords': 'password-leak',
-  'close-gates': 'ddos',
+  'reroute-traffic': 'ddos',
   'cross-traffic': 'ddos',
 };
 const PREFERRED_TARGETS: Readonly<Record<InfectionKind, readonly FeatureId[]>> = {

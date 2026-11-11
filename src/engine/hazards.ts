@@ -61,7 +61,7 @@ export const INFECTION_MINIGAMES: Readonly<Record<InfectionKind, readonly [Minig
   spam: ['spam-sort'],
   'sql-injection': ['backup-restore'],
   'password-leak': ['reset-passwords'],
-  ddos: ['close-gates', 'cross-traffic'],
+  ddos: ['reroute-traffic', 'cross-traffic'],
 };
 
 /** Every minigame, in the order the playtest panel lists them. */

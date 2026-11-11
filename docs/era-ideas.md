@@ -114,6 +114,10 @@ memcached, a CDN and a static page cache as server boosts.
 - **Hazards:** password leaks (the forum's or the wall's user table on a paste site; Hash passwords with bcrypt
   ends them) and DDoS attacks (a botnet floods the busiest page; DDoS protection, a scrubbing service that takes
   5% of revenue, stops them). Both reuse the infection plumbing: tickets, phone banners, minigames, quick fixes.
+- **Sign-in form:** once something people log into is on the page (the forum, the wall, Sign in with…), the
+  Bootstrap navbar gets the hero template's email and password fields. The password field tells the truth: "Reset
+  your password!" in red while a leak is open, a padlock and "bcrypt" once passwords are hashed (and the forum
+  says so). Fields are drawn, not real inputs: typing belongs to the code editor.
 - **Looks**, each a trade-off:
   - *Learn jQuery Masonry*: photo albums tile like bricks; album traffic ×1.6.
   - *Learn parallax scrolling*: a layered landscape in the hero drifts slower than the page (a scroll listener sets
@@ -294,8 +298,11 @@ appears, so closing and reopening it gives the same one.
 | Sort the comments | spam | spam to the trash, real comments to the page; 3 wrong calls fail | 6/8/10 comments |
 | Restore a backup | SQL injection | pick the newest backup from before the attack; 2 wrong picks fail | 3/4/5 backups, closer together |
 | Reset the passwords | password leak | spinning plates: crackers fill every account's bar at once, a click resets one; hold out until they give up | 3/4/5 accounts, faster, 10/13/16 s |
-| Close the gates | DDoS | requests stream down three lanes; shut a lane's gate for bots, open it for visitors; 3 bots through or 3 visitors turned away fail | faster, more bots, 12/15/18 s |
-| Cross the traffic | DDoS | hop your admin connection across lanes of bot traffic to the server; a bot sends you back; 3 hits fail | 3/4/5 lanes, faster, 1/2/3 crossings |
+| Reroute the traffic | DDoS | a calm puzzle: turn cable tiles until a line runs from the Internet through the scrubbing centre; lit cable shows how far the traffic gets; no clock, no way to lose | 4×3, 5×4, 6×4 boards |
+| Cross the traffic | DDoS | hop your admin connection across lanes of bot traffic to the server; a bot sends you back; 3 hits fail; the hitbox is exactly the drawn packet, so a gap that looks big enough is | 3/4/5 lanes, faster, 1/2/3 crossings |
+
+Replaced after a playtest: *Close the gates* (shut lane gates for bots, open them for visitors) was twitchy
+multitasking across three lanes; the player didn't enjoy that kind of game. DDoS got a calm puzzle instead.
 
 Rules they all follow:
 - **A pure engine module** each (`src/engine/minigames/`, plus `snake.ts`): state in, state out, seeded,

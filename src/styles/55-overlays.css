@@ -72,25 +72,25 @@
 .crack-row.is-danger { border-color: var(--hazard); }
 .crack-row.is-danger .crack-fill { background: var(--hazard); }
 .crack-key { color: var(--ink-soft); font-size: 11px; }
-/* Close the gates: three lanes of requests, a gate on each, the server at the end. */
-.ddos-lanes { display: grid; gap: 6px; }
-.ddos-lane {
-  position: relative; height: 46px; padding: 0; overflow: hidden; border: 2px solid var(--line); border-radius: 6px;
-  background: repeating-linear-gradient(90deg, var(--panel-sunken) 0 18px, color-mix(in srgb, var(--line) 8%, var(--panel-sunken)) 18px 36px);
-  cursor: pointer; touch-action: manipulation; user-select: none;
+/* Reroute the traffic: cable tiles that turn; lit cable is connected to the Internet. */
+.route-board { --columns: 4; display: grid; grid-template-columns: auto repeat(var(--columns), minmax(0, 1fr)) auto; gap: 4px; align-items: center; }
+.route-edge { max-width: 58px; font: 600 10px/1.2 var(--font-numbers); color: var(--ink-soft); text-align: center; }
+.route-edge.is-entry::after { content: " →"; }
+.route-edge.is-exit::before { content: "→ "; }
+.route-tile {
+  position: relative; aspect-ratio: 1; padding: 0; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken);
+  color: #8C93B5; cursor: pointer; touch-action: manipulation;
 }
-.ddos-key { position: absolute; left: 6px; top: 4px; font: 600 10px var(--font-numbers); color: var(--ink-soft); }
-.ddos-gate { position: absolute; top: 4px; bottom: 4px; width: 6px; margin-left: -3px; border-radius: 3px; border: 2px dashed var(--money); }
-.ddos-lane.is-closed .ddos-gate { border-style: solid; border-color: var(--hazard); background: var(--hazard); }
-.ddos-lane.is-closed { border-color: var(--hazard); }
-.ddos-server { position: absolute; top: 4px; right: 4px; bottom: 4px; width: 8%; border-radius: 3px; background: repeating-linear-gradient(#4A5568 0 5px, #2D3748 5px 8px); }
-.ddos-request {
-  position: absolute; top: 50%; transform: translate(-50%, -50%); padding: 2px 6px; border-radius: 10px;
-  font: 700 10.5px var(--font-numbers); white-space: nowrap; color: #FFFFFF; pointer-events: none;
-}
-.ddos-request.is-bot { background: var(--hazard); }
-.ddos-request.is-visitor { background: var(--money); }
-.ddos-tally { margin: 0; font: 12px var(--font-numbers); color: var(--ink-soft); text-align: center; }
+.route-tile.is-lit { border-color: var(--money); color: var(--money); }
+.route-board.is-complete .route-tile.is-lit { background: color-mix(in srgb, var(--money) 12%, var(--panel-sunken)); }
+.route-cable { position: absolute; inset: 0; transform: rotate(calc(var(--turns) * 90deg)); transition: transform 140ms ease-out; }
+.route-cable::before { content: ""; position: absolute; left: 50%; top: 50%; width: 24%; height: 24%; transform: translate(-50%, -50%); border-radius: 50%; background: currentColor; }
+.route-arm { position: absolute; background: currentColor; }
+.route-arm.is-side-0 { left: 39%; width: 22%; top: 0; height: 50%; }
+.route-arm.is-side-1 { top: 39%; height: 22%; left: 50%; right: 0; }
+.route-arm.is-side-2 { left: 39%; width: 22%; top: 50%; bottom: 0; }
+.route-arm.is-side-3 { top: 39%; height: 22%; left: 0; width: 50%; }
+@media (prefers-reduced-motion: reduce) { .route-cable { transition: none; } }
 /* Cross the traffic: your laptop at the bottom, the server at the top, lanes of bot traffic between. */
 .cross-board {
   --rows: 5; --columns: 9;
@@ -109,7 +109,7 @@
   position: absolute; z-index: 1; width: calc(100% / var(--columns)); height: calc(100% / var(--rows));
   display: grid; place-items: center; transition: left 60ms linear, bottom 60ms linear;
 }
-.cross-packet::before { content: ""; height: 64%; aspect-ratio: 1; border: 2px solid #FFFFFF; border-radius: 50%; background: #3B82F6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.8); }
+.cross-packet::before { content: ""; width: calc(var(--packet-size, 0.45) * 100%); max-height: 90%; aspect-ratio: 1; box-sizing: border-box; border: 2px solid #FFFFFF; border-radius: 50%; background: #3B82F6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.8); }
 .cross-pad { display: grid; grid-template-columns: repeat(3, 52px); grid-template-areas: ". up ." "left down right"; justify-content: center; gap: 6px; }
 .cross-pad-button { height: 40px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken); color: var(--ink); font-size: 16px; cursor: pointer; touch-action: manipulation; }
 .cross-pad-button.is-up { grid-area: up; }

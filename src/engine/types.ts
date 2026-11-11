@@ -256,7 +256,7 @@ export interface Popup {
 }
 
 /** The games that fix infections. Which kind each one fixes is in INFECTION_MINIGAMES. */
-export type MinigameId = 'snake' | 'virus-scan' | 'firewall' | 'spam-sort' | 'backup-restore' | 'reset-passwords' | 'close-gates' | 'cross-traffic';
+export type MinigameId = 'snake' | 'virus-scan' | 'firewall' | 'spam-sort' | 'backup-restore' | 'reset-passwords' | 'reroute-traffic' | 'cross-traffic';
 
 /** Something broke a feature: it brings in nothing until you win its minigame. */
 export interface Infection {
