@@ -1,6 +1,6 @@
 import {
+  getDefenseCopy,
   calculateInfectionDifficulty,
-  DEFENSES_BY_ID,
   ERAS_BY_ID,
   getAvailableSkillIds,
   getFeatureDisplayName,
@@ -103,7 +103,7 @@ function defensePrevention(state: GameState, defenseId: DefenseId): IssueButton 
   const isAvailable = getUnlockedDefenseIds(state).includes(defenseId) && !state.enabledDefenseIds.includes(defenseId);
   if (!isAvailable) return null;
   const verb = state.ownedDefenseIds.includes(defenseId) ? 'Turn on' : 'Prevent:';
-  return shopButton(`${verb} ${DEFENSES_BY_ID[defenseId].name}`, 'security');
+  return shopButton(`${verb} ${getDefenseCopy(defenseId, state.eraId).name}`, 'security');
 }
 
 function skillPrevention(state: GameState, kind: InfectionKind): IssueButton | null {

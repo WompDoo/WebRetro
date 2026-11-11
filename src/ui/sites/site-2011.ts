@@ -1,6 +1,7 @@
 import { ERAS_BY_ID, getActiveUpgradeIds, isFeaturePluginDead } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml } from '../dom';
+import { listAds, renderAdPicture, renderAdText } from './ads';
 import { ownedFeatures, renderDeadNotice, renderFeatureBlocks, renderFeatureSection, renderSignInWithButtons } from './features';
 import { siteName } from './site-context';
 import type { SiteContext } from './site-context';
@@ -103,6 +104,13 @@ function renderAppBanner(context: SiteContext): string {
     : '';
 }
 
+/** The right-hand column's sponsored posts: a picture, a headline and the small print, one per ad placed. */
+function renderSponsoredWell(context: SiteContext): string {
+  const ads = listAds(context);
+  const items = ads.map((ad, index) => `<li class="bs-ad">${renderAdPicture(index)}<span class="bs-ad-text">${renderAdText(ad)}</span></li>`).join('');
+  return ads.length === 0 ? '' : `<section class="feature-block bs-sponsored"><h2 class="feature-heading">Sponsored</h2><ul class="bs-ad-list">${items}</ul></section>`;
+}
+
 function renderPlaceholderColumns(): string {
   return PLACEHOLDER_COLUMNS.map((title) => `<section class="feature-block bs-placeholder"><h2 class="feature-heading">${title}</h2><p>Donec id elit non mi porta gravida at eget metus.</p><span class="bs-button">View details »</span></section>`).join('');
 }
@@ -117,7 +125,7 @@ function renderBootstrapSite(context: SiteContext): string {
     <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteName(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderNavbarSignIn(context)}</header>
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
     ${renderStoryBand(context)}
-    <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${sidebar}</aside></div>
+    <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
     <footer class="bs-footer">© ${siteName(context.state)} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
     ${renderFeatureBlocks(context, ['live-chat']).join('')}
   </div>`;

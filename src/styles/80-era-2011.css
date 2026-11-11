@@ -274,3 +274,16 @@
 .signin-button { display: block; padding: 7px 10px; border-radius: 4px; color: #FFFFFF; font-weight: 700; font-size: 13px; text-align: center; }
 .signin-button--0 { background: linear-gradient(#5B7BC0, #3B5998); }
 .signin-button--1 { background: linear-gradient(#5FC3F5, #2A9FD6); }
+
+/* ---------- Ads: a well of sponsored posts in the sidebar, one per ad placed ---------- */
+/* An ad's picture: a coloured block, each ad its own hue. Shared with 2018's ads. */
+.ad-picture { display: block; flex: none; background: linear-gradient(135deg, hsl(var(--ad-hue, 0) 70% 62%), hsl(calc(var(--ad-hue, 0) + 40) 75% 45%)); border-radius: 3px; }
+.ad-headline { display: block; }
+.ad-small { display: block; color: #999999; font-size: 11px; line-height: 15px; }
+.bs-ad-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.bs-ad { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; align-items: start; }
+.bs-ad .ad-picture { width: 54px; height: 54px; }
+.bs-ad .ad-headline { color: #3B5998; font-size: 12px; line-height: 16px; }
+@container (max-width: 640px) {
+  .site-2011.is-responsive .bs-sponsored { order: 3; }
+}

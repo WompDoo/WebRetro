@@ -1,4 +1,5 @@
-import type { DefenseDefinition, DefenseId } from '../types';
+import type { DefenseDefinition, DefenseId, EraId } from '../types';
+import { ERA_IDS } from './era-ids';
 
 const ANTIVIRUS_CLEAN_DELAY_MS = 6_000;
 const NO_DELAY_MS = 0;
@@ -66,3 +67,39 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     revenueUpkeepShare: 0.05,
   },
 };
+
+/** What a defense is called and does, as the player reads it. */
+export interface DefenseCopy {
+  readonly name: string;
+  readonly description: string;
+}
+
+/**
+ * Defenses the web came to know by another name. A picky ad network was how a 1997 site kept pop-ups away; by 2011
+ * everyone ran an ad blocker, and it hid some of the site's own ads along with them (the same trade-off).
+ */
+const LATER_ERA_COPY: Readonly<Partial<Record<DefenseId, Readonly<Partial<Record<EraId, DefenseCopy>>>>>> = {
+  'premium-ad-network': {
+    'social-2011': { name: 'Ad blocker', description: 'Pop-ups never open. It hides some of your own ads along with them.' },
+  },
+};
+
+/** Defenses that retire with what they protect: CAPTCHA goes when the comments do. */
+export const DEFENSE_SUNSETS: Readonly<Partial<Record<DefenseId, EraId>>> = {
+  captcha: 'platform-2018',
+};
+
+function findCopiesOf(defenseId: DefenseId): Readonly<Partial<Record<EraId, DefenseCopy>>> {
+  return LATER_ERA_COPY[defenseId] ?? {};
+}
+
+function findLaterEraCopy(defenseId: DefenseId, eraId: EraId): DefenseCopy | null {
+  const copies = findCopiesOf(defenseId);
+  const upToEra = ERA_IDS.slice(0, ERA_IDS.indexOf(eraId) + 1);
+  return [...upToEra].reverse().map((candidate) => copies[candidate]).find((copy) => copy !== undefined) ?? null;
+}
+
+/** The newest name and description the defense got in this era or an earlier one, else its own. */
+export function getDefenseCopy(defenseId: DefenseId, eraId: EraId): DefenseCopy {
+  return findLaterEraCopy(defenseId, eraId) ?? DEFENSES_BY_ID[defenseId];
+}

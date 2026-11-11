@@ -212,3 +212,30 @@
   .site-2018 > [data-feature="stories"] { margin: 0 14px; }
   .site-2018 .lp-footer { margin-inline: 14px; }
 }
+
+/*
+ * 2018's ads: a banner under the hero and an "Around the web" grid of clickbait at the bottom. They arrive after the
+ * page has drawn and push it down: the layout shift the speed score counts as CLS.
+ */
+@keyframes ad-arrive { from { max-height: 0; opacity: 0; } to { max-height: 260px; opacity: 1; } }
+.lp-leaderboard {
+  display: flex; align-items: center; gap: 14px; margin: 18px 28px 0; padding: 10px 14px; overflow: hidden;
+  border: 1px solid #E6EBF1; border-radius: 6px; background: #FAFBFC; animation: ad-arrive 500ms ease-out 700ms both;
+}
+.lp-ad-label { flex: none; color: #A3ACB9; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg); }
+.lp-leaderboard .ad-picture { width: 120px; height: 60px; }
+.lp-ad-text { min-width: 0; }
+.lp-leaderboard .ad-headline, .lp-chum .ad-headline { color: #32325D; font-size: 14px; line-height: 1.35; }
+.lp-around { margin: 30px 28px 0; }
+.lp-around-title { margin: 0 0 10px; color: #32325D; font-size: 16px; }
+.lp-around-title span { margin-left: 6px; color: #A3ACB9; font-size: 11px; font-weight: 400; }
+.lp-chum-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.lp-chum { display: grid; gap: 4px; overflow: hidden; animation: ad-arrive 500ms ease-out 900ms both; }
+.lp-chum .ad-picture { width: 100%; aspect-ratio: 16 / 10; }
+@container (max-width: 640px) {
+  .site-2018 .lp-leaderboard, .site-2018 .lp-around { margin-inline: 14px; }
+  .site-2018 .lp-chum-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .lp-leaderboard, .lp-chum { animation: none; } }
+.lp-comments-off { margin: 14px 28px 0; padding: 10px 14px; border-radius: 8px; background: #F6F9FC; color: #8898AA; font-size: 13px; }
+@container (max-width: 640px) { .site-2018 .lp-comments-off { margin-inline: 14px; } }

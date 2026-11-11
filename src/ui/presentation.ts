@@ -223,6 +223,35 @@ export const TEXT_ADS: readonly TextAdCopy[] = [
   { title: 'Digital cameras', url: 'www.megapixel.example', text: 'Now with 5 megapixels.' },
 ];
 
+/** An ad on a 2011 or 2018 page: who paid, the line that's meant to make you click, and the small print. */
+export interface DisplayAdCopy {
+  readonly advertiser: string;
+  readonly headline: string;
+  readonly text: string;
+}
+
+/** 2011: sponsored posts in the right-hand column, between your friends' likes. */
+export const SPONSORED_POSTS: readonly DisplayAdCopy[] = [
+  { advertiser: 'FarmTown', headline: 'Your crops are wilting!', text: 'Your friends sent you 3 cows. Play now.' },
+  { advertiser: 'Slim in 30', headline: '1 weird trick to lose belly fat', text: 'Doctors hate her.' },
+  { advertiser: 'Deal of the Day', headline: '90% off a spa day', text: '12,000 bought. 400 left.' },
+  { advertiser: 'EmpireBuilder', headline: 'Build your empire tonight', text: 'The most addictive game of 2011.' },
+  { advertiser: 'PhotoBook', headline: 'Turn your albums into a book', text: 'Free shipping this week only.' },
+  { advertiser: 'CollegeNow', headline: 'Get your degree online', text: 'From your phone. In your pajamas.' },
+];
+
+/** 2018: programmatic ads, sold in an auction while the page loads, that follow you around the web. */
+export const PROGRAMMATIC_ADS: readonly DisplayAdCopy[] = [
+  { advertiser: 'Sneakr', headline: 'Still thinking about these shoes?', text: 'They’re still in your cart. And in every ad.' },
+  { advertiser: 'BoxChef', headline: 'Dinner in a box for $9', text: 'Use code PODCAST for 60% off.' },
+  { advertiser: 'Sponsored', headline: 'You won’t believe what these child stars look like now', text: 'Slide 1 of 47' },
+  { advertiser: 'PipelineCRM', headline: 'The #1 CRM for teams like yours', text: 'Book a demo. Then another one.' },
+  { advertiser: 'SleepWell', headline: 'The last mattress you’ll ever buy', text: '100-night trial. Free returns.' },
+  { advertiser: 'Sponsored', headline: 'Doctors are stunned by this one fruit', text: 'Number 7 will surprise you' },
+  { advertiser: 'TaskPilot', headline: 'Get more done in 2018', text: 'Join 10 million productive people.' },
+  { advertiser: 'Sponsored', headline: 'This is the car of the year (and it’s not even close)', text: 'Read more' },
+];
+
 export const BLOG_POSTS: readonly BlogPostCopy[] = [
   { title: 'Why AJAX changes everything', date: 'Mar 14, 2005', excerpt: 'Pages that update without reloading. I may never press F5 again.' },
   { title: 'I finally ditched table layouts', date: 'Apr 2, 2005', excerpt: 'It took 400 lines of CSS hacks, but every box is a div now.' },
