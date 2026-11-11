@@ -1,5 +1,5 @@
 import type { EraId } from '../engine';
-import { HOMEPAGE_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
+import { HOMEPAGE_POPUPS, PLATFORM_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
 import type { PopupCopy } from './popup-copy';
 
 export interface MessageCopy {
@@ -35,6 +35,8 @@ export interface TypingStyle {
 }
 
 const TYPED_BY_HAND: TypingStyle = { pastesWholeLines: false, typoLabel: 'typo!', fixLabel: 'fixed' };
+/** 2018: every keystroke runs npm install. A typo installs a lookalike package with something nasty in it. */
+export const NPM_INSTALL_TYPING: TypingStyle = { pastesWholeLines: true, typoLabel: 'typosquat!', fixLabel: 'uninstalled' };
 
 export interface EraPresentation {
   readonly year: number;
@@ -155,6 +157,47 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
       confirmLabel: 'Relaunch for 2011',
     },
     antivirusTitle: 'AntiMalware Free · Quick scan',
+  },
+  'platform-2018': {
+    year: 2018,
+    browserTitle: 'myhomepage — The all-in-one platform',
+    siteUrl: 'https://www.myhomepage.com/',
+    // The title has no room for the editor's name: it shows the size of node_modules instead.
+    editorTitle: 'index.html',
+    editorMenu: [],
+    editorTabs: ['index.html', 'terminal'],
+    editorHighlightsSyntax: true,
+    typing: NPM_INSTALL_TYPING,
+    popups: PLATFORM_POPUPS,
+    guestbook: [
+      { author: 'jess.codes', text: 'this is 🔥🔥🔥' },
+      { author: 'mike_t', text: 'does it have dark mode' },
+      { author: 'priya', text: 'signed up from my phone in 10 seconds, nice' },
+      { author: 'dev_dan', text: 'what stack is this? asking for a medium post' },
+      { author: 'anna.k', text: 'why does it ask for notifications on every visit' },
+      { author: 'growth_guru', text: 'love the onboarding funnel' },
+    ],
+    musicTracks: ['Ep. 88: Is jQuery dead?', 'Ep. 89: React, Angular or Vue?', 'Ep. 90: Do you need Kubernetes? (You don’t)'],
+    entryStory: {
+      yearSpan: '2012 → 2018',
+      heading: 'Everything is a platform',
+      paragraphs: [
+        'Websites stopped being pages. They’re apps now: they load once, then JavaScript builds everything you see. Three frameworks fight over how, and every team has to pick a side.',
+        'Six in ten visitors are on a phone, and they leave if your page takes longer than three seconds. The browser grades every page on its own speed test.',
+        'And the social networks closed their doors. After a data scandal, Facespace switched off the API your “Sign in with…” buttons ran on.',
+      ],
+      whatsNew: [
+        'The framework wars: learn React, Angular or Vue. You can only pick one. It rewrites your site as a single-page app, and the others say it’s already dead.',
+        'Single-page apps are blank until the JavaScript has loaded and run, and search engines index the blank page. Learn your framework’s server rendering to fix it.',
+        'Facespace’s login API is gone: “Sign in with…” shows an error until you build your own login.',
+        'Out with the old: features that went out of fashion retire (listed below), and so does the “Get our app!” banner.',
+        'Your cloud instances don’t come along: everything runs in containers on Kubernetes now. Add pods as you grow.',
+        'Code arrives by npm install now: every keystroke installs a package. Typos install the wrong one.',
+        'The status bar runs a speed test on every page: one score out of 100, and the numbers behind it.',
+      ],
+      confirmLabel: 'Relaunch as a platform',
+    },
+    antivirusTitle: 'Shield Security · Quick scan',
   },
 };
 

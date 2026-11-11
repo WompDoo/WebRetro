@@ -2,6 +2,7 @@ import { TRAFFIC_SPIKE_DURATION_MS } from './constants';
 import { DEFENSE_IDS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, FEATURES_BY_ID, getFeatureIdsOfEra } from './content/features';
+import { findFrameworkPickedBy, findFrameworkRenderedBy } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
 import {
@@ -13,7 +14,7 @@ import {
 } from './economy';
 import { calculateGateChecks } from './era-gate';
 import { createInitialGameState } from './state';
-import type { EraId, FeatureId, GameState, InfectionKind, MinigameId } from './types';
+import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, UpgradeId } from './types';
 
 /**
  * Playtest presets: a believable game at the start or the end of any era, built from the content itself.
@@ -45,10 +46,20 @@ function isUpTo(eraId: EraId, other: EraId): boolean {
   return getEraIndex(eraId) <= getEraIndex(other);
 }
 
-/** Everything from earlier eras, and at the end of an era everything from it too. */
-function learnedFor(eraId: EraId, stage: PlaytestStage): GameState['purchasedUpgradeIds'] {
+function findFrameworkOf(upgradeId: UpgradeId): FrameworkId | null {
+  return findFrameworkPickedBy(upgradeId) ?? findFrameworkRenderedBy(upgradeId);
+}
+
+/** A site picks one framework: the others' skills are never learned. */
+function isOtherFramework(upgradeId: UpgradeId, framework: FrameworkId): boolean {
+  const owner = findFrameworkOf(upgradeId);
+  return owner !== null && owner !== framework;
+}
+
+/** Everything from earlier eras, and at the end of an era everything from it too, with one framework. */
+function learnedFor(eraId: EraId, stage: PlaytestStage, framework: FrameworkId): GameState['purchasedUpgradeIds'] {
   const counts = (upgradeEra: EraId): boolean => (stage === 'end' ? isUpTo(upgradeEra, eraId) : isBefore(upgradeEra, eraId));
-  return UPGRADE_IDS.filter((upgradeId) => counts(UPGRADES_BY_ID[upgradeId].eraId));
+  return UPGRADE_IDS.filter((upgradeId) => counts(UPGRADES_BY_ID[upgradeId].eraId) && !isOtherFramework(upgradeId, framework));
 }
 
 function defensesFor(eraId: EraId): GameState['ownedDefenseIds'] {
@@ -120,14 +131,15 @@ function startEra(state: GameState): GameState {
   return { ...hosted, money: Math.max(0, calculateNetRevenuePerSecond(hosted)) * START_MONEY_SECONDS };
 }
 
-export function createPlaytestState(eraId: EraId, stage: PlaytestStage, seed: number): GameState {
+/** The framework only matters from 2018's end on: it's the one the preset's site picked. */
+export function createPlaytestState(eraId: EraId, stage: PlaytestStage, seed: number, framework: FrameworkId): GameState {
   const fresh = createInitialGameState(seed);
   if (eraId === 'homepage-1997' && stage === 'start') return fresh;
   const lifetimeEarnings = Math.max(1, earlierBudgets(eraId) * LIFETIME_EARNINGS_FACTOR);
   const base: GameState = {
     ...fresh,
     eraId,
-    purchasedUpgradeIds: learnedFor(eraId, stage),
+    purchasedUpgradeIds: learnedFor(eraId, stage, framework),
     ownedDefenseIds: defensesFor(eraId),
     enabledDefenseIds: defensesFor(eraId),
     featureLevels: levelsFor(eraId, stage),

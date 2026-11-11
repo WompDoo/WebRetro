@@ -1,4 +1,4 @@
-import type { UpgradeDefinition, UpgradeId } from '../types';
+import type { EraId, UpgradeDefinition, UpgradeId } from '../types';
 
 /** Skills first, in the order a 1997 developer would learn them; then boosts. */
 export const UPGRADE_IDS: readonly UpgradeId[] = [
@@ -67,6 +67,19 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'mongodb',
   'git-push-deploys',
   'autoscaling',
+  'learn-vue',
+  'learn-react',
+  'learn-angular',
+  'nuxt-ssr',
+  'nextjs-ssr',
+  'angular-universal',
+  'mobile-first',
+  'learn-payments',
+  'learn-oauth',
+  'learn-websockets',
+  'lazy-loading',
+  'code-splitting',
+  'growth-hacking',
 ];
 
 export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
@@ -668,6 +681,127 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     effects: [{ kind: 'bug-chance-reduction', amount: 0.04 }, { kind: 'keystroke-value-multiplier', factor: 1.2 }],
     requiredFeatureId: null,
   },
+  // ---------- 2018 skills ----------
+  // The framework wars: learning one picks it, and rules out the other two. Each rewrites the site as a single-page
+  // app: a big boost, and a blank page until the framework's own server rendering is learned. pageWeightKb is the
+  // JavaScript bundle every visitor downloads.
+  'learn-react': {
+    id: 'learn-react',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Learn React',
+    description: 'A library, not a framework: components in JSX, and you pick the router, the state and the forms from npm yourself. The biggest ecosystem there is, and the most packages to install. Rewrites your site as a single-page app.',
+    cost: 120_000_000_000,
+    pageWeightKb: 420,
+    effects: [{ kind: 'client-side-rendering' }, { kind: 'global-traffic-multiplier', factor: 1.6 }, { kind: 'keystroke-value-multiplier', factor: 1.8 }],
+    requiredFeatureId: null,
+  },
+  'learn-angular': {
+    id: 'learn-angular',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Learn Angular',
+    description: 'A whole framework: router, forms, HTTP and dependency injection built in, strict TypeScript, RxJS everywhere. A steep climb and a heavy bundle, but the compiler catches your typos and there’s less to install. Rewrites your site as a single-page app.',
+    cost: 180_000_000_000,
+    pageWeightKb: 640,
+    effects: [
+      { kind: 'client-side-rendering' },
+      { kind: 'global-traffic-multiplier', factor: 1.62 },
+      { kind: 'keystroke-value-multiplier', factor: 1.5 },
+      { kind: 'bug-chance-reduction', amount: 0.06 },
+    ],
+    requiredFeatureId: null,
+  },
+  'learn-vue': {
+    id: 'learn-vue',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Learn Vue',
+    description: 'The progressive one: templates that look like HTML, a small bundle, and you can learn it over a weekend. Fewer jobs ask for it. Rewrites your site as a single-page app.',
+    cost: 75_000_000_000,
+    pageWeightKb: 260,
+    effects: [{ kind: 'client-side-rendering' }, { kind: 'global-traffic-multiplier', factor: 1.5 }, { kind: 'keystroke-value-multiplier', factor: 1.4 }],
+    requiredFeatureId: null,
+  },
+  // Server rendering, each framework its own way. Rendering moves onto your servers: the page shows at once and
+  // search engines can read it, and the servers work harder.
+  'nextjs-ssr': {
+    id: 'nextjs-ssr',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Render on the server with Next.js',
+    description: 'Your React pages render on the server first, so visitors and search engines get the content instead of an empty div. Then React “hydrates” it in the browser: it looks ready a moment before it is.',
+    cost: 600_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'server-side-rendering' }, { kind: 'server-load-multiplier', factor: 1.15 }],
+    requiredFeatureId: null,
+  },
+  'angular-universal': {
+    id: 'angular-universal',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Render on the server with Angular Universal',
+    description: 'Your Angular app renders on the server first, so visitors and search engines get the content instead of “Loading…”. Then the app boots in the browser and takes over: it looks ready a moment before it is.',
+    cost: 600_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'server-side-rendering' }, { kind: 'server-load-multiplier', factor: 1.15 }],
+    requiredFeatureId: null,
+  },
+  'nuxt-ssr': {
+    id: 'nuxt-ssr',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Render on the server with Nuxt',
+    description: 'Your Vue pages render on the server first, so visitors and search engines get the content instead of raw {{ curly braces }}. Then Vue hydrates it in the browser: it looks ready a moment before it is.',
+    cost: 600_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'server-side-rendering' }, { kind: 'server-load-multiplier', factor: 1.15 }],
+    requiredFeatureId: null,
+  },
+  'mobile-first': {
+    id: 'mobile-first',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Design mobile first',
+    description: 'Six visitors in ten are on a phone now. Start from the small screen and add to it for desktops, not the other way round. Unlocks Stories.',
+    cost: 60_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
+    requiredFeatureId: null,
+  },
+  'learn-payments': {
+    id: 'learn-payments',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Take payments online',
+    description: 'A checkout API, monthly plans and a free trial that asks for a card. Unlocks the pricing table.',
+    cost: 400_000_000_000,
+    pageWeightKb: 60,
+    effects: [{ kind: 'ad-value-multiplier', factor: 1.1 }],
+    requiredFeatureId: null,
+  },
+  'learn-oauth': {
+    id: 'learn-oauth',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Build your own login with OAuth',
+    description: 'Facespace switched off the API your “Sign in with…” ran on. Run the login yourself: OAuth 2.0, tokens, refresh tokens, and a page explaining why we need your email. Rebuilds it.',
+    cost: 800_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.2 }],
+    requiredFeatureId: null,
+  },
+  'learn-websockets': {
+    id: 'learn-websockets',
+    kind: 'skill',
+    eraId: 'platform-2018',
+    name: 'Learn WebSockets',
+    description: 'A connection that stays open, so the server can talk first. Real-time everything: the feed updates itself. Unlocks the live chat bubble.',
+    cost: 1_500_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'activity-feed', factor: 1.3 }],
+    requiredFeatureId: null,
+  },
   // ---------- 2005 boosts ----------
   'syntax-highlighting': {
     id: 'syntax-highlighting',
@@ -791,4 +925,46 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     effects: [{ kind: 'server-load-multiplier', factor: 0.7 }],
     requiredFeatureId: null,
   },
+  // ---------- 2018 boosts ----------
+  'lazy-loading': {
+    id: 'lazy-loading',
+    kind: 'boost',
+    eraId: 'platform-2018',
+    name: 'Lazy-load images',
+    description: 'Images below the fold load only when you scroll to them. The page shows sooner.',
+    cost: 300_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'load-time-multiplier', factor: 0.85 }],
+    requiredFeatureId: null,
+  },
+  'code-splitting': {
+    id: 'code-splitting',
+    kind: 'boost',
+    eraId: 'platform-2018',
+    name: 'Split the bundle by route',
+    description: 'Each page loads only the JavaScript it needs, instead of the whole app up front.',
+    cost: 700_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'page-weight-multiplier', factor: 0.85 }],
+    requiredFeatureId: null,
+  },
+  'growth-hacking': {
+    id: 'growth-hacking',
+    kind: 'boost',
+    eraId: 'platform-2018',
+    name: 'Growth hacking',
+    description: 'A/B test every button colour, rename users to “the funnel”, and ship whichever version wins this week.',
+    cost: 2_000_000_000_000,
+    pageWeightKb: 20,
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.15 }],
+    requiredFeatureId: null,
+  },
+};
+
+/**
+ * Boosts that go out of fashion like features do: at that era's relaunch they stop working and leave the page.
+ * Google started demoting pages behind app-install banners in 2017.
+ */
+export const UPGRADE_SUNSETS: Readonly<Partial<Record<UpgradeId, EraId>>> = {
+  'app-banner': 'platform-2018',
 };

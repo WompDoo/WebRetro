@@ -1,5 +1,5 @@
-import { ERA_IDS, ERAS_BY_ID, formatMoney, MINIGAME_IDS } from '../engine';
-import type { GameState } from '../engine';
+import { ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
+import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { MINIGAME_NAMES } from './minigame-names';
 
@@ -40,11 +40,22 @@ function button(action: string, id: string, label: string, extra = ''): string {
   return `<button type="button" class="ghost-button" data-action="${action}" data-id="${escapeHtml(id)}"${extra}>${escapeHtml(label)}</button>`;
 }
 
+/** An era whose skills include the framework wars: its end comes in one flavour per framework. */
+function hasFrameworkChoice(eraId: EraId): boolean {
+  return FRAMEWORK_IDS.some((frameworkId) => UPGRADES_BY_ID[FRAMEWORKS_BY_ID[frameworkId].skillId].eraId === eraId);
+}
+
+function renderEndJumps(eraId: EraId): string {
+  return hasFrameworkChoice(eraId)
+    ? FRAMEWORK_IDS.map((frameworkId) => button('playtest-jump', `${eraId}:end:${frameworkId}`, `End: ${FRAMEWORKS_BY_ID[frameworkId].name}`)).join('')
+    : button('playtest-jump', `${eraId}:end`, 'End: ready to relaunch');
+}
+
 function renderEraJumps(state: GameState): string {
   const rows = ERA_IDS.map((eraId) => {
     const era = ERAS_BY_ID[eraId];
     const current = state.eraId === eraId ? ' <span class="playtest-here">you are here</span>' : '';
-    return `<li class="playtest-era"><span><b>${era.year}</b> ${escapeHtml(era.name)}${current}</span><span class="playtest-buttons">${button('playtest-jump', `${eraId}:start`, 'Start')}${button('playtest-jump', `${eraId}:end`, 'End: ready to relaunch')}</span></li>`;
+    return `<li class="playtest-era"><span><b>${era.year}</b> ${escapeHtml(era.name)}${current}</span><span class="playtest-buttons">${button('playtest-jump', `${eraId}:start`, 'Start')}${renderEndJumps(eraId)}</span></li>`;
   }).join('');
   return `<h3 class="playtest-heading">Jump to an era</h3><ul class="playtest-eras">${rows}</ul>`;
 }

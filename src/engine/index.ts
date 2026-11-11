@@ -6,6 +6,7 @@ export * from './content/upgrades';
 export * from './content/defenses';
 export * from './content/eras';
 export * from './content/hosting';
+export * from './content/frameworks';
 export * from './economy';
 export * from './era-gate';
 export * from './actions';

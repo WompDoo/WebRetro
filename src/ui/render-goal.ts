@@ -13,6 +13,8 @@ import {
   formatMoney,
   getFeatureDisplayName,
   isEraGateComplete,
+  findChosenFramework,
+  isRenderedOnlyInBrowser,
 } from '../engine';
 import type { GameState, GateCheck, GateRequirementKind } from '../engine';
 import { escapeHtml } from './dom';
@@ -27,6 +29,10 @@ const POPUP_NAG_COUNT = 2;
 const SERVER_WARNING_LOAD = 0.85;
 const SLOW_PAGE_FACTOR = 0.9;
 const ERA_ONE_MAX_ADS = 6;
+
+function hasDeadFeature(state: GameState): boolean {
+  return FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0 && isFeaturePluginDead(state, featureId));
+}
 
 const HINT_RULES: readonly HintRule[] = [
   {
@@ -74,8 +80,20 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'Four in ten of your visitors are on a phone, and most of them leave: your page doesn’t fit their screen (flip the browser to Phone to see it). Learn responsive design.',
   },
   {
-    applies: (state) => FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0 && isFeaturePluginDead(state, featureId)),
+    applies: (state) => state.eraId === 'platform-2018' && findChosenFramework(state) === null,
+    text: 'It’s 2018 and everyone is arguing about frameworks. Learn React, Angular or Vue: it rewrites your site as a single-page app. You can only pick one, so read the trade-offs.',
+  },
+  {
+    applies: isRenderedOnlyInBrowser,
+    text: 'Your single-page app is blank until its JavaScript has run, and search engines index the blank page: three in ten visitors never find you. Learn your framework’s server rendering.',
+  },
+  {
+    applies: (state) => state.eraId === 'social-2011' && hasDeadFeature(state),
     text: 'Your podcast player ran on Flash, and Flash is dead: it shows a missing-plugin box and brings nothing. Learn HTML5 video and audio to rebuild it.',
+  },
+  {
+    applies: (state) => state.eraId === 'platform-2018' && hasDeadFeature(state),
+    text: 'Facespace switched off the API your “Sign in with…” ran on: it shows an error and brings nothing. Build your own login with OAuth to rebuild it.',
   },
   {
     applies: (state) => state.eraId === 'web2-2005' && !state.purchasedUpgradeIds.includes('learn-css'),
@@ -91,10 +109,15 @@ const HINT_RULES: readonly HintRule[] = [
   },
 ];
 
+/** The last era of the prototype has no relaunch to point at. */
+function describeGoal(state: GameState): string {
+  const era = ERAS_BY_ID[state.eraId];
+  return era.nextEraId === null ? 'Finish the checklist to finish the prototype.' : `Finish the checklist to relaunch your site as ${era.nextEraName}.`;
+}
+
 function findHint(state: GameState): string {
   const rule = HINT_RULES.find((candidate) => candidate.applies(state));
-  const era = ERAS_BY_ID[state.eraId];
-  return rule?.text ?? `Finish the checklist to relaunch your site as ${era.nextEraName}.`;
+  return rule === undefined ? describeGoal(state) : rule.text;
 }
 
 const VALUE_FORMATTERS: Readonly<Record<GateRequirementKind, (value: number) => string>> = {

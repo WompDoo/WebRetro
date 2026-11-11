@@ -1,14 +1,14 @@
 # Era ideas
 
-Each era is a snapshot year standing for a span of web history. Built so far: 1997, 2005 and the core of 2011, plus the performance indicator.
+Each era is a snapshot year standing for a span of web history. Built so far: 1997, 2005, 2011 and the core of 2018, plus the performance indicator.
 Everything on the page is site dressing: fake content and simple loops, never a working app.
 
 | Era | Covers | Status |
 |---|---|---|
 | 1997 Personal homepage | mid-90s to the 2000 crash | built |
 | 2005 Web 2.0 | 2001–2009 | built, including the expansion below |
-| 2011 Social & mobile | 2010–2015 | core built (see below); content to come |
-| 2018 Platform | 2016–2022 | ideas |
+| 2011 Social & mobile | 2010–2015 | built |
+| 2018 Platform | 2016–2022 | core built (see below); hazards, looks and backend to come |
 | 2024 AI | 2023–now | ideas |
 
 ## Rules for every era
@@ -87,7 +87,7 @@ Done (4.2 s) · 182 KB · Server ▮▮▮▮▮▮▯▯ 74%
 | 1997 | "Document: Done (34 s)" on a 28.8k modem |
 | 2005 | Status bar time, page weight and a server meter |
 | 2011 | A YSlow-style letter grade (A to F) plus a mobile score |
-| 2018 | A Lighthouse-style score circle (green, orange, red) with Core Web Vitals |
+| 2018 | A Lighthouse-style score (a green, orange or red circle) with Core Web Vitals: LCP, FID, CLS (built) |
 | 2024 | The score circle plus a cloud bill, mostly your chatbot's |
 
 ## 2005 Web 2.0: expansion (built)
@@ -167,6 +167,51 @@ memcached, a CDN and a static page cache as server boosts.
 **Parked:** skeuomorphic textures (leather, linen, stitching) until 2018, whose relaunch strips them away.
 
 ## 2018 Platform
+
+**Built (the core):**
+- The relaunch story ("Everything is a platform"), the checklist (every 2018 feature, Stories level 15, 150B
+  visitors/s, $50T) and the new ending: 2018 is the last era of the prototype for now.
+- **The framework wars.** Learn React, Angular or Vue: you can only pick one, and the shop hides the others
+  once you have. Each rewrites the site as a single-page app, and each is a real trade-off, as it was in 2018:
+  - *React*: medium price and bundle (420 KB), the biggest keystroke boost (the npm ecosystem), and
+    `node_modules` grows fastest (you install the router, the state and the forms yourself).
+  - *Angular*: the dearest and heaviest (640 KB), the most traffic, and strict TypeScript cuts typos; a typo
+    is a `TS2322!` compile error. Least to install: router, forms and HTTP are in the box.
+  - *Vue*: the cheapest and lightest (260 KB), a little less traffic. Its router puts `/#/` in the address.
+  - Whichever you pick, the news says it's dead ("Angular is dead, long live React", the fourth talk this year).
+  - Engine: `content/frameworks.ts` maps each framework to its skill and its server rendering; picking one
+    closes the others (`isUpgradeAvailable`). UI: `framework-presentation.ts` and `FRAMEWORK_CODE`, both
+    `Record<FrameworkId, …>`, so a fourth framework is a new row the compiler asks for everywhere.
+- **The blank page.** A single-page app renders in the browser: until server rendering, load time is ×1.5
+  and the three in ten visitors who come from search engines never arrive (crawlers index an empty page).
+  On every reload the page shows each framework's own failure while the bundle runs: React's empty root div,
+  Angular's `Loading...`, Vue's raw `{{ curly braces }}`. **Server rendering** (Next.js, Angular Universal, Nuxt:
+  only the picked one is offered) fixes it and adds 15% server load; after a reload the page shows at once but
+  ignores clicks while it hydrates ("hydrating…" in the status bar).
+- **The site:** the 2011 Bootstrap page stays until a framework rewrites it as a SaaS landing page: logo nav
+  with "Get started", Stories, a gradient hero with a stock photo of people laughing, "Trusted by" made-up
+  companies, three value cards, the old features as cards, the pricing table, testimonials, and a footer that
+  says "Built with Angular". The live chat bubble sticks to the corner.
+- **Retired at the relaunch:** share counters, the forum and the scroll-jacking one-pager, plus the "Get our
+  app!" banner (a boost: `UPGRADE_SUNSETS` stops its effects and its weight). Trade-in as usual.
+- **Facespace's API shuts** after a data scandal: Sign in with… shows "This app is no longer available" (not
+  a puzzle piece: `DEAD_FEATURE_COPY`) until *Build your own login with OAuth* rebuilds it.
+- **Features:** Stories (mobile first), the pricing table (take payments online), the live chat bubble
+  (WebSockets; busier with every pricing plan). Boosts: lazy-load images, split the bundle by route, growth hacking.
+- **Kubernetes:** the relaunch starts on three pods, free, growing a quarter per step like 2011's cloud (the
+  ladder code is shared). At 200% load the page is the ingress's own nginx 503.
+- **Typing:** `npm install`: a keystroke installs a package, a typo a lookalike (`typosquat!`). The editor goes
+  dark with a blue status bar, a `terminal` tab and each framework's own files, and its title shows the size
+  of `node_modules`.
+- **Speed score:** "90 · LCP 1.1 s · FID 158 ms · CLS 0.12", with a coloured circle. LCP is the load time; FID
+  grows with the framework's bundle; CLS with every ad (they load late and shove the page).
+- **The phone:** edge to edge, a notch, a status bar ("9:41") and no home button; six in ten visitors.
+- Pop-ups grow up: exit-intent discounts that guilt you ("No thanks, I don't like saving money"), notification
+  prompts, ad-blocker walls, paywalls, chatbots. The issue tracker is a ticket board (`MYH-412 · Highest · To do`).
+
+**To come, from the ideas below:** the hazards (GDPR, broken builds, timed ads), flat design and the other looks,
+and the backend (microservices, micro-frontends with shared dependencies, CI/CD, GraphQL). "Rewrite it in …"
+too: a costly switch of framework, with the site rewriting meanwhile.
 
 **You arrive with:** the 2011 site: skeuomorphic, no cookie banner, everything bolted on.
 
@@ -352,6 +397,17 @@ Next candidates: rack wiring (server overload as a hazard), "hold the line" duri
 like viruses and DDoS have, can come later for the others.
 
 ## Balance notes
+
+- **2018 pacing:** 9.5–9.8 minutes for the active player and 11.7–12.6 for the relaxed one, whichever framework,
+  next to 2011's 10.8 and 12.3. The first pass priced 2018 from 2011's prices instead of from the income players
+  arrive with ($3B/s): the first skill and feature cost 5.5 minutes of it, and the era took 15–16 minutes. Now
+  they cost about 20 and 35 seconds, like 2011's did, and the goals keep 2011's growth (×80 in visitors) and
+  its budget rule (about three minutes of end income): 150B visitors/s and $50T.
+- **The framework wars are balanced by the sim.** Each player plays 2018 with all three frameworks, branched from
+  the same relaunch, and CI fails when one makes 2018 more than two minutes slower than another. The first pass had
+  Angular fastest and Vue slowest for both players; now React's keystroke boost (×1.8) suits the active typist,
+  Angular's traffic (×1.62) the relaxed one, and Vue is cheapest. Angular still leads narrowly (0.2 and 0.7
+  minutes): the hazards batch, where Angular has the least to install, must pay for that, not add to it.
 
 - **End goals scale with content.** Every 2011 batch reruns the sim and moves the goals so the era keeps its length:
   the looks batch added multipliers and a feature, and 2011 dropped to 9.5–11.4 minutes, so the goals went from

@@ -1,7 +1,8 @@
 # Under Construction
 
 An incremental game about building a website, from a bare `Hello World!` in 1997 to today.
-Playable now: 1997 (personal homepage), 2005 (Web 2.0) and 2011 (social and mobile).
+Playable now: 1997 (personal homepage), 2005 (Web 2.0), 2011 (social and mobile) and the core of 2018
+(platforms, and the framework wars: React, Angular or Vue).
 You write code to earn freelance money, learn HTML tag by tag, build features that bring
 in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
 with short minigames. Each era ends with a relaunch.
@@ -46,7 +47,8 @@ npm run sim        # headless balance simulation: how long each era takes
 2. `npm run typecheck`
 3. `npm test`
 4. `npm run build`
-5. `npm run sim`: fails if any scripted player can't finish every era. Timing is printed, not enforced.
+5. `npm run sim`: fails if any scripted player can't finish every era, or if one 2018 framework makes the era more
+   than two minutes slower than another. Other timing is printed, not enforced.
 
 Each run uploads the built `under-construction.html` as an artifact, so every pull request has a playable copy.
 Actions are pinned to commit SHAs; Dependabot opens weekly pull requests to keep them and the npm dev dependencies current.

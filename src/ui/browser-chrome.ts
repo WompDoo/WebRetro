@@ -1,5 +1,6 @@
-import { calculateMobileStayShare, ERAS_BY_ID, formatPercent, getHostingTier, isMobileFriendly, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
-import type { EconomySnapshot, EraId, GameState, UpgradeId } from '../engine';
+import { calculateMobileStayShare, ERAS_BY_ID, findChosenFramework, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMobileFriendly, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
+import type { EconomySnapshot, EraId, FrameworkId, GameState, UpgradeId } from '../engine';
+import { resolveEditorTabs, resolveEditorTitle } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
 import { siteName } from './sites';
 import { mainEditorFile } from './skill-code';
@@ -26,15 +27,29 @@ const knows = (state: GameState, upgradeId: UpgradeId): boolean => state.purchas
 /** 2011 sites routed everything through #! so the page never reloaded. */
 const SOCIAL_PATH = '/#!/home';
 
+/** Single-page app routes. Vue's router used # URLs unless you asked it not to, and in 2018 most didn't. */
+const FRAMEWORK_PATHS: Readonly<Record<FrameworkId, string>> = { react: '/', angular: '/', vue: '/#/' };
+
+function findPlatformPath(state: GameState): string {
+  const framework = findChosenFramework(state);
+  return framework === null ? SOCIAL_PATH : FRAMEWORK_PATHS[framework];
+}
+
 const SITE_PATHS: Readonly<Record<EraId, (state: GameState) => string | null>> = {
   'homepage-1997': () => null,
   'web2-2005': (state) => (knows(state, 'learn-url-rewriting') ? '/blog/2005/04/my-first-post/' : '/index.php?id=42&cat=3&sid=8f3a9c2e71b04d55'),
   'social-2011': () => SOCIAL_PATH,
+  'platform-2018': findPlatformPath,
 };
+
+/** By 2018 certificates were free, and browsers called every plain http page "Not secure". */
+function describeScheme(eraId: EraId): string {
+  return eraId === 'platform-2018' ? 'https' : 'http';
+}
 
 export function buildSiteUrl(state: GameState): string {
   const path = SITE_PATHS[state.eraId](state);
-  return path === null ? ERA_PRESENTATION[state.eraId].siteUrl : `http://www.${siteName(state)}.com${path}`;
+  return path === null ? ERA_PRESENTATION[state.eraId].siteUrl : `${describeScheme(state.eraId)}://www.${siteName(state)}.com${path}`;
 }
 
 export function buildBrowserTitle(state: GameState): string {
@@ -124,6 +139,97 @@ export function buildPhoneCaption(state: GameState, loadTimeSeconds: number): Ph
   return isMobileFriendly(state) ? buildFittingPhoneCaption(state, score) : buildShrunkPhoneCaption(state, score);
 }
 
+/** The numbers behind 2018's speed score: how long the main content takes, how late a tap is answered, how far the page jumps. */
+export interface WebVitals {
+  readonly largestPaintSeconds: number;
+  readonly inputDelayMs: number;
+  readonly layoutShift: number;
+}
+
+export type LighthouseRating = 'good' | 'average' | 'poor';
+
+const BASE_INPUT_DELAY_MS = 30;
+/** The bigger the framework's bundle, the longer the main thread is busy when the first tap arrives. */
+const INPUT_DELAY_MS_PER_BUNDLE_KB = 0.2;
+/** Ads arrive after the page and shove the content down. */
+const LAYOUT_SHIFT_PER_AD = 0.02;
+/** Good and poor thresholds of each vital, as the speed test grades them. */
+const LARGEST_PAINT_SECONDS = { good: 2.5, poor: 4 } as const;
+const INPUT_DELAY_MS = { good: 100, poor: 300 } as const;
+const LAYOUT_SHIFT = { good: 0.1, poor: 0.25 } as const;
+const VITAL_WEIGHTS = { largestPaint: 0.5, inputDelay: 0.3, layoutShift: 0.2 } as const;
+const GOOD_SCORE = 90;
+const AVERAGE_SCORE = 50;
+/** A vital at its good threshold scores 0.9 and at its poor threshold 0.5; twice poor scores nothing. */
+const SCORE_AT_GOOD = 0.9;
+const SCORE_AT_POOR = 0.5;
+const POOR_TO_ZERO = 2;
+const BYTES_DECIMALS = 2;
+
+function findFrameworkBundleKb(state: GameState): number {
+  const framework = findChosenFramework(state);
+  return framework === null ? 0 : UPGRADES_BY_ID[FRAMEWORKS_BY_ID[framework].skillId].pageWeightKb;
+}
+
+export function measureWebVitals(state: GameState, economy: EconomySnapshot): WebVitals {
+  return {
+    largestPaintSeconds: economy.loadTimeSeconds,
+    inputDelayMs: BASE_INPUT_DELAY_MS + findFrameworkBundleKb(state) * INPUT_DELAY_MS_PER_BUNDLE_KB,
+    layoutShift: state.adCount * LAYOUT_SHIFT_PER_AD,
+  };
+}
+
+interface VitalThresholds {
+  readonly good: number;
+  readonly poor: number;
+}
+
+/** Straight lines between (0, 1), (good, 0.9), (poor, 0.5) and (twice poor, 0). */
+function scoreVital(value: number, thresholds: VitalThresholds): number {
+  const points: readonly (readonly [number, number])[] = [[0, 1], [thresholds.good, SCORE_AT_GOOD], [thresholds.poor, SCORE_AT_POOR], [thresholds.poor * POOR_TO_ZERO, 0]];
+  const upperIndex = points.findIndex(([limit]) => value <= limit);
+  return upperIndex < 1 ? interpolateEnds(upperIndex) : interpolateBetween(points, upperIndex, value);
+}
+
+function interpolateEnds(upperIndex: number): number {
+  return upperIndex === 0 ? 1 : 0;
+}
+
+/** Only called with upperIndex at least 1, so both points exist. */
+function interpolateBetween(points: readonly (readonly [number, number])[], upperIndex: number, value: number): number {
+  const [fromX, fromY] = points[upperIndex - 1];
+  const [toX, toY] = points[upperIndex];
+  return fromY + ((value - fromX) / Math.max(Number.EPSILON, toX - fromX)) * (toY - fromY);
+}
+
+/** One score out of 100, weighted towards how fast the main content shows. */
+export function scoreLighthouse(vitals: WebVitals): number {
+  const weighted =
+    scoreVital(vitals.largestPaintSeconds, LARGEST_PAINT_SECONDS) * VITAL_WEIGHTS.largestPaint +
+    scoreVital(vitals.inputDelayMs, INPUT_DELAY_MS) * VITAL_WEIGHTS.inputDelay +
+    scoreVital(vitals.layoutShift, LAYOUT_SHIFT) * VITAL_WEIGHTS.layoutShift;
+  return Math.round(weighted * PERCENT);
+}
+
+function rateBelowGood(score: number): LighthouseRating {
+  return score >= AVERAGE_SCORE ? 'average' : 'poor';
+}
+
+/** Green, orange or red, like the circle around the score. */
+export function rateLighthouse(score: number): LighthouseRating {
+  return score >= GOOD_SCORE ? 'good' : rateBelowGood(score);
+}
+
+/** The status bar's colour for the score: only 2018 has a score. */
+export function describeLighthouseRating(state: GameState, economy: EconomySnapshot): string {
+  return state.eraId === 'platform-2018' ? rateLighthouse(scoreLighthouse(measureWebVitals(state, economy))) : '';
+}
+
+function renderLighthouse(state: GameState, economy: EconomySnapshot): string {
+  const vitals = measureWebVitals(state, economy);
+  return `${scoreLighthouse(vitals)} · LCP ${formatSeconds(vitals.largestPaintSeconds)} · FID ${Math.round(vitals.inputDelayMs)} ms · CLS ${vitals.layoutShift.toFixed(BYTES_DECIMALS)}`;
+}
+
 function renderHostingReadout(state: GameState, economy: EconomySnapshot): string {
   return `${getHostingTier(state).name} ${renderServerMeter(economy.serverLoad)}`;
 }
@@ -133,24 +239,60 @@ const PERFORMANCE_READOUTS: Readonly<Record<EraId, (state: GameState, economy: E
   'web2-2005': (state, economy, weight) => `${weight} · ${renderHostingReadout(state, economy)}`,
   'social-2011': (state, economy, weight) =>
     `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.loadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
+  'platform-2018': (state, economy) => `${renderLighthouse(state, economy)} · ${renderHostingReadout(state, economy)}`,
 };
 
 export function buildPerformanceReadout(state: GameState, economy: EconomySnapshot): string {
   return PERFORMANCE_READOUTS[state.eraId](state, economy, `${Math.round(economy.pageWeightKb)} KB`);
 }
 
-/** The title names the file you're in; with SVN, the revision too. */
+const MEGABYTES_PER_GIGABYTE = 1_024;
+const NODE_MODULES_BASE_MB = 60;
+/**
+ * Every keystroke is an npm install, and each framework pulls in its own amount: React leaves everything to npm,
+ * Angular ships most of it in the box. A framework adds its own starting pile too.
+ */
+const NODE_MODULES_MB_PER_KEYSTROKE: Readonly<Record<FrameworkId, number>> = { react: 0.04, angular: 0.02, vue: 0.03 };
+const NODE_MODULES_FRAMEWORK_MB: Readonly<Record<FrameworkId, number>> = { react: 180, angular: 290, vue: 140 };
+const UNPICKED_MB_PER_KEYSTROKE = 0.03;
+
+export function measureNodeModulesMb(state: GameState): number {
+  const framework = findChosenFramework(state);
+  return framework === null
+    ? NODE_MODULES_BASE_MB + state.keystrokes * UNPICKED_MB_PER_KEYSTROKE
+    : NODE_MODULES_BASE_MB + NODE_MODULES_FRAMEWORK_MB[framework] + state.keystrokes * NODE_MODULES_MB_PER_KEYSTROKE[framework];
+}
+
+export function formatMegabytes(megabytes: number): string {
+  return megabytes < MEGABYTES_PER_GIGABYTE ? `${Math.round(megabytes)} MB` : `${(megabytes / MEGABYTES_PER_GIGABYTE).toFixed(LOAD_TIME_DECIMALS)} GB`;
+}
+
+function describeSvnRevision(state: GameState, fileName: string): string {
+  return knows(state, 'svn') ? `${fileName} (rev ${SVN_FIRST_REVISION + Math.floor(state.keystrokes / KEYSTROKES_PER_REVISION)})` : fileName;
+}
+
+/** What the title adds after the file name, in the eras that add anything. */
+const EDITOR_TITLE_EXTRAS: Readonly<Partial<Record<EraId, (state: GameState, fileName: string) => string>>> = {
+  'web2-2005': describeSvnRevision,
+  'platform-2018': (state, fileName) => `${fileName} · node_modules ${formatMegabytes(measureNodeModulesMb(state))}`,
+};
+
+function describeEditorExtras(state: GameState, fileName: string): string {
+  const describe = EDITOR_TITLE_EXTRAS[state.eraId];
+  return describe === undefined ? fileName : describe(state, fileName);
+}
+
+/** The title names the file you're in; with SVN, the revision too; in 2018, the size of node_modules. */
 export function buildEditorTitle(state: GameState, fileName: string): string {
-  const base = ERA_PRESENTATION[state.eraId].editorTitle.replace(mainEditorFile(state.eraId), fileName);
-  if (state.eraId !== 'web2-2005' || !knows(state, 'svn')) return base;
-  const revision = SVN_FIRST_REVISION + Math.floor(state.keystrokes / KEYSTROKES_PER_REVISION);
-  return base.replace(fileName, `${fileName} (rev ${revision})`);
+  return resolveEditorTitle(state).replace(mainEditorFile(state), describeEditorExtras(state, fileName));
 }
 
 /** The files open in the editor. Past five, the rest hide behind a "+N more" that isn't a file. */
 export interface EditorTabs {
   readonly files: readonly string[];
   readonly hiddenCount: number;
+  /** What hovering the "+N more" says. */
+  readonly hiddenTitle: string;
 }
 
 /** Files a skill adds to the editor, per era. */
@@ -161,20 +303,35 @@ const SKILL_FILES: Readonly<Partial<Record<EraId, readonly (readonly [UpgradeId,
     ['j2ee', J2EE_FILES],
   ],
   'social-2011': [['learn-nodejs', ['server.js']], ['learn-bcrypt', ['server.js']], ['learn-rest-apis', ['server.js']], ['learn-sass', ['style.scss']]],
+  // Only the picked framework's server rendering can be learned, so each lists its own file.
+  'platform-2018': [
+    ['mobile-first', ['styles.scss']],
+    ['learn-payments', ['api/checkout.js']],
+    ['learn-oauth', ['server.js']],
+    ['learn-websockets', ['server.js']],
+    ['nextjs-ssr', ['pages/index.js']],
+    ['angular-universal', ['app.server.module.ts']],
+    ['nuxt-ssr', ['pages/index.vue']],
+  ],
 };
 
 function listEditorFiles(state: GameState): readonly string[] {
   const extra = (SKILL_FILES[state.eraId] ?? []).filter(([skillId]) => knows(state, skillId)).flatMap(([, files]) => files);
   // Several skills can write to the same file; it gets one tab.
-  return [...new Set([...ERA_PRESENTATION[state.eraId].editorTabs, ...extra])];
+  return [...new Set([...resolveEditorTabs(state), ...extra])];
+}
+
+function describeHiddenTabs(eraId: EraId, hiddenCount: number): string {
+  return eraId === 'web2-2005' ? `Enterprise Java: ${hiddenCount} more XML files` : `${hiddenCount} more files`;
 }
 
 export function buildEditorTabs(state: GameState): EditorTabs {
   const files = listEditorFiles(state);
-  return { files: files.slice(0, VISIBLE_EDITOR_TABS), hiddenCount: Math.max(0, files.length - VISIBLE_EDITOR_TABS) };
+  const hiddenCount = Math.max(0, files.length - VISIBLE_EDITOR_TABS);
+  return { files: files.slice(0, VISIBLE_EDITOR_TABS), hiddenCount, hiddenTitle: describeHiddenTabs(state.eraId, hiddenCount) };
 }
 
 /** The file being edited: the one picked if it's still open, otherwise the era's main file. */
 export function resolveEditorFile(state: GameState, pickedFile: string | null): string {
-  return pickedFile !== null && buildEditorTabs(state).files.includes(pickedFile) ? pickedFile : mainEditorFile(state.eraId);
+  return pickedFile !== null && buildEditorTabs(state).files.includes(pickedFile) ? pickedFile : mainEditorFile(state);
 }

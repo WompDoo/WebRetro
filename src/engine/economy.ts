@@ -14,8 +14,9 @@ import {
 import { DEFENSE_IDS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
+import { findFrameworkPickedBy, findFrameworkRenderedBy, FRAMEWORK_IDS, FRAMEWORKS_BY_ID } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
-import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
+import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
 import type {
   DefenseDefinition,
   DefenseId,
@@ -23,6 +24,7 @@ import type {
   EraId,
   FeatureDefinition,
   FeatureId,
+  FrameworkId,
   GameState,
   HostingTierDefinition,
   UpgradeEffect,
@@ -33,6 +35,10 @@ const NEUTRAL_FACTOR = 1;
 const NO_TRAFFIC = 0;
 /** Before responsive design, about one phone visitor in four puts up with pinching and zooming. */
 const MOBILE_STAY_SHARE_UNFRIENDLY = 0.25;
+/** A single-page app shows nothing until its bundle has loaded and run: the wait is this much longer. */
+const CLIENT_RENDERING_LOAD_TIME_FACTOR = 1.5;
+/** Visitors who arrive from search engines. Crawlers index a single-page app's empty page, so they never find it. */
+const SEARCH_VISITOR_SHARE = 0.3;
 const FALLBACK_HOSTING_TIER: HostingTierDefinition = {
   id: 'shared-hosting',
   eraId: 'web2-2005',
@@ -51,8 +57,19 @@ function sumAll(values: readonly number[]): number {
   return values.reduce((total, value) => total + value, 0);
 }
 
+/** Gone out of fashion, like the "Get our app!" banner in 2018: it stops working and leaves the page. */
+export function isUpgradeRetired(state: GameState, upgradeId: UpgradeId): boolean {
+  const sunsetIn = UPGRADE_SUNSETS[upgradeId];
+  return sunsetIn !== undefined && isEraUnlocked(state, sunsetIn);
+}
+
+/** What you've learned and bought that still works. */
+export function getActiveUpgradeIds(state: GameState): readonly UpgradeId[] {
+  return state.purchasedUpgradeIds.filter((upgradeId) => !isUpgradeRetired(state, upgradeId));
+}
+
 function getPurchasedEffects(state: GameState): readonly UpgradeEffect[] {
-  return state.purchasedUpgradeIds.flatMap((id) => UPGRADES_BY_ID[id].effects);
+  return getActiveUpgradeIds(state).flatMap((id) => UPGRADES_BY_ID[id].effects);
 }
 
 export function getEnabledDefenses(state: GameState): readonly DefenseDefinition[] {
@@ -215,6 +232,44 @@ export function calculatePopupTrafficFactor(state: GameState): number {
   return (NEUTRAL_FACTOR - POPUP_TRAFFIC_PENALTY) ** state.popups.length;
 }
 
+/** The framework this site picked in 2018's framework wars, if it has picked one. */
+export function findChosenFramework(state: GameState): FrameworkId | null {
+  return FRAMEWORK_IDS.find((frameworkId) => state.purchasedUpgradeIds.includes(FRAMEWORKS_BY_ID[frameworkId].skillId)) ?? null;
+}
+
+/** Picking a framework rules out the others: a site is a React shop, an Angular shop or a Vue shop. */
+function isFrameworkPickOpen(state: GameState, upgradeId: UpgradeId): boolean {
+  return findFrameworkPickedBy(upgradeId) === null || findChosenFramework(state) === null;
+}
+
+/** Each framework renders on the server its own way, so only the picked framework's way is on offer. */
+function isServerRenderingOpen(state: GameState, upgradeId: UpgradeId): boolean {
+  const framework = findFrameworkRenderedBy(upgradeId);
+  return framework === null || findChosenFramework(state) === framework;
+}
+
+function isFrameworkUpgradeOpen(state: GameState, upgradeId: UpgradeId): boolean {
+  return isFrameworkPickOpen(state, upgradeId) && isServerRenderingOpen(state, upgradeId);
+}
+
+function hasEffect(state: GameState, kind: UpgradeEffect['kind']): boolean {
+  return getPurchasedEffects(state).some((effect) => effect.kind === kind);
+}
+
+/** A single-page app that only renders in the browser: blank until its JavaScript has run. */
+export function isRenderedOnlyInBrowser(state: GameState): boolean {
+  return hasEffect(state, 'client-side-rendering') && !hasEffect(state, 'server-side-rendering');
+}
+
+/** Search engines read a browser-only app as an empty page, so the visitors they'd send never come. */
+export function calculateRenderingTrafficFactor(state: GameState): number {
+  return isRenderedOnlyInBrowser(state) ? NEUTRAL_FACTOR - SEARCH_VISITOR_SHARE : NEUTRAL_FACTOR;
+}
+
+function calculateRenderingLoadTimeFactor(state: GameState): number {
+  return isRenderedOnlyInBrowser(state) ? CLIENT_RENDERING_LOAD_TIME_FACTOR : NEUTRAL_FACTOR;
+}
+
 export function isMobileFriendly(state: GameState): boolean {
   return getPurchasedEffects(state).some((effect) => effect.kind === 'mobile-friendly');
 }
@@ -248,7 +303,8 @@ export function calculateDemandVisitorsPerSecond(state: GameState): number {
     calculatePopupTrafficFactor(state) *
     calculateTrafficSpikeFactor(state) *
     calculateQuickFixFactor(state) *
-    calculateMobileTrafficFactor(state)
+    calculateMobileTrafficFactor(state) *
+    calculateRenderingTrafficFactor(state)
   );
 }
 
@@ -303,17 +359,20 @@ export function calculatePageWeightKb(state: GameState): number {
   const era = ERAS_BY_ID[state.eraId];
   const factors = getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'page-weight-multiplier' ? [effect.factor] : []));
   const featuresKb = sumAll(FEATURE_IDS.map((featureId) => calculateFeaturePageWeightKb(state, featureId)));
-  // Old assets come along: your 1997 stars.gif still loads on the 2005 page.
-  const upgradesKb = sumAll(state.purchasedUpgradeIds.map((upgradeId) => UPGRADES_BY_ID[upgradeId].pageWeightKb));
+  // Old assets come along: your 1997 stars.gif still loads on the 2005 page. Retired ones leave with their feature.
+  const upgradesKb = sumAll(getActiveUpgradeIds(state).map((upgradeId) => UPGRADES_BY_ID[upgradeId].pageWeightKb));
   const rawKb = era.basePageWeightKb + featuresKb + upgradesKb + state.adCount * era.adPageWeightKb;
   return rawKb * multiplyAll(factors);
 }
 
-/** Page weight over the era's connection. An overloaded server makes everything slower still. */
+/**
+ * Page weight over the era's connection. An overloaded server makes everything slower still, and so does a
+ * single-page app that has to load and run before it shows anything.
+ */
 export function calculateLoadTimeSeconds(state: GameState): number {
   const factors = getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'load-time-multiplier' ? [effect.factor] : []));
   const transferSeconds = calculatePageWeightKb(state) / ERAS_BY_ID[state.eraId].connectionKbPerSecond;
-  return transferSeconds * multiplyAll(factors) * Math.max(NEUTRAL_FACTOR, calculateServerLoad(state));
+  return transferSeconds * multiplyAll(factors) * calculateRenderingLoadTimeFactor(state) * Math.max(NEUTRAL_FACTOR, calculateServerLoad(state));
 }
 
 /** Past twice its capacity, most visitors get a 503 page. The server still serves what it can. */
@@ -432,11 +491,19 @@ function isRequiredFeatureOwned(state: GameState, upgradeId: UpgradeId): boolean
   return requiredFeatureId === null || state.featureLevels[requiredFeatureId] > 0;
 }
 
+function isUpgradeCurrent(state: GameState, upgradeId: UpgradeId): boolean {
+  return isFrameworkUpgradeOpen(state, upgradeId) && !isUpgradeRetired(state, upgradeId);
+}
+
+function isUpgradeOnOffer(state: GameState, upgradeId: UpgradeId): boolean {
+  return isRequiredFeatureOwned(state, upgradeId) && isUpgradeCurrent(state, upgradeId);
+}
+
 export function isUpgradeAvailable(state: GameState, upgradeId: UpgradeId): boolean {
   return (
     !state.purchasedUpgradeIds.includes(upgradeId) &&
     isEraUnlocked(state, UPGRADES_BY_ID[upgradeId].eraId) &&
-    isRequiredFeatureOwned(state, upgradeId)
+    isUpgradeOnOffer(state, upgradeId)
   );
 }
 

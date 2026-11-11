@@ -81,4 +81,18 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'ajax-everything': null,
   'threaded-replies': `${WIKIPEDIA}/Conversation_threading`,
   folksonomy: `${WIKIPEDIA}/Folksonomy`,
+  // 2018
+  'learn-react': 'https://react.dev/learn',
+  'learn-angular': 'https://angular.dev/overview',
+  'learn-vue': 'https://vuejs.org/guide/introduction.html',
+  'nextjs-ssr': 'https://nextjs.org/docs',
+  'angular-universal': 'https://angular.dev/guide/ssr',
+  'nuxt-ssr': 'https://nuxt.com/docs',
+  'mobile-first': `${MDN}/Web/Progressive_web_apps/Guides/Best_practices`,
+  'learn-payments': `${MDN}/Web/API/Payment_Request_API`,
+  'learn-oauth': 'https://oauth.net/2/',
+  'learn-websockets': `${MDN}/Web/API/WebSockets_API`,
+  'lazy-loading': `${MDN}/Web/Performance/Lazy_loading`,
+  'code-splitting': `${MDN}/Glossary/Code_splitting`,
+  'growth-hacking': `${WIKIPEDIA}/Growth_hacking`,
 };

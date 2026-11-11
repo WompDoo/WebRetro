@@ -224,6 +224,8 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'server-load-multiplier': (effect) => `Server load per visitor ${formatFactor(effect.factor)}`,
   'traffic-spike-cache': () => 'Traffic spikes put no load on the server',
   'mobile-friendly': () => 'Phone visitors stop leaving',
+  'client-side-rendering': () => 'Blank until the JavaScript runs: slower pages, and search visitors lost',
+  'server-side-rendering': () => 'Renders on the server: no blank page, and search engines find you again',
 };
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {

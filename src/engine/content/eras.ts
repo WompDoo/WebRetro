@@ -2,7 +2,7 @@ import { formatCompactNumber, formatMoney } from '../format';
 import type { EraDefinition, EraGateRequirement, EraId, FeatureId } from '../types';
 import { FEATURES_BY_ID, getFeatureIdsOfEra } from './features';
 
-export const ERA_IDS: readonly EraId[] = ['homepage-1997', 'web2-2005', 'social-2011'];
+export const ERA_IDS: readonly EraId[] = ['homepage-1997', 'web2-2005', 'social-2011', 'platform-2018'];
 
 function requireEveryFeatureOf(eraId: EraId, year: number): EraGateRequirement {
   return {
@@ -43,6 +43,7 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
 const HOMEPAGE_MIGRATION_COST = 160_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
 const SOCIAL_MIGRATION_COST = 550_000_000_000;
+const PLATFORM_MIGRATION_COST = 50_000_000_000_000;
 
 export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
   'homepage-1997': {
@@ -107,10 +108,10 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     id: 'social-2011',
     year: 2011,
     name: 'Social & mobile',
-    nextEraId: null,
+    nextEraId: 'platform-2018',
     nextEraName: 'Platforms',
     nextEraYear: 2018,
-    migrationLabel: 'Finish the prototype',
+    migrationLabel: 'Relaunch as a platform',
     migrationCost: SOCIAL_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('social-2011', 2011),
@@ -131,5 +132,36 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     adAnnoyancePerAd: 0.15,
     maxAds: 12,
     keystrokeValueMultiplier: 150,
+  },
+  'platform-2018': {
+    id: 'platform-2018',
+    year: 2018,
+    name: 'Platforms',
+    nextEraId: null,
+    nextEraName: 'AI',
+    nextEraYear: 2024,
+    migrationLabel: 'Finish the prototype',
+    migrationCost: PLATFORM_MIGRATION_COST,
+    gateRequirements: [
+      requireEveryFeatureOf('platform-2018', 2018),
+      requireFeatureLevel('stories', 15),
+      requireVisitorsPerSecond(150_000_000_000),
+      requireMigrationBudget(PLATFORM_MIGRATION_COST),
+    ],
+    adLabel: 'Programmatic ad',
+    adSkillId: null,
+    connectionLabel: '4G and fiber',
+    connectionKbPerSecond: 2_000,
+    // Half of phone visitors leave a page that takes longer than three seconds, said every 2018 slide deck.
+    patienceSeconds: 3,
+    basePageWeightKb: 150,
+    // An ad slot is a script that loads an auction that loads trackers that load the ad.
+    adPageWeightKb: 150,
+    hasServerLoad: true,
+    mobileShare: 0.6,
+    adValuePerVisitor: 0.05,
+    adAnnoyancePerAd: 0.13,
+    maxAds: 14,
+    keystrokeValueMultiplier: 1_800,
   },
 };

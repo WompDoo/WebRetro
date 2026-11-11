@@ -4,6 +4,7 @@ import { escapeHtml } from './dom';
 import { createEditorBuffers, fixTypo, showFile as showFileIn, typeBuggedChunk, typeCleanChunk } from './editor-buffers';
 import type { FileBuffer } from './editor-buffers';
 import { ERA_PRESENTATION } from './presentation';
+import type { TypingStyle } from './presentation';
 
 export interface KeystrokeFeedback {
   readonly outcome: CodeInputOutcome;
@@ -32,7 +33,9 @@ export interface CodeEditor {
    */
   readonly showFile: (fileName: string, fileSource: string) => void;
   readonly setTitle: (title: string) => void;
-  readonly setTabs: (files: readonly string[], hiddenCount: number, activeFile: string) => void;
+  readonly setTabs: (files: readonly string[], hiddenCount: number, activeFile: string, hiddenTitle: string) => void;
+  /** How code arrives can change mid-era: picking a 2018 framework changes what a typo is. */
+  readonly setTyping: (style: TypingStyle) => void;
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
 }
 
@@ -170,14 +173,18 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
   };
 
   /** Tabs are real buttons: players click them, so they have to switch files. */
-  const setTabs = (files: readonly string[], hiddenCount: number, activeFile: string): void => {
+  const setTabs = (files: readonly string[], hiddenCount: number, activeFile: string, hiddenTitle: string): void => {
     const tabs = files.map(
       (file) => `<button type="button" class="editor-tab${file === activeFile ? ' is-active' : ''}" data-action="editor-tab" data-id="${escapeHtml(file)}" aria-pressed="${file === activeFile}">${escapeHtml(file)}</button>`,
     );
-    const more = hiddenCount > 0 ? [`<span class="editor-tab is-more" title="Enterprise Java: ${hiddenCount} more XML files">+${hiddenCount} more</span>`] : [];
+    const more = hiddenCount > 0 ? [`<span class="editor-tab is-more" title="${escapeHtml(hiddenTitle)}">+${hiddenCount} more</span>`] : [];
     elements.tabs.innerHTML = [...tabs, ...more].join('');
     elements.tabs.hidden = files.length === 0;
   };
 
-  return { setEra, showFile, setTitle, setTabs, updateRate };
+  const setTyping = (style: TypingStyle): void => {
+    typing = style;
+  };
+
+  return { setEra, showFile, setTitle, setTabs, updateRate, setTyping };
 }

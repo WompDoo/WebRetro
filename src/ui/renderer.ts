@@ -1,4 +1,5 @@
-import { calculateEconomySnapshot, formatCompactNumber, formatMoney, isMobileFriendly } from '../engine';
+import { calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser } from '../engine';
+import type { GameState } from '../engine';
 import {
   buildBrowserTitle,
   buildEditorTabs,
@@ -8,6 +9,7 @@ import {
   buildSiteUrl,
   buildStatusText,
   classifyPerformance,
+  describeLighthouseRating,
   isPhoneViewOffered,
   isStatusScrolling,
   resolveDeviceView,
@@ -17,6 +19,7 @@ import type { CodeEditor } from './code-editor';
 import { escapeHtml, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { elements } from './elements';
 import { showEndCard } from './overlays';
+import { resolveTyping } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
 import { calculatePopupSignature, syncPopups } from './render-popups';
@@ -55,11 +58,43 @@ function restartAnimation(element: HTMLElement, className: string): void {
   element.classList.add(className);
 }
 
-/** After every change the page "reloads": a progress bar runs across the status bar. */
-function playReloadProgress(loadTimeSeconds: number): void {
+/** After every change the page "reloads": a progress bar runs across the status bar. Returns how long it takes. */
+function playReloadProgress(loadTimeSeconds: number): number {
   const durationMs = Math.min(MAX_RELOAD_MS, Math.max(MIN_RELOAD_MS, loadTimeSeconds * RELOAD_MS_PER_SECOND_OF_LOAD));
   elements.browserStatusbar.style.setProperty('--reload-ms', `${durationMs}ms`);
   restartAnimation(elements.browserStatusbar, 'is-reloading');
+  return durationMs;
+}
+
+/**
+ * How a 2018 single-page app comes back after a reload: blank (or "Loading...") until its bundle has run, or,
+ * once it renders on the server, all there at once but deaf to clicks until it has hydrated.
+ */
+type BootPhase = 'blank' | 'hydrating';
+
+/** Hydration takes a share of the reload, and never less than a moment you can notice. */
+const HYDRATION_SHARE_OF_RELOAD = 0.6;
+const MIN_HYDRATION_MS = 500;
+
+function classifyBoot(state: GameState): BootPhase {
+  return isRenderedOnlyInBrowser(state) ? 'blank' : 'hydrating';
+}
+
+function findBootPhase(state: GameState): BootPhase | null {
+  return findChosenFramework(state) === null ? null : classifyBoot(state);
+}
+
+const BOOT_DURATIONS: Readonly<Record<BootPhase, (reloadMs: number) => number>> = {
+  blank: (reloadMs) => reloadMs,
+  hydrating: (reloadMs) => Math.max(MIN_HYDRATION_MS, reloadMs * HYDRATION_SHARE_OF_RELOAD),
+};
+
+/** The phase sits on #site (the page's CSS) and the status bar (its "Hydrating…"); both outlive re-renders. */
+function setBootPhase(phase: BootPhase | null): void {
+  [elements.site, elements.browserStatusbar].forEach((element) => {
+    if (phase === null) delete element.dataset['boot'];
+    else element.dataset['boot'] = phase;
+  });
 }
 
 export function flashMoneyLoss(): void {
@@ -87,6 +122,7 @@ function renderBrowserStatus(editor: CodeEditor): void {
   elements.browserStatus.classList.toggle('is-scrolling', isStatusScrolling(store.game, economy));
   setTextIfChanged(elements.browserPerf, buildPerformanceReadout(store.game, economy));
   elements.browserStatusbar.dataset['performance'] = classifyPerformance(store.game, economy);
+  elements.browserPerf.dataset['lighthouse'] = describeLighthouseRating(store.game, economy);
   editor.setTitle(buildEditorTitle(store.game, resolveEditorFile(store.game, store.editorFile)));
   const caption = buildPhoneCaption(store.game, economy.loadTimeSeconds);
   setHtmlIfChanged(elements.deviceCaption, `<b class="device-caption-title">${escapeHtml(caption.headline)}</b><span>${escapeHtml(caption.detail)}</span><span class="device-caption-hint">Swipe the screen to scroll.</span>`);
@@ -111,9 +147,10 @@ function renderDeviceView(issues: readonly Issue[]): void {
 
 /** A new skill adds to the file being typed; picking another tab brings that file back as it was left. */
 function renderSkillChrome(editor: CodeEditor, file: string): void {
+  editor.setTyping(resolveTyping(store.game));
   editor.showFile(file, buildEditorSource(store.game, file));
   const tabs = buildEditorTabs(store.game);
-  editor.setTabs(tabs.files, tabs.hiddenCount, file);
+  editor.setTabs(tabs.files, tabs.hiddenCount, file, tabs.hiddenTitle);
   setTextIfChanged(elements.browserUrl, buildSiteUrl(store.game));
   setTextIfChanged(elements.browserTitle, buildBrowserTitle(store.game));
 }
@@ -226,9 +263,23 @@ export function createRenderer(editor: CodeEditor): Renderer {
     render();
   };
 
+  let bootTimer = 0;
+
+  /** A 2018 single-page app shows its boot phase for as long as it lasts, then the page as it is. */
+  const playBoot = (reloadMs: number): void => {
+    const phase = findBootPhase(store.game);
+    window.clearTimeout(bootTimer);
+    setBootPhase(phase);
+    if (phase !== null) bootTimer = window.setTimeout(() => setBootPhase(null), BOOT_DURATIONS[phase](reloadMs));
+  };
+
+  const reloadPage = (): void => {
+    playBoot(playReloadProgress(calculateEconomySnapshot(store.game).loadTimeSeconds));
+  };
+
   const renderSiteAndReload = (): void => {
     elements.site.innerHTML = renderSite(store.game, Date.now());
-    if (hasRenderedSite) playReloadProgress(calculateEconomySnapshot(store.game).loadTimeSeconds);
+    if (hasRenderedSite) reloadPage();
     hasRenderedSite = true;
   };
 
