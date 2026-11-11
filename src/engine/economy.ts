@@ -68,8 +68,31 @@ export function getActiveUpgradeIds(state: GameState): readonly UpgradeId[] {
   return state.purchasedUpgradeIds.filter((upgradeId) => !isUpgradeRetired(state, upgradeId));
 }
 
+/**
+ * Every economy number reads the purchased effects, once per feature: many times a frame, and thousands of times a
+ * second in the balance sim. They only change when something is bought or the era moves on, and purchasedUpgradeIds
+ * is always replaced, never changed in place, so the array itself keys a cache (per era, for what has retired).
+ */
+const PURCHASED_EFFECTS = new WeakMap<readonly UpgradeId[], Map<EraId, readonly UpgradeEffect[]>>();
+
+function findEffectsByEra(upgradeIds: readonly UpgradeId[]): Map<EraId, readonly UpgradeEffect[]> {
+  const existing = PURCHASED_EFFECTS.get(upgradeIds);
+  if (existing !== undefined) return existing;
+  const created = new Map<EraId, readonly UpgradeEffect[]>();
+  PURCHASED_EFFECTS.set(upgradeIds, created);
+  return created;
+}
+
+function collectPurchasedEffects(state: GameState, byEra: Map<EraId, readonly UpgradeEffect[]>): readonly UpgradeEffect[] {
+  const effects = getActiveUpgradeIds(state).flatMap((id) => UPGRADES_BY_ID[id].effects);
+  byEra.set(state.eraId, effects);
+  return effects;
+}
+
 function getPurchasedEffects(state: GameState): readonly UpgradeEffect[] {
-  return getActiveUpgradeIds(state).flatMap((id) => UPGRADES_BY_ID[id].effects);
+  const byEra = findEffectsByEra(state.purchasedUpgradeIds);
+  const cached = byEra.get(state.eraId);
+  return cached === undefined ? collectPurchasedEffects(state, byEra) : cached;
 }
 
 export function getEnabledDefenses(state: GameState): readonly DefenseDefinition[] {
