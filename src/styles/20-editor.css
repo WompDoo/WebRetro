@@ -1,10 +1,16 @@
 /* ---------- Fake IDE (era-styled on purpose, same in both themes) ---------- */
 .editor-window { border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--lift); overflow: hidden; background: #FFFFFF; color: #000000; }
 .editor-titlebar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 6px 4px 10px; font-size: 12px; font-weight: 700; }
+/* A long file name (and 2018's node_modules size) stays on one line, cut short like a real editor's title. */
+#editor-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .window-buttons { display: flex; gap: 3px; }
 .window-buttons i { width: 16px; height: 14px; display: block; }
 .editor-menu { display: flex; gap: 14px; padding: 3px 10px; font-size: 12px; }
-.editor-tabs { display: flex; gap: 2px; padding: 4px 6px 0; font-size: 11.5px; }
+/* More files than fit: the tab bar scrolls sideways (a wheel scrolls it too), and tabs keep their width. */
+.editor-tabs {
+  position: relative; display: flex; gap: 2px; padding: 4px 6px 0; font-size: 11.5px;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+}
 .editor-surface {
   position: relative; height: 250px; overflow: hidden; cursor: text; user-select: none; -webkit-user-select: none; touch-action: manipulation;
   display: flex; flex-direction: column; justify-content: flex-end;
@@ -46,7 +52,7 @@
 [data-era="2005"] .editor-tab { padding: 3px 10px; border: 1px solid #B8B8B8; border-bottom: 0; border-radius: 5px 5px 0 0; background: #D2D2D2; color: #555555; }
 [data-era="2005"] .editor-tab.is-active { background: #FFFFFF; color: #222222; }
 /* Tabs are buttons: they switch files. "+N more" is not a file, so it doesn't look pressable. */
-.editor-tab { margin: 0; font: inherit; cursor: pointer; }
+.editor-tab { flex: none; margin: 0; font: inherit; white-space: nowrap; cursor: pointer; }
 [data-era="2005"] .editor-tab:not(.is-active):not(.is-more):hover { background: #E8E8E8; color: #222222; }
 [data-era="2005"] .editor-tab.is-more { cursor: default; background: transparent; border-color: transparent; font-style: italic; }
 [data-era="2005"] .editor-code { padding-left: 0; font-family: var(--font-code); font-size: 12px; }
