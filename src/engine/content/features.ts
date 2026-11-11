@@ -189,7 +189,8 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-ajax',
     isSwitchable: false,
     pluginDiesIn: null,
-    sunsetIn: null,
+    // 2014–2018: site after site switched comments off and sent the conversation to social media.
+    sunsetIn: 'platform-2018',
   },
   'map-mashup': {
     id: 'map-mashup',

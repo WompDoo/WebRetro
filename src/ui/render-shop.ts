@@ -1,4 +1,5 @@
 import {
+  getDefenseCopy,
   calculateAdAnnoyancePerAd,
   calculateAdTrafficFactor,
   calculateAdValuePerAd,
@@ -371,11 +372,12 @@ function renderDefenseControl(state: GameState, defenseId: DefenseId): string {
 
 function renderDefenseRow(state: GameState, defenseId: DefenseId): string {
   const defense = DEFENSES_BY_ID[defenseId];
+  const copy = getDefenseCopy(defenseId, state.eraId);
   return `<article class="shop-row">
     <div class="shop-icon">${DEFENSE_ICONS[defenseId]}</div>
     <div class="shop-info">
-      <h3 class="shop-name">${escapeHtml(defense.name)}</h3>
-      <p class="shop-desc">${escapeHtml(defense.description)}</p>
+      <h3 class="shop-name">${escapeHtml(copy.name)}</h3>
+      <p class="shop-desc">${escapeHtml(copy.description)}</p>
       <p class="shop-effect">${escapeHtml(describeBenefit(defense))}</p>
       <p class="shop-effect is-tradeoff">${escapeHtml(describeTradeOffs(defense, state.eraId))}</p>
     </div>

@@ -161,7 +161,7 @@ const VIRUS_RULE: HazardRule = {
 const SPAM_RULE: HazardRule = {
   kind: 'spam',
   intervalRangeMs: [120_000, 200_000],
-  isActive: (state) => state.featureLevels.comments > 0 && countInfections(state, 'spam') === 0,
+  isActive: (state) => isFeatureOnPage(state, 'comments') && countInfections(state, 'spam') === 0,
   countdownSpeed: () => NORMAL_SPEED,
   spawn: (state, rolls, entityId) => ({
     state: addInfection(state, createInfection(entityId, 'spam', 'comments', rollAt(rolls, 0))),

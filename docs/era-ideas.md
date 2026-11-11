@@ -161,6 +161,8 @@ memcached, a CDN and a static page cache as server boosts.
   - *Learn Sass* (skill): a style.scss tab compiled by Grunt on save; fewer typos, keystrokes ×1.2.
   - Boosts: *Switch to MongoDB* ("web scale"; server load ×0.8), *Deploy with git push* (keystrokes ×1.25,
     fewer typos), *Turn on autoscaling* (server load ×0.7).
+- **Ads:** a "Sponsored" well in the sidebar, one Facebook-style post per ad placed (FarmTown, "1 weird trick").
+  The pop-up defense is called an ad blocker from 2011 (`getDefenseCopy`): the same trade-off, ads pay less.
 - **Performance:** "Grade B · Mobile 69/100" in the status bar. Pop-ups: like-gates, app banners, the first cookie
   notices, phishing through a friend's chat. The issue tracker becomes Mentions: complaints posted at you.
 
@@ -192,8 +194,12 @@ memcached, a CDN and a static page cache as server boosts.
   with "Get started", Stories, a gradient hero with a stock photo of people laughing, "Trusted by" made-up
   companies, three value cards, the old features as cards, the pricing table, testimonials, and a footer that
   says "Built with Angular". The live chat bubble sticks to the corner.
-- **Retired at the relaunch:** share counters, the forum and the scroll-jacking one-pager, plus the "Get our
-  app!" banner (a boost: `UPGRADE_SUNSETS` stops its effects and its weight). Trade-in as usual.
+- **Retired at the relaunch:** share counters, the forum, the scroll-jacking one-pager and the comments (2014–2018:
+  site after site switched them off; "💬 Comments are off. Join the conversation on Chirper →" marks the spot), plus
+  the "Get our app!" banner (a boost: `UPGRADE_SUNSETS` stops its effects and its weight) and CAPTCHA, which has no
+  comments left to guard (a defense: `DEFENSE_SUNSETS`). Trade-in as usual.
+- **Ads you can see:** the first ad is a banner under the hero, the rest an "Around the web" grid of clickbait at the
+  bottom. They arrive after the page and push it down: the layout shift (CLS) the speed score counts.
 - **Facespace's API shuts** after a data scandal: Sign in with… shows "This app is no longer available" (not
   a puzzle piece: `DEAD_FEATURE_COPY`) until *Build your own login with OAuth* rebuilds it.
 - **Features:** Stories (mobile first), the pricing table (take payments online), the live chat bubble
@@ -397,6 +403,11 @@ Next candidates: rack wiring (server overload as a hazard), "hold the line" duri
 like viruses and DDoS have, can come later for the others.
 
 ## Balance notes
+
+- **The game's own cost.** The economy is read many times a frame (stats, status bar, shop, checklist, tips,
+  tickets) while the state changes ten times a second; in 2018 that took 81 ms of script per second of play. Base
+  visitors, demand, page weight, server load, net revenue and the snapshot are now cached per state object
+  (`memoizeByState`: states are replaced, never changed in place): 19 ms.
 
 - **2018 pacing:** 9.5–9.8 minutes for the active player and 11.7–12.6 for the relaxed one, whichever framework,
   next to 2011's 10.8 and 12.3. The first pass priced 2018 from 2011's prices instead of from the income players

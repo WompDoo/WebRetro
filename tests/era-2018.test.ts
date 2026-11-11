@@ -10,6 +10,9 @@ import {
   findChosenFramework,
   getAvailableSkillIds,
   getFeatureDisplayName,
+  getDefenseCopy,
+  getUnlockedDefenseIds,
+  isFeatureOnPage,
   getEraHostingTiers,
   getFeaturesRetiringIn,
   isFeaturePluginDead,
@@ -53,6 +56,30 @@ describe('2018: the era itself', () => {
   it('takes the retired banner off the page: its weight goes with it', () => {
     const withBanner = { ...in2018(), purchasedUpgradeIds: [...in2018().purchasedUpgradeIds, 'app-banner' as const] };
     assert.equal(calculatePageWeightKb(withBanner), calculatePageWeightKb(in2018()));
+  });
+
+  it('switches the comments off, and CAPTCHA goes with them: nothing left for spam bots', () => {
+    const withComments: GameState = { ...in2018(), featureLevels: { ...in2018().featureLevels, comments: 8 }, ownedDefenseIds: ['captcha'], enabledDefenseIds: ['captcha'] };
+    assert.ok(getFeaturesRetiringIn(withComments, 'platform-2018').includes('comments'));
+    assert.ok(!isFeatureOnPage(withComments, 'comments'));
+    assert.ok(!getUnlockedDefenseIds(withComments).includes('captcha'));
+    assert.ok(getUnlockedDefenseIds({ ...withComments, eraId: 'social-2011' }).includes('captcha'));
+    assert.match(renderSite({ ...withComments, purchasedUpgradeIds: [...withComments.purchasedUpgradeIds, 'learn-vue'] }, NOW), /Comments are off/);
+  });
+
+  it('calls the pop-up defense an ad blocker from 2011', () => {
+    assert.equal(getDefenseCopy('premium-ad-network', 'web2-2005').name, 'Premium ad network');
+    assert.equal(getDefenseCopy('premium-ad-network', 'social-2011').name, 'Ad blocker');
+    assert.equal(getDefenseCopy('premium-ad-network', 'platform-2018').name, 'Ad blocker');
+  });
+
+  it('shows every ad placed: sponsored posts in 2011, a banner and clickbait in 2018', () => {
+    const count = (html: string, className: string): number => html.split(`class="${className}"`).length - 1;
+    const in2011 = { ...in2018(), eraId: 'social-2011' as const, adCount: 4 };
+    assert.equal(count(renderSite(in2011, NOW), 'bs-ad'), 4);
+    const landing = renderSite({ ...in2018(['learn-react']), adCount: 5 }, NOW);
+    assert.equal(count(landing, 'lp-leaderboard'), 1);
+    assert.equal(count(landing, 'lp-chum'), 4);
   });
 
   it('breaks Sign in with Facespace when its API shuts, until you build your own login', () => {

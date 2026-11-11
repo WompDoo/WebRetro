@@ -2,6 +2,7 @@ import { ERAS_BY_ID, findChosenFramework, isMobileFriendly } from '../../engine'
 import type { FeatureId, FrameworkId } from '../../engine';
 import { escapeHtml } from '../dom';
 import { describeBuiltWith, FRAMEWORK_PRESENTATION } from '../framework-presentation';
+import { listAds, renderAdPicture, renderAdText } from './ads';
 import { ownedFeatures, renderFeatureBlocks } from './features';
 import { siteName } from './site-context';
 import type { SiteContext } from './site-context';
@@ -67,6 +68,26 @@ function renderSections(context: SiteContext): string {
   return sections === '' ? '' : `<div class="lp-sections">${sections}</div>`;
 }
 
+/** Where the comments were: switched off, the way sites did it, and the conversation sent to social media. */
+function renderCommentsOff(context: SiteContext): string {
+  return context.state.featureLevels.comments > 0 ? '<p class="lp-comments-off">💬 Comments are off. Join the conversation on Chirper →</p>' : '';
+}
+
+/**
+ * 2018's ads: the first is a banner under the hero, the rest fill an "Around the web" grid of clickbait at the bottom.
+ * They arrive after the page and push it down: the layout shift the speed score counts.
+ */
+function renderLeaderboard(context: SiteContext): string {
+  const [first] = listAds(context);
+  return first === undefined ? '' : `<aside class="lp-leaderboard"><span class="lp-ad-label">Advertisement</span>${renderAdPicture(0)}<span class="lp-ad-text">${renderAdText(first)}</span></aside>`;
+}
+
+function renderAroundTheWeb(context: SiteContext): string {
+  const rest = listAds(context).slice(1);
+  const cards = rest.map((ad, index) => `<li class="lp-chum">${renderAdPicture(index + 1)}${renderAdText(ad)}</li>`).join('');
+  return rest.length === 0 ? '' : `<section class="lp-around"><h2 class="lp-around-title">Around the web <span>Sponsored links</span></h2><ul class="lp-chum-grid">${cards}</ul></section>`;
+}
+
 /** Your own login, or the error Facespace's shutdown left behind. */
 function renderAccountBand(context: SiteContext): string {
   const block = renderFeatureBlocks(context, ['social-login']).join('');
@@ -86,12 +107,15 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     ${renderNav(context)}
     ${renderFeatureBlocks(context, ['stories']).join('')}
     ${renderHero(context)}
+    ${renderLeaderboard(context)}
     <section class="lp-logos"><span>Trusted by teams at</span>${TRUSTED_BY.map((name) => `<b>${name}</b>`).join('')}</section>
     <section class="lp-cards">${renderValueCards()}</section>
     ${renderSections(context)}
+    ${renderCommentsOff(context)}
     ${renderFeatureBlocks(context, ['pricing-table']).join('')}
     <section class="lp-testimonials">${renderTestimonials()}</section>
     ${renderAccountBand(context)}
+    ${renderAroundTheWeb(context)}
     <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteName(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms</footer>
     ${renderFeatureBlocks(context, ['live-chat']).join('')}
   </div>`;

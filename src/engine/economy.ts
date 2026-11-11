@@ -11,7 +11,7 @@ import {
   TRAFFIC_SPIKE_DEMAND_FACTOR,
   UPGRADE_REVEAL_EARNINGS_SHARE,
 } from './constants';
-import { DEFENSE_IDS, DEFENSES_BY_ID } from './content/defenses';
+import { DEFENSE_IDS, DEFENSE_SUNSETS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
 import { findFrameworkPickedBy, findFrameworkRenderedBy, FRAMEWORK_IDS, FRAMEWORKS_BY_ID } from './content/frameworks';
@@ -48,6 +48,22 @@ const FALLBACK_HOSTING_TIER: HostingTierDefinition = {
   cost: 0,
   capacityVisitorsPerSecond: 1,
 };
+
+/**
+ * Economy numbers are read many times a frame (stats, status bar, shop, checklist, tips, tickets) while the game
+ * state changes ten times a second. A state is never changed in place, only replaced, so each one keys a cache:
+ * the second read in a frame is free.
+ */
+function memoizeByState<T>(calculate: (state: GameState) => T): (state: GameState) => T {
+  const cache = new WeakMap<GameState, T>();
+  return (state) => {
+    const cached = cache.get(state);
+    if (cached !== undefined) return cached;
+    const value = calculate(state);
+    cache.set(state, value);
+    return value;
+  };
+}
 
 function multiplyAll(factors: readonly number[]): number {
   return factors.reduce((product, factor) => product * factor, NEUTRAL_FACTOR);
@@ -95,8 +111,14 @@ function getPurchasedEffects(state: GameState): readonly UpgradeEffect[] {
   return cached === undefined ? collectPurchasedEffects(state, byEra) : cached;
 }
 
+/** Retired with what it protected (CAPTCHA, once comments are gone): off the shelf, and its trade-off stops. */
+export function isDefenseRetired(state: GameState, defenseId: DefenseId): boolean {
+  const sunsetIn = DEFENSE_SUNSETS[defenseId];
+  return sunsetIn !== undefined && isEraUnlocked(state, sunsetIn);
+}
+
 export function getEnabledDefenses(state: GameState): readonly DefenseDefinition[] {
-  return state.enabledDefenseIds.map((id) => DEFENSES_BY_ID[id]);
+  return state.enabledDefenseIds.filter((id) => !isDefenseRetired(state, id)).map((id) => DEFENSES_BY_ID[id]);
 }
 
 export function getEraIndex(eraId: EraId): number {
@@ -229,9 +251,9 @@ export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: F
   return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * (isProducing ? NEUTRAL_FACTOR : NO_TRAFFIC);
 }
 
-function calculateBaseVisitorsPerSecond(state: GameState): number {
+const calculateBaseVisitorsPerSecond = memoizeByState((state: GameState): number => {
   return sumAll(FEATURE_IDS.map((featureId) => calculateFeatureVisitorsPerSecond(state, featureId)));
-}
+});
 
 export function calculateGlobalTrafficFactor(state: GameState): number {
   const upgradeFactors = getPurchasedEffects(state).flatMap((effect) =>
@@ -318,7 +340,7 @@ export function calculateTrafficSpikeFactor(state: GameState): number {
 }
 
 /** Visitors trying to reach the site, before slow pages and server trouble send some away. */
-export function calculateDemandVisitorsPerSecond(state: GameState): number {
+export const calculateDemandVisitorsPerSecond = memoizeByState((state: GameState): number => {
   return (
     calculateBaseVisitorsPerSecond(state) *
     calculateGlobalTrafficFactor(state) *
@@ -329,7 +351,7 @@ export function calculateDemandVisitorsPerSecond(state: GameState): number {
     calculateMobileTrafficFactor(state) *
     calculateRenderingTrafficFactor(state)
   );
-}
+});
 
 /** hostingTier is a step on the current era's ladder; a relaunch starts the new era's ladder at the bottom. */
 export function getHostingTier(state: GameState): HostingTierDefinition {
@@ -367,9 +389,9 @@ function calculateServerDemand(state: GameState): number {
 }
 
 /** Server demand divided by capacity. 0 in eras where hosting doesn't matter yet. */
-export function calculateServerLoad(state: GameState): number {
+export const calculateServerLoad = memoizeByState((state: GameState): number => {
   return ERAS_BY_ID[state.eraId].hasServerLoad ? calculateServerDemand(state) / calculateHostingCapacity(state, getHostingTier(state)) : 0;
-}
+});
 
 function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): number {
   const definition = FEATURES_BY_ID[featureId];
@@ -378,7 +400,7 @@ function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): n
   return isOnPage ? definition.pageWeightKb + definition.pageWeightKbPerLevel * level : 0;
 }
 
-export function calculatePageWeightKb(state: GameState): number {
+export const calculatePageWeightKb = memoizeByState((state: GameState): number => {
   const era = ERAS_BY_ID[state.eraId];
   const factors = getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'page-weight-multiplier' ? [effect.factor] : []));
   const featuresKb = sumAll(FEATURE_IDS.map((featureId) => calculateFeaturePageWeightKb(state, featureId)));
@@ -386,7 +408,7 @@ export function calculatePageWeightKb(state: GameState): number {
   const upgradesKb = sumAll(getActiveUpgradeIds(state).map((upgradeId) => UPGRADES_BY_ID[upgradeId].pageWeightKb));
   const rawKb = era.basePageWeightKb + featuresKb + upgradesKb + state.adCount * era.adPageWeightKb;
   return rawKb * multiplyAll(factors);
-}
+});
 
 /**
  * Page weight over the era's connection. An overloaded server makes everything slower still, and so does a
@@ -418,9 +440,9 @@ function calculateServedLimit(state: GameState): number {
  * Visitors who actually get your page: those patient enough to wait, up to what the server can serve.
  * An overloaded server never drops to zero, so you can always earn your way to the next hosting tier.
  */
-export function calculateVisitorsPerSecond(state: GameState): number {
+export const calculateVisitorsPerSecond = memoizeByState((state: GameState): number => {
   return Math.min(calculateDemandVisitorsPerSecond(state) * calculatePerformanceTrafficFactor(state), calculateServedLimit(state));
-}
+});
 
 export function calculateAdValuePerAd(state: GameState): number {
   const upgradeFactors = getPurchasedEffects(state).flatMap((effect) =>
@@ -438,15 +460,15 @@ export function calculateUpkeepShare(state: GameState): number {
   return sumAll(getEnabledDefenses(state).map((defense) => defense.revenueUpkeepShare));
 }
 
-export function calculateNetRevenuePerSecond(state: GameState): number {
+export const calculateNetRevenuePerSecond = memoizeByState((state: GameState): number => {
   return (
     calculateVisitorsPerSecond(state) *
     calculateRevenuePerVisitor(state) *
     (NEUTRAL_FACTOR - calculateUpkeepShare(state))
   );
-}
+});
 
-export function calculateEconomySnapshot(state: GameState): EconomySnapshot {
+export const calculateEconomySnapshot = memoizeByState((state: GameState): EconomySnapshot => {
   return {
     demandVisitorsPerSecond: calculateDemandVisitorsPerSecond(state),
     visitorsPerSecond: calculateVisitorsPerSecond(state),
@@ -465,7 +487,7 @@ export function calculateEconomySnapshot(state: GameState): EconomySnapshot {
     keystrokeValue: calculateKeystrokeValue(state),
     bugChance: calculateBugChance(state),
   };
-}
+});
 
 export function calculateNextFeatureCost(state: GameState, featureId: FeatureId): number {
   return calculateFeatureLevelCost(featureId, state.featureLevels[featureId]);
@@ -542,5 +564,5 @@ export function getRevealedBoostIds(state: GameState): readonly UpgradeId[] {
 }
 
 export function getUnlockedDefenseIds(state: GameState): readonly DefenseId[] {
-  return DEFENSE_IDS.filter((defenseId) => isEraUnlocked(state, DEFENSES_BY_ID[defenseId].eraId));
+  return DEFENSE_IDS.filter((defenseId) => isEraUnlocked(state, DEFENSES_BY_ID[defenseId].eraId) && !isDefenseRetired(state, defenseId));
 }
