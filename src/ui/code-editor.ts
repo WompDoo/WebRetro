@@ -77,6 +77,26 @@ function isCodeKey(event: KeyboardEvent): boolean {
   return !hasModifier && !event.repeat && (event.key.length === 1 || ACCEPTED_SPECIAL_KEYS.has(event.key));
 }
 
+/** Scrolls the tab bar just far enough to show the active tab whole. Never scrolls the page. */
+function revealActiveTab(tabs: HTMLElement): void {
+  const active = tabs.querySelector<HTMLElement>('.editor-tab.is-active');
+  if (active === null) return;
+  const rightEdge = active.offsetLeft + active.offsetWidth - tabs.clientWidth;
+  tabs.scrollLeft = Math.min(active.offsetLeft, Math.max(tabs.scrollLeft, rightEdge));
+}
+
+/** An up-and-down wheel over a tab bar with more tabs than fit. A trackpad's sideways swipe scrolls it already. */
+function isSidewaysWheelNeeded(tabs: HTMLElement, event: WheelEvent): boolean {
+  return Math.abs(event.deltaY) > Math.abs(event.deltaX) && tabs.scrollWidth > tabs.clientWidth;
+}
+
+/** A mouse wheel only scrolls up and down; over the tab bar, it scrolls the tabs sideways instead. */
+function scrollTabsWithWheel(tabs: HTMLElement, event: WheelEvent): void {
+  if (!isSidewaysWheelNeeded(tabs, event)) return;
+  event.preventDefault();
+  tabs.scrollLeft += event.deltaY;
+}
+
 export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () => KeystrokeFeedback): CodeEditor {
   let buffers = createEditorBuffers();
   let highlights = false;
@@ -132,6 +152,8 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     showFloater(feedback);
   };
 
+  elements.tabs.addEventListener('wheel', (event) => scrollTabsWithWheel(elements.tabs, event), { passive: false });
+
   elements.surface.addEventListener('pointerdown', (event) => {
     event.preventDefault();
     elements.surface.focus({ preventScroll: true });
@@ -172,7 +194,7 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     if (isSwitch) render();
   };
 
-  /** Tabs are real buttons: players click them, so they have to switch files. */
+  /** Tabs are real buttons: players click them, so they have to switch files. The active one scrolls into view. */
   const setTabs = (files: readonly string[], hiddenCount: number, activeFile: string, hiddenTitle: string): void => {
     const tabs = files.map(
       (file) => `<button type="button" class="editor-tab${file === activeFile ? ' is-active' : ''}" data-action="editor-tab" data-id="${escapeHtml(file)}" aria-pressed="${file === activeFile}">${escapeHtml(file)}</button>`,
@@ -180,6 +202,7 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     const more = hiddenCount > 0 ? [`<span class="editor-tab is-more" title="${escapeHtml(hiddenTitle)}">+${hiddenCount} more</span>`] : [];
     elements.tabs.innerHTML = [...tabs, ...more].join('');
     elements.tabs.hidden = files.length === 0;
+    revealActiveTab(elements.tabs);
   };
 
   const setTyping = (style: TypingStyle): void => {

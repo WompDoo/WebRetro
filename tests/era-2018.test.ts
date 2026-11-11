@@ -9,6 +9,7 @@ import {
   ERAS_BY_ID,
   findChosenFramework,
   getAvailableSkillIds,
+  getFeatureDisplayName,
   getEraHostingTiers,
   getFeaturesRetiringIn,
   isFeaturePluginDead,
@@ -17,7 +18,7 @@ import {
   isUpgradeRetired,
 } from '../src/engine';
 import type { GameState, UpgradeId } from '../src/engine';
-import { buildSiteUrl, measureNodeModulesMb, rateLighthouse, scoreLighthouse } from '../src/ui/browser-chrome';
+import { buildEditorTabs, buildSiteUrl, measureNodeModulesMb, rateLighthouse, scoreLighthouse } from '../src/ui/browser-chrome';
 import { FRAMEWORK_PRESENTATION, resolveTyping } from '../src/ui/framework-presentation';
 import { renderSite } from '../src/ui/sites';
 import { buildEditorSource, mainEditorFile } from '../src/ui/skill-code';
@@ -127,6 +128,21 @@ describe('2018: how each framework shows', () => {
     assert.match(buildEditorSource(in2018(['learn-vue']), 'App.vue'), /<template>/);
     assert.equal(resolveTyping(in2018(['learn-angular'])).typoLabel, FRAMEWORK_PRESENTATION.angular.typing.typoLabel);
     assert.equal(resolveTyping(in2018()).typoLabel, 'typosquat!');
+  });
+
+  it('opens every file as a real tab: only 2005 hides its pile of XML behind "+N more"', () => {
+    const angular = buildEditorTabs(createPlaytestState('platform-2018', 'end', SEED, 'angular'));
+    assert.equal(angular.hiddenCount, 0);
+    assert.ok(angular.files.length > 5);
+    assert.ok(angular.files.includes('app.server.module.ts'));
+  });
+
+  it('keeps the names features got in 2011, unless 2018 renamed them', () => {
+    assert.equal(getFeatureDisplayName('photo-gallery', 'platform-2018'), 'Photo albums');
+    assert.equal(getFeatureDisplayName('midi-player', 'platform-2018'), 'Podcast player');
+    assert.equal(getFeatureDisplayName('guestbook', 'platform-2018'), 'Reviews');
+    assert.equal(getFeatureDisplayName('guestbook', 'social-2011'), 'Wall');
+    assert.match(renderSite(in2018(['learn-react']), NOW), /<h2 class="feature-heading">Video<\/h2>/);
   });
 
   it('serves everything over https, and Vue’s router puts a # in the address', () => {

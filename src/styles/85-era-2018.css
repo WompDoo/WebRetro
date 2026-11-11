@@ -126,8 +126,12 @@
 .plan-perks { margin: 0; padding: 0; list-style: none; color: #5F6368; font-size: 12px; line-height: 20px; }
 .plan-button { justify-self: center; padding: 6px 14px; border-radius: 4px; background: #F1F0FD; color: #6C5CE7; font-size: 12px; font-weight: 600; }
 .plan.is-highlighted .plan-button { background: #6C5CE7; color: #FFFFFF; }
-/* The live chat bubble sits in the corner whatever you scroll to: sticky to the bottom of the page's window. */
-.feature-block[data-feature="live-chat"] { position: sticky; bottom: 12px; z-index: 5; width: max-content; max-width: calc(100% - 24px); min-height: 0; margin: 0 12px 0 auto; overflow: visible; }
+/*
+ * The live chat bubble sits in the corner whatever you scroll to: sticky to the bottom of the page's window. #site's
+ * class is in the selector so it outranks both layouts' general .feature-block rules (relative, overflow hidden),
+ * whichever file they come from.
+ */
+.site .feature-block[data-feature="live-chat"] { position: sticky; bottom: 12px; z-index: 5; width: max-content; max-width: calc(100% - 24px); min-height: 0; margin: 0 12px 0 auto; overflow: visible; }
 .chat-bubble { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); color: #202124; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 13px; }
 .chat-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #6C5CE7; color: #FFFFFF; font-weight: 700; }
 .chat-text { display: grid; line-height: 17px; }

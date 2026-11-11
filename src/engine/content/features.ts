@@ -1,4 +1,5 @@
 import type { EraId, FeatureDefinition, FeatureId } from '../types';
+import { ERA_IDS } from './era-ids';
 
 /** Shop and page order. Within an era, roughly by price. */
 export const FEATURE_IDS: readonly FeatureId[] = [
@@ -63,7 +64,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     id: 'guestbook',
     eraId: 'homepage-1997',
     name: 'Guestbook',
-    laterEraNames: { 'web2-2005': 'Shoutbox', 'social-2011': 'Wall' },
+    laterEraNames: { 'web2-2005': 'Shoutbox', 'social-2011': 'Wall', 'platform-2018': 'Reviews' },
     description: 'Visitors leave messages. Also links. Mostly links.',
     baseCost: 1_200,
     visitorsPerSecondPerLevel: 40,
@@ -194,7 +195,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     id: 'map-mashup',
     eraId: 'web2-2005',
     name: 'Map mashup',
-    laterEraNames: { 'social-2011': 'Check-in map' },
+    laterEraNames: { 'social-2011': 'Check-in map', 'platform-2018': 'Find us' },
     description: 'Pins on a map from somebody else’s API. Mashups are the future.',
     baseCost: 30_000_000,
     visitorsPerSecondPerLevel: 120_000,
@@ -361,7 +362,13 @@ export function getFeatureIdsOfEra(eraId: EraId): readonly FeatureId[] {
   return FEATURE_IDS.filter((id) => FEATURES_BY_ID[id].eraId === eraId);
 }
 
+/** The newest name the feature got in this era or an earlier one: a 2011 rename carries into 2018. Null if none. */
+export function findLaterEraName(featureId: FeatureId, eraId: EraId): string | null {
+  const names = FEATURES_BY_ID[featureId].laterEraNames;
+  const upToEra = ERA_IDS.slice(0, ERA_IDS.indexOf(eraId) + 1);
+  return [...upToEra].reverse().map((candidate) => names[candidate]).find((name) => name !== undefined) ?? null;
+}
+
 export function getFeatureDisplayName(featureId: FeatureId, eraId: EraId): string {
-  const definition = FEATURES_BY_ID[featureId];
-  return definition.laterEraNames[eraId] ?? definition.name;
+  return findLaterEraName(featureId, eraId) ?? FEATURES_BY_ID[featureId].name;
 }

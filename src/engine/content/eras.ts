@@ -2,7 +2,7 @@ import { formatCompactNumber, formatMoney } from '../format';
 import type { EraDefinition, EraGateRequirement, EraId, FeatureId } from '../types';
 import { FEATURES_BY_ID, getFeatureIdsOfEra } from './features';
 
-export const ERA_IDS: readonly EraId[] = ['homepage-1997', 'web2-2005', 'social-2011', 'platform-2018'];
+export { ERA_IDS } from './era-ids';
 
 function requireEveryFeatureOf(eraId: EraId, year: number): EraGateRequirement {
   return {

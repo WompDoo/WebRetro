@@ -15,7 +15,8 @@ const PERCENT = 100;
 const LOAD_TIME_DECIMALS = 1;
 const SVN_FIRST_REVISION = 100;
 const KEYSTROKES_PER_REVISION = 40;
-const VISIBLE_EDITOR_TABS = 5;
+/** Enterprise Java's 14 XML files: past this many tabs, 2005 gives up and says "+13 more". */
+const J2EE_VISIBLE_TABS = 5;
 const JAVASCRIPT_STATUS_TEXT = 'Welcome to my homepage!!! *** Welcome!!! *** Please sign my guestbook!!!';
 const J2EE_FILES: readonly string[] = [
   'web.xml', 'ejb-jar.xml', 'application.xml', 'faces-config.xml', 'struts-config.xml', 'persistence.xml', 'beans.xml',
@@ -287,7 +288,7 @@ export function buildEditorTitle(state: GameState, fileName: string): string {
   return resolveEditorTitle(state).replace(mainEditorFile(state), describeEditorExtras(state, fileName));
 }
 
-/** The files open in the editor. Past five, the rest hide behind a "+N more" that isn't a file. */
+/** The files open in the editor, each a tab; the tab bar scrolls sideways. 2005 hides its pile of XML behind "+N more". */
 export interface EditorTabs {
   readonly files: readonly string[];
   readonly hiddenCount: number;
@@ -321,14 +322,19 @@ function listEditorFiles(state: GameState): readonly string[] {
   return [...new Set([...resolveEditorTabs(state), ...extra])];
 }
 
-function describeHiddenTabs(eraId: EraId, hiddenCount: number): string {
-  return eraId === 'web2-2005' ? `Enterprise Java: ${hiddenCount} more XML files` : `${hiddenCount} more files`;
+/**
+ * Only 2005 collapses its tabs: the joke is that J2EE needs more files than anyone can open. In other eras every file
+ * is a real tab you can reach by scrolling the tab bar.
+ */
+function findVisibleTabLimit(eraId: EraId): number {
+  return eraId === 'web2-2005' ? J2EE_VISIBLE_TABS : Number.POSITIVE_INFINITY;
 }
 
 export function buildEditorTabs(state: GameState): EditorTabs {
   const files = listEditorFiles(state);
-  const hiddenCount = Math.max(0, files.length - VISIBLE_EDITOR_TABS);
-  return { files: files.slice(0, VISIBLE_EDITOR_TABS), hiddenCount, hiddenTitle: describeHiddenTabs(state.eraId, hiddenCount) };
+  const limit = findVisibleTabLimit(state.eraId);
+  const hiddenCount = Math.max(0, files.length - limit);
+  return { files: files.slice(0, limit), hiddenCount, hiddenTitle: `Enterprise Java: ${hiddenCount} more XML files` };
 }
 
 /** The file being edited: the one picked if it's still open, otherwise the era's main file. */
