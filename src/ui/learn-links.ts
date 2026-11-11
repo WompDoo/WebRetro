@@ -43,6 +43,11 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'parallax-scrolling': 'https://en.wikipedia.org/wiki/Parallax_scrolling',
   'retina-images': 'https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio',
   'app-banner': null,
+  'learn-rest-apis': 'https://developer.mozilla.org/en-US/docs/Glossary/REST',
+  'learn-sass': 'https://sass-lang.com/guide/',
+  mongodb: 'https://www.mongodb.com/docs/manual/introduction/',
+  'git-push-deploys': 'https://git-scm.com/docs/git-push',
+  autoscaling: 'https://en.wikipedia.org/wiki/Autoscaling',
   // 1997 boosts
   'counter-starts-at-ten-thousand': null,
   'html-validator': 'https://validator.w3.org/',

@@ -9,7 +9,7 @@ import { render2005Site } from './site-2005';
 /** Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no place here. */
 const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['one-pager', 'video-player', 'blog', 'photo-gallery', 'comments', 'forum', 'map-mashup'];
 /** The span4 sidebar: small widgets, each in a well. */
-const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['share-buttons', 'activity-feed', 'guestbook', 'midi-player'];
+const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'share-buttons', 'activity-feed', 'guestbook', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Home', 'Blog', 'Photos', 'About'];
 /** The three supporting columns under the hero, before you've built anything to put there. */
 const PLACEHOLDER_COLUMNS: readonly string[] = ['Heading', 'Heading', 'Heading'];
@@ -32,6 +32,11 @@ function renderLookClasses(context: SiteContext): string {
   return [...skills, ...onePager].map((className) => ` ${className}`).join('');
 }
 
+/** Once "Sign in with…" is built, the navbar offers it too. */
+function renderSignIn(context: SiteContext): string {
+  return ownedFeatures(context, ['social-login']).length > 0 ? 'Sign in with Facespace' : 'Sign in';
+}
+
 /** "Get our app!": across the top of the page, above even the navbar. */
 function renderAppBanner(context: SiteContext): string {
   const name = escapeHtml(siteName(context.state));
@@ -51,7 +56,7 @@ function renderBootstrapSite(context: SiteContext): string {
   const nav = NAV_ITEMS.map((item, index) => `<span${index === 0 ? ' class="is-active"' : ''}>${item}</span>`).join('');
   return `<div class="site-2011${renderLookClasses(context)}">
     ${renderAppBanner(context)}
-    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteName(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span><span class="bs-signin">Sign in</span></header>
+    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteName(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span><span class="bs-signin">${renderSignIn(context)}</span></header>
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${sidebar}</aside></div>
     <footer class="bs-footer">© ${siteName(context.state)} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>

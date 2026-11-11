@@ -18,6 +18,7 @@ export const FEATURE_IDS: readonly FeatureId[] = [
   'video-player',
   'activity-feed',
   'one-pager',
+  'social-login',
 ];
 
 export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
@@ -281,6 +282,22 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKbPerLevel: 40,
     requiredSkillId: 'parallax-scrolling',
     isSwitchable: true,
+    pluginDiesIn: null,
+    sunsetIn: null,
+  },
+  'social-login': {
+    id: 'social-login',
+    eraId: 'social-2011',
+    name: 'Sign in with…',
+    laterEraNames: {},
+    description: 'One click to join with a Facespace or Chirper account: no new password to forget, and friends see that you joined. Busier with every live activity.',
+    baseCost: 40_000_000_000,
+    visitorsPerSecondPerLevel: 9_000_000,
+    synergy: { sourceFeatureId: 'activity-feed', bonusPerSourceLevel: 0.04 },
+    pageWeightKb: 60,
+    pageWeightKbPerLevel: 1,
+    requiredSkillId: 'learn-rest-apis',
+    isSwitchable: false,
     pluginDiesIn: null,
     sunsetIn: null,
   },

@@ -258,6 +258,16 @@ const renderActivityFeed: FeatureRenderer = (context) => {
   return `${heading(context, 'activity-feed', 'Live activity')}<ul class="feed-list">${items}<li class="feed-more"><span class="spinner" aria-hidden="true"></span>Loading more…</li></ul>`;
 };
 
+const SIGN_IN_NETWORKS: readonly string[] = ['Facespace', 'Chirper'];
+const SIGNUPS_PER_LEVEL = 1_200;
+
+/** "Sign in with…": one button per parody network, and how many people joined without a new password. */
+const renderSocialLogin: FeatureRenderer = (context) => {
+  const buttons = SIGN_IN_NETWORKS.map((network, index) => `<span class="signin-button signin-button--${index}">Sign in with ${escapeHtml(network)}</span>`).join('');
+  const joined = formatCompactNumber(levelOf(context, 'social-login') * SIGNUPS_PER_LEVEL);
+  return `${heading(context, 'social-login', 'Join with one click')}<div class="signin-buttons">${buttons}</div><p class="post-meta">${joined} joined this week · no new password</p>`;
+};
+
 const ONE_PAGER_CHAPTERS: readonly string[] = ['Who we are', 'What we make', 'Why it matters', 'Where we’re going', 'Say hello'];
 const BASE_CHAPTERS = 2;
 const AWARDS_PER_LEVEL = 3;
@@ -291,6 +301,7 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'video-player': renderVideoPlayer,
   'activity-feed': renderActivityFeed,
   'one-pager': renderOnePager,
+  'social-login': renderSocialLogin,
 };
 
 /** Browsers in 2011: the feature is still on the page, but its plugin isn't. */

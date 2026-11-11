@@ -214,3 +214,9 @@
 .bs-app-text { display: grid; line-height: 1.3; }
 .bs-app-view { margin-left: auto; padding: 4px 12px; border: 1px solid #7A7A7A; border-radius: 4px; background: linear-gradient(#FFFFFF, #E2E2E2); color: #0074CC; font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { .one-pager-scroll { animation: none; } .bs-hero-far, .bs-hero-near { transform: none; } }
+
+/* "Sign in with…": one button per network. */
+.signin-buttons { display: grid; gap: 6px; }
+.signin-button { display: block; padding: 7px 10px; border-radius: 4px; color: #FFFFFF; font-weight: 700; font-size: 13px; text-align: center; }
+.signin-button--0 { background: linear-gradient(#5B7BC0, #3B5998); }
+.signin-button--1 { background: linear-gradient(#5FC3F5, #2A9FD6); }

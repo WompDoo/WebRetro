@@ -127,6 +127,12 @@ const SOCIAL_CODE: EraCode = {
     'retina-images': {
       'style.css': ['@media (-webkit-min-device-pixel-ratio: 2) {', '  .hero { background-image: url(hero@2x.jpg); background-size: 1200px 600px; }', '}'],
     },
+    'learn-rest-apis': {
+      'server.js': ['app.get("/api/posts.json", function (req, res) {', '  db.posts.find().limit(20).toArray(function (err, posts) {', '    res.json(posts); // the app, the widgets and other people\'s mashups all read this', '  });', '});'],
+    },
+    'learn-sass': {
+      'style.scss': ['// compiled to style.css by `grunt watch` on every save', '$brand: #0088cc;', '.navbar {', '  .brand { color: $brand; }', '  a:hover { color: darken($brand, 10%); }', '}'],
+    },
     'learn-bcrypt': {
       'server.js': ['var bcrypt = require("bcrypt");', 'bcrypt.hash(password, 10, function (err, hash) {', '  db.users.update({ name: name }, { $set: { password: hash } }); // no more plain text', '});'],
     },

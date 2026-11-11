@@ -160,12 +160,13 @@ const SKILL_FILES: Readonly<Partial<Record<EraId, readonly (readonly [UpgradeId,
     ['rails', ['config/routes.rb']],
     ['j2ee', J2EE_FILES],
   ],
-  'social-2011': [['learn-nodejs', ['server.js']]],
+  'social-2011': [['learn-nodejs', ['server.js']], ['learn-bcrypt', ['server.js']], ['learn-rest-apis', ['server.js']], ['learn-sass', ['style.scss']]],
 };
 
 function listEditorFiles(state: GameState): readonly string[] {
   const extra = (SKILL_FILES[state.eraId] ?? []).filter(([skillId]) => knows(state, skillId)).flatMap(([, files]) => files);
-  return [...ERA_PRESENTATION[state.eraId].editorTabs, ...extra];
+  // Several skills can write to the same file; it gets one tab.
+  return [...new Set([...ERA_PRESENTATION[state.eraId].editorTabs, ...extra])];
 }
 
 export function buildEditorTabs(state: GameState): EditorTabs {
