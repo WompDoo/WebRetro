@@ -52,8 +52,13 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   the bottom: 2005 shows the ads after the posts and the shoutbox after the comments; 2011 shows sharing after the
   posts and the sign-in box after the comments. Pure CSS: the markup is the same at every width, so the phone view
   and resizing just work. 1997 keeps the menu on top and moves the sidebar widgets after the content.
-- **The 2011 one-pager is a carousel**, full width under the hero: big chapters that snap into place sideways.
-  A click moves to the next chapter (a mouse wheel can't scroll sideways) and the dots follow.
+- **The 2011 one-pager takes over the page's scrolling**, full width under the hero. The section is as tall as
+  the scrolling it eats; inside it, a band as tall as the screen sticks while the page's scrollTop slides the
+  chapters sideways. The page sets the pace: one chapter per gesture, each step animated in 700 ms, whatever the
+  reader does. A wheel gesture is caught before it scrolls (`preventDefault`, and the rest of a trackpad's coasting
+  is swallowed); anything else (a drag or fling in phone view, the scrollbar, the keyboard) is held to one chapter
+  per gesture as it scrolls, and a page left between chapters settles on the nearer one. Only after the last
+  chapter does the page move on. The rules are pure (`scroll-jack.ts`, tested); `story-chapters.ts` drives them.
 
 ## The performance indicator (from 2005 on)
 
@@ -137,8 +142,9 @@ memcached, a CDN and a static page cache as server boosts.
   - *Learn jQuery Masonry*: photo albums tile like bricks; album traffic ×1.6.
   - *Learn parallax scrolling*: a layered landscape in the hero drifts slower than the page (a scroll listener sets
     `--site-scroll`; CSS moves the layers with `transform`); all traffic ×1.08 for 450 KB of background images.
-  - *Scroll-jacking one-pager*: a switchable 2011 feature (needs parallax). A full-width carousel of big chapters
-    that snap into place, "Site of the Day" awards, and 900 KB that phones feel in their load time and mobile score.
+  - *Scroll-jacking one-pager*: a switchable 2011 feature (needs parallax). Big screen-filling chapters that slide
+    past sideways while the page refuses to scroll on, one chapter per flick however hard you scroll, "Site of the
+    Day" awards, and 900 KB that phones feel in their load time and mobile score.
   - *Serve @2x images*: until you do, photos are blurry on phones (the phone view and real phones show it;
     desktops never notice). All traffic ×1.05 for 300 KB more.
   - *"Get our app!" banner* (a boost): ad value ×1.2, all traffic ×0.97.

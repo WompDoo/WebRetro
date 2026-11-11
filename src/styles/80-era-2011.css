@@ -102,7 +102,7 @@
   .site-2011.is-responsive [data-feature="map-mashup"] { order: 10; }
   .site-2011.is-responsive [data-feature="midi-player"] { order: 11; }
   .site-2011.is-responsive .bs-story { margin: 12px 12px 0; }
-  .site-2011.is-responsive .one-pager { grid-auto-columns: 86%; }
+  .site-2011.is-responsive .one-pager { --scroll-per-chapter: 260px; }
   .site-2011.is-responsive .bs-hero { margin: 12px 12px 0; padding: 20px; }
   .site-2011.is-responsive .bs-row { padding: 12px; }
   .site-2011.is-responsive .bs-footer { margin-inline: 12px; }
@@ -220,30 +220,34 @@
 }
 [data-device="phone"] .site-2011:not(.has-retina) .thumb, [data-device="phone"] .site-2011:not(.has-retina) .one-pager-chapter { filter: blur(1.4px); }
 
-/* The scroll-jacking one-pager: a carousel of big chapters under the hero, snapping into place one at a time. */
+/*
+ * The scroll-jacking one-pager. The section is as tall as the scrolling it takes over: a band as tall as the screen
+ * sticks to the top while the page scrolls past, and story-chapters.ts turns that scrolling into a sideways slide.
+ * Sticky needs every ancestor up to the scrolling page to leave overflow alone.
+ */
 .bs-story { margin: 20px 20px 0; }
 .bs-story .feature-block { overflow: visible; }
-.one-pager {
-  display: grid; grid-auto-flow: column; grid-auto-columns: 62%; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory; scrollbar-width: none; border-radius: 6px;
-}
-.one-pager::-webkit-scrollbar { display: none; }
+/* The band fills the screen while it holds the page, the way these sites did. The fallback is for before the script runs. */
+.one-pager { --pin-height: var(--site-viewport-height, 280px); --scroll-per-chapter: 320px; height: calc(var(--pin-height) + (var(--chapters, 1) - 1) * var(--scroll-per-chapter)); }
+.one-pager-pin { position: sticky; top: 0; height: var(--pin-height); overflow: hidden; border-radius: 6px; }
+.one-pager-track { display: flex; height: 100%; will-change: transform; }
 .one-pager-chapter {
-  scroll-snap-align: start; position: relative; display: grid; align-content: end; justify-items: start; gap: 4px; min-height: 200px; padding: 22px 24px;
-  border-radius: 6px; color: #FFFFFF; background: linear-gradient(135deg, #1F2A44, #3A506B);
+  flex: 0 0 100%; position: relative; display: grid; align-content: center; justify-items: start; gap: 4px;
+  height: 100%; padding: 22px 28px; color: #FFFFFF; background: linear-gradient(135deg, #1F2A44, #3A506B); cursor: pointer;
 }
 .one-pager-chapter--1 { background: linear-gradient(135deg, #5B2A86, #A44A9F); }
 .one-pager-chapter--2 { background: linear-gradient(135deg, #B23A48, #F28F3B); }
 .one-pager-chapter--3 { background: linear-gradient(135deg, #0B6E4F, #43AA8B); }
 .one-pager-chapter--4 { background: linear-gradient(135deg, #1D3557, #457B9D); }
-.one-pager-number { font: 200 40px/1 'Helvetica Neue', Helvetica, Arial, sans-serif; opacity: 0.6; }
-.one-pager-chapter h3 { margin: 0; font-size: 26px; font-weight: 200; letter-spacing: -0.5px; line-height: 1.15; }
-.one-pager-scroll { position: absolute; top: 18px; right: 20px; font-size: 18px; opacity: 0.8; animation: one-pager-nudge 1.4s ease-in-out infinite; }
+.one-pager-number { font: 200 42px/1 'Helvetica Neue', Helvetica, Arial, sans-serif; opacity: 0.6; }
+.one-pager-chapter h3 { margin: 0; font-size: 28px; font-weight: 200; letter-spacing: -0.5px; line-height: 1.15; }
+/* "Scroll ↓" on a band that moves sideways: that's the joke. */
+.one-pager-scroll { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: 0.8; animation: one-pager-nudge 1.4s ease-in-out infinite; }
 .one-pager-chapter:last-child .one-pager-scroll { display: none; }
-@keyframes one-pager-nudge { 50% { transform: translateX(4px); } }
-.one-pager-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
-.one-pager-dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid #999999; }
-.one-pager-dots i.is-current { background: #999999; }
+@keyframes one-pager-nudge { 50% { transform: translate(-50%, 4px); } }
+.one-pager-dots { position: absolute; bottom: 12px; left: 50%; display: flex; gap: 6px; transform: translateX(-50%); pointer-events: none; }
+.one-pager-dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid #FFFFFF; }
+.one-pager-dots i.is-current { background: #FFFFFF; }
 
 /* "Get our app!": the smart banner across the top. */
 .bs-app-banner { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: linear-gradient(#F4F4F4, #DADADA); border-bottom: 1px solid #B4B4B4; color: #333333; font-size: 12px; }

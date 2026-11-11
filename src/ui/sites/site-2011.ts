@@ -75,7 +75,7 @@ function renderSignInSidebar(context: SiteContext): string {
   return ownedFeatures(context, ACCOUNT_FEATURES).length > 0 ? renderSignInBox(context) : '';
 }
 
-/** The one-pager's chapters get the full width under the hero, as a carousel: the 2011 way to tell a story. */
+/** The one-pager gets the full width under the hero, where it can take over the page's scrolling. */
 function renderStoryBand(context: SiteContext): string {
   const story = renderFeatureBlocks(context, ['one-pager']).join('');
   return story === '' ? '' : `<div class="bs-story">${story}</div>`;
