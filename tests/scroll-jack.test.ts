@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { calculateStoryProgress, clampToGesture, createStoryZone, easeInOut, findJackedStop, findSettleStop } from '../src/ui/scroll-jack';
+import { calculateStoryProgress, clampToGesture, createStoryZone, easeInOut, findJackedStop, findSettleStop, placeReader } from '../src/ui/scroll-jack';
 
 const START = 500;
 const TRAVEL = 1_200;
@@ -62,6 +62,25 @@ describe('scroll-jacking', () => {
     assert.equal(findSettleStop(START + STEP, zone), null);
     assert.equal(findSettleStop(START - 40, zone), null);
     assert.equal(findSettleStop(START + TRAVEL + 40, zone), null);
+  });
+
+  it('keeps the reader before the story where they are when its layout changes', () => {
+    const place = placeReader(START - 200, { top: START, height: 2_000 }, 0);
+    assert.equal(place.kind, 'before');
+    assert.equal(place.findTop(START - 200, { top: START, height: 280 }, createStoryZone(START, 0, CHAPTERS, VIEWPORT)), START - 200);
+  });
+
+  it('keeps a reader in the story on their chapter: its stop when scrolling, the band when not', () => {
+    const place = placeReader(START + 2 * STEP, { top: START, height: 2_000 }, 2);
+    assert.equal(place.kind, 'in-story');
+    assert.equal(place.findTop(START + 2 * STEP, { top: START, height: 280 }, createStoryZone(START, 0, CHAPTERS, VIEWPORT)), START);
+    assert.equal(place.findTop(START + 100, { top: START, height: 2_000 }, zone), START + 2 * STEP);
+  });
+
+  it('keeps what comes after the story where it was on screen for a reader past it', () => {
+    const place = placeReader(START + 2_100, { top: START, height: 2_000 }, CHAPTERS - 1);
+    assert.equal(place.kind, 'after');
+    assert.equal(place.findTop(START + 2_100, { top: START, height: 280 }, createStoryZone(START, 0, CHAPTERS, VIEWPORT)), START + 280 + 100);
   });
 
   it('tracks progress from the first chapter to the last, clamped outside', () => {

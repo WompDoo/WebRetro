@@ -4,7 +4,7 @@ import { createActionHandlers, createClickHandler, createKeydownHandler, writeCo
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, minigameElements } from './elements';
 import { installJavaScriptEffects } from './javascript-effects';
-import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readPlaytestFlag, restoreGame, writeSave } from './persistence';
+import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readPlaytestFlag, restoreGame, restorePreferences, writeSave } from './persistence';
 import { createTapCounter, isPlaytestRequested } from './playtest';
 import { installPhoneSwipe } from './phone-swipe';
 import { installScrollDepth } from './scroll-depth';
@@ -64,6 +64,7 @@ function saveWhenHidden(): void {
 
 function start(hotData: unknown): void {
   restoreGame(hotData);
+  restorePreferences();
   store.mobileTab = pickStartingMobileTab(store.game);
   const editor = createCodeEditor(editorElements, writeCodeKeystroke);
   const minigame = createMinigameModal(minigameElements, {

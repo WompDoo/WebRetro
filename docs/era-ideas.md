@@ -59,6 +59,12 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   is swallowed); anything else (a drag or fling in phone view, the scrollbar, the keyboard) is held to one chapter
   per gesture as it scrolls, and a page left between chapters settles on the nearer one. Only after the last
   chapter does the page move on. The rules are pure (`scroll-jack.ts`, tested); `story-chapters.ts` drives them.
+- **Scroll-jacking has an off switch** (it's funny twice). Under the one-pager in the shop, next to the feature's
+  own On/Off: off, the story stays and earns the same, as a band in the page's flow that a click reads on. It's
+  the player's comfort, not a trade-off, so it lives outside the game: a `localStorage` preference that a new game,
+  a reload or a playtest jump keeps, mirrored on `#site` as `data-scroll-jacking` for the CSS and the script.
+  Flipping it keeps the reader's place (the browser can't: it doesn't anchor scrolling across a change from
+  sticky): mid-story you stay on your chapter, below the story what's on screen stays put.
 
 ## The performance indicator (from 2005 on)
 
