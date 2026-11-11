@@ -21,6 +21,8 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'activity-feed': svg('<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="1.5"/>'),
   // A tall page with an arrow pulling you down it.
   'one-pager': svg('<rect x="6" y="2" width="12" height="20" rx="1"/><path d="M12 7v8M9 12l3 3 3-3"/>'),
+  // A person and an arrow going in: join with an account you already have.
+  'social-login': svg('<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 9h6M18 6l3 3-3 3"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {

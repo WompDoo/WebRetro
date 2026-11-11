@@ -16,7 +16,8 @@ export type FeatureId =
   | 'share-buttons'
   | 'video-player'
   | 'activity-feed'
-  | 'one-pager';
+  | 'one-pager'
+  | 'social-login';
 
 export type UpgradeId =
   | 'img-tag'
@@ -78,7 +79,12 @@ export type UpgradeId =
   | 'learn-masonry'
   | 'parallax-scrolling'
   | 'retina-images'
-  | 'app-banner';
+  | 'app-banner'
+  | 'learn-rest-apis'
+  | 'learn-sass'
+  | 'mongodb'
+  | 'git-push-deploys'
+  | 'autoscaling';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 export type UpgradeKind = 'skill' | 'boost';

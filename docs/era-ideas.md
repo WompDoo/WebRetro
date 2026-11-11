@@ -95,7 +95,7 @@ memcached, a CDN and a static page cache as server boosts.
 
 **Built (the core):**
 - The relaunch story ("Everyone has a phone now"), the checklist (every 2011 feature, Like and share buttons
-  level 15, 800M visitors/s, $450B) and the new ending: 2011 is the last era of the prototype for now.
+  level 15, 1B visitors/s, $550B) and the new ending: 2011 is the last era of the prototype for now.
 - **Phones:** four in ten visitors are on a phone, and three in four of them leave until you learn responsive
   design. The browser's Phone switch shows them the page: shrunk from desktop width, then fitting.
 - **Retired at the relaunch:** the hit counter, the beta sticker, the blogroll, the tag cloud and the Flash intro.
@@ -123,13 +123,17 @@ memcached, a CDN and a static page cache as server boosts.
   - *Serve @2x images*: until you do, photos are blurry on phones (the phone view and real phones show it;
     desktops never notice). All traffic ×1.05 for 300 KB more.
   - *"Get our app!" banner* (a boost): ad value ×1.2, all traffic ×0.97.
+- **Backend:**
+  - *Learn REST and JSON APIs* (skill): `/api/posts.json` in server.js; the feed ×1.3, keystrokes ×1.3, and it
+    unlocks *Sign in with…*, a 2011 feature (Facespace and Chirper buttons, busier with every live activity;
+    the navbar offers it too).
+  - *Learn Sass* (skill): a style.scss tab compiled by Grunt on save; fewer typos, keystrokes ×1.2.
+  - Boosts: *Switch to MongoDB* ("web scale"; server load ×0.8), *Deploy with git push* (keystrokes ×1.25,
+    fewer typos), *Turn on autoscaling* (server load ×0.7).
 - **Performance:** "Grade B · Mobile 69/100" in the status bar. Pop-ups: like-gates, app banners, the first cookie
   notices, phishing through a friend's chat. The issue tracker becomes Mentions: complaints posted at you.
 
-**Still to build (the content PR):**
-- **Skeuomorphic textures** (leather, linen, stitching): parked until 2018, whose relaunch strips them away.
-- **Backend:** MongoDB ("is it web scale?"), REST and JSON APIs, `git push` deploys and autoscaling as cloud
-  boosts, "Sign in with…" buttons (parody networks), Sass and Grunt files in the editor.
+**Parked:** skeuomorphic textures (leather, linen, stitching) until 2018, whose relaunch strips them away.
 
 ## 2018 Platform
 
@@ -317,7 +321,8 @@ like viruses and DDoS have, can come later for the others.
 
 - **End goals scale with content.** Every 2011 batch reruns the sim and moves the goals so the era keeps its length:
   the looks batch added multipliers and a feature, and 2011 dropped to 9.5–11.4 minutes, so the goals went from
-  500M visitors/s and $250B to 800M and $450B (back to 10.7–12.8). "Every 2011 feature" grows on its own.
+  500M visitors/s and $250B to 800M and $450B (back to 10.7–12.8); the backend batch, to 1B and $550B
+  (10.8–12.3). "Every 2011 feature" grows on its own.
 - **2011 pacing:** 11–13 minutes for the scripted players, like the other eras. Retiring the tag cloud and the
   Flash intro took their traffic away (relaxed 12 → 17 minutes); the 2011 features bring half as much again
   (share buttons 750K, video 2.25M, activity feed 6M visitors/s per level) to win it back. The visitor gate
