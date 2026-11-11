@@ -41,8 +41,8 @@ const BASE_LANES = 3;
 const LANES_PER_DIFFICULTY = 1;
 const CROSSINGS_PER_DIFFICULTY = 1;
 /** Cells per second, before difficulty. */
-const SPEED_RANGE: readonly [number, number] = [1.0, 2.0];
-const SPEEDUP_PER_DIFFICULTY = 0.15;
+const SPEED_RANGE: readonly [number, number] = [0.6, 1.2];
+const SPEEDUP_PER_DIFFICULTY = 0.1;
 const SHORT_BOT = 1;
 /**
  * Your connection is this wide, in cells, centred in its cell. It is drawn exactly this size too: a bot only

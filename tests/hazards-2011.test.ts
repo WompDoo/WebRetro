@@ -239,6 +239,14 @@ describe('Cross the traffic', () => {
     assert.ok(isCrossTrafficHit(withBotAt(packetRight - 0.01)), 'a bot touching the packet');
   });
 
+  it('keeps the bots slow enough to read: never faster than a cell and a half a second, even at its hardest', () => {
+    const fastestCellsPerSecond = 1.5;
+    [SEED, 7, 1234, 99].forEach((seed) => {
+      const speeds = createCrossTrafficGame(3, seed).lanes.map((lane) => Math.abs(lane.velocity) * 1_000);
+      assert.ok(Math.max(...speeds) <= fastestCellsPerSecond, `seed ${seed}: ${Math.max(...speeds).toFixed(2)} cells/s`);
+    });
+  });
+
   it('gets harder: more lanes, faster bots, more crossings', () => {
     const easy = createCrossTrafficGame(1, SEED);
     const hard = createCrossTrafficGame(3, SEED);
