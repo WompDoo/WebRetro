@@ -9,6 +9,10 @@ import {
   createInitialGameState,
   ERAS_BY_ID,
   advanceEra,
+  advanceSimulation,
+  creditFeatureEarnings,
+  formatMoney,
+  RETIREMENT_PAYOUT_SHARE,
   formatPercent,
   getFeaturesRetiringIn,
   getRetiredFeatureName,
@@ -18,6 +22,9 @@ import {
   isFeatureRetired,
 } from '../src/engine';
 import type { GameState, UpgradeId } from '../src/engine';
+import { listIssues } from '../src/ui/issues';
+import { MAX_PHONE_NOTIFICATIONS, renderPhoneNotifications } from '../src/ui/render-notifications';
+import { describeRetirement } from '../src/ui/retirement';
 import { buildEditorSource } from '../src/ui/skill-code';
 import { buildPhoneCaption, calculateMobileScore, gradePageSpeed, isPhoneViewOffered, resolveDeviceView } from '../src/ui/browser-chrome';
 
@@ -63,6 +70,16 @@ describe('2011: phones', () => {
     assert.ok(buildPhoneCaption(in2011(), 1).detail.includes(`${leaving} of them give up`));
     assert.equal(buildPhoneCaption(in2011(['responsive-design']), 1).headline, 'Fits on phones');
     assert.ok(buildPhoneCaption(in2011(['responsive-design']), 1).detail.includes(`Mobile score ${calculateMobileScore(in2011(['responsive-design']), 1)}/100`));
+  });
+
+  it('shows infections as tappable phone notifications, a few at a time, and nothing when all is well', () => {
+    const extra = 2;
+    const infections = Array.from({ length: MAX_PHONE_NOTIFICATIONS + extra }, (_, index) => ({ id: index + 1, kind: 'virus' as const, featureId: 'blog' as const, ageMs: 0, minigameId: 'snake' as const }));
+    const html = renderPhoneNotifications(listIssues({ ...in2011(), infections }), 'Mentions');
+    assert.equal(html.split('class="phone-notification"').length - 1, MAX_PHONE_NOTIFICATIONS);
+    assert.ok(html.includes('data-action="open-minigame" data-id="1"'));
+    assert.ok(html.includes(`${extra} more in Mentions`));
+    assert.equal(renderPhoneNotifications(listIssues(in2011()), 'Mentions'), '');
   });
 
   it('grades page speed A to F', () => {
@@ -134,6 +151,51 @@ describe('2011: sunsetting what went out of fashion', () => {
     const relaunched = advanceEra(finished2005);
     assert.equal(relaunched.eraId, 'social-2011');
     assert.equal(relaunched.infections.length, 0);
+  });
+});
+
+describe('2011: a trade-in for what retires', () => {
+  const in2005: GameState = { ...base, eraId: 'web2-2005', hazardCountdownsMs: QUIET_HAZARDS, purchasedUpgradeIds: ['learn-php', 'learn-rss'], featureLevels: { ...base.featureLevels, blog: 10, 'tag-cloud': 5 } };
+  const sum = (values: readonly number[]): number => values.reduce((total, value) => total + value, 0);
+
+  it('credits visitor revenue to the features that brought the visitors, by how many each brought', () => {
+    const credited = creditFeatureEarnings(in2005, 100);
+    const blogShare = calculateFeatureVisitorsPerSecond(in2005, 'blog') / (calculateFeatureVisitorsPerSecond(in2005, 'blog') + calculateFeatureVisitorsPerSecond(in2005, 'tag-cloud'));
+    assert.ok(Math.abs(credited.blog - 100 * blogShare) < 1e-9);
+    assert.ok(Math.abs(sum(Object.values(credited)) - 100) < 1e-9);
+    assert.equal(credited.guestbook, 0);
+  });
+
+  it('credits nothing when the site loses money', () => {
+    assert.deepEqual(creditFeatureEarnings(in2005, -50), in2005.featureEarnings);
+  });
+
+  it('keeps the tally as the game runs: every dollar visitors bring is some feature’s', () => {
+    const after = advanceSimulation(in2005, 10_000, 'offline').state;
+    assert.ok(Math.abs(sum(Object.values(after.featureEarnings)) - (after.lifetimeEarnings - in2005.lifetimeEarnings)) < 1e-6);
+  });
+
+  it('pays back a share of what the retiring features earned at the relaunch, and nothing for the rest', () => {
+    const everyFeatureBuilt = Object.fromEntries(Object.keys(base.featureLevels).map((featureId) => [featureId, 30])) as GameState['featureLevels'];
+    const finished2005: GameState = {
+      ...base,
+      eraId: 'web2-2005',
+      hostingTier: 9,
+      money: 2e9,
+      featureLevels: { ...everyFeatureBuilt, 'share-buttons': 0, 'video-player': 0, 'activity-feed': 0 },
+      featureEarnings: { ...base.featureEarnings, 'tag-cloud': 1e8, webring: 2e7, blog: 5e9 },
+    };
+    const relaunched = advanceEra(finished2005);
+    const tradeIn = (1e8 + 2e7) * RETIREMENT_PAYOUT_SHARE;
+    assert.equal(relaunched.money, finished2005.money - ERAS_BY_ID['web2-2005'].migrationCost + tradeIn);
+    const news = describeRetirement(finished2005, 'social-2011');
+    assert.ok(news.includes('Blogroll'), news);
+    assert.ok(news.includes(`Trade-in: ${formatMoney(tradeIn)} (50% of what they earned).`), news);
+  });
+
+  it('pays nothing when nothing retires: 2005 retired nothing from 1997', () => {
+    const finished1997: GameState = { ...base, money: 1e6, featureEarnings: { ...base.featureEarnings, 'hit-counter': 1e5 } };
+    assert.equal(describeRetirement(finished1997, 'web2-2005'), '');
   });
 });
 

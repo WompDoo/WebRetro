@@ -267,6 +267,11 @@ export interface GameState {
   readonly keystrokes: number;
   readonly hasPendingBug: boolean;
   readonly featureLevels: Readonly<Record<FeatureId, number>>;
+  /**
+   * What each feature has earned so far: visitor revenue, split by the visitors each one brings in.
+   * When a feature retires, the relaunch pays back a share of it.
+   */
+  readonly featureEarnings: Readonly<Record<FeatureId, number>>;
   readonly adCount: number;
   readonly purchasedUpgradeIds: readonly UpgradeId[];
   /** Built features the player has switched off. They keep their levels. */

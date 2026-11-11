@@ -14,6 +14,7 @@ import {
   getNextHostingTier,
   isEraUnlocked,
   isFeatureBuildable,
+  calculateRetirementPayout,
   isFeatureRetired,
   isUpgradeAvailable,
 } from './economy';
@@ -229,11 +230,15 @@ function enterEra(state: GameState, eraId: EraId): GameState {
   };
 }
 
+/** The relaunch pays for itself, and pays back a share of what the retiring features earned. */
+function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): GameState {
+  const payout = calculateRetirementPayout(state, nextEraId);
+  return earn(enterEra(spend(state, migrationCost), nextEraId), payout);
+}
+
 /** Moving to the next era is always the player's choice. It never happens on its own, even offline. */
 export function advanceEra(state: GameState): GameState {
   if (!isEraGateComplete(state)) return state;
   const era = ERAS_BY_ID[state.eraId];
-  return era.nextEraId === null
-    ? { ...state, prototypeComplete: true }
-    : enterEra(spend(state, era.migrationCost), era.nextEraId);
+  return era.nextEraId === null ? { ...state, prototypeComplete: true } : relaunch(state, era.migrationCost, era.nextEraId);
 }

@@ -28,10 +28,15 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   feature): it leaves the page and the shop, brings no visitors and adds no page weight. The relaunch story
   lists what goes, by the name the player knew it, and the Build tab keeps a "Retired" list. This keeps
   pages from filling up with dead trends and doubles as balance: old traffic makes way for the new era's.
+  **Trade-in:** the relaunch pays back half of what the retiring features earned in their lifetime. Every
+  feature keeps a tally (`featureEarnings`): visitor revenue, split by the visitors each feature brings in.
+  In 2011 that is $160–200M, about half the price of Bootstrap: a head start, not a shortcut.
 - **The phone follows the era.** From the first era with phone visitors, the browser has a Desktop/Phone
   switch. Phone view draws the real page on a phone of the era (2011: black glass slab, round home button):
   laid out at desktop width and shrunk until the page is responsive, reflowed after. Later eras restyle the
-  phone (`[data-era] .device-frame`), not the mechanism.
+  phone (`[data-era] .device-frame`), not the mechanism. On the phone, pop-ups fill the screen (interstitials)
+  and infections arrive as notification banners at the phone's own size, so they can be tapped even when
+  the page is shrunk; tapping one opens its minigame. Banners sit above the pop-ups, never over their ×.
 - **Real company names stay out of the game.** Technologies are fine (PHP, React); companies get
   parody names ("Sign in with Facespace").
 

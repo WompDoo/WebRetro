@@ -16,6 +16,7 @@ export const elements = {
   browserViewport: requireElement<HTMLElement>('#browser-viewport'),
   deviceSwitch: requireElement<HTMLElement>('#device-switch'),
   deviceCaption: requireElement<HTMLElement>('#device-caption'),
+  deviceNotifications: requireElement<HTMLElement>('#device-notifications'),
   site: requireElement<HTMLElement>('#site'),
   popupLayer: requireElement<HTMLElement>('#popup-layer'),
   eraWipe: requireElement<HTMLElement>('#era-wipe'),

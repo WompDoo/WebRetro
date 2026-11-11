@@ -1,6 +1,6 @@
 /* ---------- Pop-ups ---------- */
 .popup-layer { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
-.popup { position: absolute; width: min(280px, 88%); pointer-events: auto; animation: popup-in 160ms ease-out; }
+.popup { position: absolute; left: var(--popup-left); top: var(--popup-top); width: min(280px, 88%); pointer-events: auto; animation: popup-in 160ms ease-out; }
 @keyframes popup-in { from { transform: scale(0.85); opacity: 0; } }
 .popup-titlebar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 3px 3px 8px; font-size: 12px; font-weight: 700; }
 .popup-close { width: 24px; height: 22px; padding: 0; font-weight: 700; line-height: 1; cursor: pointer; }

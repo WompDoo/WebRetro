@@ -31,6 +31,7 @@ import {
   getUnlockedFeatureIds,
   isEraUnlocked,
   isFeatureBuildable,
+  calculateTradeIn,
   getRetiredFeatureName,
   isFeatureRetired,
   isFeatureSwitchedOff,
@@ -40,6 +41,7 @@ import {
 import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
+import { describeTradeIn } from './retirement';
 import { AD_ICON, CODE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
 export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security';
@@ -141,7 +143,7 @@ function renderRetiredFeatures(state: GameState): string {
   const retired = FEATURE_IDS.filter((featureId) => state.featureLevels[featureId] > 0 && isFeatureRetired(state, featureId));
   if (retired.length === 0) return '';
   const items = retired.map((featureId) => `<span class="visited-item">${escapeHtml(getRetiredFeatureName(featureId))}</span>`).join('');
-  return `<h3 class="shop-group-title">Retired: out of fashion</h3><p class="visited-list">${items}</p>`;
+  return `<h3 class="shop-group-title">Retired: out of fashion</h3><p class="visited-list">${items}</p><p class="shop-note">${escapeHtml(describeTradeIn(calculateTradeIn(state, retired)))}</p>`;
 }
 
 function renderBuildTab(state: GameState, view: ShopView): string {

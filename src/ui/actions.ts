@@ -23,13 +23,14 @@ import { DEVICE_VIEWS } from './browser-chrome';
 import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
 import { elements } from './elements';
-import { describeRetiring, hideOverlay, renderStory, showOverlay } from './overlays';
+import { hideOverlay, renderStory, showOverlay } from './overlays';
 import { clearSave } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
 import { createPlaytestHandlers } from './playtest-actions';
 import { flashMoneyLoss } from './renderer';
+import { describeRetirement } from './retirement';
 import type { Renderer } from './renderer';
 import type { MinigameModal } from './minigames/minigame-modal';
 import { MOBILE_TABS, pushMessage, startNewGame, store, updateGame } from './store';
@@ -104,9 +105,10 @@ function runEraWipe(): void {
   elements.eraWipe.classList.add('is-running');
   window.setTimeout(() => {
     const nextEraId = ERAS_BY_ID[store.game.eraId].nextEraId;
-    const retiring = nextEraId === null ? '' : describeRetiring(store.game, nextEraId);
+    // Said before the relaunch: afterwards the retired features are gone and their trade-in is paid.
+    const retirement = nextEraId === null ? '' : describeRetirement(store.game, nextEraId);
     updateGame(advanceEra);
-    pushMessage(`Relaunched as ${ERAS_BY_ID[store.game.eraId].name}. Your old features got a makeover.${retiring === '' ? '' : ` Retired: ${retiring}.`}`);
+    pushMessage(`Relaunched as ${ERAS_BY_ID[store.game.eraId].name}. Your old features got a makeover. ${retirement}`.trim());
   }, WIPE_SWAP_DELAY_MS);
   window.setTimeout(() => elements.eraWipe.classList.remove('is-running'), WIPE_DURATION_MS);
 }

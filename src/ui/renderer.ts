@@ -24,6 +24,7 @@ import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs
 import { listIssues } from './issues';
 import type { Issue } from './issues';
 import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './render-issues';
+import { renderPhoneNotifications } from './render-notifications';
 import { buildEditorSource } from './skill-code';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countUnreadNews, markNewsRead, MOBILE_TABS, store } from './store';
@@ -94,9 +95,12 @@ function renderBrowserStatus(editor: CodeEditor): void {
  * The Desktop/Phone switch. The phone shows the real page: zoomed out to desktop width until it is
  * responsive, reflowed to the phone's width after. CSS does the drawing; this sets which one.
  */
-function renderDeviceView(): void {
+function renderDeviceView(issues: readonly Issue[]): void {
   const view = resolveDeviceView(store.game, store.deviceView);
-  elements.deviceSwitch.hidden = !isPhoneViewOffered(store.game);
+  const isOffered = isPhoneViewOffered(store.game);
+  elements.deviceSwitch.hidden = !isOffered;
+  // Only eras with a phone build its notifications; before that there is no phone to show them on.
+  setHtmlIfChanged(elements.deviceNotifications, isOffered ? renderPhoneNotifications(issues, issuePanelTitle(store.game.eraId)) : '');
   elements.browserViewport.dataset['device'] = view;
   elements.browserViewport.dataset['fitsPhone'] = String(isMobileFriendly(store.game));
   elements.deviceSwitch.querySelectorAll<HTMLElement>('[data-action="device-view"]').forEach((button) => {
@@ -238,7 +242,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
       elements.issueList.innerHTML = renderIssueList(issues, store.game, Date.now());
     });
     renderWhenChanged('news', store.news.map((item) => item.id).join(','), renderNewsList);
-    renderDeviceView();
+    renderDeviceView(issues);
     renderMobileChrome();
     showEndCardOnce();
   };

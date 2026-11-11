@@ -150,6 +150,31 @@ export function getFeaturesRetiringIn(state: GameState, eraId: EraId): readonly 
 }
 
 /**
+ * The trade-in for a retired feature: this share of everything it earned while it was on the page.
+ * Half of what the 2011 retirees earned is about half the price of Bootstrap: a head start, not a shortcut.
+ */
+export const RETIREMENT_PAYOUT_SHARE = 0.5;
+
+/** The trade-in for these features. */
+export function calculateTradeIn(state: GameState, featureIds: readonly FeatureId[]): number {
+  return sumAll(featureIds.map((featureId) => state.featureEarnings[featureId])) * RETIREMENT_PAYOUT_SHARE;
+}
+
+/** What a relaunch into this era pays back for the features it retires. */
+export function calculateRetirementPayout(state: GameState, eraId: EraId): number {
+  return calculateTradeIn(state, getFeaturesRetiringIn(state, eraId));
+}
+
+/** Credits visitor revenue to the features that brought the visitors, in proportion to how many each brought. */
+export function creditFeatureEarnings(state: GameState, earned: number): Readonly<Record<FeatureId, number>> {
+  const traffic = FEATURE_IDS.map((featureId) => ({ featureId, visitorsPerSecond: calculateFeatureVisitorsPerSecond(state, featureId) }));
+  const totalVisitors = sumAll(traffic.map(({ visitorsPerSecond }) => visitorsPerSecond));
+  const earnedPerVisitor = totalVisitors > 0 ? Math.max(0, earned) / totalVisitors : 0;
+  const credited = traffic.map(({ featureId, visitorsPerSecond }) => [featureId, state.featureEarnings[featureId] + visitorsPerSecond * earnedPerVisitor]);
+  return Object.fromEntries(credited) as Record<FeatureId, number>;
+}
+
+/**
  * The name a feature went by in its last era on the page, so the retired list says what players saw go.
  * A feature that never retires keeps the name from its own era.
  */

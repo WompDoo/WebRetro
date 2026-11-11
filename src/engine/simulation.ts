@@ -1,5 +1,5 @@
 import { MS_PER_SECOND } from './constants';
-import { calculateNetRevenuePerSecond, calculateVisitorsPerSecond } from './economy';
+import { calculateNetRevenuePerSecond, calculateVisitorsPerSecond, creditFeatureEarnings } from './economy';
 import { advanceHazards } from './hazards';
 import { checkMilestones } from './milestones';
 import type { GameState, GameStep, SimulationMode } from './types';
@@ -11,6 +11,7 @@ function applyProduction(state: GameState, deltaMs: number): GameState {
     ...state,
     money: state.money + earned,
     lifetimeEarnings: state.lifetimeEarnings + earned,
+    featureEarnings: creditFeatureEarnings(state, earned),
     lifetimeVisitors: state.lifetimeVisitors + calculateVisitorsPerSecond(state) * seconds,
   };
 }

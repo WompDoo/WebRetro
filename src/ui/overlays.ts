@@ -1,8 +1,9 @@
-import { ERAS_BY_ID, formatMoney, formatWholeNumber, getFeaturesRetiringIn, getRetiredFeatureName } from '../engine';
+import { calculateRetirementPayout, ERAS_BY_ID, formatMoney, formatWholeNumber } from '../engine';
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { elements } from './elements';
 import { ERA_PRESENTATION } from './presentation';
+import { describeRetiring, describeTradeIn } from './retirement';
 
 const MS_PER_MINUTE = 60_000;
 
@@ -18,13 +19,10 @@ export function hideOverlay(overlay: HTMLElement): void {
 
 /** Fills the relaunch story for the next era. False in the final era, which has no story to tell. */
 /** The names your retiring features go by now, for the story and the news. */
-export function describeRetiring(state: GameState, eraId: EraId): string {
-  return getFeaturesRetiringIn(state, eraId).map(getRetiredFeatureName).join(', ');
-}
-
 function renderRetiring(state: GameState, eraId: EraId): string {
   const names = describeRetiring(state, eraId);
-  return names === '' ? '' : `<p class="story-retiring"><b>Retiring from your site:</b> ${escapeHtml(names)}</p>`;
+  const tradeIn = describeTradeIn(calculateRetirementPayout(state, eraId));
+  return names === '' ? '' : `<p class="story-retiring"><b>Retiring from your site:</b> ${escapeHtml(names)}. ${escapeHtml(tradeIn)}</p>`;
 }
 
 export function renderStory(state: GameState): boolean {

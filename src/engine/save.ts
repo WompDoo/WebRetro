@@ -40,6 +40,7 @@ export function restoreGameState(value: unknown, fallbackSeed: number): GameStat
     ...restored,
     // Features added since the save was made start at level 0.
     featureLevels: { ...initial.featureLevels, ...restored.featureLevels },
+    featureEarnings: { ...initial.featureEarnings, ...restored.featureEarnings },
     infections: restored.infections.map(withMinigame),
     purchasedUpgradeIds: restored.purchasedUpgradeIds.filter(isKnownUpgrade),
   };
