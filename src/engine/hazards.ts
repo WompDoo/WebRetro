@@ -9,7 +9,7 @@ import {
 } from './constants';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
-import { getEnabledDefenses, hasTrafficSpikeCache, isFeatureInfected } from './economy';
+import { getEnabledDefenses, hasTrafficSpikeCache, isFeatureInfected, isFeatureOnPage } from './economy';
 import { drawRandoms, interpolateRange } from './random';
 import type {
   FeatureId,
@@ -46,9 +46,7 @@ function countInfections(state: GameState, kind: InfectionKind): number {
 }
 
 function findInfectableFeatureIds(state: GameState): readonly FeatureId[] {
-  return FEATURE_IDS.filter(
-    (featureId) => state.featureLevels[featureId] > 0 && !isFeatureInfected(state, featureId),
-  );
+  return FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId) && !isFeatureInfected(state, featureId));
 }
 
 function addInfection(state: GameState, infection: Infection): GameState {

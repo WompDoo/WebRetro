@@ -75,6 +75,8 @@ wins, and a Jekyll build of this repository is just the README.
   - `sites/`: the fake website, one layout per era, built from shared feature blocks.
   - `minigames/`: one modal shell that runs any minigame, plus a small view per game.
   - `issues.ts` and `render-issues.ts`: the issue tracker, as data and as era-styled markup.
+  - `editor-buffers.ts`: what's typed in each editor tab, pure so it can be tested; `code-editor.ts` draws it.
+  - `browser-chrome.ts`: the browser around the site: address, status bar, and the Desktop/Phone switch.
 - `src/styles/95-phone.css`: the phone layout (bottom tabs, sticky stats); everything above 780px is untouched by it.
 - `src/page.html`: the page markup. Styles and the game script are inlined at build time.
 - `src/styles/`: the stylesheet, one file per area. Files are joined in name order, so the number

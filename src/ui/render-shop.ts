@@ -31,6 +31,8 @@ import {
   getUnlockedFeatureIds,
   isEraUnlocked,
   isFeatureBuildable,
+  getRetiredFeatureName,
+  isFeatureRetired,
   isFeatureSwitchedOff,
   MS_PER_SECOND,
   UPGRADES_BY_ID,
@@ -134,9 +136,17 @@ function renderFeatureGroup(state: GameState, eraId: EraId, buyAmount: BuyAmount
   return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId, buyAmount)).join('')}`;
 }
 
+/** Features that went out of fashion: listed once, as history, not as things to buy. */
+function renderRetiredFeatures(state: GameState): string {
+  const retired = FEATURE_IDS.filter((featureId) => state.featureLevels[featureId] > 0 && isFeatureRetired(state, featureId));
+  if (retired.length === 0) return '';
+  const items = retired.map((featureId) => `<span class="visited-item">${escapeHtml(getRetiredFeatureName(featureId))}</span>`).join('');
+  return `<h3 class="shop-group-title">Retired: out of fashion</h3><p class="visited-list">${items}</p>`;
+}
+
 function renderBuildTab(state: GameState, view: ShopView): string {
   const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
-  return `${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view.buyAmount)).join('')}`;
+  return `${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view.buyAmount)).join('')}${renderRetiredFeatures(state)}`;
 }
 
 // ---------- Effects ----------

@@ -14,6 +14,7 @@ import {
   getNextHostingTier,
   isEraUnlocked,
   isFeatureBuildable,
+  isFeatureRetired,
   isUpgradeAvailable,
 } from './economy';
 import { isEraGateComplete } from './era-gate';
@@ -215,9 +216,17 @@ export function cleanInfection(state: GameState, infectionId: number): GameStep 
   return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }
 
-/** A relaunch: the new era's world, and the bottom of its hosting ladder. Features and skills come along. */
+/**
+ * A relaunch: the new era's world, and the bottom of its hosting ladder. Skills and features come along,
+ * except the features that went out of fashion: those retire, and so does anything wrong with them.
+ */
 function enterEra(state: GameState, eraId: EraId): GameState {
-  return { ...state, eraId, hasPendingBug: false, popups: [], hostingTier: 0 };
+  const entered: GameState = { ...state, eraId, hasPendingBug: false, popups: [], hostingTier: 0 };
+  return {
+    ...entered,
+    infections: entered.infections.filter((infection) => !isFeatureRetired(entered, infection.featureId)),
+    switchedOffFeatureIds: entered.switchedOffFeatureIds.filter((featureId) => !isFeatureRetired(entered, featureId)),
+  };
 }
 
 /** Moving to the next era is always the player's choice. It never happens on its own, even offline. */

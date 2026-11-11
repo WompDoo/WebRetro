@@ -19,9 +19,11 @@ import {
   writeCode,
 } from '../engine';
 import type { DefenseId, FeatureId, UpgradeId } from '../engine';
+import { DEVICE_VIEWS } from './browser-chrome';
+import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
 import { elements } from './elements';
-import { hideOverlay, renderStory, showOverlay } from './overlays';
+import { describeRetiring, hideOverlay, renderStory, showOverlay } from './overlays';
 import { clearSave } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
@@ -73,6 +75,10 @@ function isBuyAmount(value: string): value is `${BuyAmount}` {
   return BUY_AMOUNTS.some((amount) => String(amount) === value);
 }
 
+function isDeviceView(value: string): value is DeviceView {
+  return (DEVICE_VIEWS as readonly string[]).includes(value);
+}
+
 function isMobileTab(value: string): value is MobileTab {
   return (MOBILE_TABS as readonly string[]).includes(value);
 }
@@ -97,8 +103,10 @@ function runEraWipe(): void {
   void elements.eraWipe.offsetWidth;
   elements.eraWipe.classList.add('is-running');
   window.setTimeout(() => {
+    const nextEraId = ERAS_BY_ID[store.game.eraId].nextEraId;
+    const retiring = nextEraId === null ? '' : describeRetiring(store.game, nextEraId);
     updateGame(advanceEra);
-    pushMessage(`Relaunched as ${ERAS_BY_ID[store.game.eraId].name}. Your old features got a makeover.`);
+    pushMessage(`Relaunched as ${ERAS_BY_ID[store.game.eraId].name}. Your old features got a makeover.${retiring === '' ? '' : ` Retired: ${retiring}.`}`);
   }, WIPE_SWAP_DELAY_MS);
   window.setTimeout(() => elements.eraWipe.classList.remove('is-running'), WIPE_DURATION_MS);
 }
@@ -160,6 +168,9 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'editor-tab': (target) => {
       store.editorFile = readId(target);
     },
+    'device-view': withId(isDeviceView, (id) => {
+      store.deviceView = id;
+    }),
     'mobile-tab': withId(isMobileTab, (id) => {
       store.mobileTab = id;
     }),

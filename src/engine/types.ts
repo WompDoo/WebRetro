@@ -131,6 +131,11 @@ export interface FeatureDefinition {
    * "missing plugin" box and brings nothing, until you rebuild it with the skill named here.
    */
   readonly pluginDiesIn: { readonly eraId: EraId; readonly rebuiltWith: UpgradeId } | null;
+  /**
+   * The era in which this goes out of fashion. At that relaunch it is retired: it leaves the page and the shop,
+   * brings no visitors and adds no page weight. Keeps pages from filling up with dead web trends.
+   */
+  readonly sunsetIn: EraId | null;
 }
 
 export type UpgradeEffect =

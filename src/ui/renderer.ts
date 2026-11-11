@@ -1,5 +1,18 @@
-import { calculateEconomySnapshot, formatCompactNumber, formatMoney } from '../engine';
-import { buildBrowserTitle, buildEditorTabs, buildEditorTitle, resolveEditorFile, buildPerformanceReadout, buildSiteUrl, buildStatusText, classifyPerformance, isStatusScrolling } from './browser-chrome';
+import { calculateEconomySnapshot, formatCompactNumber, formatMoney, isMobileFriendly } from '../engine';
+import {
+  buildBrowserTitle,
+  buildEditorTabs,
+  buildEditorTitle,
+  buildPerformanceReadout,
+  buildPhoneCaption,
+  buildSiteUrl,
+  buildStatusText,
+  classifyPerformance,
+  isPhoneViewOffered,
+  isStatusScrolling,
+  resolveDeviceView,
+  resolveEditorFile,
+} from './browser-chrome';
 import type { CodeEditor } from './code-editor';
 import { escapeHtml, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { elements } from './elements';
@@ -73,13 +86,27 @@ function renderBrowserStatus(editor: CodeEditor): void {
   setTextIfChanged(elements.browserPerf, buildPerformanceReadout(store.game, economy));
   elements.browserStatusbar.dataset['performance'] = classifyPerformance(store.game, economy);
   editor.setTitle(buildEditorTitle(store.game, resolveEditorFile(store.game, store.editorFile)));
+  const caption = buildPhoneCaption(store.game, economy.loadTimeSeconds);
+  setHtmlIfChanged(elements.deviceCaption, `<b class="device-caption-title">${escapeHtml(caption.headline)}</b><span>${escapeHtml(caption.detail)}</span>`);
 }
 
-/** A new skill adds to the file being typed; picking another tab opens that file from the top. */
-function renderSkillChrome(editor: CodeEditor, file: string, isNewFile: boolean): void {
-  const source = buildEditorSource(store.game, file);
-  if (isNewFile) editor.openFile(source);
-  else editor.setSource(source);
+/**
+ * The Desktop/Phone switch. The phone shows the real page: zoomed out to desktop width until it is
+ * responsive, reflowed to the phone's width after. CSS does the drawing; this sets which one.
+ */
+function renderDeviceView(): void {
+  const view = resolveDeviceView(store.game, store.deviceView);
+  elements.deviceSwitch.hidden = !isPhoneViewOffered(store.game);
+  elements.browserViewport.dataset['device'] = view;
+  elements.browserViewport.dataset['fitsPhone'] = String(isMobileFriendly(store.game));
+  elements.deviceSwitch.querySelectorAll<HTMLElement>('[data-action="device-view"]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset['id'] === view));
+  });
+}
+
+/** A new skill adds to the file being typed; picking another tab brings that file back as it was left. */
+function renderSkillChrome(editor: CodeEditor, file: string): void {
+  editor.showFile(file, buildEditorSource(store.game, file));
   const tabs = buildEditorTabs(store.game);
   editor.setTabs(tabs.files, tabs.hiddenCount, file);
   setTextIfChanged(elements.browserUrl, buildSiteUrl(store.game));
@@ -168,7 +195,6 @@ export function createRenderer(editor: CodeEditor): Renderer {
   let hasRenderedSite = false;
   let endCardShown = store.game.prototypeComplete;
   let lastSlowRenderAt = 0;
-  let openedFile = '';
 
   /** Runs render only when the signature moved since last time. */
   const renderWhenChanged = (key: SignatureKey, signature: string, render: () => void): void => {
@@ -198,10 +224,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   const renderStructure = (): void => {
     renderEraChromeOnce();
     const file = resolveEditorFile(store.game, store.editorFile);
-    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}`, () => {
-      renderSkillChrome(editor, file, openedFile !== '' && file !== openedFile);
-      openedFile = file;
-    });
+    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}`, () => renderSkillChrome(editor, file));
     renderWhenChanged('site', calculateSiteSignature(store.game), renderSiteAndReload);
     renderWhenChanged('popups', calculatePopupSignature(store.game), () => syncPopups(elements.popupLayer, store.game));
     renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, { buyAmount: store.buyAmount }), renderShop);
@@ -215,6 +238,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
       elements.issueList.innerHTML = renderIssueList(issues, store.game, Date.now());
     });
     renderWhenChanged('news', store.news.map((item) => item.id).join(','), renderNewsList);
+    renderDeviceView();
     renderMobileChrome();
     showEndCardOnce();
   };

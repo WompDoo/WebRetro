@@ -141,11 +141,12 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
       paragraphs: [
         'A phone with no keyboard and a real web browser comes out. By 2011, four in ten of your visitors are on a phone, and your glossy 2005 blog makes them pinch, zoom and scroll sideways.',
         'Everyone is on a social network. Visitors arrive from their friends’ shares now, not from your blogroll.',
-        'And Flash is dying: phones never ran it, and desktop browsers started blocking it. Your Flash intro and podcast player show a missing-plugin box.',
+        'And Flash is dying: phones never ran it, and desktop browsers started blocking it. Your Flash intro goes, and your podcast player shows a missing-plugin box.',
       ],
       whatsNew: [
-        'Four in ten visitors are on phones. Most of them leave until you learn responsive design.',
-        'Flash is dead: rebuild your intro and podcast player with HTML5 video and audio.',
+        'Four in ten visitors are on phones. Most of them leave until you learn responsive design. The browser’s Phone switch shows you what they see.',
+        'Out with the old: features that went out of fashion retire (listed below). Lighter pages load faster on phones.',
+        'Your podcast player ran on Flash: rebuild it with HTML5 video and audio.',
         'Learn Bootstrap and your site gets the look every 2011 site had.',
         'Your racks don’t come along: you move to the cloud, and add instances as you grow.',
         'Code comes from a Q&A site now: every keystroke pastes a whole answer. Some get marked as duplicate.',

@@ -1,4 +1,4 @@
-import { FEATURES_BY_ID, formatCompactNumber, isFeaturePluginDead, UPGRADES_BY_ID } from '../../engine';
+import { FEATURES_BY_ID, formatCompactNumber, isFeatureOnPage, isFeaturePluginDead, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, FeatureId, GameState } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
 import { BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, TAGS } from '../presentation';
@@ -177,7 +177,7 @@ const renderForum: FeatureRenderer = (context) => {
 };
 
 const renderFlashIntro: FeatureRenderer = (context) =>
-  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">${context.eraId === 'social-2011' ? 'Rebuilt in HTML5 video · plays on phones' : 'Requires Flash Player 8'} · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
+  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">Requires Flash Player 8 · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
 
 function countVisibleThumbnails(level: number): number {
   return Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
@@ -291,9 +291,9 @@ export function renderFeatureBlock(context: SiteContext, featureId: FeatureId): 
   return `<section class="feature-block" data-feature="${featureId}">${content}${overlay}</section>`;
 }
 
-/** Built and switched on, in the order the layout lists them. */
+/** Built, still in fashion and switched on, in the order the layout lists them. */
 export function ownedFeatures(context: SiteContext, order: readonly FeatureId[]): readonly FeatureId[] {
-  return order.filter((featureId) => levelOf(context, featureId) > 0 && !context.state.switchedOffFeatureIds.includes(featureId));
+  return order.filter((featureId) => isFeatureOnPage(context.state, featureId) && !context.state.switchedOffFeatureIds.includes(featureId));
 }
 
 export function renderFeatureBlocks(context: SiteContext, order: readonly FeatureId[]): readonly string[] {
