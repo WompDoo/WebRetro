@@ -93,9 +93,23 @@
 .t97-nav .music-status { white-space: normal; text-align: center; }
 .t97-nav .music-note { font-size: 11px; }
 .t97-about .site-intro { margin: 0; }
+.t97-menu { display: flex; flex-direction: column; gap: 10px; }
+/* Banners in the navigation column: tall and narrow, like the skyscrapers that filled 1997 sidebars. */
+.t97-nav .banner-ad { aspect-ratio: auto; flex-direction: column; justify-content: center; gap: 8px; padding: 12px 8px; }
+.t97-nav .banner-headline { font-size: 14px; text-align: center; }
+/*
+ * Narrow screens: one column, read top to bottom. The menu stays on top, the content follows, and the sidebar
+ * widgets and ads come after it instead of pushing "About me" off the first screen.
+ */
 @container (max-width: 540px) {
-  .t97-table { grid-template-columns: minmax(0, 1fr); }
-  .t97-nav { border-right: 0; border-bottom: 3px ridge #C0C0C0; }
+  .t97-table { display: flex; flex-direction: column; }
+  .t97-nav { display: contents; }
+  .t97-menu { order: 0; padding: 10px; background: var(--s97-nav); border-bottom: 3px ridge #C0C0C0; }
+  .t97-main { order: 1; }
+  .t97-nav > .feature-block, .t97-nav > .banner-ad { order: 2; align-self: center; width: calc(100% - 24px); margin-bottom: 12px; }
+  /* Back to a regular banner: the tall sidebar shape only suits a sidebar. */
+  .t97-nav > .banner-ad { aspect-ratio: 468 / 60; flex-direction: row; justify-content: space-between; padding: 0 12px; }
+  .t97-nav > .banner-ad .banner-headline { font-size: clamp(11px, 3.4cqi, 17px); text-align: left; }
   .t97-links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 

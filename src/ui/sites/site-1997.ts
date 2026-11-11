@@ -108,17 +108,32 @@ function interleaveBanners(blocks: readonly string[], adCount: number): string {
   return [...merged, ...banners.slice(placedBanners)].join('<hr class="rainbow">');
 }
 
-/** After "Learn <TABLE> layouts": the classic navigation column on the left, content on the right. */
+/** A banner after every block, separated by rainbow rules: one more banner than blocks fits, ending the column. */
+function bannerAfterEveryBlock(blocks: readonly string[], banners: readonly string[]): string {
+  const interleaved = blocks.flatMap((block, index) => [block, ...banners.slice(index, index + 1)]);
+  return [...interleaved, ...banners.slice(blocks.length, mainColumnBanners(blocks))].join('<hr class="rainbow">');
+}
+
+function mainColumnBanners(blocks: readonly string[]): number {
+  return blocks.length + 1;
+}
+
+/**
+ * After "Learn <TABLE> layouts": the classic navigation column on the left, content on the right. Banners go
+ * after each content block; the rest run down the navigation column, the way 1997 sites filled theirs.
+ */
 function render1997TableSite(context: SiteContext, skills: HomepageSkills, content: HomepageContent): string {
   const sidebar = renderFeatureBlocks(context, content.sidebarFeatures).join('');
   const mainBlocks = renderFeatureBlocks(context, content.mainFeatures);
   const intro = renderHomepageIntro(skills);
   const about = intro === '' ? [] : [`<section class="feature-block t97-about"><h2 class="feature-heading">About me</h2>${intro}</section>`];
+  const blocks = [...about, ...mainBlocks];
+  const banners = Array.from({ length: context.state.adCount }, (_, index) => renderBanner(index));
   return `<div class="${homepageClasses(skills)}">
     <div class="t97-header">${renderHomepageTitle(context, skills, content.title)}</div>
     <div class="t97-table">
-      <nav class="t97-nav"><p class="t97-nav-title">~ Navigation ~</p><ul class="t97-links">${renderNavLinks(skills)}</ul>${sidebar}</nav>
-      <div class="t97-main">${interleaveBanners([...about, ...mainBlocks], context.state.adCount)}</div>
+      <nav class="t97-nav"><div class="t97-menu"><p class="t97-nav-title">~ Navigation ~</p><ul class="t97-links">${renderNavLinks(skills)}</ul></div>${sidebar}${banners.slice(mainColumnBanners(blocks)).join('')}</nav>
+      <div class="t97-main">${bannerAfterEveryBlock(blocks, banners)}</div>
     </div>
     ${renderHomepageFooter(skills)}
   </div>`;

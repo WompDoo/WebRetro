@@ -42,6 +42,19 @@ Everything on the page is site dressing: fake content and simple loops, never a 
 - **Real company names stay out of the game.** Technologies are fine (PHP, React); companies get
   parody names ("Sign in with Facespace").
 
+## Site layouts: desktop and phone
+
+- **Two columns on desktop, balanced.** Each era splits its blocks between a main column and a sidebar so both
+  end about level: 1997 puts a banner after every block plus one, and the rest run down the navigation column as
+  tall skyscrapers; 2011 puts the map in the sidebar, the way map widgets lived there.
+- **One reading order on phones.** Below the narrow breakpoint the columns dissolve (`display: contents`) and every
+  block gets an `order`, so a sidebar widget sits near the content it goes with instead of all of them waiting at
+  the bottom: 2005 shows the ads after the posts and the shoutbox after the comments; 2011 shows sharing after the
+  posts and the sign-in box after the comments. Pure CSS: the markup is the same at every width, so the phone view
+  and resizing just work. 1997 keeps the menu on top and moves the sidebar widgets after the content.
+- **The 2011 one-pager is a carousel**, full width under the hero: big chapters that snap into place sideways.
+  A click moves to the next chapter (a mouse wheel can't scroll sideways) and the dots follow.
+
 ## The performance indicator (from 2005 on)
 
 A derived engine number, shown in the browser's status bar, that **costs visitors** when it's slow:
@@ -124,8 +137,8 @@ memcached, a CDN and a static page cache as server boosts.
   - *Learn jQuery Masonry*: photo albums tile like bricks; album traffic ×1.6.
   - *Learn parallax scrolling*: a layered landscape in the hero drifts slower than the page (a scroll listener sets
     `--site-scroll`; CSS moves the layers with `transform`); all traffic ×1.08 for 450 KB of background images.
-  - *Scroll-jacking one-pager*: a switchable 2011 feature (needs parallax). Full-height chapters the page snaps to,
-    "Site of the Day" awards, and 900 KB that phones feel in their load time and mobile score.
+  - *Scroll-jacking one-pager*: a switchable 2011 feature (needs parallax). A full-width carousel of big chapters
+    that snap into place, "Site of the Day" awards, and 900 KB that phones feel in their load time and mobile score.
   - *Serve @2x images*: until you do, photos are blurry on phones (the phone view and real phones show it;
     desktops never notice). All traffic ×1.05 for 300 KB more.
   - *"Get our app!" banner* (a boost): ad value ×1.2, all traffic ×0.97.
