@@ -164,11 +164,6 @@ const PIN_MARGIN = 8;
 const PIN_RANGE = 84;
 const MAP_PLACES: readonly string[] = ['Best pizza in town ★★★★☆', 'Free Wi-Fi café', 'Where I parked', 'Office (no AJAX here)'];
 
-/** After bcrypt, the forum says so: the one place visitors used to worry about. */
-function describePasswordStorage(context: SiteContext): string {
-  return context.state.purchasedUpgradeIds.includes('learn-bcrypt') ? ' · passwords hashed with bcrypt' : '';
-}
-
 const renderForum: FeatureRenderer = (context) => {
   const level = levelOf(context, 'forum');
   const count = Math.min(level + BASE_FORUM_THREADS, MAX_FORUM_THREADS);
@@ -178,7 +173,7 @@ const renderForum: FeatureRenderer = (context) => {
       return `<tr><td><span class="fake-link">${escapeHtml(thread)}</span></td><td>${replies}</td><td>${replies * FORUM_VIEWS_PER_REPLY}</td></tr>`;
     })
     .join('');
-  return `${heading(context, 'forum')}<table class="forum-table"><thead><tr><th>Topic</th><th>Replies</th><th>Views</th></tr></thead><tbody>${rows}</tbody></table><p class="forum-note">${level * FORUM_MEMBERS_PER_LEVEL} members · ${level * FORUM_ONLINE_PER_LEVEL} online${describePasswordStorage(context)}</p>`;
+  return `${heading(context, 'forum')}<table class="forum-table"><thead><tr><th>Topic</th><th>Replies</th><th>Views</th></tr></thead><tbody>${rows}</tbody></table><p class="forum-note">${level * FORUM_MEMBERS_PER_LEVEL} members · ${level * FORUM_ONLINE_PER_LEVEL} online</p>`;
 };
 
 const renderFlashIntro: FeatureRenderer = (context) =>
@@ -266,12 +261,15 @@ const renderActivityFeed: FeatureRenderer = (context) => {
 const SIGN_IN_NETWORKS: readonly string[] = ['Facespace', 'Chirper'];
 const SIGNUPS_PER_LEVEL = 1_200;
 
-/** "Sign in with…": one button per parody network, and how many people joined without a new password. */
-const renderSocialLogin: FeatureRenderer = (context) => {
+/** One button per parody network, and how many people joined without a new password. The 2011 sign-in box uses these too. */
+export function renderSignInWithButtons(context: SiteContext): string {
   const buttons = SIGN_IN_NETWORKS.map((network, index) => `<span class="signin-button signin-button--${index}">Sign in with ${escapeHtml(network)}</span>`).join('');
   const joined = formatCompactNumber(levelOf(context, 'social-login') * SIGNUPS_PER_LEVEL);
-  return `${heading(context, 'social-login', 'Join with one click')}<div class="signin-buttons">${buttons}</div><p class="post-meta">${joined} joined this week · no new password</p>`;
-};
+  return `<div class="signin-buttons">${buttons}</div><p class="post-meta">${joined} joined this week · no new password</p>`;
+}
+
+/** "Sign in with…" on its own, for layouts without a sign-in box. */
+const renderSocialLogin: FeatureRenderer = (context) => `${heading(context, 'social-login', 'Join with one click')}${renderSignInWithButtons(context)}`;
 
 const ONE_PAGER_CHAPTERS: readonly string[] = ['Who we are', 'What we make', 'Why it matters', 'Where we’re going', 'Say hello'];
 const BASE_CHAPTERS = 2;
@@ -316,11 +314,16 @@ function renderMissingPlugin(context: SiteContext, featureId: FeatureId): string
   return `${heading(context, featureId)}<div class="plugin-missing"><span class="plugin-icon" aria-hidden="true">🧩</span><b>Missing plug-in</b><span>This content needs a plug-in your browser doesn’t support.</span><span class="plugin-fix">Rebuild it: ${escapeHtml(fix)}</span></div>`;
 }
 
-export function renderFeatureBlock(context: SiteContext, featureId: FeatureId): string {
+/** A feature's section around any content, with the overlay when the feature is infected. Layouts can bring their own content. */
+export function renderFeatureSection(context: SiteContext, featureId: FeatureId, content: string, extraClass = ''): string {
   const infection = context.state.infections.find((candidate) => candidate.featureId === featureId);
   const overlay = infection === undefined ? '' : renderInfectionOverlay(infection);
+  return `<section class="feature-block${extraClass}" data-feature="${featureId}">${content}${overlay}</section>`;
+}
+
+export function renderFeatureBlock(context: SiteContext, featureId: FeatureId): string {
   const content = isFeaturePluginDead(context.state, featureId) ? renderMissingPlugin(context, featureId) : FEATURE_RENDERERS[featureId](context);
-  return `<section class="feature-block" data-feature="${featureId}">${content}${overlay}</section>`;
+  return renderFeatureSection(context, featureId, content);
 }
 
 /** Built, still in fashion and switched on, in the order the layout lists them. */

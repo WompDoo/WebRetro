@@ -50,20 +50,20 @@
 .bs-nav .is-active { color: #FFFFFF; }
 .bs-menu { display: none; margin-left: auto; padding: 2px 8px; border: 1px solid #555555; border-radius: 4px; color: #FFFFFF; }
 .bs-signin { margin-left: auto; }
-/* The sign-in form: email, password, a button. Inputs are drawn, not real: typing belongs to the code editor. */
-.bs-navbar-form { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+/* The sign-in box: a well at the top of the sidebar. Fields are drawn, not real: typing belongs to the code editor. */
+.bs-signin-box { display: grid; gap: 8px; }
 .bs-input {
-  position: relative; display: inline-flex; align-items: center; gap: 4px; width: 118px; height: 28px; padding: 4px 8px;
-  border: 1px solid #CCCCCC; border-radius: 4px; background: #FFFFFF; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-  color: #999999; font-size: 13px; white-space: nowrap; overflow: hidden;
+  display: block; height: 30px; padding: 5px 8px; border: 1px solid #CCCCCC; border-radius: 4px; background: #FFFFFF;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075); color: #999999; font-size: 13px; white-space: nowrap; overflow: hidden;
 }
-.bs-input.is-password { width: 156px; }
-.bs-input.is-hashed { border-color: #468847; color: #999999; }
-.bs-input.is-hashed em { margin-left: auto; padding: 0 4px; border-radius: 3px; background: #DFF0D8; color: #468847; font-size: 10px; font-style: normal; font-weight: 700; }
-.bs-lock { flex: none; margin-left: 4px; color: #468847; }
-.bs-input.is-leaked { border-color: #B94A48; background: #F2DEDE; color: #B94A48; font-weight: 700; }
-.bs-navbar .bs-button { padding: 4px 12px; }
-.bs-button.is-facespace { border-color: #2D4373; background: linear-gradient(#5B7BC0, #3B5998); color: #FFFFFF; font-weight: 700; }
+.bs-button { white-space: nowrap; }
+.bs-button.is-primary { justify-self: start; border-color: #0044CC; background: linear-gradient(#0088CC, #0044CC); color: #FFFFFF; }
+.bs-forgot { margin: 0; color: #0088CC; font-size: 12px; line-height: 16px; }
+/* "or", between the form and the Sign in with… buttons, with a rule either side. */
+.bs-or { display: flex; align-items: center; gap: 8px; margin: 2px 0; color: #999999; font-size: 12px; }
+.bs-or::before, .bs-or::after { content: ""; flex: 1; border-top: 1px solid #DDDDDD; }
+.bs-alert { margin: 0; padding: 8px 10px; border-radius: 4px; font-size: 12px; line-height: 16px; }
+.bs-alert.is-error { border: 1px solid #EED3D7; background: #F2DEDE; color: #B94A48; }
 /* The hero unit. */
 .bs-hero { margin: 20px 20px 0; padding: 28px 30px; background: #EEEEEE; border-radius: 6px; }
 .bs-hero h1 { margin: 0 0 10px; font-size: clamp(30px, 7cqi, 46px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
@@ -82,7 +82,7 @@
 .bs-footer { margin: auto 20px 0; padding: 16px 0 20px; border-top: 1px solid #EEEEEE; color: #999999; font-size: 13px; }
 /* Responsive design: the menu folds into a button and the columns stack. */
 @container (max-width: 640px) {
-  .site-2011.is-responsive .bs-nav, .site-2011.is-responsive .bs-signin, .site-2011.is-responsive .bs-navbar-form { display: none; }
+  .site-2011.is-responsive .bs-nav, .site-2011.is-responsive .bs-signin { display: none; }
   .site-2011.is-responsive .bs-menu { display: inline-block; }
   .site-2011.is-responsive .bs-row, .site-2011.is-responsive .bs-columns { grid-template-columns: minmax(0, 1fr); }
   .site-2011.is-responsive .bs-hero { margin: 12px 12px 0; padding: 20px; }

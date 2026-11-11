@@ -607,7 +607,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     kind: 'skill',
     eraId: 'social-2011',
     name: 'Hash passwords with bcrypt',
-    description: 'Store passwords as slow, salted hashes instead of plain text. A leaked table is useless to crackers: ends password leaks for good.',
+    description: 'Store passwords as slow, salted hashes instead of plain text. A leaked table is useless to crackers, which ends password leaks for good. You can’t email people their password any more, only a link to reset it.',
     cost: 4_000_000_000,
     pageWeightKb: 0,
     effects: [{ kind: 'keystroke-value-multiplier', factor: 1.2 }],
