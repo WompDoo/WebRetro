@@ -51,3 +51,72 @@
 .browser-statusbar.is-reloading .browser-progress { animation: page-reload var(--reload-ms, 600ms) ease-out forwards; }
 @keyframes page-reload { 0% { width: 0; opacity: 1; } 90% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
 .level-chip.is-hot { border-color: var(--hazard); color: var(--hazard); }
+
+/* ---------- Desktop / phone switch ---------- */
+.device-switch { flex: none; display: inline-flex; border: 1px solid rgba(0, 0, 0, 0.25); border-radius: 4px; overflow: hidden; }
+.device-button { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.device-button + .device-button { border-left: 1px solid rgba(0, 0, 0, 0.25); }
+.device-button[aria-pressed="true"] { background: rgba(0, 0, 0, 0.12); font-weight: 700; }
+
+/* Desktop view: the phone's parts generate no boxes, so the site fills the viewport as it always did. */
+.device, .device-frame, .device-screen { display: contents; }
+.device-earpiece, .device-home, .device-caption, .device-notifications { display: none; }
+
+/*
+ * Phone view: the real page on a phone, drawn at the phone's own size (a 320 × 480 screen) and zoomed to fit
+ * the viewport. Until the page is responsive, the phone does what phones did: lays it out at desktop width
+ * and shrinks it, so the text is too small to read. Each era dresses the phone in its own hardware.
+ * Real phones show the real page, so on a phone-sized screen there is no switch.
+ */
+@media (min-width: 781px) {
+  .browser-viewport[data-device="phone"] { container: phone-stage / size; background: #D9DCE1; }
+  [data-device="phone"] .device { display: flex; align-items: center; justify-content: center; gap: 28px; height: 100%; padding: 12px 16px; }
+  [data-device="phone"] .device-frame {
+    --phone-zoom: 0.5;
+    zoom: var(--phone-zoom); flex: none; display: flex; flex-direction: column; align-items: center; padding-inline: 16px;
+    background: #2A2A2A; border-radius: 36px;
+  }
+  [data-device="phone"] .device-earpiece { display: block; flex: none; width: 56px; height: 6px; margin-block: 29px; border-radius: 3px; background: #4A4A4A; }
+  [data-device="phone"] .device-home { display: block; flex: none; width: 50px; height: 50px; margin-block: 13px; border-radius: 50%; border: 2px solid #4A4A4A; }
+  [data-device="phone"] .device-screen {
+    --screen-width: 320; --screen-height: 480; --desktop-width: 980;
+    position: relative; width: calc(var(--screen-width) * 1px); height: calc(var(--screen-height) * 1px); overflow: hidden; background: #FFFFFF;
+    /* Banners on top, pop-ups below them, so a banner never covers a pop-up's close button. The page sits behind both. */
+    display: grid; grid-template-rows: auto minmax(0, 1fr);
+  }
+  [data-device="phone"] .device-screen .site { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  [data-device="phone"] .popup-layer { grid-row: 2; position: relative; inset: auto; }
+  /* Not responsive yet: the phone lays the page out at desktop width and shrinks the whole thing. */
+  [data-device="phone"][data-fits-phone="false"] .device-screen .site {
+    width: calc(var(--desktop-width) * 1px);
+    height: calc(var(--screen-height) * var(--desktop-width) / var(--screen-width) * 1px);
+    transform: scale(calc(var(--screen-width) / var(--desktop-width))); transform-origin: top left;
+  }
+  /* Phones show every pop-up full screen: an interstitial with its close button in the corner. */
+  [data-device="phone"] .popup { inset: 0; width: auto; display: flex; flex-direction: column; border-radius: 0; animation-name: phone-popup-in; }
+  [data-device="phone"] .popup-body { flex: 1; align-content: center; }
+  /* What needs fixing, as notification banners over everything on the screen, at the phone's own size. */
+  [data-device="phone"] .device-notifications { grid-row: 1; display: grid; gap: 6px; padding: 6px; position: relative; z-index: 5; }
+  [data-device="phone"] .device-notifications:empty { padding: 0; }
+  .phone-notification {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; width: 100%; padding: 8px 10px;
+    border: 0; border-radius: 8px; background: rgba(20, 20, 20, 0.88); color: #FFFFFF; font: 13px/1.3 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    text-align: left; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); animation: phone-notification-in 240ms ease-out;
+  }
+  .phone-notification-icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; background: #D9363E; font-weight: 700; }
+  .phone-notification-text { display: grid; }
+  .phone-notification-text span { color: rgba(255, 255, 255, 0.75); font-size: 12px; }
+  .phone-notification-more { margin: 0; padding: 4px 10px; border-radius: 8px; background: rgba(20, 20, 20, 0.7); color: #FFFFFF; font: 12px 'Helvetica Neue', Helvetica, Arial, sans-serif; text-align: center; }
+  [data-device="phone"] .device-caption { display: grid; gap: 6px; flex: 0 1 220px; min-width: 140px; margin: 0; font-size: 13px; line-height: 1.45; }
+  .device-caption-title { font-size: 16px; }
+  /* The tallest phone that fits: each step is the phone's height (620 px at full size) times the zoom, plus the padding. */
+  @container phone-stage (min-height: 400px) { [data-device="phone"] .device-frame { --phone-zoom: 0.6; } }
+  @container phone-stage (min-height: 470px) { [data-device="phone"] .device-frame { --phone-zoom: 0.7; } }
+  @container phone-stage (min-height: 540px) { [data-device="phone"] .device-frame { --phone-zoom: 0.8; } }
+  @container phone-stage (min-height: 640px) { [data-device="phone"] .device-frame { --phone-zoom: 0.95; } }
+}
+@media (max-width: 780px) {
+  .device-switch { display: none; }
+}
+@keyframes phone-popup-in { from { transform: translateY(100%); } }
+@keyframes phone-notification-in { from { transform: translateY(-120%); } }

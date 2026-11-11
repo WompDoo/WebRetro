@@ -65,10 +65,11 @@ export function findPopupCopy(state: GameState, popupId: number): PopupCopy | nu
 function renderPopup(state: GameState, popup: Popup): string {
   const copy = pickCopy(state, popup);
   // Anchors are fractions of the free space, so a pop-up never hangs off the edge and hides its close button.
+  // Custom properties, not left/top: the phone view puts every pop-up full screen instead.
   const left = `calc((100% - ${POPUP_WIDTH_CSS}) * ${popup.anchorX.toFixed(3)})`;
   const top = `max(${POPUP_EDGE_GAP_PX}px, calc((100% - ${POPUP_HEIGHT_ESTIMATE_PX}px) * ${popup.anchorY.toFixed(3)} + ${POPUP_EDGE_GAP_PX}px))`;
   const title = copy.design === 'messenger' ? `Chat with ${copy.title}` : copy.title;
-  return `<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="left:${left};top:${top};z-index:${popup.id}">
+  return `<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="--popup-left:${left};--popup-top:${top};z-index:${popup.id}">
     <div class="popup-titlebar"><span>${escapeHtml(title)}</span><button type="button" class="popup-close" data-action="close-popup" data-id="${popup.id}" aria-label="Close pop-up">×</button></div>
     <div class="popup-body">${renderPopupBody(copy, popup.id)}</div>
   </div>`;

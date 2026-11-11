@@ -1,6 +1,8 @@
 import { formatMoney, formatPercent } from '../engine';
 import type { CodeInputOutcome, EraId } from '../engine';
 import { escapeHtml } from './dom';
+import { createEditorBuffers, fixTypo, showFile as showFileIn, typeBuggedChunk, typeCleanChunk } from './editor-buffers';
+import type { FileBuffer } from './editor-buffers';
 import { ERA_PRESENTATION } from './presentation';
 
 export interface KeystrokeFeedback {
@@ -22,29 +24,18 @@ export interface CodeEditorElements {
 }
 
 export interface CodeEditor {
+  /** A new era starts every file over. */
   readonly setEra: (eraId: EraId) => void;
-  /** Swap in new code to type (after learning a skill). What's already on screen stays. */
-  readonly setSource: (nextSource: string) => void;
+  /**
+   * Shows a file with the code to type into it. Another tab comes back as it was left; the same tab with new
+   * code (after learning a skill) keeps what's on screen and types the new code.
+   */
+  readonly showFile: (fileName: string, fileSource: string) => void;
   readonly setTitle: (title: string) => void;
-  /** Switches to another file: the screen clears and the new file is typed from the top. */
-  readonly openFile: (fileSource: string) => void;
   readonly setTabs: (files: readonly string[], hiddenCount: number, activeFile: string) => void;
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
 }
 
-interface PendingTypo {
-  readonly correct: string;
-  readonly garbled: string;
-}
-
-const CHARS_PER_KEYSTROKE = 4;
-
-/** A pasted chunk: the rest of the current line, newline included. */
-function lineLengthFrom(text: string, start: number): number {
-  const newline = text.indexOf('\n', start);
-  return newline === -1 ? text.length - start : newline - start + 1;
-}
-const MAX_KEPT_LINES = 40;
 /** Counted keystrokes per second are capped, so mashing the keyboard can't outrun a mouse. */
 const MIN_KEYSTROKE_INTERVAL_MS = 100;
 const MAX_FLOATERS = 10;
@@ -84,29 +75,13 @@ function isCodeKey(event: KeyboardEvent): boolean {
 }
 
 export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () => KeystrokeFeedback): CodeEditor {
-  let source = '';
-  let cursor = 0;
-  let committed = '';
-  let typo: PendingTypo | null = null;
-  let totalLines = 1;
+  let buffers = createEditorBuffers();
   let highlights = false;
   let typing = ERA_PRESENTATION['homepage-1997'].typing;
   let lastAcceptedAt = Number.NEGATIVE_INFINITY;
 
-  const takeChunk = (): string => {
-    const size = typing.pastesWholeLines ? lineLengthFrom(source, cursor) : CHARS_PER_KEYSTROKE;
-    const chunk = source.slice(cursor, cursor + size);
-    cursor = cursor + size >= source.length ? 0 : cursor + size;
-    totalLines += (chunk.match(/\n/g) ?? []).length;
-    return chunk;
-  };
-
-  const commit = (text: string): void => {
-    const lines = (committed + text).split('\n');
-    committed = lines.slice(-MAX_KEPT_LINES).join('\n');
-  };
-
   const render = (): void => {
+    const { committed, totalLines, typo } = buffers.active;
     const lines = committed.split('\n');
     const firstLineNumber = Math.max(1, totalLines - lines.length + 1);
     const renderLine = highlights ? highlightLine : escapeHtml;
@@ -137,16 +112,10 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     elements.floaters.append(floater);
   };
 
-  const applyOutcomes: Readonly<Record<CodeInputOutcome, () => void>> = {
-    'clean-line': () => commit(takeChunk()),
-    'bugged-line': () => {
-      const correct = takeChunk();
-      typo = { correct, garbled: garble(correct) };
-    },
-    'fixed-bug': () => {
-      commit(typo?.correct ?? takeChunk());
-      typo = null;
-    },
+  const applyOutcomes: Readonly<Record<CodeInputOutcome, (buffer: FileBuffer) => FileBuffer>> = {
+    'clean-line': (buffer) => typeCleanChunk(buffer, typing.pastesWholeLines),
+    'bugged-line': (buffer) => typeBuggedChunk(buffer, typing.pastesWholeLines, garble),
+    'fixed-bug': (buffer) => fixTypo(buffer, typing.pastesWholeLines),
   };
 
   const handleKeystroke = (): void => {
@@ -154,7 +123,7 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     if (now - lastAcceptedAt < MIN_KEYSTROKE_INTERVAL_MS) return;
     lastAcceptedAt = now;
     const feedback = onKeystroke();
-    applyOutcomes[feedback.outcome]();
+    buffers = { ...buffers, active: applyOutcomes[feedback.outcome](buffers.active) };
     elements.prompt.hidden = true;
     render();
     showFloater(feedback);
@@ -173,10 +142,7 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
 
   const setEra = (eraId: EraId): void => {
     const presentation = ERA_PRESENTATION[eraId];
-    cursor = 0;
-    committed = '';
-    typo = null;
-    totalLines = 1;
+    buffers = createEditorBuffers();
     highlights = presentation.editorHighlightsSyntax;
     typing = presentation.typing;
     elements.window.dataset['era'] = String(presentation.year);
@@ -193,23 +159,14 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     if (elements.rate.textContent !== text) elements.rate.textContent = text;
   };
 
-  const setSource = (nextSource: string): void => {
-    if (nextSource === source) return;
-    source = nextSource;
-    cursor = 0;
-  };
-
   const setTitle = (title: string): void => {
     if (elements.title.textContent !== title) elements.title.textContent = title;
   };
 
-  const openFile = (fileSource: string): void => {
-    source = fileSource;
-    cursor = 0;
-    committed = '';
-    typo = null;
-    totalLines = 1;
-    render();
+  const showFile = (fileName: string, fileSource: string): void => {
+    const isSwitch = fileName !== buffers.activeFile;
+    buffers = showFileIn(buffers, fileName, fileSource);
+    if (isSwitch) render();
   };
 
   /** Tabs are real buttons: players click them, so they have to switch files. */
@@ -222,5 +179,5 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     elements.tabs.hidden = files.length === 0;
   };
 
-  return { setEra, setSource, openFile, setTitle, setTabs, updateRate };
+  return { setEra, showFile, setTitle, setTabs, updateRate };
 }

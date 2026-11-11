@@ -564,7 +564,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     kind: 'skill',
     eraId: 'social-2011',
     name: 'Learn HTML5 video and audio',
-    description: 'Video and sound without a plugin. Rebuilds your Flash intro and podcast player, and they finally play on phones.',
+    description: 'Video and sound without a plugin. Rebuilds your podcast player, unlocks a video player, and both play on phones.',
     cost: 1_000_000_000,
     pageWeightKb: 0,
     effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],

@@ -1,4 +1,4 @@
-import { getFeatureDisplayName, MS_PER_SECOND } from '../../engine';
+import { FEATURES_BY_ID, getFeatureDisplayName, MS_PER_SECOND } from '../../engine';
 import type { EraId, FeatureId, GameState } from '../../engine';
 import { escapeHtml } from '../dom';
 
@@ -15,8 +15,9 @@ const SECONDS_PER_MINUTE = 60;
 
 export const is1997 = (context: SiteContext): boolean => context.eraId === 'homepage-1997';
 export const levelOf = (context: SiteContext, featureId: FeatureId): number => context.state.featureLevels[featureId];
+/** A block's title: the era's own name for the feature when it has one, else the block's wording, else the feature's name. */
 export const heading = (context: SiteContext, featureId: FeatureId, override?: string): string =>
-  `<h2 class="feature-heading">${escapeHtml(override ?? getFeatureDisplayName(featureId, context.eraId))}</h2>`;
+  `<h2 class="feature-heading">${escapeHtml(FEATURES_BY_ID[featureId].laterEraNames[context.eraId] ?? override ?? getFeatureDisplayName(featureId, context.eraId))}</h2>`;
 
 export function siteName(state: GameState): string {
   return state.purchasedUpgradeIds.includes('drop-vowels') ? 'myhmpg' : 'myhomepage';

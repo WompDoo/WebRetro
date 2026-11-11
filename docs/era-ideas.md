@@ -24,6 +24,19 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   "Hello, world!" hero (2011), the AI's "Hello! How can I help you today?" (2024).
 - **Legacy features can break.** When an era kills a technology (Flash, MIDI plugins), the old feature
   shows a "plugin not supported" puzzle piece and brings in nothing until you rebuild it the new way.
+- **Out of fashion retires.** Each relaunch retires what that era's web stopped doing (`sunsetIn` on a
+  feature): it leaves the page and the shop, brings no visitors and adds no page weight. The relaunch story
+  lists what goes, by the name the player knew it, and the Build tab keeps a "Retired" list. This keeps
+  pages from filling up with dead trends and doubles as balance: old traffic makes way for the new era's.
+  **Trade-in:** the relaunch pays back half of what the retiring features earned in their lifetime. Every
+  feature keeps a tally (`featureEarnings`): visitor revenue, split by the visitors each feature brings in.
+  In 2011 that is $160–200M, about half the price of Bootstrap: a head start, not a shortcut.
+- **The phone follows the era.** From the first era with phone visitors, the browser has a Desktop/Phone
+  switch. Phone view draws the real page on a phone of the era (2011: black glass slab, round home button):
+  laid out at desktop width and shrunk until the page is responsive, reflowed after. Later eras restyle the
+  phone (`[data-era] .device-frame`), not the mechanism. On the phone, pop-ups fill the screen (interstitials)
+  and infections arrive as notification banners at the phone's own size, so they can be tapped even when
+  the page is shrunk; tapping one opens its minigame. Banners sit above the pop-ups, never over their ×.
 - **Real company names stay out of the game.** Technologies are fine (PHP, React); companies get
   parody names ("Sign in with Facespace").
 
@@ -82,11 +95,14 @@ memcached, a CDN and a static page cache as server boosts.
 - The relaunch story ("Everyone has a phone now"), the checklist (every 2011 feature, Like and share buttons
   level 15, 500M visitors/s, $250B) and the new ending: 2011 is the last era of the prototype for now.
 - **Phones:** four in ten visitors are on a phone, and three in four of them leave until you learn responsive
-  design. A phone frame in the corner of your page shows the desktop page scrolling sideways, then fitting.
-- **Flash is dead:** the Flash intro and the podcast player show a "missing plug-in" box and bring nothing until
-  Learn HTML5 video and audio rebuilds them. Engine: `pluginDiesIn` on a feature, so 2018 can kill something too.
-- **Bootstrap:** the page becomes the template: dark navbar (a hamburger once responsive), "Hello, world!" hero,
-  a grid of blocks. Until then the 2011 site keeps its 2005 look.
+  design. The browser's Phone switch shows them the page: shrunk from desktop width, then fitting.
+- **Retired at the relaunch:** the hit counter, the beta sticker, the blogroll, the tag cloud and the Flash intro.
+- **Flash is dead:** the podcast player shows a "missing plug-in" box and brings nothing until Learn HTML5 video
+  and audio rebuilds it. Engine: `pluginDiesIn` on a feature, so 2018 can kill something too.
+- **Bootstrap:** the page becomes the Bootstrap 2 template: dark navbar (a hamburger once responsive),
+  "Hello, world!" hero, then a span8 column of content and a span4 sidebar of wells under small grey headers.
+  Helvetica at 14 px, link-blue post titles, thumbnails, a striped table. Until then the 2011 site keeps its
+  2005 look.
 - **Features:** Like and share buttons (counters per network), HTML5 video player, live activity feed (infinite
   scroll, busier with every share). Skills: responsive design, Bootstrap, HTML5 media, social plugins, Node.js.
 - **The cloud:** each era has its own hosting ladder; the relaunch starts at "The cloud: 2 instances" (free),
@@ -177,6 +193,9 @@ shows up in it.
 - **Editor tabs are real files.** From 2005 each skill puts its code where it belongs: CSS in `style.css`,
   JavaScript in `ajax.js`, rewrite rules in `.htaccess`. Clicking a tab opens that file; a file no skill has
   written to yet says which skill fills it. Three players tried to click them before they did anything.
+  Each tab keeps what you typed in it: switch away and back and you carry on where you were
+  (`src/ui/editor-buffers.ts`). A typo left in a tab is fixed on the way out, since the engine fixes the bug
+  on the next keystroke wherever it lands. A relaunch starts every file over.
 - **Multi-buy.** The Build tab buys 1, 5 or 10 levels per click, all or none, at the price of buying them
   one by one.
 - **Learn it for real.** Learned skills (and bought boosts that are real technologies) link to MDN, the
@@ -247,6 +266,7 @@ you aren't cached for. Pop-ups stay on the page, where you close them.
 - A new game starts on Code, where the earning starts; a returning player lands on Site. The tip sits above
   the editor on Code.
 - Safe-area padding for notches and the home indicator. Tablets and desktops keep their layouts.
+- No Desktop/Phone switch on a phone: you're already looking at the page on one.
 
 ## Minigames (built)
 
@@ -280,7 +300,10 @@ like the virus has, can come later for the others.
 
 ## Balance notes
 
-- **2011 pacing:** 11–12 minutes for the scripted players, like the other eras. Two fixes got it there: cloud steps
+- **2011 pacing:** 11–13 minutes for the scripted players, like the other eras. Retiring the tag cloud and the
+  Flash intro took their traffic away (relaxed 12 → 17 minutes); the 2011 features bring half as much again
+  (share buttons 750K, video 2.25M, activity feed 6M visitors/s per level) to win it back. The visitor gate
+  was the bottleneck, not the budget: cutting the budget 40% saved only 1.4 minutes. Two fixes got it there: cloud steps
   grow geometrically (a flat +12M per instance at ×1.3 the price stopped scaling at about 20 instances), and the
   budget is about two minutes of end-of-era income (a $2T budget meant 19 minutes of saving with nothing to buy).
 - **The relaunch costs something:** phone visitors bouncing and Flash dying cut income for the first minute of
@@ -294,8 +317,8 @@ like the virus has, can come later for the others.
   Now the steepest minute is ×4.7–8.1 and 2005 takes 12–16 minutes for the scripted players.
 - **An overloaded server serves what it can.** Past 200% load most visitors get a 503 page, but traffic
   is capped at capacity, never zero. Dropping to zero caused a death spiral: no income, so no upgrade.
-- **The Flash intro can be switched off.** Switchable features keep their levels; switched off they add
-  no visitors and no page weight. The 2011 scroll-jacking toggle can reuse this.
+- **The Flash intro could be switched off in 2005.** Switchable features keep their levels; switched off they
+  add no visitors and no page weight. The 2011 scroll-jacking toggle can reuse this.
 - The simulation prints each player's steepest minute (income growth within one minute) to spot snowballs.
 - **The scripted players used to hoard.** While saving for an unaffordable item they bought nothing, even
   things that pay for themselves first, then spent everything at once. They now buy those meanwhile, like a

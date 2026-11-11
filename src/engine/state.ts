@@ -40,6 +40,8 @@ export function createInitialGameState(randomSeed: number): GameState {
     keystrokes: 0,
     hasPendingBug: false,
     featureLevels: EMPTY_FEATURE_LEVELS,
+    // The same shape as the levels: zero for every feature.
+    featureEarnings: EMPTY_FEATURE_LEVELS,
     adCount: 0,
     purchasedUpgradeIds: [],
     switchedOffFeatureIds: [],

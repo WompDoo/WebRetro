@@ -1,5 +1,6 @@
 import { createInitialGameState, ERAS_BY_ID } from '../engine';
 import type { GameEvent, GameState, GameStep } from '../engine';
+import type { DeviceView } from './browser-chrome';
 import type { PlaytestSpeed } from './playtest';
 import type { BuyAmount, ShopTab } from './render-shop';
 
@@ -21,6 +22,8 @@ interface UiStore {
   /** The editor tab picked by the player; null means the era's main file. */
   editorFile: string | null;
   mobileTab: MobileTab;
+  /** Desktop or phone: the browser's switch, from the first era with phone visitors. */
+  deviceView: DeviceView;
   /** Phones show the objective as one line until you tap it open. */
   isGoalOpen: boolean;
   news: readonly NewsItem[];
@@ -49,6 +52,7 @@ export const store: UiStore = {
   buyAmount: 1,
   editorFile: null,
   mobileTab: 'code',
+  deviceView: 'desktop',
   isGoalOpen: false,
   news: [],
   newsCounter: 0,
@@ -86,6 +90,7 @@ export function replaceGame(game: GameState): void {
   store.game = game;
   store.news = [];
   store.editorFile = null;
+  store.deviceView = 'desktop';
   store.mobileTab = pickStartingMobileTab(store.game);
 }
 

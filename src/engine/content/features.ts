@@ -34,6 +34,8 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'img-tag',
     isSwitchable: false,
     pluginDiesIn: null,
+    // Visible hit counters went out with the 1990s; analytics count quietly now.
+    sunsetIn: 'social-2011',
   },
   'under-construction': {
     id: 'under-construction',
@@ -49,6 +51,8 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'img-tag',
     isSwitchable: false,
     pluginDiesIn: null,
+    // By 2011 every site is permanently unfinished, and nobody announces it.
+    sunsetIn: 'social-2011',
   },
   guestbook: {
     id: 'guestbook',
@@ -64,6 +68,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'cgi-forms',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'midi-player': {
     id: 'midi-player',
@@ -80,6 +85,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     isSwitchable: false,
     // Phones never ran Flash, and by 2011 desktop browsers started blocking it too.
     pluginDiesIn: { eraId: 'social-2011', rebuiltWith: 'html5-media' },
+    sunsetIn: null,
   },
   webring: {
     id: 'webring',
@@ -95,6 +101,8 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'hyperlinks',
     isSwitchable: false,
     pluginDiesIn: null,
+    // Social networks replaced webrings and blogrolls.
+    sunsetIn: 'social-2011',
   },
   blog: {
     id: 'blog',
@@ -110,6 +118,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-php',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   forum: {
     id: 'forum',
@@ -125,6 +134,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-php',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'photo-gallery': {
     id: 'photo-gallery',
@@ -140,6 +150,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-jquery',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'flash-intro': {
     id: 'flash-intro',
@@ -154,8 +165,9 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKbPerLevel: 150,
     requiredSkillId: 'learn-flash',
     isSwitchable: true,
-    // Phones never ran Flash, and by 2011 desktop browsers started blocking it too.
-    pluginDiesIn: { eraId: 'social-2011', rebuiltWith: 'html5-media' },
+    pluginDiesIn: null,
+    // Flash is dead on phones and dying everywhere else. Nobody wanted the intro anyway.
+    sunsetIn: 'social-2011',
   },
   comments: {
     id: 'comments',
@@ -171,6 +183,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-ajax',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'map-mashup': {
     id: 'map-mashup',
@@ -186,6 +199,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-web-apis',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'tag-cloud': {
     id: 'tag-cloud',
@@ -201,6 +215,8 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     requiredSkillId: 'learn-rss',
     isSwitchable: false,
     pluginDiesIn: null,
+    // Tag clouds became a joke about Web 2.0 itself.
+    sunsetIn: 'social-2011',
   },
   'share-buttons': {
     id: 'share-buttons',
@@ -209,13 +225,14 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     laterEraNames: {},
     description: 'A row of buttons from every social network, each with a counter. Every share brings friends.',
     baseCost: 1_500_000_000,
-    visitorsPerSecondPerLevel: 500_000,
+    visitorsPerSecondPerLevel: 750_000,
     synergy: null,
     pageWeightKb: 90,
     pageWeightKbPerLevel: 2,
     requiredSkillId: 'social-plugins',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'video-player': {
     id: 'video-player',
@@ -224,13 +241,14 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     laterEraNames: {},
     description: 'HTML5 video with no plugin: it even plays on phones. Mostly cats.',
     baseCost: 6_000_000_000,
-    visitorsPerSecondPerLevel: 1_500_000,
+    visitorsPerSecondPerLevel: 2_250_000,
     synergy: null,
     pageWeightKb: 400,
     pageWeightKbPerLevel: 15,
     requiredSkillId: 'html5-media',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
   'activity-feed': {
     id: 'activity-feed',
@@ -239,13 +257,14 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     laterEraNames: {},
     description: 'What everyone is doing, right now, forever: it loads more as you scroll. Busier with every share.',
     baseCost: 25_000_000_000,
-    visitorsPerSecondPerLevel: 4_000_000,
+    visitorsPerSecondPerLevel: 6_000_000,
     synergy: { sourceFeatureId: 'share-buttons', bonusPerSourceLevel: 0.05 },
     pageWeightKb: 30,
     pageWeightKbPerLevel: 1,
     requiredSkillId: 'learn-nodejs',
     isSwitchable: false,
     pluginDiesIn: null,
+    sunsetIn: null,
   },
 };
 

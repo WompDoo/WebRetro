@@ -41,43 +41,74 @@
 [data-era="2011"] .popup--messenger .popup-close { color: #FFFFFF; }
 [data-era="2011"] .popup--toolbar { border-radius: 0; }
 
-/* ---------- The 2011 site: the Bootstrap template, "Hello, world!" and all ---------- */
-.site-2011 { min-height: 100%; display: flex; flex-direction: column; background: #FFFFFF; color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.5; }
-.bs-navbar { display: flex; align-items: center; gap: 16px; padding: 10px 18px; background: linear-gradient(#333333, #222222); color: #999999; }
-.bs-brand { color: #FFFFFF; font-size: 18px; font-weight: 200; }
-.bs-nav { display: flex; gap: 14px; }
+/* ---------- The 2011 site: the Bootstrap 2 template, "Hello, world!" and all ---------- */
+/* Bootstrap 2's type: Helvetica Neue at 14 px on a 20 px line, #333 text, #0088CC links. */
+.site-2011 { min-height: 100%; display: flex; flex-direction: column; background: #FFFFFF; color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; }
+.bs-navbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; background: linear-gradient(#222222, #111111); border-bottom: 1px solid #252525; color: #999999; }
+.bs-brand { color: #FFFFFF; font-size: 20px; font-weight: 200; }
+.bs-nav { display: flex; gap: 16px; }
 .bs-nav .is-active { color: #FFFFFF; }
 .bs-menu { display: none; margin-left: auto; padding: 2px 8px; border: 1px solid #555555; border-radius: 4px; color: #FFFFFF; }
 .bs-signin { margin-left: auto; }
-.bs-hero { margin: 18px 18px 0; padding: 26px 28px; background: #EEEEEE; border-radius: 6px; }
-.bs-hero h1 { margin: 0 0 8px; font-size: clamp(30px, 8cqi, 46px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
-.bs-hero p { margin: 0 0 14px; font-size: 15px; font-weight: 200; }
-.bs-button { display: inline-block; padding: 4px 12px; border: 1px solid #CCCCCC; border-radius: 4px; background: linear-gradient(#FFFFFF, #E6E6E6); color: #333333; }
-.bs-button.is-large { padding: 9px 16px; border-color: #0044CC; background: linear-gradient(#0088CC, #0044CC); color: #FFFFFF; font-size: 15px; }
-.bs-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 18px; padding: 18px; align-items: start; }
-.bs-main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
-.bs-sidebar { display: grid; gap: 14px; }
-.bs-footer { margin-top: auto; padding: 14px 18px; border-top: 1px solid #EEEEEE; color: #999999; font-size: 12px; }
-/* Responsive design: the menu folds into a hamburger and the columns stack. */
+/* The hero unit. */
+.bs-hero { margin: 20px 20px 0; padding: 28px 30px; background: #EEEEEE; border-radius: 6px; }
+.bs-hero h1 { margin: 0 0 10px; font-size: clamp(30px, 7cqi, 46px); font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
+.bs-hero p { margin: 0 0 16px; font-size: 16px; font-weight: 200; line-height: 26px; }
+.bs-button { display: inline-block; padding: 4px 12px; border: 1px solid #CCCCCC; border-bottom-color: #B3B3B3; border-radius: 4px; background: linear-gradient(#FFFFFF, #E6E6E6); color: #333333; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05); }
+.bs-button.is-large { padding: 10px 18px; border-color: #0044CC; background: linear-gradient(#0088CC, #0044CC); color: #FFFFFF; font-size: 16px; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); }
+/* span8 and span4. */
+.bs-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 20px; padding: 20px; align-items: start; }
+.bs-main { display: grid; }
+.bs-main > .feature-block + .feature-block { margin-top: 20px; padding-top: 20px; border-top: 1px solid #EEEEEE; }
+.bs-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.bs-sidebar { display: grid; gap: 20px; }
+/* Sidebar widgets sit in wells, under small grey nav headers. */
+.bs-sidebar > .feature-block { padding: 14px 16px; background: #F5F5F5; border: 1px solid #E3E3E3; border-radius: 4px; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05); }
+.site-2011 .bs-sidebar .feature-heading { margin: 0 0 8px; color: #999999; font-size: 11px; font-weight: 700; line-height: 20px; text-transform: uppercase; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
+.bs-footer { margin: auto 20px 0; padding: 16px 0 20px; border-top: 1px solid #EEEEEE; color: #999999; font-size: 13px; }
+/* Responsive design: the menu folds into a button and the columns stack. */
 @container (max-width: 640px) {
   .site-2011.is-responsive .bs-nav, .site-2011.is-responsive .bs-signin { display: none; }
   .site-2011.is-responsive .bs-menu { display: inline-block; }
-  .site-2011.is-responsive .bs-row, .site-2011.is-responsive .bs-main { grid-template-columns: minmax(0, 1fr); }
+  .site-2011.is-responsive .bs-row, .site-2011.is-responsive .bs-columns { grid-template-columns: minmax(0, 1fr); }
+  .site-2011.is-responsive .bs-hero { margin: 12px 12px 0; padding: 20px; }
+  .site-2011.is-responsive .bs-row { padding: 12px; }
+  .site-2011.is-responsive .bs-footer { margin-inline: 12px; }
 }
 .site-2011 .feature-block { position: relative; min-height: 60px; overflow: hidden; }
-.site-2011 .feature-heading { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #333333; }
-.site-2011 .bs-placeholder p { margin: 0 0 8px; color: #555555; }
+.site-2011 .feature-heading { margin: 0 0 10px; font-size: 24px; font-weight: 700; line-height: 30px; color: #333333; }
+.site-2011 .bs-placeholder p { margin: 0 0 10px; color: #555555; }
 .site-2011 .fake-link { color: #0088CC; }
-.site-2011 .counter { display: inline-flex; gap: 2px; }
-.site-2011 .counter-digit { padding: 1px 4px; background: #F5F5F5; border: 1px solid #DDDDDD; border-radius: 3px; font-weight: 700; }
-.site-2011 .counter-label, .site-2011 .music-note, .site-2011 .post-meta { color: #999999; font-size: 12px; }
-.site-2011 .construction-sign span { display: inline-block; padding: 2px 8px; border-radius: 3px; background: #F89406; color: #FFFFFF; font-size: 11px; font-weight: 700; }
-.site-2011 .guestbook-entry { padding: 6px 0; border-bottom: 1px solid #EEEEEE; }
-.site-2011 .guestbook-entry b, .site-2011 .comment b { color: #0088CC; }
-.site-2011 .music-player { background: #F5F5F5; border: 1px solid #DDDDDD; border-radius: 4px; color: #333333; }
+.site-2011 .post-meta, .site-2011 .music-note, .site-2011 .gallery-meta, .site-2011 .forum-note, .site-2011 .map-note { color: #999999; font-size: 12px; opacity: 1; }
+/* Blog posts: Helvetica titles in link blue, solid rules between them. */
+.site-2011 .blog-post h3 { margin: 0 0 2px; font-family: inherit; font-size: 18px; font-weight: 700; line-height: 24px; color: #0088CC; }
+.site-2011 .blog-post + .blog-post { margin-top: 14px; padding-top: 14px; border-top: 1px solid #EEEEEE; }
+.site-2011 .blog-post p:last-child { margin-top: 4px; }
+/* Comments as media objects. */
+.site-2011 .comment-list { gap: 10px; }
+.site-2011 .comment { grid-template-columns: 36px minmax(0, 1fr); gap: 10px; font-size: 14px; }
+.site-2011 .avatar { width: 36px; height: 36px; border-radius: 4px; font-size: 15px; }
+.site-2011 .comment b, .site-2011 .guestbook-entry b { color: #0088CC; }
+.site-2011 .captcha-box { padding: 10px 12px; border: 1px solid #DDDDDD; border-radius: 4px; background: #F9F9F9; font-size: 12px; }
+.site-2011 .captcha-input { border-color: #CCCCCC; border-radius: 3px; box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075); }
+/* Photo albums as Bootstrap thumbnails. The 2005 lightbox is gone. */
+.site-2011 .gallery { gap: 14px; }
+.site-2011 .photo { padding: 4px; border: 1px solid #DDDDDD; border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.055); }
+.site-2011 .thumb { border: 0; border-radius: 2px; box-shadow: none; }
+.site-2011 .photo-name { color: #555555; font-size: 12px; opacity: 1; }
+.site-2011 .lightbox { display: none; }
+/* The community: a striped table. */
+.site-2011 .forum-table { font-size: 13px; }
+.site-2011 .forum-table th { padding: 8px; background: transparent; color: #333333; font-size: 13px; font-weight: 700; text-transform: none; letter-spacing: 0; }
+.site-2011 .forum-table td { padding: 8px; border-top: 1px solid #DDDDDD; }
+.site-2011 .forum-table tbody tr:nth-child(odd) td { background: #F9F9F9; }
+.site-2011 .map { border-color: #DDDDDD; border-radius: 4px; }
+/* Sidebar widgets. */
+.site-2011 .guestbook-entry { padding: 6px 0; border-bottom: 1px solid #E3E3E3; font-size: 13px; }
+.site-2011 .guestbook-entry:last-child { border-bottom: 0; }
+.site-2011 .music-player { background: #FFFFFF; border: 1px solid #DDDDDD; border-radius: 4px; color: #333333; }
 .site-2011 .music-eq i { background: #0088CC; }
-.site-2011 .blog-post h3 { margin: 0; font-size: 16px; color: #333333; }
-.site-2011 .forum-table th { background: #F5F5F5; }
+.site-2011 .bs-sidebar .feed-item { border-bottom-color: #E3E3E3; font-size: 13px; }
 
 /* Share buttons: one per network, each with its counter. */
 .share-row { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -103,19 +134,27 @@
 .plugin-icon { font-size: 26px; filter: grayscale(1); }
 .plugin-fix { color: #0088CC; }
 
-/* Your site on a phone. Before responsive design: the whole desktop page, shrunk and scrolling sideways. */
-.phone-preview { position: sticky; top: 8px; float: right; z-index: 3; display: grid; justify-items: center; gap: 4px; margin: 8px 8px 0 4px; }
-.phone-screen { display: block; width: 58px; height: 100px; padding: 10px 4px 14px; border-radius: 10px; background: #1A1A1A; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); }
-.phone-page { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; width: 230%; height: 100%; padding: 3px; overflow: hidden; background: #FFFFFF; transform-origin: top left; }
-.phone-page i { display: block; height: 18px; background: #C9D6E8; }
-.phone-page i:first-child { grid-column: 1 / -1; background: #333333; }
-.phone-preview.is-fitting .phone-page { width: 100%; grid-template-columns: 1fr; }
-.phone-caption { max-width: 92px; padding: 2px 6px; border-radius: 3px; background: #B94A48; color: #FFFFFF; font: 700 10px/1.2 'Helvetica Neue', Helvetica, Arial, sans-serif; text-align: center; }
-.phone-preview.is-fitting .phone-caption { background: #468847; }
-.phone-screen { overflow: hidden; }
-/* On a phone the preview is redundant: you're looking at the real thing. */
-@container (max-width: 520px) { .phone-preview { display: none; } }
-
 /* 2011's issue tracker: public posts aimed at you. */
 .issue--mention .issue-subject::before { content: none; }
 .issue--mention .issue-from { color: var(--link); }
+
+/* The 2011 phone: a black glass slab in a steel band, an earpiece, a front camera, one round home button. */
+@media (min-width: 781px) {
+  [data-era="2011"] .browser-viewport[data-device="phone"] { background: radial-gradient(circle at 30% 20%, #F7F7F7, #CDD1D6); }
+  [data-era="2011"] [data-device="phone"] .device-frame {
+    background: linear-gradient(160deg, #2E2E2E, #0B0B0B 45%); border-radius: 46px;
+    box-shadow: 0 0 0 4px #B9BCC0, 0 0 0 6px #6F7276, 0 18px 40px rgba(0, 0, 0, 0.35);
+  }
+  [data-era="2011"] [data-device="phone"] .device-earpiece { position: relative; background: #2A2A2A; box-shadow: inset 0 1px 2px #000000, 0 1px 0 #3A3A3A; }
+  [data-era="2011"] [data-device="phone"] .device-earpiece::before {
+    content: ""; position: absolute; left: -28px; top: -3px; width: 12px; height: 12px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #3D4F66, #0A0A0A 60%);
+  }
+  [data-era="2011"] [data-device="phone"] .device-screen { box-shadow: 0 0 0 2px #000000; }
+  [data-era="2011"] [data-device="phone"] .device-home { position: relative; border-color: #2E2E2E; background: radial-gradient(circle, #1A1A1A, #080808); }
+  [data-era="2011"] [data-device="phone"] .device-home::after { content: ""; position: absolute; inset: 15px; border: 2px solid #7A7A7A; border-radius: 4px; }
+  [data-era="2011"] .device-caption { color: #333333; }
+  [data-era="2011"] [data-fits-phone="false"] .device-caption-title { color: #B94A48; }
+  [data-era="2011"] [data-fits-phone="true"] .device-caption-title { color: #468847; }
+  [data-era="2011"] .device-button[aria-pressed="true"] { background: #FFFFFF; color: #1A73E8; }
+}

@@ -36,6 +36,7 @@
 .toggle-button { min-width: 64px; padding: 7px 10px; cursor: pointer; border: 2px solid var(--line); border-radius: 999px; background: var(--panel-sunken); font-family: var(--font-display); font-size: 14px; }
 .toggle-button.is-on { background: var(--money); border-color: var(--money); color: var(--panel); }
 .visited-list { margin: 0; padding: 4px 14px 12px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.shop-note { margin: -6px 0 0; padding: 0 14px 12px; font-size: 12.5px; color: var(--ink-soft); }
 .visited-link { color: var(--visited); text-decoration: underline; font-size: 13px; }
 .visited-link:hover { color: var(--link); }
 .visited-item { color: var(--ink-soft); font-size: 13px; }

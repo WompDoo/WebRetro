@@ -13,6 +13,7 @@ import {
   calculateNetRevenuePerSecond,
   calculateNextAdCost,
   calculateNextFeatureCost,
+  calculateRetirementPayout,
   calculateVisitorsPerSecond,
   canBuyDefense,
   canBuyFeature,
@@ -300,6 +301,7 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
           `${formatMoney(calculateNetRevenuePerSecond(state))}/s · ads ${state.adCount} · ` +
           `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
       );
+      reportTradeIn(profile.name, state);
       state = advanceEra(state);
       eraStartedAt = now;
       minigameMsThisEra = 0;
@@ -315,6 +317,15 @@ function runProfile(profile: PlayerProfile): readonly EraReport[] {
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
   console.log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
   return reports;
+}
+
+/** What the relaunch pays back for retired features, in seconds of the income the player has right then. */
+function reportTradeIn(profileName: string, state: GameState): void {
+  const nextEraId = ERAS_BY_ID[state.eraId].nextEraId;
+  if (nextEraId === null) return;
+  const tradeIn = calculateRetirementPayout(state, nextEraId);
+  const seconds = tradeIn / Math.max(1, calculateNetRevenuePerSecond(state));
+  console.log(`  [${profileName}] trade-in at the relaunch into ${nextEraId}: ${formatMoney(tradeIn)}, ${seconds.toFixed(1)} s of income`);
 }
 
 console.log('Balance simulation');

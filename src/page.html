@@ -40,18 +40,32 @@
 
     <section class="browser" aria-label="Your website">
       <div class="browser-titlebar"><span id="browser-title">My Homepage!!! - Web Navigator</span><span class="window-buttons" aria-hidden="true"><i></i><i></i><i></i></span></div>
-      <div class="browser-toolbar" aria-hidden="true">
-        <div class="browser-buttons">
+      <div class="browser-toolbar">
+        <div class="browser-buttons" aria-hidden="true">
           <span class="browser-button">◀ Back</span>
           <span class="browser-button is-optional">Forward ▶</span>
           <span class="browser-button is-optional">Reload</span>
           <span class="browser-button is-optional">Home</span>
         </div>
-        <div class="browser-address"><span class="browser-address-label">Location:</span><span class="browser-url" id="browser-url">http://</span></div>
+        <div class="browser-address" aria-hidden="true"><span class="browser-address-label">Location:</span><span class="browser-url" id="browser-url">http://</span></div>
+        <div class="device-switch" id="device-switch" role="group" aria-label="Show your site on" hidden>
+          <button type="button" class="device-button" data-action="device-view" data-id="desktop" aria-pressed="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg><span>Desktop</span></button>
+          <button type="button" class="device-button" data-action="device-view" data-id="phone" aria-pressed="false"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg><span>Phone</span></button>
+        </div>
       </div>
-      <div class="browser-viewport">
-        <div class="site" id="site"></div>
-        <div class="popup-layer" id="popup-layer"></div>
+      <div class="browser-viewport" id="browser-viewport" data-device="desktop">
+        <div class="device">
+          <div class="device-frame">
+            <span class="device-earpiece" aria-hidden="true"></span>
+            <div class="device-screen">
+              <div class="site" id="site"></div>
+              <div class="popup-layer" id="popup-layer"></div>
+              <div class="device-notifications" id="device-notifications"></div>
+            </div>
+            <span class="device-home" aria-hidden="true"></span>
+          </div>
+          <p class="device-caption" id="device-caption"></p>
+        </div>
         <div class="era-wipe" id="era-wipe" aria-hidden="true"><span>RELAUNCHING…</span></div>
       </div>
       <div class="browser-statusbar" id="browser-statusbar"><span class="browser-status-text" id="browser-status">Document: Done</span><span class="browser-perf" id="browser-perf"></span><span class="browser-progress" aria-hidden="true"></span></div>

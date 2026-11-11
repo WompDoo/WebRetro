@@ -13,7 +13,7 @@ import {
 } from './constants';
 import { DEFENSE_IDS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
-import { FEATURE_IDS, FEATURES_BY_ID } from './content/features';
+import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
 import type {
@@ -133,8 +133,59 @@ export function isFeaturePluginDead(state: GameState, featureId: FeatureId): boo
   return plugin !== null && isEraUnlocked(state, plugin.eraId) && !state.purchasedUpgradeIds.includes(plugin.rebuiltWith);
 }
 
+/** Gone out of fashion: retired at the relaunch into its sunset era. */
+export function isFeatureRetired(state: GameState, featureId: FeatureId): boolean {
+  const sunsetIn = FEATURES_BY_ID[featureId].sunsetIn;
+  return sunsetIn !== null && isEraUnlocked(state, sunsetIn);
+}
+
+/** Built, and still on the page: not retired. */
+export function isFeatureOnPage(state: GameState, featureId: FeatureId): boolean {
+  return state.featureLevels[featureId] > 0 && !isFeatureRetired(state, featureId);
+}
+
+/** What a relaunch into this era will retire from your site. */
+export function getFeaturesRetiringIn(state: GameState, eraId: EraId): readonly FeatureId[] {
+  return FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].sunsetIn === eraId && state.featureLevels[featureId] > 0);
+}
+
+/**
+ * The trade-in for a retired feature: this share of everything it earned while it was on the page.
+ * Half of what the 2011 retirees earned is about half the price of Bootstrap: a head start, not a shortcut.
+ */
+export const RETIREMENT_PAYOUT_SHARE = 0.5;
+
+/** The trade-in for these features. */
+export function calculateTradeIn(state: GameState, featureIds: readonly FeatureId[]): number {
+  return sumAll(featureIds.map((featureId) => state.featureEarnings[featureId])) * RETIREMENT_PAYOUT_SHARE;
+}
+
+/** What a relaunch into this era pays back for the features it retires. */
+export function calculateRetirementPayout(state: GameState, eraId: EraId): number {
+  return calculateTradeIn(state, getFeaturesRetiringIn(state, eraId));
+}
+
+/** Credits visitor revenue to the features that brought the visitors, in proportion to how many each brought. */
+export function creditFeatureEarnings(state: GameState, earned: number): Readonly<Record<FeatureId, number>> {
+  const traffic = FEATURE_IDS.map((featureId) => ({ featureId, visitorsPerSecond: calculateFeatureVisitorsPerSecond(state, featureId) }));
+  const totalVisitors = sumAll(traffic.map(({ visitorsPerSecond }) => visitorsPerSecond));
+  const earnedPerVisitor = totalVisitors > 0 ? Math.max(0, earned) / totalVisitors : 0;
+  const credited = traffic.map(({ featureId, visitorsPerSecond }) => [featureId, state.featureEarnings[featureId] + visitorsPerSecond * earnedPerVisitor]);
+  return Object.fromEntries(credited) as Record<FeatureId, number>;
+}
+
+/**
+ * The name a feature went by in its last era on the page, so the retired list says what players saw go.
+ * A feature that never retires keeps the name from its own era.
+ */
+export function getRetiredFeatureName(featureId: FeatureId): string {
+  const feature = FEATURES_BY_ID[featureId];
+  const lastEraOnPage = ERA_IDS.find((eraId) => feature.sunsetIn !== null && ERAS_BY_ID[eraId].nextEraId === feature.sunsetIn) ?? feature.eraId;
+  return getFeatureDisplayName(featureId, lastEraOnPage);
+}
+
 export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
-  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
+  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId) && !isFeatureRetired(state, featureId);
   return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * (isProducing ? NEUTRAL_FACTOR : NO_TRAFFIC);
 }
 
@@ -244,7 +295,7 @@ export function calculateServerLoad(state: GameState): number {
 function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): number {
   const definition = FEATURES_BY_ID[featureId];
   const level = state.featureLevels[featureId];
-  const isOnPage = level > 0 && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
+  const isOnPage = isFeatureOnPage(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
   return isOnPage ? definition.pageWeightKb + definition.pageWeightKbPerLevel * level : 0;
 }
 
@@ -359,7 +410,7 @@ export function isSkillLearned(state: GameState, skillId: UpgradeId | null): boo
 /** The feature's era has arrived and you've learned the skill it needs. */
 export function isFeatureBuildable(state: GameState, featureId: FeatureId): boolean {
   const definition = FEATURES_BY_ID[featureId];
-  return isEraUnlocked(state, definition.eraId) && isSkillLearned(state, definition.requiredSkillId);
+  return isEraUnlocked(state, definition.eraId) && isSkillLearned(state, definition.requiredSkillId) && !isFeatureRetired(state, featureId);
 }
 
 export function canUseAds(state: GameState): boolean {
@@ -373,7 +424,7 @@ export function getAvailableSkillIds(state: GameState): readonly UpgradeId[] {
 
 /** Visible features: their era has arrived, whether or not you know the skill yet. */
 export function getUnlockedFeatureIds(state: GameState): readonly FeatureId[] {
-  return FEATURE_IDS.filter((featureId) => isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId));
+  return FEATURE_IDS.filter((featureId) => isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId) && !isFeatureRetired(state, featureId));
 }
 
 function isRequiredFeatureOwned(state: GameState, upgradeId: UpgradeId): boolean {

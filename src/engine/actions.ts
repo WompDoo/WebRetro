@@ -14,6 +14,8 @@ import {
   getNextHostingTier,
   isEraUnlocked,
   isFeatureBuildable,
+  calculateRetirementPayout,
+  isFeatureRetired,
   isUpgradeAvailable,
 } from './economy';
 import { isEraGateComplete } from './era-gate';
@@ -215,16 +217,28 @@ export function cleanInfection(state: GameState, infectionId: number): GameStep 
   return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }
 
-/** A relaunch: the new era's world, and the bottom of its hosting ladder. Features and skills come along. */
+/**
+ * A relaunch: the new era's world, and the bottom of its hosting ladder. Skills and features come along,
+ * except the features that went out of fashion: those retire, and so does anything wrong with them.
+ */
 function enterEra(state: GameState, eraId: EraId): GameState {
-  return { ...state, eraId, hasPendingBug: false, popups: [], hostingTier: 0 };
+  const entered: GameState = { ...state, eraId, hasPendingBug: false, popups: [], hostingTier: 0 };
+  return {
+    ...entered,
+    infections: entered.infections.filter((infection) => !isFeatureRetired(entered, infection.featureId)),
+    switchedOffFeatureIds: entered.switchedOffFeatureIds.filter((featureId) => !isFeatureRetired(entered, featureId)),
+  };
+}
+
+/** The relaunch pays for itself, and pays back a share of what the retiring features earned. */
+function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): GameState {
+  const payout = calculateRetirementPayout(state, nextEraId);
+  return earn(enterEra(spend(state, migrationCost), nextEraId), payout);
 }
 
 /** Moving to the next era is always the player's choice. It never happens on its own, even offline. */
 export function advanceEra(state: GameState): GameState {
   if (!isEraGateComplete(state)) return state;
   const era = ERAS_BY_ID[state.eraId];
-  return era.nextEraId === null
-    ? { ...state, prototypeComplete: true }
-    : enterEra(spend(state, era.migrationCost), era.nextEraId);
+  return era.nextEraId === null ? { ...state, prototypeComplete: true } : relaunch(state, era.migrationCost, era.nextEraId);
 }

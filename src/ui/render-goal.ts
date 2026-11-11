@@ -71,11 +71,11 @@ const HINT_RULES: readonly HintRule[] = [
   },
   {
     applies: (state) => state.eraId === 'social-2011' && !state.purchasedUpgradeIds.includes('responsive-design'),
-    text: 'Four in ten of your visitors are on a phone, and most of them leave: your page doesn’t fit their screen. Learn responsive design.',
+    text: 'Four in ten of your visitors are on a phone, and most of them leave: your page doesn’t fit their screen (flip the browser to Phone to see it). Learn responsive design.',
   },
   {
     applies: (state) => FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0 && isFeaturePluginDead(state, featureId)),
-    text: 'Flash is dead: your intro and podcast player show a missing-plugin box and bring nothing. Learn HTML5 video and audio to rebuild them.',
+    text: 'Your podcast player ran on Flash, and Flash is dead: it shows a missing-plugin box and brings nothing. Learn HTML5 video and audio to rebuild it.',
   },
   {
     applies: (state) => state.eraId === 'web2-2005' && !state.purchasedUpgradeIds.includes('learn-css'),

@@ -1,4 +1,4 @@
-import { calculateMobileStayShare, ERAS_BY_ID, getHostingTier, isTrafficSpikeCached } from '../engine';
+import { calculateMobileStayShare, ERAS_BY_ID, formatPercent, getHostingTier, isMobileFriendly, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
 import type { EconomySnapshot, EraId, GameState, UpgradeId } from '../engine';
 import { ERA_PRESENTATION } from './presentation';
 import { siteName } from './sites';
@@ -83,6 +83,45 @@ export function gradePageSpeed(loadTimeSeconds: number): string {
 export function calculateMobileScore(state: GameState, loadTimeSeconds: number): number {
   const fits = calculateMobileStayShare(state) * MOBILE_SCORE_MAX;
   return Math.max(0, Math.round(fits - loadTimeSeconds * MOBILE_SCORE_LOSS_PER_SECOND));
+}
+
+/** Which screen the browser shows your site on. */
+export type DeviceView = 'desktop' | 'phone';
+export const DEVICE_VIEWS: readonly DeviceView[] = ['desktop', 'phone'];
+
+/** The switch shows up once an era has phone visitors to look at the site for. */
+export function isPhoneViewOffered(state: GameState): boolean {
+  return ERAS_BY_ID[state.eraId].mobileShare > 0;
+}
+
+/** A pick from a later era doesn't leak back: before phones, the site is always on a desktop screen. */
+export function resolveDeviceView(state: GameState, pickedView: DeviceView): DeviceView {
+  return isPhoneViewOffered(state) ? pickedView : 'desktop';
+}
+
+export interface PhoneCaption {
+  readonly headline: string;
+  readonly detail: string;
+}
+
+function describePhoneAudience(state: GameState): string {
+  return `${formatPercent(ERAS_BY_ID[state.eraId].mobileShare)} of your visitors are on a phone.`;
+}
+
+function buildFittingPhoneCaption(state: GameState, score: string): PhoneCaption {
+  return { headline: 'Fits on phones', detail: `${describePhoneAudience(state)} The page rearranges itself for the small screen. ${score}` };
+}
+
+function buildShrunkPhoneCaption(state: GameState, score: string): PhoneCaption {
+  const leaving = formatPercent(1 - calculateMobileStayShare(state));
+  const skill = UPGRADES_BY_ID['responsive-design'].name;
+  return { headline: 'Pinch, zoom, scroll sideways', detail: `${describePhoneAudience(state)} They get your desktop page, shrunk, and ${leaving} of them give up. ${skill} to fix it. ${score}` };
+}
+
+/** What the phone view says next to the phone. */
+export function buildPhoneCaption(state: GameState, loadTimeSeconds: number): PhoneCaption {
+  const score = `Mobile score ${calculateMobileScore(state, loadTimeSeconds)}/100.`;
+  return isMobileFriendly(state) ? buildFittingPhoneCaption(state, score) : buildShrunkPhoneCaption(state, score);
 }
 
 function renderHostingReadout(state: GameState, economy: EconomySnapshot): string {

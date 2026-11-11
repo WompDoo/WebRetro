@@ -79,3 +79,6 @@
   /* Above the bottom tabs. */
   .playtest-button { bottom: calc(76px + env(safe-area-inset-bottom)); right: 10px; padding: 6px 12px; font-size: 13px; }
 }
+
+/* The relaunch story names what goes out of fashion. */
+.story-retiring { margin: 0 0 14px; padding: 8px 10px; border-left: 4px solid var(--caution-deep); background: var(--panel-sunken); font-size: 13.5px; }
