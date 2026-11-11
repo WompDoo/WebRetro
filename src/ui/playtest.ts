@@ -1,6 +1,7 @@
-import { ERA_IDS, ERAS_BY_ID, formatMoney, VIRUS_MINIGAME_IDS } from '../engine';
-import type { GameState, MinigameId } from '../engine';
+import { ERA_IDS, ERAS_BY_ID, formatMoney, MINIGAME_IDS } from '../engine';
+import type { GameState } from '../engine';
 import { escapeHtml } from './dom';
+import { MINIGAME_NAMES } from './minigame-names';
 
 /** Game speed for idle testing: one real second runs this many game seconds. */
 export type PlaytestSpeed = 1 | 10 | 60;
@@ -8,14 +9,6 @@ export const PLAYTEST_SPEEDS: readonly PlaytestSpeed[] = [1, 10, 60];
 export const PLAYTEST_INCOME_SECONDS = 600;
 export const PLAYTEST_MONEY_FACTOR = 10;
 
-const MINIGAME_LABELS: Readonly<Record<MinigameId, string>> = {
-  snake: 'Snake',
-  'virus-scan': 'Virus scan',
-  firewall: 'Firewall',
-  'spam-sort': 'Sort the comments',
-  'backup-restore': 'Restore a backup',
-};
-const MINIGAME_ORDER: readonly MinigameId[] = [...VIRUS_MINIGAME_IDS, 'spam-sort', 'backup-restore'];
 
 /** The tap gesture: five taps on the money within this long. */
 const UNLOCK_TAPS = 5;
@@ -67,7 +60,7 @@ function renderMoney(state: GameState): string {
 }
 
 function renderMinigames(): string {
-  const buttons = MINIGAME_ORDER.map((minigameId) => button('playtest-minigame', minigameId, MINIGAME_LABELS[minigameId])).join('');
+  const buttons = MINIGAME_IDS.map((minigameId) => button('playtest-minigame', minigameId, MINIGAME_NAMES[minigameId])).join('');
   return `<h3 class="playtest-heading">Play a minigame</h3><p class="playtest-buttons">${buttons}</p>`;
 }
 

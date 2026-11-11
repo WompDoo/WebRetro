@@ -57,6 +57,7 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'html5-media',
   'social-plugins',
   'learn-nodejs',
+  'learn-bcrypt',
 ];
 
 export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
@@ -590,6 +591,17 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     cost: 12_000_000_000,
     pageWeightKb: 0,
     effects: [{ kind: 'keystroke-value-multiplier', factor: 1.5 }],
+    requiredFeatureId: null,
+  },
+  'learn-bcrypt': {
+    id: 'learn-bcrypt',
+    kind: 'skill',
+    eraId: 'social-2011',
+    name: 'Hash passwords with bcrypt',
+    description: 'Store passwords as slow, salted hashes instead of plain text. A leaked table is useless to crackers: ends password leaks for good.',
+    cost: 4_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.2 }],
     requiredFeatureId: null,
   },
   // ---------- 2005 boosts ----------

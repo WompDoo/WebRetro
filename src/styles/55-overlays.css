@@ -58,6 +58,64 @@
 .spam-trash { background: color-mix(in srgb, var(--hazard) 14%, var(--panel)); color: var(--hazard); }
 .spam-keep { background: color-mix(in srgb, var(--money) 14%, var(--panel)); color: var(--money); }
 .spam-count { font: 12px var(--font-numbers); color: var(--ink-soft); text-align: center; }
+/* Reset the passwords: one row per leaked account, the bar is how close the crackers are. */
+.crack-list { display: grid; gap: 6px; }
+.crack-row {
+  --crack-progress: 0%;
+  display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px;
+  border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken); font: 600 12.5px var(--font-numbers); color: var(--ink);
+  text-align: left; cursor: pointer; touch-action: manipulation; user-select: none;
+}
+.crack-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crack-bar { height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--line) 18%, var(--panel)); overflow: hidden; }
+.crack-fill { display: block; width: var(--crack-progress); height: 100%; background: var(--money); }
+.crack-row.is-danger { border-color: var(--hazard); }
+.crack-row.is-danger .crack-fill { background: var(--hazard); }
+.crack-key { color: var(--ink-soft); font-size: 11px; }
+/* Close the gates: three lanes of requests, a gate on each, the server at the end. */
+.ddos-lanes { display: grid; gap: 6px; }
+.ddos-lane {
+  position: relative; height: 46px; padding: 0; overflow: hidden; border: 2px solid var(--line); border-radius: 6px;
+  background: repeating-linear-gradient(90deg, var(--panel-sunken) 0 18px, color-mix(in srgb, var(--line) 8%, var(--panel-sunken)) 18px 36px);
+  cursor: pointer; touch-action: manipulation; user-select: none;
+}
+.ddos-key { position: absolute; left: 6px; top: 4px; font: 600 10px var(--font-numbers); color: var(--ink-soft); }
+.ddos-gate { position: absolute; top: 4px; bottom: 4px; width: 6px; margin-left: -3px; border-radius: 3px; border: 2px dashed var(--money); }
+.ddos-lane.is-closed .ddos-gate { border-style: solid; border-color: var(--hazard); background: var(--hazard); }
+.ddos-lane.is-closed { border-color: var(--hazard); }
+.ddos-server { position: absolute; top: 4px; right: 4px; bottom: 4px; width: 8%; border-radius: 3px; background: repeating-linear-gradient(#4A5568 0 5px, #2D3748 5px 8px); }
+.ddos-request {
+  position: absolute; top: 50%; transform: translate(-50%, -50%); padding: 2px 6px; border-radius: 10px;
+  font: 700 10.5px var(--font-numbers); white-space: nowrap; color: #FFFFFF; pointer-events: none;
+}
+.ddos-request.is-bot { background: var(--hazard); }
+.ddos-request.is-visitor { background: var(--money); }
+.ddos-tally { margin: 0; font: 12px var(--font-numbers); color: var(--ink-soft); text-align: center; }
+/* Cross the traffic: your laptop at the bottom, the server at the top, lanes of bot traffic between. */
+.cross-board {
+  --rows: 5; --columns: 9;
+  position: relative; display: grid; grid-template-rows: repeat(var(--rows), 34px); overflow: hidden;
+  border: 2px solid var(--line); border-radius: 6px; background: #1B2240; user-select: none; touch-action: none;
+}
+.cross-row { position: relative; display: grid; place-items: center; font: 600 11px var(--font-numbers); color: #A3AACB; }
+.cross-lane { background: repeating-linear-gradient(90deg, transparent 0 14px, rgba(255, 255, 255, 0.12) 14px 22px) center / 100% 2px no-repeat, #232B4D; }
+.cross-row.is-server { background: color-mix(in srgb, var(--money) 45%, #1B2240); color: #FFFFFF; }
+.cross-row.is-laptop { justify-items: start; padding-left: 10px; background: #2E365C; }
+.cross-bot {
+  position: absolute; top: 5px; bottom: 5px; display: grid; place-items: center; border-radius: 4px;
+  background: var(--hazard); color: #FFFFFF; font: 700 9.5px var(--font-numbers); letter-spacing: 0.04em;
+}
+.cross-packet {
+  position: absolute; z-index: 1; width: calc(100% / var(--columns)); height: calc(100% / var(--rows));
+  display: grid; place-items: center; transition: left 60ms linear, bottom 60ms linear;
+}
+.cross-packet::before { content: ""; height: 64%; aspect-ratio: 1; border: 2px solid #FFFFFF; border-radius: 50%; background: #3B82F6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.8); }
+.cross-pad { display: grid; grid-template-columns: repeat(3, 52px); grid-template-areas: ". up ." "left down right"; justify-content: center; gap: 6px; }
+.cross-pad-button { height: 40px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-sunken); color: var(--ink); font-size: 16px; cursor: pointer; touch-action: manipulation; }
+.cross-pad-button.is-up { grid-area: up; }
+.cross-pad-button.is-left { grid-area: left; }
+.cross-pad-button.is-down { grid-area: down; }
+.cross-pad-button.is-right { grid-area: right; }
 /* Backup restore: pick the right file. */
 .restore-alert { margin: 0; padding: 8px 10px; border-left: 4px solid var(--hazard); background: color-mix(in srgb, var(--hazard) 8%, var(--panel)); font-size: 13px; }
 .restore-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }

@@ -8,16 +8,16 @@ import {
   cleanInfection,
   createInitialGameState,
   INFECTION_DIFFICULTY_STEP_MS,
-  pickVirusMinigame,
+  INFECTION_MINIGAMES,
+  pickMinigame,
   QUICK_FIX_BONUS_MS,
   QUICK_FIX_WINDOW_MS,
   restoreGameState,
   SAVE_VERSION,
-  VIRUS_MINIGAME_IDS,
 } from '../src/engine';
 import type { GameState, Infection } from '../src/engine';
+import { QUIET_HAZARDS } from './quiet-hazards';
 
-const QUIET_HAZARDS = { popup: 9e9, virus: 9e9, spam: 9e9, 'sql-injection': 9e9, 'traffic-spike': 9e9 };
 const virusAged = (ageMs: number): Infection => ({ id: 7, kind: 'virus', featureId: 'guestbook', ageMs, minigameId: 'snake' });
 const spamAged = (ageMs: number): Infection => ({ id: 8, kind: 'spam', featureId: 'comments', ageMs, minigameId: 'spam-sort' });
 const withInfections = (infections: GameState['infections']): GameState => ({
@@ -37,11 +37,21 @@ describe('infection difficulty', () => {
   it('stops counting at the hardest', () => assert.equal(calculateMsUntilHarder(virusAged(INFECTION_DIFFICULTY_STEP_MS * 2)), null));
 });
 
+describe('which game a botnet loads', () => {
+  it('rolls between closing the gates and crossing the traffic', () => {
+    assert.deepEqual([0, 0.99].map((roll) => pickMinigame('ddos', roll)), ['close-gates', 'cross-traffic']);
+  });
+
+  it('always gives the single-game kinds their game', () => {
+    assert.deepEqual([0, 0.5, 0.99].map((roll) => pickMinigame('spam', roll)), ['spam-sort', 'spam-sort', 'spam-sort']);
+  });
+});
+
 describe('which game a virus loads', () => {
   it('spreads the roll evenly over the three games', () => {
-    const picks = [0, 0.34, 0.67, 0.99].map(pickVirusMinigame);
+    const picks = [0, 0.34, 0.67, 0.99].map((roll) => pickMinigame('virus', roll));
     assert.deepEqual(picks, ['snake', 'virus-scan', 'firewall', 'firewall']);
-    assert.equal(new Set(VIRUS_MINIGAME_IDS).size, 3);
+    assert.equal(new Set(INFECTION_MINIGAMES.virus).size, 3);
   });
 
   it('rolls a game when a virus appears, and every game shows up over many viruses', () => {
@@ -52,7 +62,7 @@ describe('which game a virus loads', () => {
       step.state.infections.forEach((infection) => seen.add(infection.minigameId));
       state = step.state;
     }
-    assert.deepEqual([...seen].sort(), [...VIRUS_MINIGAME_IDS].sort());
+    assert.deepEqual([...seen].sort(), [...INFECTION_MINIGAMES.virus].sort());
   });
 });
 

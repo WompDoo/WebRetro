@@ -72,14 +72,15 @@ export type UpgradeId =
   | 'learn-bootstrap'
   | 'html5-media'
   | 'social-plugins'
-  | 'learn-nodejs';
+  | 'learn-nodejs'
+  | 'learn-bcrypt';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 export type UpgradeKind = 'skill' | 'boost';
 
-export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha';
-export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike';
-export type InfectionKind = 'virus' | 'spam' | 'sql-injection';
+export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection';
+export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos';
+export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos';
 /** 2005: the named 2001–2009 steps, then extra racks one at a time. 2011: cloud instances, one at a time. */
 export type HostingTierId =
   | 'shared-hosting'
@@ -243,9 +244,8 @@ export interface Popup {
   readonly anchorY: number;
 }
 
-/** A virus gets one of three arcade games, rolled when it appears. */
-export type VirusMinigameId = 'snake' | 'virus-scan' | 'firewall';
-export type MinigameId = VirusMinigameId | 'spam-sort' | 'backup-restore';
+/** The games that fix infections. Which kind each one fixes is in INFECTION_MINIGAMES. */
+export type MinigameId = 'snake' | 'virus-scan' | 'firewall' | 'spam-sort' | 'backup-restore' | 'reset-passwords' | 'close-gates' | 'cross-traffic';
 
 /** Something broke a feature: it brings in nothing until you win its minigame. */
 export interface Infection {

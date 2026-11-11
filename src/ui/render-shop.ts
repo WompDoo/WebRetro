@@ -276,6 +276,8 @@ const HAZARD_NAMES: Readonly<Record<HazardKind, string>> = {
   spam: 'spam floods in your comments',
   'sql-injection': 'SQL injections',
   'traffic-spike': 'traffic spikes',
+  'password-leak': 'password leaks',
+  ddos: 'DDoS attacks',
 };
 
 /** What the defense does for you. Without this line a defense reads like a pure cost. */

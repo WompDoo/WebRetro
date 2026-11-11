@@ -13,7 +13,7 @@ import {
   startPlaytestTrafficSpike,
   UPGRADES_BY_ID,
   createPlaytestState,
-  VIRUS_MINIGAME_IDS,
+  MINIGAME_IDS,
 } from '../src/engine';
 
 const SEED = 7;
@@ -61,8 +61,8 @@ describe('playtest cheats', () => {
 
   it('spawns an infection with exactly the minigame asked for, on a built feature', () => {
     const state = createPlaytestState('social-2011', 'start', SEED);
-    [...VIRUS_MINIGAME_IDS, 'spam-sort', 'backup-restore'].forEach((minigameId) => {
-      const result = addPlaytestInfection(state, minigameId as (typeof VIRUS_MINIGAME_IDS)[number]);
+    MINIGAME_IDS.forEach((minigameId) => {
+      const result = addPlaytestInfection(state, minigameId);
       const infection = result.state.infections.find((candidate) => candidate.id === result.infectionId);
       assert.equal(infection?.minigameId, minigameId);
       assert.ok((result.state.featureLevels[infection?.featureId ?? 'hit-counter'] ?? 0) > 0);

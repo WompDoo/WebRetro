@@ -111,6 +111,9 @@ memcached, a CDN and a static page cache as server boosts.
   growing about a quarter per step. The racks stay in 2005.
 - **Typing:** a dark code editor where every keystroke pastes a whole line from a Q&A site ("duplicate!",
   "accepted"). Files: index.html, app.js, style.css, and server.js with Node.js.
+- **Hazards:** password leaks (the forum's or the wall's user table on a paste site; Hash passwords with bcrypt
+  ends them) and DDoS attacks (a botnet floods the busiest page; DDoS protection, a scrubbing service that takes
+  5% of revenue, stops them). Both reuse the infection plumbing: tickets, phone banners, minigames, quick fixes.
 - **Performance:** "Grade B · Mobile 69/100" in the status bar. Pop-ups: like-gates, app banners, the first cookie
   notices, phishing through a friend's chat. The issue tracker becomes Mentions: complaints posted at you.
 
@@ -121,8 +124,6 @@ memcached, a CDN and a static page cache as server boosts.
   stitching) for 2018 to strip away, a "Get our app!" banner.
 - **Backend:** MongoDB ("is it web scale?"), REST and JSON APIs, `git push` deploys and autoscaling as cloud
   boosts, "Sign in with…" buttons (parody networks), Sass and Grunt files in the editor.
-- **Hazards:** DDoS attacks and password leaks, each with a minigame (block the attacking IPs; reset the leaked
-  accounts) and a passive fix.
 
 ## 2018 Platform
 
@@ -282,6 +283,9 @@ appears, so closing and reopening it gives the same one.
 | Firewall | virus | slide the firewall, shoot the marching viruses before they reach your files | 1–3 rows of five |
 | Sort the comments | spam | spam to the trash, real comments to the page; 3 wrong calls fail | 6/8/10 comments |
 | Restore a backup | SQL injection | pick the newest backup from before the attack; 2 wrong picks fail | 3/4/5 backups, closer together |
+| Reset the passwords | password leak | spinning plates: crackers fill every account's bar at once, a click resets one; hold out until they give up | 3/4/5 accounts, faster, 10/13/16 s |
+| Close the gates | DDoS | requests stream down three lanes; shut a lane's gate for bots, open it for visitors; 3 bots through or 3 visitors turned away fail | faster, more bots, 12/15/18 s |
+| Cross the traffic | DDoS | hop your admin connection across lanes of bot traffic to the server; a bot sends you back; 3 hits fail | 3/4/5 lanes, faster, 1/2/3 crossings |
 
 Rules they all follow:
 - **A pure engine module** each (`src/engine/minigames/`, plus `snake.ts`): state in, state out, seeded,
@@ -291,14 +295,17 @@ Rules they all follow:
   virus food used to. The overlay shows the level and the countdown.
 - **Fix it fast:** winning within 30 s of the infection appearing gives +15% traffic for a minute.
 - **The time budget:** minigames should take a tenth of play time or less. Hazards fire less often than when
-  fixes were clicks (virus every 1:40–3:00, spam 2:00–3:20, SQL 3:00–5:00); the simulation prints the share:
-  2–3% in 1997 and 6–7% in 2005.
+  fixes were clicks (virus every 1:40–3:00, spam 2:00–3:20, SQL 3:00–5:00, password leak 4:20–6:40, DDoS
+  4:00–6:00); the simulation prints the share: 2–3% in 1997, 6–7% in 2005 and 11% in 2011. 2011 runs a little
+  over because the scripted players never buy DDoS protection (its revenue cut reads as a loss); people do.
+- **A pool of games per hazard:** each kind of infection lists its games (`INFECTION_MINIGAMES`) and rolls one
+  when it appears. Viruses have three, DDoS two, the rest one. A hazard that comes back often should get more.
 - **Touch first.** Every game works with taps, swipes and the pointer, and has keys too.
 - Original and web-themed: inspired by party-game chores in spirit, not copied from any game.
 
 Next candidates: rack wiring (server overload as a hazard), "hold the line" during a traffic spike, untangle
 `node_modules` (2018), find the prompt injection in the guestbook (2024). A pool of several games per hazard,
-like the virus has, can come later for the others.
+like viruses and DDoS have, can come later for the others.
 
 ## Balance notes
 

@@ -149,6 +149,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
         'Your podcast player ran on Flash: rebuild it with HTML5 video and audio.',
         'Learn Bootstrap and your site gets the look every 2011 site had.',
         'Your racks don’t come along: you move to the cloud, and add instances as you grow.',
+        'New trouble: botnets for hire flood your busiest page, and user tables leak onto paste sites. DDoS protection and bcrypt make them stop.',
         'Code comes from a Q&A site now: every keystroke pastes a whole answer. Some get marked as duplicate.',
       ],
       confirmLabel: 'Relaunch for 2011',

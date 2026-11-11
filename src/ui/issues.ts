@@ -12,8 +12,9 @@ import {
   isSiteDown,
   UPGRADES_BY_ID,
 } from '../engine';
-import type { DefenseId, GameState, Infection, InfectionKind, MinigameId } from '../engine';
+import type { DefenseId, GameState, Infection, InfectionKind, UpgradeId } from '../engine';
 import { pickCyclic } from './dom';
+import { MINIGAME_NAMES } from './minigame-names';
 import type { ShopTab } from './render-shop';
 
 export type IssueSeverity = 'critical' | 'major' | 'minor';
@@ -52,13 +53,6 @@ const OVERLOAD_NUMBER = 429;
 const SPIKE_NUMBER = 200;
 const SEVERITY_ORDER: readonly IssueSeverity[] = ['critical', 'major', 'minor'];
 
-const MINIGAME_NAMES: Readonly<Record<MinigameId, string>> = {
-  snake: 'Snake',
-  'virus-scan': 'Virus scan',
-  firewall: 'Firewall',
-  'spam-sort': 'Sort the comments',
-  'backup-restore': 'Restore a backup',
-};
 
 const SENDERS: readonly string[] = ['a_worried_fan@freemail.example', 'webmaster_wannabe@freemail.example', 'grandma_rose@freemail.example', 'cooldude97@freemail.example'];
 
@@ -84,11 +78,22 @@ const INFECTION_COPY: Readonly<Record<InfectionKind, InfectionCopy>> = {
     title: (feature) => `Spam flood in ${feature}`,
     subjects: [(feature) => `your ${feature} are full of ads??`],
   },
+  'password-leak': {
+    severity: 'critical',
+    title: (feature) => `Leaked: your ${feature} passwords`,
+    subjects: [(feature) => `found my ${feature} password on a paste site?!`, (feature) => `someone logged into my ${feature} account and it wasn't me`],
+  },
+  ddos: {
+    severity: 'critical',
+    title: (feature) => `DDoS: botnet flooding ${feature}`,
+    subjects: [(feature) => `is your ${feature} down for everyone or just me`, (feature) => `${feature} won't load, been refreshing for 10 min`],
+  },
 };
 
 /** The defense that would have stopped this kind of infection. */
-const PREVENTING_DEFENSES: Readonly<Partial<Record<InfectionKind, DefenseId>>> = { virus: 'antivirus', spam: 'captcha' };
-const PREVENTING_SKILL = 'prepared-statements';
+const PREVENTING_DEFENSES: Readonly<Partial<Record<InfectionKind, DefenseId>>> = { virus: 'antivirus', spam: 'captcha', ddos: 'ddos-protection' };
+/** The skill that ends this kind of infection for good. */
+const PREVENTING_SKILLS: Readonly<Partial<Record<InfectionKind, UpgradeId>>> = { 'sql-injection': 'prepared-statements', 'password-leak': 'learn-bcrypt' };
 
 function shopButton(label: string, tab: ShopTab): IssueButton {
   return { label, action: 'open-shop-tab', id: tab };
@@ -101,13 +106,14 @@ function defensePrevention(state: GameState, defenseId: DefenseId): IssueButton 
   return shopButton(`${verb} ${DEFENSES_BY_ID[defenseId].name}`, 'security');
 }
 
-function skillPrevention(state: GameState): IssueButton | null {
-  return getAvailableSkillIds(state).includes(PREVENTING_SKILL) ? shopButton(`Prevent: ${UPGRADES_BY_ID[PREVENTING_SKILL].name}`, 'learn') : null;
+function skillPrevention(state: GameState, kind: InfectionKind): IssueButton | null {
+  const learnable = getAvailableSkillIds(state).filter((skillId) => skillId === PREVENTING_SKILLS[kind]);
+  return learnable.map((skillId) => shopButton(`Prevent: ${UPGRADES_BY_ID[skillId].name}`, 'learn'))[0] ?? null;
 }
 
 function findPrevention(state: GameState, kind: InfectionKind): IssueButton | null {
   const defenseId = PREVENTING_DEFENSES[kind];
-  return defenseId === undefined ? skillPrevention(state) : defensePrevention(state, defenseId);
+  return defenseId === undefined ? skillPrevention(state, kind) : defensePrevention(state, defenseId);
 }
 
 function infectionIssue(state: GameState, infection: Infection): Issue {

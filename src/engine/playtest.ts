@@ -153,11 +153,16 @@ const MINIGAME_KINDS: Readonly<Record<MinigameId, InfectionKind>> = {
   firewall: 'virus',
   'spam-sort': 'spam',
   'backup-restore': 'sql-injection',
+  'reset-passwords': 'password-leak',
+  'close-gates': 'ddos',
+  'cross-traffic': 'ddos',
 };
 const PREFERRED_TARGETS: Readonly<Record<InfectionKind, readonly FeatureId[]>> = {
   virus: ['guestbook', 'hit-counter'],
   spam: ['comments'],
   'sql-injection': ['blog', 'comments', 'forum'],
+  'password-leak': ['forum', 'guestbook'],
+  ddos: ['blog', 'video-player', 'share-buttons'],
 };
 
 function pickTarget(state: GameState, kind: InfectionKind): FeatureId | null {

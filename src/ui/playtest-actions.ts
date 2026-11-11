@@ -1,4 +1,4 @@
-import { addPlaytestIncome, addPlaytestInfection, addPlaytestPopup, createPlaytestState, ERA_IDS, ERAS_BY_ID, startPlaytestTrafficSpike, VIRUS_MINIGAME_IDS } from '../engine';
+import { addPlaytestIncome, addPlaytestInfection, addPlaytestPopup, createPlaytestState, ERA_IDS, ERAS_BY_ID, MINIGAME_IDS, startPlaytestTrafficSpike } from '../engine';
 import type { EraId, MinigameId, PlaytestStage } from '../engine';
 import { elements } from './elements';
 import type { MinigameModal } from './minigames/minigame-modal';
@@ -11,7 +11,6 @@ import { createSeed, pushMessage, replaceGame, store, updateGame } from './store
 
 type ActionHandler = (target: HTMLElement) => void;
 
-const MINIGAME_IDS: readonly MinigameId[] = [...VIRUS_MINIGAME_IDS, 'spam-sort', 'backup-restore'];
 const STAGE_NAMES: Readonly<Record<PlaytestStage, string>> = { start: 'the start', end: 'the end' };
 
 function readId(target: HTMLElement): string {

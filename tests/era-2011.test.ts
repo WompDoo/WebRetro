@@ -27,8 +27,8 @@ import { MAX_PHONE_NOTIFICATIONS, renderPhoneNotifications } from '../src/ui/ren
 import { describeRetirement } from '../src/ui/retirement';
 import { buildEditorSource } from '../src/ui/skill-code';
 import { buildPhoneCaption, calculateMobileScore, gradePageSpeed, isPhoneViewOffered, resolveDeviceView } from '../src/ui/browser-chrome';
+import { QUIET_HAZARDS } from './quiet-hazards';
 
-const QUIET_HAZARDS = { popup: 9e9, virus: 9e9, spam: 9e9, 'sql-injection': 9e9, 'traffic-spike': 9e9 };
 const base = createInitialGameState(1);
 const in2011 = (skills: readonly UpgradeId[] = []): GameState => ({
   ...base,

@@ -4,8 +4,8 @@ import { createInitialGameState, TRAFFIC_SPIKE_DURATION_MS } from '../src/engine
 import type { GameState, Infection } from '../src/engine';
 import { listIssues } from '../src/ui/issues';
 import { pickStartingMobileTab } from '../src/ui/store';
+import { QUIET_HAZARDS } from './quiet-hazards';
 
-const QUIET_HAZARDS = { popup: 9e9, virus: 9e9, spam: 9e9, 'sql-injection': 9e9, 'traffic-spike': 9e9 };
 const base = createInitialGameState(1);
 const virus: Infection = { id: 5, kind: 'virus', featureId: 'guestbook', ageMs: 0, minigameId: 'firewall' };
 const spam: Infection = { id: 6, kind: 'spam', featureId: 'comments', ageMs: 0, minigameId: 'spam-sort' };
