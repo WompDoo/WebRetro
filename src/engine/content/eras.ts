@@ -40,7 +40,7 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
   };
 }
 
-const HOMEPAGE_MIGRATION_COST = 160_000;
+const HOMEPAGE_MIGRATION_COST = 3_000_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
 const SOCIAL_MIGRATION_COST = 550_000_000_000;
 const PLATFORM_MIGRATION_COST = 50_000_000_000_000;
@@ -57,14 +57,17 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     migrationCost: HOMEPAGE_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('homepage-1997', 1997),
-      requireFeatureLevel('guestbook', 10),
-      requireVisitorsPerSecond(2_500),
+      requireFeatureLevel('guestbook', 35),
+      requireVisitorsPerSecond(46_000),
       requireMigrationBudget(HOMEPAGE_MIGRATION_COST),
     ],
     adLabel: 'Banner ad',
     adSkillId: 'img-tag',
     connectionLabel: '28.8k modem',
     connectionKbPerSecond: 3.6,
+    // No phones on the web yet: these never apply.
+    mobileConnectionLabel: '28.8k modem',
+    mobileConnectionKbPerSecond: 3.6,
     patienceSeconds: 30,
     basePageWeightKb: 2,
     adPageWeightKb: 12,
@@ -74,6 +77,8 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     adAnnoyancePerAd: 0.18,
     maxAds: 6,
     keystrokeValueMultiplier: 1,
+    revenuePace: 2,
+    typingPace: 1,
   },
   'web2-2005': {
     id: 'web2-2005',
@@ -94,6 +99,8 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     adSkillId: null,
     connectionLabel: 'DSL',
     connectionKbPerSecond: 128,
+    mobileConnectionLabel: 'DSL',
+    mobileConnectionKbPerSecond: 128,
     patienceSeconds: 8,
     basePageWeightKb: 20,
     adPageWeightKb: 6,
@@ -103,6 +110,8 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     adAnnoyancePerAd: 0.18,
     maxAds: 10,
     keystrokeValueMultiplier: 12,
+    revenuePace: 9.5,
+    typingPace: 9.5,
   },
   'social-2011': {
     id: 'social-2011',
@@ -121,8 +130,11 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     ],
     adLabel: 'Sponsored post',
     adSkillId: null,
-    connectionLabel: 'Broadband and 3G',
-    connectionKbPerSecond: 500,
+    connectionLabel: 'Broadband',
+    connectionKbPerSecond: 700,
+    // A 2011 phone page took the better part of ten seconds: the network, not the phone, was the slow part.
+    mobileConnectionLabel: '3G',
+    mobileConnectionKbPerSecond: 90,
     patienceSeconds: 5,
     basePageWeightKb: 60,
     adPageWeightKb: 30,
@@ -132,6 +144,8 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     adAnnoyancePerAd: 0.15,
     maxAds: 12,
     keystrokeValueMultiplier: 150,
+    revenuePace: 4,
+    typingPace: 4,
   },
   'platform-2018': {
     id: 'platform-2018',
@@ -150,8 +164,11 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     ],
     adLabel: 'Programmatic ad',
     adSkillId: null,
-    connectionLabel: '4G and fiber',
-    connectionKbPerSecond: 2_000,
+    connectionLabel: 'Fiber and cable',
+    connectionKbPerSecond: 3_000,
+    // What a phone really gets once latency counts: the "slow 4G" (1.6 Mbps) the speed test throttles itself to.
+    mobileConnectionLabel: '4G',
+    mobileConnectionKbPerSecond: 200,
     // Half of phone visitors leave a page that takes longer than three seconds, said every 2018 slide deck.
     patienceSeconds: 3,
     basePageWeightKb: 150,
@@ -163,5 +180,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     adAnnoyancePerAd: 0.13,
     maxAds: 14,
     keystrokeValueMultiplier: 1_800,
+    revenuePace: 4.2,
+    typingPace: 4.2,
   },
 };

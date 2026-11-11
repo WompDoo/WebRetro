@@ -11,6 +11,7 @@ import {
   classifyPerformance,
   describeLighthouseRating,
   isPhoneViewOffered,
+  pickLoadTime,
   isStatusScrolling,
   resolveDeviceView,
   resolveEditorFile,
@@ -118,13 +119,14 @@ function renderStats(editor: CodeEditor): void {
 
 function renderBrowserStatus(editor: CodeEditor): void {
   const economy = calculateEconomySnapshot(store.game);
-  setTextIfChanged(elements.browserStatus, buildStatusText(store.game, economy));
+  const device = resolveDeviceView(store.game, store.deviceView);
+  setTextIfChanged(elements.browserStatus, buildStatusText(store.game, economy, device));
   elements.browserStatus.classList.toggle('is-scrolling', isStatusScrolling(store.game, economy));
   setTextIfChanged(elements.browserPerf, buildPerformanceReadout(store.game, economy));
-  elements.browserStatusbar.dataset['performance'] = classifyPerformance(store.game, economy);
+  elements.browserStatusbar.dataset['performance'] = classifyPerformance(store.game, economy, device);
   elements.browserPerf.dataset['lighthouse'] = describeLighthouseRating(store.game, economy);
   editor.setTitle(buildEditorTitle(store.game, resolveEditorFile(store.game, store.editorFile)));
-  const caption = buildPhoneCaption(store.game, economy.loadTimeSeconds);
+  const caption = buildPhoneCaption(store.game, economy.phoneLoadTimeSeconds);
   setHtmlIfChanged(elements.deviceCaption, `<b class="device-caption-title">${escapeHtml(caption.headline)}</b><span>${escapeHtml(caption.detail)}</span><span class="device-caption-hint">Swipe the screen to scroll.</span>`);
 }
 
@@ -274,7 +276,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   };
 
   const reloadPage = (): void => {
-    playBoot(playReloadProgress(calculateEconomySnapshot(store.game).loadTimeSeconds));
+    playBoot(playReloadProgress(pickLoadTime(calculateEconomySnapshot(store.game), resolveDeviceView(store.game, store.deviceView))));
   };
 
   const renderSiteAndReload = (): void => {

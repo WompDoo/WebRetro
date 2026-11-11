@@ -62,10 +62,19 @@ function formatSeconds(seconds: number): string {
   return `${seconds.toFixed(LOAD_TIME_DECIMALS)} s`;
 }
 
-export function classifyPerformance(state: GameState, economy: EconomySnapshot): PerformanceState {
+/** The load time on the screen the browser shows the site on: a phone's connection is much slower. */
+export function pickLoadTime(economy: EconomySnapshot, device: DeviceView): number {
+  return device === 'phone' ? economy.phoneLoadTimeSeconds : economy.loadTimeSeconds;
+}
+
+function classifySpeed(state: GameState, loadTimeSeconds: number): PerformanceState {
+  return loadTimeSeconds > ERAS_BY_ID[state.eraId].patienceSeconds ? 'slow' : 'fast';
+}
+
+export function classifyPerformance(state: GameState, economy: EconomySnapshot, device: DeviceView): PerformanceState {
   if (economy.isSiteDown) return 'down';
   if (economy.serverLoad > OVERLOAD_WARNING) return 'overloaded';
-  return economy.loadTimeSeconds > ERAS_BY_ID[state.eraId].patienceSeconds ? 'slow' : 'fast';
+  return classifySpeed(state, pickLoadTime(economy, device));
 }
 
 /** window.status = "Welcome!!!": the status bar scrolls once you know JavaScript in 1997. */
@@ -73,12 +82,22 @@ export function isStatusScrolling(state: GameState, economy: EconomySnapshot): b
   return !economy.isSiteDown && state.eraId === 'homepage-1997' && knows(state, 'learn-javascript');
 }
 
-export function buildStatusText(state: GameState, economy: EconomySnapshot): string {
+/**
+ * The load time the status bar reports. From the first era with phones, the desktop view names the phone's too: the
+ * page that loads in 0.3 s on your fiber can take seconds on 4G, and that's where most visitors are.
+ */
+function describeLoadTimes(state: GameState, economy: EconomySnapshot, device: DeviceView): string {
+  const own = formatSeconds(pickLoadTime(economy, device));
+  const hasPhones = device === 'desktop' && ERAS_BY_ID[state.eraId].mobileShare > 0;
+  return hasPhones ? `${own} · ${formatSeconds(economy.phoneLoadTimeSeconds)} on phones` : own;
+}
+
+export function buildStatusText(state: GameState, economy: EconomySnapshot, device: DeviceView): string {
   if (economy.isSiteDown) return '503 Service Unavailable';
   if (state.eraId === 'homepage-1997' && knows(state, 'learn-javascript')) return JAVASCRIPT_STATUS_TEXT;
   const done = state.eraId === 'homepage-1997' ? 'Document: Done' : 'Done';
   const cache = isTrafficSpikeCached(state) ? ' · served from cache' : '';
-  return `${done} (${formatSeconds(economy.loadTimeSeconds)})${cache}`;
+  return `${done} (${describeLoadTimes(state, economy, device)})${cache}`;
 }
 
 function renderServerMeter(serverLoad: number): string {
@@ -174,7 +193,8 @@ function findFrameworkBundleKb(state: GameState): number {
 
 export function measureWebVitals(state: GameState, economy: EconomySnapshot): WebVitals {
   return {
-    largestPaintSeconds: economy.loadTimeSeconds,
+    // The speed test runs as a mid-range phone on a mobile network, as Lighthouse does.
+    largestPaintSeconds: economy.phoneLoadTimeSeconds,
     inputDelayMs: BASE_INPUT_DELAY_MS + findFrameworkBundleKb(state) * INPUT_DELAY_MS_PER_BUNDLE_KB,
     layoutShift: state.adCount * LAYOUT_SHIFT_PER_AD,
   };
@@ -239,7 +259,7 @@ const PERFORMANCE_READOUTS: Readonly<Record<EraId, (state: GameState, economy: E
   'homepage-1997': (state, _economy, weight) => `${weight} · ${ERAS_BY_ID[state.eraId].connectionLabel}`,
   'web2-2005': (state, economy, weight) => `${weight} · ${renderHostingReadout(state, economy)}`,
   'social-2011': (state, economy, weight) =>
-    `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.loadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
+    `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.phoneLoadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
   'platform-2018': (state, economy) => `${renderLighthouse(state, economy)} · ${renderHostingReadout(state, economy)}`,
 };
 

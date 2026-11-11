@@ -251,9 +251,19 @@ export interface EraDefinition {
   readonly adAnnoyancePerAd: number;
   readonly maxAds: number;
   readonly keystrokeValueMultiplier: number;
-  /** What visitors browse with. The page weight divided by this is the load time. */
+  /**
+   * The game's pace. An era is meant to take 45–60 minutes: visitor revenue in it is divided by this, so everything
+   * takes that much longer to afford, while prices, goals and how the eras relate stay as they are.
+   */
+  readonly revenuePace: number;
+  /** The same for typing. 1997 keeps typing at full speed: a new player's first minutes are all typing. */
+  readonly typingPace: number;
+  /** What desktop visitors browse with. The page weight divided by this is the load time. */
   readonly connectionLabel: string;
   readonly connectionKbPerSecond: number;
+  /** What phone visitors browse with, from the first era with phones: much slower than a desktop's line. */
+  readonly mobileConnectionLabel: string;
+  readonly mobileConnectionKbPerSecond: number;
   /** How long visitors wait before leaving. Shrinks every era. */
   readonly patienceSeconds: number;
   readonly basePageWeightKb: number;
@@ -353,7 +363,9 @@ export interface EconomySnapshot {
   readonly demandVisitorsPerSecond: number;
   readonly visitorsPerSecond: number;
   readonly pageWeightKb: number;
+  /** On a desktop connection, and on a phone's. */
   readonly loadTimeSeconds: number;
+  readonly phoneLoadTimeSeconds: number;
   /** Demand divided by hosting capacity; 0 in eras without server load. */
   readonly serverLoad: number;
   readonly isSiteDown: boolean;

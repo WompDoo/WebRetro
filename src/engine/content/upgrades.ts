@@ -702,7 +702,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     eraId: 'platform-2018',
     name: 'Learn Angular',
     description: 'A whole framework: router, forms, HTTP and dependency injection built in, strict TypeScript, RxJS everywhere. A steep climb and a heavy bundle, but the compiler catches your typos and there’s less to install. Rewrites your site as a single-page app.',
-    cost: 180_000_000_000,
+    cost: 150_000_000_000,
     pageWeightKb: 640,
     effects: [
       { kind: 'client-side-rendering' },
@@ -720,7 +720,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'The progressive one: templates that look like HTML, a small bundle, and you can learn it over a weekend. Fewer jobs ask for it. Rewrites your site as a single-page app.',
     cost: 75_000_000_000,
     pageWeightKb: 260,
-    effects: [{ kind: 'client-side-rendering' }, { kind: 'global-traffic-multiplier', factor: 1.5 }, { kind: 'keystroke-value-multiplier', factor: 1.4 }],
+    effects: [{ kind: 'client-side-rendering' }, { kind: 'global-traffic-multiplier', factor: 1.58 }, { kind: 'keystroke-value-multiplier', factor: 1.4 }],
     requiredFeatureId: null,
   },
   // Server rendering, each framework its own way. Rendering moves onto your servers: the page shows at once and

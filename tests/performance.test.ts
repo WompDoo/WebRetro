@@ -10,6 +10,8 @@ import {
   calculateLoadTimeSeconds,
   calculatePageWeightKb,
   calculatePerformanceTrafficFactor,
+  calculatePhoneLoadTimeSeconds,
+  calculateStayShare,
   calculateServerLoad,
   calculateVisitorsPerSecond,
   createInitialGameState,
@@ -34,9 +36,25 @@ const OVERLOADING_BLOG_LEVEL = 20;
 const sharedCapacity = HOSTING_TIERS[0]?.capacityVisitorsPerSecond ?? 0;
 
 describe('page load', () => {
-  it('a Hello World page loads well within 1997 patience', () => {
+  it('a Hello World page loads well within 1997 patience: next to nobody leaves', () => {
     assert.ok(calculateLoadTimeSeconds(fresh()) < 1);
-    assert.equal(calculatePerformanceTrafficFactor(fresh()), 1);
+    assert.ok(calculatePerformanceTrafficFactor(fresh()) > 0.999);
+  });
+
+  it('costs a little more with every second, never everyone', () => {
+    const shares = [0, 1.5, 3, 6, 12, 1_000].map((seconds) => calculateStayShare(seconds, 3));
+    shares.slice(1).forEach((share, index) => assert.ok(share < (shares[index] ?? 1)));
+    assert.equal(shares[0], 1);
+    assert.ok(Math.abs((shares[2] ?? 0) - 0.846) < 0.01, 'about 15% leave at the era’s patience');
+    assert.ok((shares[5] ?? 0) > 0.5, 'some always wait');
+  });
+
+  it('is slower on a 2011 phone than on a desktop, and phone visitors pay for it', () => {
+    const in2011: GameState = { ...fresh(), eraId: 'social-2011', purchasedUpgradeIds: ['responsive-design'], featureLevels: { ...fresh().featureLevels, blog: 10, 'photo-gallery': 10 }, adCount: 6 };
+    const desktopOnly: GameState = { ...in2011, eraId: 'web2-2005' };
+    assert.ok(calculatePhoneLoadTimeSeconds(in2011) > calculateLoadTimeSeconds(in2011) * 5);
+    assert.ok(calculatePerformanceTrafficFactor(in2011) < calculateStayShare(calculateLoadTimeSeconds(in2011), 5));
+    assert.ok(calculatePerformanceTrafficFactor(desktopOnly) > 0);
   });
 
   it('a tiled BODY BACKGROUND makes every page load heavier', () => {

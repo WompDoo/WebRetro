@@ -75,8 +75,13 @@ Done (4.2 s) · 182 KB · Server ▮▮▮▮▮▮▯▯ 74%
 ```
 
 - **Page weight** (KB) comes from what you've built. A Flash intro is enormous.
-- **Load time** = page weight on the era's connection (28.8k modem, DSL, 3G, 4G, fiber).
-  Above about 3 seconds, visitors start bouncing.
+- **Load time** = page weight on the era's connection. From 2011 desktops and phones differ: broadband 700 KB/s
+  but 3G 90 KB/s (2011), fiber 3,000 KB/s but "slow 4G" 200 KB/s (2018, what the speed test throttles itself to).
+  The desktop view's status bar names both ("Done (0.2 s · 3.2 s on phones)"); the phone view shows the phone's.
+- **Every second costs a little, none is fatal.** The share of visitors who give up grows smoothly with load time
+  against the era's patience (30 s, 8 s, 5 s, 3 s): about 5% at half of it, 15% at it, a third at twice it, never
+  more than half (`calculateStayShare`). Phone visitors weigh by the era's phone share. It used to be a cliff: nothing
+  below the patience, and from 2005 on no page ever got that slow, so speed never mattered.
 - **Server load** = traffic against your hosting tier. Over 100% the load time balloons; at 200% the
   whole site becomes a 503 page.
 - After every purchase the page "reloads": a progress bar in the status bar; in 1997 images reveal top-down.
@@ -403,6 +408,20 @@ Next candidates: rack wiring (server overload as a hazard), "hold the line" duri
 like viruses and DDoS have, can come later for the others.
 
 ## Balance notes
+
+- **Eras take 45–60 minutes** for a typical player (between the scripted active and relaxed ones): 1997 46, 2005 47,
+  2011 53, 2018 56 minutes; about three hours for an active player and four for a relaxed one. Each era has a pace
+  (`revenuePace`, `typingPace`): its income is divided by it, so everything takes that much longer to afford while
+  prices, goals and the relations between eras stay. 2005 ÷9.5, 2011 ÷4, 2018 ÷4.2.
+- **1997 keeps its opening fast.** A pace stretches every minute evenly, the first ones too, and those teach the game:
+  at ÷4 the first feature waited five minutes and earned nothing. So 1997 has a light pace (revenue ÷2, typing ÷1)
+  and longer goals instead: the guestbook to level 35, 46K visitors/s, $3M. The goals sit just below 1997's wall: a
+  heavy page on a 28.8k modem takes a minute to load, and at 60K visitors/s the era took over two hours.
+- **The framework check is a share now:** 2018 may take at most 15% longer with one framework than another
+  (two minutes was right for ten-minute eras). Today 2% (active) and 8% (relaxed).
+- **The sim is fast enough for long eras.** Purchased effects are summarized once per purchase (products per kind,
+  a feature-by-feature map, sums, flags) instead of scanned for every feature on every read. The whole sim went
+  from about 22 minutes to 2 for four times the simulated play, with results identical to the unsummarized one.
 
 - **The game's own cost.** The economy is read many times a frame (stats, status bar, shop, checklist, tips,
   tickets) while the state changes ten times a second; in 2018 that took 81 ms of script per second of play. Base

@@ -33,6 +33,8 @@ import {
   toggleFeature,
   canUpgradeHosting,
   calculateLoadTimeSeconds,
+  calculatePhoneLoadTimeSeconds,
+  calculatePerformanceTrafficFactor,
   calculateServerLoad,
   getRevealedBoostIds,
   canUseAds,
@@ -104,7 +106,8 @@ interface HazardReaction {
 
 const TICK_MS = 100;
 const DECISION_INTERVAL_MS = 1_000;
-const MAX_SIMULATED_MS = 4 * 60 * 60 * 1000;
+/** Four eras of up to an hour each, for the slowest player, with room to spare. */
+const MAX_SIMULATED_MS = 8 * 60 * 60 * 1000;
 const MS_PER_MINUTE = 60_000;
 const REQUIRED_PURCHASE_PRIORITY = 0.25;
 /** Rough time a player needs per difficulty level in any minigame (about 5, 10 or 15 seconds). */
@@ -118,8 +121,11 @@ const PROFILES: readonly PlayerProfile[] = [
   { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true, framework: 'angular' },
 ];
 const FRAMEWORK_ERA: EraId = 'platform-2018';
-/** Every framework has to be as good a pick as the others: 2018 may take at most this much longer with one. */
-const MAX_FRAMEWORK_SPREAD_MS = 2 * 60 * 1000;
+/**
+ * Every framework has to be as good a pick as the others: 2018 may take at most this share longer with one than with
+ * the fastest. (Two minutes when eras took ten; eras are long now, so it's a share.)
+ */
+const MAX_FRAMEWORK_SPREAD_SHARE = 0.15;
 
 /** Only the profile's framework is on its shopping list. */
 function isOtherFramework(skillId: UpgradeId, profile: PlayerProfile): boolean {
@@ -326,7 +332,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
           `${formatCompactNumber(calculateVisitorsPerSecond(state))} visitors/s · ` +
           `${formatMoney(calculateNetRevenuePerSecond(state))}/s · ads ${state.adCount} · ` +
-          `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
+          `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s (phone ${calculatePhoneLoadTimeSeconds(state).toFixed(1)}s, ${(calculatePerformanceTrafficFactor(state) * 100).toFixed(0)}% wait) · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
       );
       reportTradeIn(profile.name, state);
       state = advanceEra(state);
@@ -397,15 +403,16 @@ function playProfile(profile: PlayerProfile): ProfileOutcome {
   };
 }
 
+/** How much longer the slowest framework took than the fastest, as a share of the fastest. */
 function measureSpread(durations: readonly (number | null)[]): number {
   const finished = durations.filter((duration): duration is number => duration !== null);
-  return finished.length === 0 ? 0 : Math.max(...finished) - Math.min(...finished);
+  return finished.length === 0 ? 0 : (Math.max(...finished) - Math.min(...finished)) / Math.min(...finished);
 }
 
 console.log('Balance simulation');
 const outcomes = PROFILES.map(playProfile);
 const stuckProfiles = outcomes.filter((outcome) => !outcome.finishedEveryEra);
-const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworkDurationsMs) > MAX_FRAMEWORK_SPREAD_MS);
+const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworkDurationsMs) > MAX_FRAMEWORK_SPREAD_SHARE);
 outcomes.forEach((outcome) =>
   console.log(`  [${outcome.name}] 2018 by framework: ${outcome.frameworkDurationsMs.map((ms) => (ms === null ? 'stuck' : `${(ms / MS_PER_MINUTE).toFixed(1)} min`)).join(' · ')} (own pick first)`),
 );
@@ -418,8 +425,8 @@ if (stuckProfiles.length > 0) {
   process.exitCode = 1;
 } else if (lopsided.length > 0) {
   const names = lopsided.map((outcome) => outcome.name).join(', ');
-  console.error(`FAILED: for ${names}, one framework makes 2018 more than ${MAX_FRAMEWORK_SPREAD_MS / MS_PER_MINUTE} minutes slower than another.`);
+  console.error(`FAILED: for ${names}, one framework makes 2018 more than ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% slower than another.`);
   process.exitCode = 1;
 } else {
-  console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_MS / MS_PER_MINUTE} minutes of each other.`);
+  console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% of the fastest.`);
 }
