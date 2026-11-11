@@ -84,31 +84,97 @@ export function getActiveUpgradeIds(state: GameState): readonly UpgradeId[] {
   return state.purchasedUpgradeIds.filter((upgradeId) => !isUpgradeRetired(state, upgradeId));
 }
 
-/**
- * Every economy number reads the purchased effects, once per feature: many times a frame, and thousands of times a
- * second in the balance sim. They only change when something is bought or the era moves on, and purchasedUpgradeIds
- * is always replaced, never changed in place, so the array itself keys a cache (per era, for what has retired).
- */
-const PURCHASED_EFFECTS = new WeakMap<readonly UpgradeId[], Map<EraId, readonly UpgradeEffect[]>>();
+/** Upgrade effects that multiply one number of the economy. */
+type FactorKind =
+  | 'keystroke-value-multiplier'
+  | 'global-traffic-multiplier'
+  | 'ad-value-multiplier'
+  | 'ad-annoyance-multiplier'
+  | 'page-weight-multiplier'
+  | 'load-time-multiplier'
+  | 'server-load-multiplier';
+type FactorEffect = Extract<UpgradeEffect, { readonly kind: FactorKind }>;
+type FeatureTrafficEffect = Extract<UpgradeEffect, { readonly kind: 'feature-traffic-multiplier' }>;
 
-function findEffectsByEra(upgradeIds: readonly UpgradeId[]): Map<EraId, readonly UpgradeEffect[]> {
-  const existing = PURCHASED_EFFECTS.get(upgradeIds);
+const FACTOR_KINDS: readonly FactorKind[] = [
+  'keystroke-value-multiplier',
+  'global-traffic-multiplier',
+  'ad-value-multiplier',
+  'ad-annoyance-multiplier',
+  'page-weight-multiplier',
+  'load-time-multiplier',
+  'server-load-multiplier',
+];
+
+/**
+ * Everything the purchased upgrades do, added up once. The economy reads these numbers for every feature, many
+ * times a frame and thousands of times a second in the balance sim; scanning a hundred effects each time was most
+ * of the cost.
+ */
+interface EffectSummary {
+  readonly factors: Readonly<Record<FactorKind, number>>;
+  readonly featureFactors: ReadonlyMap<FeatureId, number>;
+  readonly keystrokeRevenueShare: number;
+  readonly bugChanceReduction: number;
+  readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
+}
+
+function isFactorOfKind(effect: UpgradeEffect, kind: FactorKind): effect is FactorEffect {
+  return effect.kind === kind;
+}
+
+function multiplyFactors(effects: readonly UpgradeEffect[], kind: FactorKind): number {
+  return multiplyAll(effects.filter((effect): effect is FactorEffect => isFactorOfKind(effect, kind)).map((effect) => effect.factor));
+}
+
+function multiplyFeatureFactor(factors: ReadonlyMap<FeatureId, number>, effect: FeatureTrafficEffect): ReadonlyMap<FeatureId, number> {
+  return new Map(factors).set(effect.featureId, (factors.get(effect.featureId) ?? NEUTRAL_FACTOR) * effect.factor);
+}
+
+function collectFeatureFactors(effects: readonly UpgradeEffect[]): ReadonlyMap<FeatureId, number> {
+  return effects
+    .filter((effect): effect is FeatureTrafficEffect => effect.kind === 'feature-traffic-multiplier')
+    .reduce<ReadonlyMap<FeatureId, number>>(multiplyFeatureFactor, new Map());
+}
+
+function summarizeEffects(effects: readonly UpgradeEffect[]): EffectSummary {
+  return {
+    factors: Object.fromEntries(FACTOR_KINDS.map((kind) => [kind, multiplyFactors(effects, kind)])) as Record<FactorKind, number>,
+    featureFactors: collectFeatureFactors(effects),
+    keystrokeRevenueShare: sumAll(effects.flatMap((effect) => (effect.kind === 'keystroke-revenue-share' ? [effect.share] : []))),
+    bugChanceReduction: sumAll(effects.flatMap((effect) => (effect.kind === 'bug-chance-reduction' ? [effect.amount] : []))),
+    kinds: new Set(effects.map((effect) => effect.kind)),
+  };
+}
+
+/**
+ * The summary only changes when something is bought or the era moves on (what has retired), and purchasedUpgradeIds
+ * is always replaced, never changed in place, so the array keys a cache, per era.
+ */
+const EFFECT_SUMMARIES = new WeakMap<readonly UpgradeId[], Map<EraId, EffectSummary>>();
+
+function findSummariesByEra(upgradeIds: readonly UpgradeId[]): Map<EraId, EffectSummary> {
+  const existing = EFFECT_SUMMARIES.get(upgradeIds);
   if (existing !== undefined) return existing;
-  const created = new Map<EraId, readonly UpgradeEffect[]>();
-  PURCHASED_EFFECTS.set(upgradeIds, created);
+  const created = new Map<EraId, EffectSummary>();
+  EFFECT_SUMMARIES.set(upgradeIds, created);
   return created;
 }
 
-function collectPurchasedEffects(state: GameState, byEra: Map<EraId, readonly UpgradeEffect[]>): readonly UpgradeEffect[] {
-  const effects = getActiveUpgradeIds(state).flatMap((id) => UPGRADES_BY_ID[id].effects);
-  byEra.set(state.eraId, effects);
-  return effects;
+function summarizePurchases(state: GameState, byEra: Map<EraId, EffectSummary>): EffectSummary {
+  const summary = summarizeEffects(getActiveUpgradeIds(state).flatMap((id) => UPGRADES_BY_ID[id].effects));
+  byEra.set(state.eraId, summary);
+  return summary;
 }
 
-function getPurchasedEffects(state: GameState): readonly UpgradeEffect[] {
-  const byEra = findEffectsByEra(state.purchasedUpgradeIds);
+function getEffectSummary(state: GameState): EffectSummary {
+  const byEra = findSummariesByEra(state.purchasedUpgradeIds);
   const cached = byEra.get(state.eraId);
-  return cached === undefined ? collectPurchasedEffects(state, byEra) : cached;
+  return cached === undefined ? summarizePurchases(state, byEra) : cached;
+}
+
+function readFactor(state: GameState, kind: FactorKind): number {
+  return getEffectSummary(state).factors[kind];
 }
 
 /** Retired with what it protected (CAPTCHA, once comments are gone): off the shelf, and its trade-off stops. */
@@ -130,27 +196,18 @@ export function isEraUnlocked(state: GameState, eraId: EraId): boolean {
 }
 
 function calculateKeystrokeRevenueShare(state: GameState): number {
-  const shares = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'keystroke-revenue-share' ? [effect.share] : [],
-  );
-  return sumAll(shares);
+  return getEffectSummary(state).keystrokeRevenueShare;
 }
 
 /** Freelance pay per keystroke, plus a share of the site's revenue per second once you know enough to automate. */
 export function calculateKeystrokeValue(state: GameState): number {
-  const factors = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'keystroke-value-multiplier' ? [effect.factor] : [],
-  );
   const eraMultiplier = ERAS_BY_ID[state.eraId].keystrokeValueMultiplier;
-  const freelancePay = BASE_KEYSTROKE_VALUE * eraMultiplier * multiplyAll(factors);
+  const freelancePay = (BASE_KEYSTROKE_VALUE * eraMultiplier * readFactor(state, 'keystroke-value-multiplier')) / ERAS_BY_ID[state.eraId].typingPace;
   return freelancePay + calculateKeystrokeRevenueShare(state) * calculateNetRevenuePerSecond(state);
 }
 
 export function calculateBugChance(state: GameState): number {
-  const reductions = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'bug-chance-reduction' ? [effect.amount] : [],
-  );
-  return Math.max(MIN_BUG_CHANCE, BASE_BUG_CHANCE - sumAll(reductions));
+  return Math.max(MIN_BUG_CHANCE, BASE_BUG_CHANCE - getEffectSummary(state).bugChanceReduction);
 }
 
 export function isFeatureInfected(state: GameState, featureId: FeatureId): boolean {
@@ -163,10 +220,8 @@ function getDefenseTrafficFactors(state: GameState, featureId: FeatureId | null)
 }
 
 function calculateFeatureUpgradeFactor(state: GameState, featureId: FeatureId): number {
-  const factors = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'feature-traffic-multiplier' && effect.featureId === featureId ? [effect.factor] : [],
-  );
-  return multiplyAll(factors) * multiplyAll(getDefenseTrafficFactors(state, featureId));
+  const upgradeFactor = getEffectSummary(state).featureFactors.get(featureId) ?? NEUTRAL_FACTOR;
+  return upgradeFactor * multiplyAll(getDefenseTrafficFactors(state, featureId));
 }
 
 function calculateSynergyFactor(state: GameState, definition: FeatureDefinition): number {
@@ -256,17 +311,11 @@ const calculateBaseVisitorsPerSecond = memoizeByState((state: GameState): number
 });
 
 export function calculateGlobalTrafficFactor(state: GameState): number {
-  const upgradeFactors = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'global-traffic-multiplier' ? [effect.factor] : [],
-  );
-  return multiplyAll(upgradeFactors) * multiplyAll(getDefenseTrafficFactors(state, null));
+  return readFactor(state, 'global-traffic-multiplier') * multiplyAll(getDefenseTrafficFactors(state, null));
 }
 
 export function calculateAdAnnoyancePerAd(state: GameState): number {
-  const factors = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'ad-annoyance-multiplier' ? [effect.factor] : [],
-  );
-  return ERAS_BY_ID[state.eraId].adAnnoyancePerAd * multiplyAll(factors);
+  return ERAS_BY_ID[state.eraId].adAnnoyancePerAd * readFactor(state, 'ad-annoyance-multiplier');
 }
 
 export function calculateAdTrafficFactor(state: GameState): number {
@@ -298,7 +347,7 @@ function isFrameworkUpgradeOpen(state: GameState, upgradeId: UpgradeId): boolean
 }
 
 function hasEffect(state: GameState, kind: UpgradeEffect['kind']): boolean {
-  return getPurchasedEffects(state).some((effect) => effect.kind === kind);
+  return getEffectSummary(state).kinds.has(kind);
 }
 
 /** A single-page app that only renders in the browser: blank until its JavaScript has run. */
@@ -316,7 +365,7 @@ function calculateRenderingLoadTimeFactor(state: GameState): number {
 }
 
 export function isMobileFriendly(state: GameState): boolean {
-  return getPurchasedEffects(state).some((effect) => effect.kind === 'mobile-friendly');
+  return hasEffect(state, 'mobile-friendly');
 }
 
 /** Share of phone visitors who stay: almost none while the page needs pinching and sideways scrolling. */
@@ -366,11 +415,11 @@ export function getNextHostingTier(state: GameState): HostingTierDefinition | nu
 
 /** Share of each visit that reaches your own server. Caching and a CDN answer the rest. */
 export function calculateServerLoadPerVisitor(state: GameState): number {
-  return multiplyAll(getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'server-load-multiplier' ? [effect.factor] : [])));
+  return readFactor(state, 'server-load-multiplier');
 }
 
 export function hasTrafficSpikeCache(state: GameState): boolean {
-  return getPurchasedEffects(state).some((effect) => effect.kind === 'traffic-spike-cache');
+  return hasEffect(state, 'traffic-spike-cache');
 }
 
 export function isTrafficSpikeCached(state: GameState): boolean {
@@ -402,34 +451,62 @@ function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): n
 
 export const calculatePageWeightKb = memoizeByState((state: GameState): number => {
   const era = ERAS_BY_ID[state.eraId];
-  const factors = getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'page-weight-multiplier' ? [effect.factor] : []));
   const featuresKb = sumAll(FEATURE_IDS.map((featureId) => calculateFeaturePageWeightKb(state, featureId)));
   // Old assets come along: your 1997 stars.gif still loads on the 2005 page. Retired ones leave with their feature.
   const upgradesKb = sumAll(getActiveUpgradeIds(state).map((upgradeId) => UPGRADES_BY_ID[upgradeId].pageWeightKb));
   const rawKb = era.basePageWeightKb + featuresKb + upgradesKb + state.adCount * era.adPageWeightKb;
-  return rawKb * multiplyAll(factors);
+  return rawKb * readFactor(state, 'page-weight-multiplier');
 });
 
 /**
- * Page weight over the era's connection. An overloaded server makes everything slower still, and so does a
- * single-page app that has to load and run before it shows anything.
+ * Page weight over a connection. An overloaded server makes everything slower still, and so does a single-page app
+ * that has to load and run before it shows anything.
  */
-export function calculateLoadTimeSeconds(state: GameState): number {
-  const factors = getPurchasedEffects(state).flatMap((effect) => (effect.kind === 'load-time-multiplier' ? [effect.factor] : []));
-  const transferSeconds = calculatePageWeightKb(state) / ERAS_BY_ID[state.eraId].connectionKbPerSecond;
-  return transferSeconds * multiplyAll(factors) * calculateRenderingLoadTimeFactor(state) * Math.max(NEUTRAL_FACTOR, calculateServerLoad(state));
+function calculateLoadTimeOver(state: GameState, kbPerSecond: number): number {
+  const transferSeconds = calculatePageWeightKb(state) / kbPerSecond;
+  return transferSeconds * readFactor(state, 'load-time-multiplier') * calculateRenderingLoadTimeFactor(state) * Math.max(NEUTRAL_FACTOR, calculateServerLoad(state));
 }
+
+/** On a desktop visitor's connection. */
+export const calculateLoadTimeSeconds = memoizeByState((state: GameState): number => calculateLoadTimeOver(state, ERAS_BY_ID[state.eraId].connectionKbPerSecond));
+
+/** On a phone visitor's connection: 3G in 2011, 4G in 2018. */
+export const calculatePhoneLoadTimeSeconds = memoizeByState((state: GameState): number => calculateLoadTimeOver(state, ERAS_BY_ID[state.eraId].mobileConnectionKbPerSecond));
 
 /** Past twice its capacity, most visitors get a 503 page. The server still serves what it can. */
 export function isSiteDown(state: GameState): boolean {
   return calculateServerLoad(state) >= SITE_DOWN_SERVER_LOAD;
 }
 
-/** Share of visitors who wait for the page. Everyone waits up to the era's patience; after that they leave. */
-export function calculatePerformanceTrafficFactor(state: GameState): number {
-  const loadTime = calculateLoadTimeSeconds(state);
-  return loadTime <= 0 ? NEUTRAL_FACTOR : Math.min(NEUTRAL_FACTOR, ERAS_BY_ID[state.eraId].patienceSeconds / loadTime);
+/** At this many times the era's patience, half of the visitors who would ever give up have given up. */
+const PATIENCE_HALF_LOSS = 1.5;
+/** However slow the page, some visitors always wait: at most this share leaves. */
+const MAX_SLOW_PAGE_LOSS = 0.5;
+
+/**
+ * Share of visitors who wait for a page that takes this long. Every second costs a little and none is fatal: about
+ * 5% leave at half the era's patience, 15% at its patience, a third at twice it, and never more than half.
+ */
+export function calculateStayShare(loadTimeSeconds: number, patienceSeconds: number): number {
+  const squaredRatio = (loadTimeSeconds / patienceSeconds) ** 2;
+  return NEUTRAL_FACTOR - (MAX_SLOW_PAGE_LOSS * squaredRatio) / (squaredRatio + PATIENCE_HALF_LOSS ** 2);
 }
+
+/** Of the visitors still trying (after the pinch-and-zoom bounces), the share on a phone. */
+function calculatePhoneShareOfDemand(state: GameState): number {
+  const mobileShare = ERAS_BY_ID[state.eraId].mobileShare;
+  const phones = mobileShare * calculateMobileStayShare(state);
+  return phones / Math.max(Number.EPSILON, NEUTRAL_FACTOR - mobileShare + phones);
+}
+
+/** Share of visitors who wait for the page: desktop visitors on their connection, phone visitors on theirs. */
+export const calculatePerformanceTrafficFactor = memoizeByState((state: GameState): number => {
+  const patience = ERAS_BY_ID[state.eraId].patienceSeconds;
+  const phoneShare = calculatePhoneShareOfDemand(state);
+  const desktopStay = calculateStayShare(calculateLoadTimeSeconds(state), patience);
+  const phoneStay = calculateStayShare(calculatePhoneLoadTimeSeconds(state), patience);
+  return (NEUTRAL_FACTOR - phoneShare) * desktopStay + phoneShare * phoneStay;
+});
 
 function calculateServedLimit(state: GameState): number {
   // A cached spike keeps the site up, but you still only earn from what your setup can carry.
@@ -445,11 +522,9 @@ export const calculateVisitorsPerSecond = memoizeByState((state: GameState): num
 });
 
 export function calculateAdValuePerAd(state: GameState): number {
-  const upgradeFactors = getPurchasedEffects(state).flatMap((effect) =>
-    effect.kind === 'ad-value-multiplier' ? [effect.factor] : [],
-  );
   const defenseFactors = getEnabledDefenses(state).map((defense) => defense.adValueFactor);
-  return ERAS_BY_ID[state.eraId].adValuePerVisitor * multiplyAll(upgradeFactors) * multiplyAll(defenseFactors);
+  const era = ERAS_BY_ID[state.eraId];
+  return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors)) / era.revenuePace;
 }
 
 export function calculateRevenuePerVisitor(state: GameState): number {
@@ -474,6 +549,7 @@ export const calculateEconomySnapshot = memoizeByState((state: GameState): Econo
     visitorsPerSecond: calculateVisitorsPerSecond(state),
     pageWeightKb: calculatePageWeightKb(state),
     loadTimeSeconds: calculateLoadTimeSeconds(state),
+    phoneLoadTimeSeconds: calculatePhoneLoadTimeSeconds(state),
     serverLoad: calculateServerLoad(state),
     isSiteDown: isSiteDown(state),
     performanceTrafficFactor: calculatePerformanceTrafficFactor(state),

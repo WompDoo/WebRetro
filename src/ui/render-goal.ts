@@ -3,6 +3,7 @@ import {
   FEATURE_IDS,
   isFeaturePluginDead,
   calculatePerformanceTrafficFactor,
+  calculatePhoneLoadTimeSeconds,
   calculateServerLoad,
   isSiteDown,
   canUseAds,
@@ -29,6 +30,12 @@ const POPUP_NAG_COUNT = 2;
 const SERVER_WARNING_LOAD = 0.85;
 const SLOW_PAGE_FACTOR = 0.9;
 const ERA_ONE_MAX_ADS = 6;
+
+/** Phones in the era, and a page that takes longer than the era's patience on their network. */
+function isSlowOnPhones(state: GameState): boolean {
+  const era = ERAS_BY_ID[state.eraId];
+  return era.mobileShare > 0 && calculatePhoneLoadTimeSeconds(state) > era.patienceSeconds;
+}
 
 function hasDeadFeature(state: GameState): boolean {
   return FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0 && isFeaturePluginDead(state, featureId));
@@ -68,8 +75,12 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'Your server is close to full. Over 100% pages slow down, and at 200% the site goes down. Upgrade your hosting under Ops.',
   },
   {
+    applies: isSlowOnPhones,
+    text: 'Your page is slow on phones: their mobile networks are far slower than a desktop’s line, and phone visitors give up first. Flip the browser to Phone to see the load time there. Lighter pages load faster everywhere.',
+  },
+  {
     applies: (state) => calculatePerformanceTrafficFactor(state) < SLOW_PAGE_FACTOR,
-    text: 'Your page loads so slowly that visitors give up before it finishes. Make it lighter (fewer ads, smaller files) or faster.',
+    text: 'Every second your page takes to load costs visitors, and yours has become slow enough to notice. Make it lighter (fewer ads, smaller files) or faster.',
   },
   {
     applies: (state) => state.popups.length >= POPUP_NAG_COUNT,
