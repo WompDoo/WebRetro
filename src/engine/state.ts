@@ -31,6 +31,7 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   'share-buttons': 0,
   'video-player': 0,
   'activity-feed': 0,
+  'one-pager': 0,
 };
 
 export function createInitialGameState(randomSeed: number): GameState {

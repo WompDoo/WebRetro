@@ -15,7 +15,8 @@ export type FeatureId =
   | 'map-mashup'
   | 'share-buttons'
   | 'video-player'
-  | 'activity-feed';
+  | 'activity-feed'
+  | 'one-pager';
 
 export type UpgradeId =
   | 'img-tag'
@@ -73,7 +74,11 @@ export type UpgradeId =
   | 'html5-media'
   | 'social-plugins'
   | 'learn-nodejs'
-  | 'learn-bcrypt';
+  | 'learn-bcrypt'
+  | 'learn-masonry'
+  | 'parallax-scrolling'
+  | 'retina-images'
+  | 'app-banner';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 export type UpgradeKind = 'skill' | 'boost';

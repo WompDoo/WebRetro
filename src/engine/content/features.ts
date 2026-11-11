@@ -17,6 +17,7 @@ export const FEATURE_IDS: readonly FeatureId[] = [
   'share-buttons',
   'video-player',
   'activity-feed',
+  'one-pager',
 ];
 
 export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
@@ -263,6 +264,23 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pageWeightKbPerLevel: 1,
     requiredSkillId: 'learn-nodejs',
     isSwitchable: false,
+    pluginDiesIn: null,
+    sunsetIn: null,
+  },
+  'one-pager': {
+    id: 'one-pager',
+    eraId: 'social-2011',
+    name: 'Scroll-jacking one-pager',
+    laterEraNames: {},
+    description: 'Your site as one long story that scrolls itself, chapter by chapter. Design blogs make it "Site of the Day". Everyone else waits for it to load, especially on phones.',
+    baseCost: 10_000_000_000,
+    visitorsPerSecondPerLevel: 2_500_000,
+    synergy: null,
+    // Full-screen photos for every chapter: the weight is the price of the awards.
+    pageWeightKb: 900,
+    pageWeightKbPerLevel: 40,
+    requiredSkillId: 'parallax-scrolling',
+    isSwitchable: true,
     pluginDiesIn: null,
     sunsetIn: null,
   },

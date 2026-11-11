@@ -118,6 +118,15 @@ const SOCIAL_CODE: EraCode = {
     'social-plugins': {
       'app.js': ['(function(d) {', '  var js = d.createElement("script");', '  js.src = "//connect.facespace.example/en_US/all.js#xfbml=1";', '  d.getElementsByTagName("head")[0].appendChild(js);', '}(document));', '// copied from the top answer (247 votes)'],
     },
+    'learn-masonry': {
+      'app.js': ['$(".gallery").masonry({', '  itemSelector: ".photo",', '  columnWidth: 160', '}); // Pinterest did it, so we do it'],
+    },
+    'parallax-scrolling': {
+      'app.js': ['$(window).scroll(function () {', '  var y = $(window).scrollTop();', '  $(".hero-far").css("top", y * 0.5); // every scroll event, on the main thread', '});'],
+    },
+    'retina-images': {
+      'style.css': ['@media (-webkit-min-device-pixel-ratio: 2) {', '  .hero { background-image: url(hero@2x.jpg); background-size: 1200px 600px; }', '}'],
+    },
     'learn-bcrypt': {
       'server.js': ['var bcrypt = require("bcrypt");', 'bcrypt.hash(password, 10, function (err, hash) {', '  db.users.update({ name: name }, { $set: { password: hash } }); // no more plain text', '});'],
     },

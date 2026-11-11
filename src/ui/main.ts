@@ -7,6 +7,7 @@ import { installJavaScriptEffects } from './javascript-effects';
 import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readPlaytestFlag, restoreGame, writeSave } from './persistence';
 import { createTapCounter, isPlaytestRequested } from './playtest';
 import { installPhoneSwipe } from './phone-swipe';
+import { installScrollDepth } from './scroll-depth';
 import { openPlaytestPanel, setPlaytestEnabled } from './playtest-actions';
 import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
@@ -71,6 +72,7 @@ function start(hotData: unknown): void {
   const renderer = createRenderer(editor);
   installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
   installPhoneSwipe(elements.browserViewport, elements.site);
+  installScrollDepth(elements.site);
   setPlaytestEnabled(isPlaytestRequested(window.location) || readPlaytestFlag());
   const countMoneyTap = createTapCounter(() => performance.now());
   elements.statMoney.addEventListener('pointerdown', () => {
