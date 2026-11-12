@@ -459,8 +459,10 @@ like viruses and DDoS have, can come later for the others.
   2018 hazards in, one player's 2018 with Angular took 58, 64 or 71 minutes depending on the seed alone: wider than
   the 15% gate, so a single run measured luck, and lowering Angular's breakage rate once made it *slower*. Each
   framework now plays 2018 three times from the same relaunch, each with its own seed, and CI compares the medians:
-  3.8% (active) and 5.1% (relaxed). The sim takes about 6 minutes instead of 3. Cheaper and better, later: one
-  random stream per hazard kind ("common random numbers"), so a broken build can't move the next traffic spike.
+  3.8% (active) and 5.1% (relaxed). That took the sim from 3 minutes to 6, so it now runs every run in a worker thread
+  on every core: 2 minutes 20 on four, with identical results. CI runs it beside the other checks, which report in
+  seconds. Cheaper and better, later: one random stream per hazard kind ("common random numbers"), so a broken
+  build can't move the next traffic spike.
 - **The 2018 hazards cost about 5–8% of the era.** Broken builds take 7–8% of play time in minigames, and the GDPR
   is tuned so every banner costs something: none about 11% of revenue in fines, honest about 7% in ad value, a dark
   pattern about the same on average but in lumps. The first pass cost 15% whichever was picked, and stretched 2018
