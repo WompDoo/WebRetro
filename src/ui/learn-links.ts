@@ -92,6 +92,7 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'learn-payments': `${MDN}/Web/API/Payment_Request_API`,
   'learn-oauth': 'https://oauth.net/2/',
   'learn-websockets': `${MDN}/Web/API/WebSockets_API`,
+  'ci-pipeline': `${WIKIPEDIA}/Continuous_integration`,
   'lazy-loading': `${MDN}/Web/Performance/Lazy_loading`,
   'code-splitting': `${MDN}/Glossary/Code_splitting`,
   'growth-hacking': `${WIKIPEDIA}/Growth_hacking`,

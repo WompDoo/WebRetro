@@ -1,4 +1,4 @@
-import type { EraId, MinigameId, MinigameStatus } from '../../engine';
+import type { EraId, FrameworkId, MinigameId, MinigameStatus } from '../../engine';
 
 /** What a minigame needs to know about the infection it fixes. */
 export interface MinigameTarget {
@@ -6,6 +6,8 @@ export interface MinigameTarget {
   readonly difficulty: number;
   readonly featureName: string;
   readonly eraId: EraId;
+  /** 2018: what broke the build depends on what it's built with. */
+  readonly framework: FrameworkId | null;
 }
 
 /** One attempt at one minigame, mounted into the shell's stage. The shell owns the clock and the outcome. */

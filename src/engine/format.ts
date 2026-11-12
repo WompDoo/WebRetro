@@ -38,9 +38,11 @@ function formatSmallMoney(value: number): string {
   return isWhole ? Math.floor(value).toString() : value.toFixed(2);
 }
 
+/** Money below zero (a fine bigger than the bank) reads "-$1.2B", not "$-1.2B". */
 export function formatMoney(value: number): string {
-  const amount = Math.abs(value) >= ONE_THOUSAND ? formatCompactNumber(value) : formatSmallMoney(value);
-  return `$${amount}`;
+  const size = Math.abs(value);
+  const amount = size >= ONE_THOUSAND ? formatCompactNumber(size) : formatSmallMoney(size);
+  return `${value < 0 ? '-' : ''}$${amount}`;
 }
 
 export function formatPercent(share: number): string {

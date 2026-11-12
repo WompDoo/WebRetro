@@ -40,6 +40,7 @@ export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
 };
 
 export const AD_ICON = svg('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 14l1.5-4L9 14M6.5 12.8h2M12 10v4h1.5a2 2 0 0 0 0-4Z"/>');
+export const COOKIE_ICON = svg('<path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3-3 3 3 0 0 1-3-3 3 3 0 0 1-3-3Z"/><path d="M8.5 10.5h.01M9 15.5h.01M13.5 16h.01M12.5 12h.01"/>');
 export const UPGRADE_ICON = svg('<path d="M12 19V5M6 11l6-6 6 6"/><path d="M5 21h14"/>');
 export const CODE_ICON = svg('<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>');
 export const SERVER_ICON = svg('<rect x="4" y="3" width="16" height="7" rx="1"/><rect x="4" y="14" width="16" height="7" rx="1"/><path d="M8 6.5h.01M8 17.5h.01"/>');

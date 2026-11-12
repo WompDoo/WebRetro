@@ -26,6 +26,8 @@ const OVERLAY_BODIES: Readonly<Record<Infection['kind'], (infection: Infection) 
     `<span class="infection-error"><b>Warning</b>: mysql_fetch_array(): supplied argument is not a valid MySQL result resource in <b>/home/you/public_html/${infection.featureId}.php</b> on line <b>42</b></span><span class="infection-sql">Latest comment: '; DROP TABLE ${infection.featureId};--</span>`,
   'password-leak': () => `<span class="infection-leak">${LEAKED_ROWS.map(escapeHtml).join('<br>')}</span><span class="infection-title">PASSWORDS LEAKED</span>`,
   ddos: () => '<span class="infection-error"><b>503 Service Unavailable</b><br>The server is temporarily unable to service your request. Too many connections.</span><span class="infection-title">DDoS ATTACK</span>',
+  'broken-build': () =>
+    '<span class="infection-error"><b>Failed to compile.</b><br>Module not found: Error: Can\'t resolve \'left-pad\' in \'/app/node_modules/string-utils\'</span><span class="infection-title">BUILD FAILED</span>',
 };
 
 const OVERLAY_HINTS: Readonly<Record<Infection['kind'], string>> = {
@@ -34,6 +36,7 @@ const OVERLAY_HINTS: Readonly<Record<Infection['kind'], string>> = {
   'sql-injection': 'Click to restore it',
   'password-leak': 'Click to reset them',
   ddos: 'Click to shut it out',
+  'broken-build': 'Click to fix the build',
 };
 
 /** Infections sit on top of the feature they took over, as a button that opens their minigame. */

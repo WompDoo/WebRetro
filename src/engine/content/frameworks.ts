@@ -12,14 +12,20 @@ export interface FrameworkDefinition {
   readonly skillId: UpgradeId;
   /** Its own server-side rendering: Next.js, Angular Universal, Nuxt. */
   readonly ssrSkillId: UpgradeId;
+  /**
+   * How fast its builds break, against the usual pace (1). React's npm tree is the biggest target for typosquats
+   * and hijacked packages; Angular's breaks come with each major version, twice a year, softened by ng update's
+   * automatic migrations; Vue's from plugins that nobody maintains any more.
+   */
+  readonly buildBreakageRate: number;
 }
 
 export const FRAMEWORK_IDS: readonly FrameworkId[] = ['react', 'angular', 'vue'];
 
 export const FRAMEWORKS_BY_ID: Readonly<Record<FrameworkId, FrameworkDefinition>> = {
-  react: { id: 'react', name: 'React', skillId: 'learn-react', ssrSkillId: 'nextjs-ssr' },
-  angular: { id: 'angular', name: 'Angular', skillId: 'learn-angular', ssrSkillId: 'angular-universal' },
-  vue: { id: 'vue', name: 'Vue', skillId: 'learn-vue', ssrSkillId: 'nuxt-ssr' },
+  react: { id: 'react', name: 'React', skillId: 'learn-react', ssrSkillId: 'nextjs-ssr', buildBreakageRate: 1.3 },
+  angular: { id: 'angular', name: 'Angular', skillId: 'learn-angular', ssrSkillId: 'angular-universal', buildBreakageRate: 0.9 },
+  vue: { id: 'vue', name: 'Vue', skillId: 'learn-vue', ssrSkillId: 'nuxt-ssr', buildBreakageRate: 0.8 },
 };
 
 export function findFrameworkPickedBy(upgradeId: UpgradeId): FrameworkId | null {

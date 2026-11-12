@@ -220,9 +220,29 @@ memcached, a CDN and a static page cache as server boosts.
 - Pop-ups grow up: exit-intent discounts that guilt you ("No thanks, I don't like saving money"), notification
   prompts, ad-blocker walls, paywalls, chatbots. The issue tracker is a ticket board (`MYH-412 · Highest · To do`).
 
-**To come, from the ideas below:** the hazards (GDPR, broken builds, timed ads), flat design and the other looks,
-and the backend (microservices, micro-frontends with shared dependencies, CI/CD, GraphQL). "Rewrite it in …"
-too: a costly switch of framework, with the site rewriting meanwhile.
+**Built (the hazards):**
+- **Broken builds**, one per framework, the way each really broke: React's through npm (typosquats, an
+  unpublished package, `crossenv` stealing keys), Angular's with each major version (`ng update` to 6 leaves a
+  package on 5; RxJS 6 changed how operators chain), Vue's through abandoned plugins (`vue-resource`). React's
+  break most often, Vue's least (`buildBreakageRate` on each framework); the framework descriptions say so.
+  The active fix is the *Fix the build* minigame; the passive fix is the skill **Set up a CI pipeline**: a
+  committed lockfile and a build server that installs, tests and builds every change, so a break fails there.
+- **The GDPR** (May 2018): a three-way choice under Ops, free to change. *No banner*: ads pay full price and
+  complaints turn into fines (30 s of revenue, about every 4 min: about 11% of revenue). *Honest*: Accept and
+  Reject the same size; ads pay 8% less, never fined. *Dark pattern*: one big "Accept all", the way out in small
+  grey text; ads pay 2% less, fined about every 22 min but harder (70 s of revenue): about the same as honest on
+  average, in lumps. A fine can take you below zero ("-$1.20B").
+  The banner shows on the site, bottom left. The scripted active player picks the dark pattern, the relaxed one
+  the honest banner.
+- **Interstitials:** full-screen ads with "Skip in 5". The only button from the start is the ad's own; the ×
+  fades in, small and faint, three seconds before the countdown ends, and "Skip ad ▸" when it does. The countdown
+  is CSS only: an animated `@property` integer drives a counter, and the buttons are revealed by animation delay,
+  so nothing runs per second and nothing re-renders. TypeScript owns the timings and passes them as custom
+  properties.
+
+**To come, from the ideas below:** flat design and the other looks, and the backend (microservices,
+micro-frontends with shared dependencies, GraphQL). "Rewrite it in …" too: a costly switch of framework, with
+the site rewriting meanwhile.
 
 **You arrive with:** the 2011 site: skeuomorphic, no cookie banner, everything bolted on.
 
@@ -243,10 +263,10 @@ too: a costly switch of framework, with the site rewriting meanwhile.
 - `node_modules` keeps growing: the editor shows its size climbing toward a gigabyte.
 
 **Hazards**
-- **GDPR cookie walls** (May 2018): the 1997 pop-up comes back, required by law. "Accept all" is big;
+- **GDPR cookie walls** (May 2018, built): the 1997 pop-up comes back, required by law. "Accept all" is big;
   "Reject all" hides behind "Manage options". No banner at all means a fine.
-- **Full-screen timed ads** with "Skip in 5". You can't close them until the timer ends; they cost visitors.
-- **A deleted dependency** breaks the build (the left-pad incident); "1,203 vulnerabilities found".
+- **Full-screen timed ads** with "Skip in 5" (built: the × sneaks in three seconds early).
+- **A deleted dependency** breaks the build (the left-pad incident, built as broken builds); "1,203 vulnerabilities found".
 - **A critical vulnerability in a logging library** (a nod to Log4Shell) for the backend.
 - Ad-blocker walls, paywalls ("You have 2 free articles left"), newsletter pop-ups, notification prompts.
 
@@ -336,6 +356,8 @@ the last; the year is when that step became the usual next move.
 | Spam flood | the comment sorter minigame | CAPTCHA: comments bring 10% fewer visitors |
 | SQL injection | the backup restore minigame | Learn prepared statements (a skill, no downside) |
 | Traffic spike | none | Hosting headroom, or the static page cache |
+| Broken build (2018) | the Fix the build minigame | Set up a CI pipeline (a skill, no downside) |
+| GDPR fine (2018) | none: it's a lump sum | A cookie banner: honest (ads −8%, never fined) or a dark pattern (ads −2%, rarer but bigger fines) |
 
 A defense must show what it protects, not only what it costs: the shop lists both lines, and CAPTCHA puts
 a visible CAPTCHA box under the comments. Before that it read as a pure cost.
@@ -383,6 +405,7 @@ appears, so closing and reopening it gives the same one.
 | Reset the passwords | password leak | spinning plates: crackers fill every account's bar at once, a click resets one; hold out until they give up | 3/4/5 accounts, faster, 10/13/16 s |
 | Reroute the traffic | DDoS | a calm puzzle: turn cable tiles until a line runs from the Internet through the scrubbing centre; lit cable shows how far the traffic gets; no clock, no way to lose | 4×3, 5×4, 6×4 boards |
 | Cross the traffic | DDoS | hop your admin connection across lanes of bot traffic to the server; a bot sends you back; 3 hits fail; the hitbox is exactly the drawn packet, so a gap that looks big enough is | 3/4/5 lanes, 1/2/3 crossings; bots 0.6–1.2 cells/s, never past 1.5 |
+| Fix the build | broken build | the brief states one rule for your framework (React: what got installed isn't what you asked for; Angular: still on version 5; Vue: not updated in over a year) and every line shows the fact it's about; click the ones that break it before the deploy; a wrong click costs 4 s, enough that clicking every working line runs the clock out. Removing a bad line, or missing one, shows its real story | 2/3/4 broken among 6/8/10, 15/18/21 s |
 
 Replaced after a playtest: *Close the gates* (shut lane gates for bots, open them for visitors) was twitchy
 multitasking across three lanes; the player didn't enjoy that kind of game. DDoS got a calm puzzle instead.
@@ -396,11 +419,16 @@ Rules they all follow:
 - **Fix it fast:** winning within 30 s of the infection appearing gives +15% traffic for a minute.
 - **The time budget:** minigames should take a tenth of play time or less. Hazards fire less often than when
   fixes were clicks (virus every 1:40–3:00, spam 2:00–3:20, SQL 3:00–5:00, password leak 4:20–6:40, DDoS
-  4:00–6:00); the simulation prints the share: 2–3% in 1997, 6–7% in 2005 and 11% in 2011. 2011 runs a little
+  4:00–6:00); the simulation prints the share: 2–3% in 1997, 6–7% in 2005, 11% in 2011 and 7–8% in 2018 (broken builds
+  every 3:40–5:40, faster for React). 2011 runs a little
   over because the scripted players never buy DDoS protection (its revenue cut reads as a loss); people do.
 - **A pool of games per hazard:** each kind of infection lists its games (`INFECTION_MINIGAMES`) and rolls one
   when it appears. Viruses have three, DDoS two, the rest one. A hazard that comes back often should get more.
 - **Touch first.** Every game works with taps, swipes and the pointer, and has keys too.
+- **No web knowledge needed.** A game tests a skill whose rule is on screen (spot the spam, the fullest bar, the
+  odd version number), never what a developer happens to know. The history is the reward: Fix the build shows
+  each bad line's story once you've dealt with it. Learned in a playtest: its first version asked players to
+  tell RxJS 5 imports from RxJS 6 ones.
 - Original and web-themed: inspired by party-game chores in spirit, not copied from any game.
 
 Next candidates: rack wiring (server overload as a hazard), "hold the line" during a traffic spike, untangle
@@ -419,6 +447,17 @@ like viruses and DDoS have, can come later for the others.
   heavy page on a 28.8k modem takes a minute to load, and at 60K visitors/s the era took over two hours.
 - **The framework check is a share now:** 2018 may take at most 15% longer with one framework than another
   (two minutes was right for ten-minute eras). Today 2% (active) and 8% (relaxed).
+- **The framework check compares medians, over three seeds.** Every hazard draws from one seeded random stream, so a
+  framework whose builds break more often also moves every later traffic spike, infection and minigame. With the
+  2018 hazards in, one player's 2018 with Angular took 58, 64 or 71 minutes depending on the seed alone: wider than
+  the 15% gate, so a single run measured luck, and lowering Angular's breakage rate once made it *slower*. Each
+  framework now plays 2018 three times from the same relaunch, each with its own seed, and CI compares the medians:
+  3.8% (active) and 5.1% (relaxed). The sim takes about 6 minutes instead of 3. Cheaper and better, later: one
+  random stream per hazard kind ("common random numbers"), so a broken build can't move the next traffic spike.
+- **The 2018 hazards cost about 5–8% of the era.** Broken builds take 7–8% of play time in minigames, and the GDPR
+  is tuned so every banner costs something: none about 11% of revenue in fines, honest about 7% in ad value, a dark
+  pattern about the same on average but in lumps. The first pass cost 15% whichever was picked, and stretched 2018
+  by up to 30%. Now: 49–51 minutes for the active player (47–48 before) and 61–64 for the relaxed one (63–68).
 - **The sim is fast enough for long eras.** Purchased effects are summarized once per purchase (products per kind,
   a feature-by-feature map, sums, flags) instead of scanned for every feature on every read. The whole sim went
   from about 22 minutes to 2 for four times the simulated play, with results identical to the unsummarized one.

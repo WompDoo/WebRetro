@@ -1,4 +1,4 @@
-import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findInfection, getFeatureDisplayName } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getFeatureDisplayName } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
@@ -51,6 +51,7 @@ function findMinigameTarget(infectionId: number): MinigameTarget | null {
     difficulty: calculateInfectionDifficulty(infection),
     featureName: getFeatureDisplayName(infection.featureId, store.game.eraId).toLowerCase(),
     eraId: store.game.eraId,
+    framework: findChosenFramework(store.game),
   };
 }
 

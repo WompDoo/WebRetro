@@ -3,7 +3,9 @@ import {
   buyDefense,
   buyFeatureLevels,
   buyUpgrade,
+  chooseConsentBanner,
   closePopup,
+  CONSENT_BANNER_IDS,
   DEFENSE_IDS,
   ERAS_BY_ID,
   fallForPopupScam,
@@ -19,7 +21,7 @@ import {
   writeCode,
   findChosenFramework,
 } from '../engine';
-import type { DefenseId, FeatureId, FrameworkId, UpgradeId } from '../engine';
+import type { ConsentBanner, DefenseId, FeatureId, FrameworkId, UpgradeId } from '../engine';
 import { DEVICE_VIEWS } from './browser-chrome';
 import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
@@ -54,6 +56,10 @@ function readId(target: HTMLElement): string {
 
 function readNumericId(target: HTMLElement): number {
   return Number(readId(target));
+}
+
+function isConsentBanner(value: string): value is ConsentBanner {
+  return (CONSENT_BANNER_IDS as readonly string[]).includes(value);
 }
 
 function isFeatureId(value: string): value is FeatureId {
@@ -165,6 +171,7 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'buy-defense': withId(isDefenseId, (id) => updateGame((state) => buyDefense(state, id))),
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),
     'toggle-feature': withId(isFeatureId, (id) => updateGame((state) => toggleFeature(state, id))),
+    'choose-consent-banner': withId(isConsentBanner, (id) => updateGame((state) => chooseConsentBanner(state, id))),
     'toggle-scroll-jacking': () => {
       store.isScrollJackingOn = !store.isScrollJackingOn;
       writePreferences();

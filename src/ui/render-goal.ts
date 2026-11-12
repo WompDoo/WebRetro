@@ -41,6 +41,11 @@ function hasDeadFeature(state: GameState): boolean {
   return FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0 && isFeaturePluginDead(state, featureId));
 }
 
+/** Ads are tracking visitors and nothing asks them first. */
+function isFinedForTracking(state: GameState): boolean {
+  return state.adCount > 0 && state.consentBanner === 'none';
+}
+
 const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => state.keystrokes < FIRST_KEYSTROKES,
@@ -97,6 +102,10 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: isRenderedOnlyInBrowser,
     text: 'Your single-page app is blank until its JavaScript has run, and search engines index the blank page: three in ten visitors never find you. Learn your framework’s server rendering.',
+  },
+  {
+    applies: (state) => state.eraId === 'platform-2018' && isFinedForTracking(state),
+    text: 'It’s 2018 and the GDPR is in force: your ads track visitors who never said yes, and complaints turn into fines. Pick a cookie banner under Ops.',
   },
   {
     applies: (state) => state.eraId === 'social-2011' && hasDeadFeature(state),

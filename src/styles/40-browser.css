@@ -10,7 +10,8 @@
 .browser-url { flex: 1; min-width: 0; padding: 3px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .browser-viewport { position: relative; height: clamp(420px, 66vh, 640px); overflow: hidden; }
 .browser-statusbar { padding: 3px 10px; font-size: 11.5px; }
-.site { height: 100%; overflow-y: auto; overscroll-behavior: contain; container-type: inline-size; }
+/* Its own stacking context: z-indexes inside the page (the chat bubble, the cookie banner) stay under the browser's pop-ups. */
+.site { height: 100%; overflow-y: auto; overscroll-behavior: contain; container-type: inline-size; isolation: isolate; }
 @media (max-width: 520px) {
   .browser-button.is-optional { display: none; }
   .browser-viewport { height: 440px; }

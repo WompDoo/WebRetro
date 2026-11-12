@@ -10,4 +10,5 @@ export const MINIGAME_NAMES: Readonly<Record<MinigameId, string>> = {
   'reset-passwords': 'Reset the passwords',
   'reroute-traffic': 'Reroute the traffic',
   'cross-traffic': 'Cross the traffic',
+  'fix-build': 'Fix the build',
 };

@@ -13,6 +13,9 @@ export const INITIAL_HAZARD_COUNTDOWNS_MS: Readonly<Record<HazardKind, number>> 
   // 2011's hazards: the first of each lands a few minutes into the era, after the relaunch has settled.
   'password-leak': 210_000,
   ddos: 150_000,
+  // 2018's: these count down only once they apply, after a framework is picked and while ads track visitors.
+  'broken-build': 180_000,
+  'privacy-fine': 240_000,
 };
 
 const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
@@ -64,6 +67,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     hostingTier: 0,
     trafficSpikeRemainingMs: 0,
     quickFixBonusRemainingMs: 0,
+    consentBanner: 'none',
     reachedMilestoneIds: [],
     prototypeComplete: false,
   };
