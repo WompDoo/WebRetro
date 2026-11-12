@@ -12,9 +12,10 @@ import type { HomepageContent, HomepageSkills } from './site-1997';
 // 2011 features land here too while the 2011 site still wears its 2005 look.
 /**
  * The 2005 layout lasts as long as you don't learn Bootstrap, and in 2018 until a framework rewrites it: whatever you
- * build in those eras still needs a place on it. 2018's features go at the top and the bottom of the main column.
+ * build in those eras still needs a place on it: the language switcher in the header, the rest at the top and the
+ * bottom of the main column.
  */
-const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter'];
+const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter'];
 const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'share-buttons', 'hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'webring'];
 const LEGACY_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'webring', 'tag-cloud', 'share-buttons', 'social-login'];
 const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'under-construction', 'guestbook'];
@@ -73,7 +74,7 @@ function render2005DivSite(context: SiteContext): string {
   const main = renderFeatureBlocks(context, WEB2_MAIN_FEATURES).join('');
   const sidebar = renderFeatureBlocks(context, WEB2_SIDEBAR_FEATURES).join('');
   const intro = main === '' ? '<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new ${escapeHtml(siteBrand(context.state))}!</h2><p>We relaunched. Start a blog to fill this space.</p></section>' : main;
-  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span>${renderBetaBadge(context.state)}<nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
+  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span>${renderBetaBadge(context.state)}<nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}</header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
 }
 
 /** The relaunch keeps the old hand-written page until you learn CSS; then it becomes a div layout. */

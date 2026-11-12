@@ -66,14 +66,9 @@ function renderHero(context: SiteContext): string {
   return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary${renderAbVariant(context)}">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
 }
 
-/** With a language switcher, the menu gets its globe. */
-function renderLanguageMenu(context: SiteContext): string {
-  return ownedFeatures(context, ['language-switcher']).length > 0 ? '<span class="lp-lang">🌐 EN ▾</span>' : '';
-}
-
 function renderNav(context: SiteContext): string {
   const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
-  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="lp-links">${items}</nav>${renderLanguageMenu(context)}<span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
+  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="lp-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
 }
 
 /** What a lawyer adds to the footer: every page anyone could ask for, all updated the day the GDPR applied. */
@@ -133,7 +128,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
   return `<div class="site-2018${renderLookClasses(context, framework)}">
     ${renderBootScreen(framework)}
     ${renderNav(context)}
-    ${renderFeatureBlocks(context, ['language-switcher', 'stories']).join('')}
+    ${renderFeatureBlocks(context, ['stories']).join('')}
     ${renderHero(context)}
     ${renderLeaderboard(context)}
     <section class="lp-logos"><span>Trusted by teams at</span>${TRUSTED_BY.map((name) => `<b>${name}</b>`).join('')}</section>

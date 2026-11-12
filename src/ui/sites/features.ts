@@ -390,15 +390,18 @@ const renderLiveChat: FeatureRenderer = (context) =>
 /** One per level after the first: the site starts in English, and each level adds a language. */
 const LANGUAGES: readonly string[] = ['English', 'Deutsch', 'Français', 'Español', '日本語', 'Português', 'Italiano', 'Nederlands', '한국어', 'Polski', 'Svenska', 'Türkçe', 'Bahasa Indonesia', 'Русский', '中文', 'العربية'];
 
-function renderLanguageChip(language: string, index: number): string {
-  return `<span class="lang-chip${index === 0 ? ' is-current' : ''}">${escapeHtml(language)}</span>`;
+function renderLanguageOption(language: string, index: number): string {
+  return `<li${index === 0 ? ' class="is-current"' : ''}>${escapeHtml(language)}</li>`;
 }
 
-/** A bar under the menu, where every site put it: the languages it speaks, one more per level. */
+/**
+ * What every site had: a globe and a dropdown in the menu. Hover it, or tap it on a phone, and it lists the languages
+ * the site speaks: one more per level.
+ */
 const renderLanguageSwitcher: FeatureRenderer = (context) => {
   const count = levelOf(context, 'language-switcher') + 1;
-  const chips = LANGUAGES.slice(0, count).map(renderLanguageChip).join('');
-  return `<div class="lang-bar"><span class="lang-globe" aria-hidden="true">🌐</span><span class="lang-chips">${chips}</span><span class="post-meta">${count} languages · “Kostenlose Testversion starten” doesn’t fit the button</span></div>`;
+  const options = LANGUAGES.slice(0, count).map(renderLanguageOption).join('');
+  return `<span class="lang-menu" tabindex="0"><span class="lang-current">🌐 EN ▾</span><ul class="lang-options"><li class="lang-count">${count} languages</li>${options}</ul></span>`;
 };
 
 const READERS_PER_LEVEL = 1_200;

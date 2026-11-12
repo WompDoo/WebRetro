@@ -122,8 +122,7 @@ function renderBootstrapSite(context: SiteContext): string {
   const nav = NAV_ITEMS.map((item, index) => `<span${index === 0 ? ' class="is-active"' : ''}>${item}</span>`).join('');
   return `<div class="site-2011${renderLookClasses(context)}">
     ${renderAppBanner(context)}
-    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteBrand(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderNavbarSignIn(context)}</header>
-    ${renderFeatureBlocks(context, ['language-switcher']).join('')}
+    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteBrand(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderFeatureBlocks(context, ['language-switcher']).join('')}${renderNavbarSignIn(context)}</header>
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
