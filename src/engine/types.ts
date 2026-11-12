@@ -345,6 +345,8 @@ export interface GameState {
   /** Fixing an infection quickly earns a short traffic bonus. */
   readonly quickFixBonusRemainingMs: number;
   readonly consentBanner: ConsentBanner;
+  /** What the player named the site, as typed (cleaned). Addresses and logos use forms made from it. */
+  readonly siteName: string;
   readonly reachedMilestoneIds: readonly MilestoneId[];
   readonly prototypeComplete: boolean;
 }

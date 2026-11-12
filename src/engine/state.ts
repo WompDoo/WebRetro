@@ -1,4 +1,5 @@
 import { SAVE_VERSION } from './constants';
+import { DEFAULT_SITE_NAME } from './site-name';
 import type { FeatureId, GameState, HazardKind } from './types';
 
 const FIRST_ENTITY_ID = 1;
@@ -68,6 +69,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     trafficSpikeRemainingMs: 0,
     quickFixBonusRemainingMs: 0,
     consentBanner: 'none',
+    siteName: DEFAULT_SITE_NAME,
     reachedMilestoneIds: [],
     prototypeComplete: false,
   };

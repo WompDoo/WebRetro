@@ -510,7 +510,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     kind: 'boost',
     eraId: 'web2-2005',
     name: 'Drop the vowels',
-    description: 'Every cool startup does it. myhomepage becomes myhmpg.',
+    description: 'Every cool startup does it: your name loses its vowels, and your address with it.',
     cost: 6_000_000,
     pageWeightKb: 0,
     effects: [{ kind: 'global-traffic-multiplier', factor: 1.2 }],

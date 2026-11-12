@@ -1,5 +1,6 @@
 import { findChosenFramework, UPGRADE_IDS } from '../engine';
 import type { EraId, FrameworkId, GameState, UpgradeId } from '../engine';
+import { fillSiteNameText } from './sites/site-context';
 
 /**
  * The code you type is the code you know. In 1997 it starts as Hello World; in 2005 it starts
@@ -24,12 +25,12 @@ interface EraCode {
 
 const HOMEPAGE_CODE: EraCode = {
   mainFile: 'INDEX.HTM',
-  opening: ['<HTML>', '<HEAD>', '<TITLE>My Homepage</TITLE>', '</HEAD>', '<BODY>', '<H1>Hello World!</H1>', '<!-- my first web page -->'],
+  opening: ['<HTML>', '<HEAD>', '<TITLE>{name}</TITLE>', '</HEAD>', '<BODY>', '<H1>Hello World!</H1>', '<!-- my first web page -->'],
   legacy: [],
   legacyReplacedBy: null,
   skills: {
     'img-tag': ['<IMG SRC="http://counter.example/count.cgi?id=you" ALT="hit counter">', '<IMG SRC="construction.gif" WIDTH="88" HEIGHT="31" ALT="under construction">'],
-    'font-tags': ['<CENTER>', '<FONT FACE="Comic Sans MS" SIZE="6" COLOR="#FF00FF">Welcome to My Homepage!!!</FONT>', '<P><FONT COLOR="#FF0000">Hi!! I like computers, my cat, and pizza.</FONT></P>', '</CENTER>'],
+    'font-tags': ['<CENTER>', '<FONT FACE="Comic Sans MS" SIZE="6" COLOR="#FF00FF">Welcome to {name}!!!</FONT>', '<P><FONT COLOR="#FF0000">Hi!! I like computers, my cat, and pizza.</FONT></P>', '</CENTER>'],
     'body-background': ['<BODY BGCOLOR="#000020" TEXT="#F0F0F0" LINK="#FFFF00" VLINK="#FF00FF" BACKGROUND="stars.gif">'],
     hyperlinks: ['<A HREF="links.htm">Cool links</A> | <A HREF="mailto:webmaster@example.com">Email me!</A>', '<A HREF="http://www.webring.example/next?site=42">Next site &gt;&gt;</A>'],
     'marquee-blink': ['<MARQUEE BEHAVIOR="alternate">*** Best viewed in 800x600 ***</MARQUEE>', '<BLINK>NEW!</BLINK> Please sign my guestbook!!'],
@@ -50,11 +51,11 @@ const WEB2_EMPTY_FILES: Readonly<Record<string, string>> = {
 
 const WEB2_CODE: EraCode = {
   mainFile: 'blog.php',
-  opening: ['<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">', '<html xmlns="http://www.w3.org/1999/xhtml">', '<head>', '<title>myhomepage 2.0</title>'],
+  opening: ['<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">', '<html xmlns="http://www.w3.org/1999/xhtml">', '<head>', '<title>{site} 2.0</title>'],
   legacy: ['</head>', '<body bgcolor="#000020">', '<table width="100%" border="0" cellpadding="4">', '<tr><td width="150" valign="top"><!-- nav --></td>', '<td valign="top"><!-- TODO: redo this with divs, everyone says tables are bad now --></td></tr>', '</table>'],
   legacyReplacedBy: 'learn-css',
   skills: {
-    'learn-css': ['<link rel="stylesheet" type="text/css" href="style.css" />', '</head>', '<body>', '<div id="header"><h1>myhomepage</h1></div>', '<div id="content" class="clearfix"></div>', '<div id="sidebar"></div>'],
+    'learn-css': ['<link rel="stylesheet" type="text/css" href="style.css" />', '</head>', '<body>', '<div id="header"><h1>{site}</h1></div>', '<div id="content" class="clearfix"></div>', '<div id="sidebar"></div>'],
     'learn-php': ['<?php', 'include("config.php");', 'mysql_connect($db_host, $db_user, $db_pass);', '$posts = mysql_query("SELECT * FROM posts ORDER BY created DESC LIMIT 10");', 'while ($post = mysql_fetch_array($posts)) {', '  echo "<div class=\\"post\\"><h2>" . $post["title"] . "</h2>";', '}', '// TODO: escape this before launch', '$comments = mysql_query("SELECT * FROM comments WHERE post_id = " . $_GET["id"]);', '?>'],
     'learn-ajax': ['<script type="text/javascript" src="ajax.js"></script>'],
     'learn-flash': ['<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="550" height="400">', '  <param name="movie" value="intro.swf" />', '  <embed src="intro.swf" quality="high" width="550" height="400"></embed>', '</object>', '<!-- intro.fla, frame 1: stop(); logo_mc.onEnterFrame = function() { this._rotation += 5; }; -->'],
@@ -99,14 +100,14 @@ const SOCIAL_EMPTY_FILES: Readonly<Record<string, string>> = {
 
 const SOCIAL_CODE: EraCode = {
   mainFile: 'index.html',
-  opening: ['<!DOCTYPE html>', '<html lang="en">', '<head>', '<meta charset="utf-8">', '<title>myhomepage</title>'],
-  legacy: ['<link rel="stylesheet" href="style.css">', '</head>', '<body>', '<div id="header"><h1>myhomepage</h1></div>', '<div id="content" class="clearfix"><!-- still the 2005 layout. TODO: Bootstrap? --></div>'],
+  opening: ['<!DOCTYPE html>', '<html lang="en">', '<head>', '<meta charset="utf-8">', '<title>{site}</title>'],
+  legacy: ['<link rel="stylesheet" href="style.css">', '</head>', '<body>', '<div id="header"><h1>{site}</h1></div>', '<div id="content" class="clearfix"><!-- still the 2005 layout. TODO: Bootstrap? --></div>'],
   legacyReplacedBy: 'learn-bootstrap',
   skills: {
     'responsive-design': ['<meta name="viewport" content="width=device-width, initial-scale=1.0">'],
-    'learn-bootstrap': ['<link href="css/bootstrap.min.css" rel="stylesheet">', '</head>', '<body>', '<div class="navbar navbar-fixed-top"><div class="navbar-inner"><div class="container">', '  <a class="brand" href="#">myhomepage</a>', '</div></div></div>', '<div class="container">', '  <div class="hero-unit">', '    <h1>Hello, world!</h1>', '    <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>', '  </div>', '  <div class="row"><div class="span4"><h2>Heading</h2></div><div class="span4"><h2>Heading</h2></div><div class="span4"><h2>Heading</h2></div></div>', '</div>'],
+    'learn-bootstrap': ['<link href="css/bootstrap.min.css" rel="stylesheet">', '</head>', '<body>', '<div class="navbar navbar-fixed-top"><div class="navbar-inner"><div class="container">', '  <a class="brand" href="#">{site}</a>', '</div></div></div>', '<div class="container">', '  <div class="hero-unit">', '    <h1>Hello, world!</h1>', '    <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>', '  </div>', '  <div class="row"><div class="span4"><h2>Heading</h2></div><div class="span4"><h2>Heading</h2></div><div class="span4"><h2>Heading</h2></div></div>', '</div>'],
     'html5-media': ['<video src="intro.mp4" poster="intro.jpg" controls preload="none"></video>', '<audio src="episode-42.mp3" controls></audio>', '<!-- no plugin. it even plays on phones. -->'],
-    'social-plugins': ['<div class="fs-like" data-href="http://www.myhomepage.com" data-layout="button_count"></div>', '<a href="https://chirper.example/share" class="chirp-button">Chirp</a>', '<script src="app.js"></script>'],
+    'social-plugins': ['<div class="fs-like" data-href="http://www.{site}.com" data-layout="button_count"></div>', '<a href="https://chirper.example/share" class="chirp-button">Chirp</a>', '<script src="app.js"></script>'],
   },
   files: {
     'responsive-design': {
@@ -173,7 +174,7 @@ const PLATFORM_EMPTY_FILES: Readonly<Record<string, string>> = {
 /** 2018 before a framework: the 2011 page, with npm doing the typing. */
 const PLATFORM_CODE: EraCode = {
   mainFile: 'index.html',
-  opening: ['<!DOCTYPE html>', '<html lang="en">', '<head>', '<meta charset="utf-8">', '<meta name="viewport" content="width=device-width, initial-scale=1">', '<title>myhomepage</title>'],
+  opening: ['<!DOCTYPE html>', '<html lang="en">', '<head>', '<meta charset="utf-8">', '<meta name="viewport" content="width=device-width, initial-scale=1">', '<title>{site}</title>'],
   legacy: ['<link href="css/bootstrap.min.css" rel="stylesheet">', '<script src="js/jquery-1.7.2.min.js"></script>', '</head>', '<body>', '<div class="container">', '  <div class="hero-unit"><h1>Hello, world!</h1></div>', '  <!-- 4,000 lines of jQuery below. TODO: pick a framework -->', '</div>'],
   legacyReplacedBy: null,
   skills: {},
@@ -195,7 +196,7 @@ const REACT_CODE: EraCode = {
   files: {
     ...PLATFORM_SHARED_FILES,
     'learn-react': {
-      terminal: ['$ npx create-react-app myhomepage', '$ npm install redux react-redux react-router-dom redux-thunk', '+ react@16.4.1', '+ react-redux@5.0.7', 'added 1203 packages from 754 contributors in 48.2s', ...NPM_AUDIT_LINES],
+      terminal: ['$ npx create-react-app {site}', '$ npm install redux react-redux react-router-dom redux-thunk', '+ react@16.4.1', '+ react-redux@5.0.7', 'added 1203 packages from 754 contributors in 48.2s', ...NPM_AUDIT_LINES],
     },
     'nextjs-ssr': {
       'pages/index.js': ['export default class Index extends React.Component {', '  static async getInitialProps() {', '    return { posts: await fetchPosts() }; // runs on the server: no window, no document', '  }', '  render() { return <App posts={this.props.posts} />; }', '}'],
@@ -222,14 +223,14 @@ const ANGULAR_CODE: EraCode = {
     'learn-angular': {
       'app.component.html': ['<app-hero title="The all-in-one platform for everything"></app-hero>', '<app-post *ngFor="let post of posts$ | async" [post]="post"></app-post>'],
       'app.module.ts': ['@NgModule({', '  declarations: [AppComponent, HeroComponent, PostComponent],', '  imports: [BrowserModule, HttpClientModule],', '  providers: [PostService],', '  bootstrap: [AppComponent]', '})', 'export class AppModule {}'],
-      terminal: ['$ ng new myhomepage --style=scss --routing', '$ ng generate component hero', 'CREATE src/app/hero/hero.component.scss (0 bytes)', 'CREATE src/app/hero/hero.component.html (23 bytes)', 'CREATE src/app/hero/hero.component.spec.ts (614 bytes)', 'CREATE src/app/hero/hero.component.ts (262 bytes)', 'UPDATE src/app/app.module.ts (388 bytes)'],
+      terminal: ['$ ng new {site} --style=scss --routing', '$ ng generate component hero', 'CREATE src/app/hero/hero.component.scss (0 bytes)', 'CREATE src/app/hero/hero.component.html (23 bytes)', 'CREATE src/app/hero/hero.component.spec.ts (614 bytes)', 'CREATE src/app/hero/hero.component.ts (262 bytes)', 'UPDATE src/app/app.module.ts (388 bytes)'],
     },
     'mobile-first': { ...PLATFORM_SHARED_FILES['mobile-first'], 'app.component.html': ['<app-stories [stories]="stories$ | async"></app-stories>'] },
     'learn-payments': { ...PLATFORM_SHARED_FILES['learn-payments'], 'app.component.html': ['<app-pricing-table [plans]="plans"></app-pricing-table>'] },
     'learn-websockets': { ...PLATFORM_SHARED_FILES['learn-websockets'], 'app.component.html': ['<app-chat-bubble [messages]="messages$ | async"></app-chat-bubble>'] },
     'angular-universal': {
       'app.server.module.ts': ['@NgModule({', '  imports: [AppModule, ServerModule, ModuleMapLoaderModule],', '  bootstrap: [AppComponent]', '})', 'export class AppServerModule {}'],
-      terminal: ['$ ng generate universal --client-project myhomepage', 'CREATE src/main.server.ts (220 bytes)', 'CREATE src/app/app.server.module.ts (318 bytes)', 'UPDATE angular.json (4207 bytes)'],
+      terminal: ['$ ng generate universal --client-project {site}', 'CREATE src/main.server.ts (220 bytes)', 'CREATE src/app/app.server.module.ts (318 bytes)', 'UPDATE angular.json (4207 bytes)'],
     },
   },
   emptyFile: (fileName) => PLATFORM_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
@@ -249,11 +250,11 @@ const VUE_CODE: EraCode = {
   files: {
     ...PLATFORM_SHARED_FILES,
     'learn-vue': {
-      terminal: ['$ npm install -g @vue/cli', '$ vue create myhomepage', '? Please pick a preset: default (babel, eslint)', '🎉  Successfully created project myhomepage.', '$ npm run serve'],
+      terminal: ['$ npm install -g @vue/cli', '$ vue create {site}', '? Please pick a preset: default (babel, eslint)', '🎉  Successfully created project {site}.', '$ npm run serve'],
     },
     'nuxt-ssr': {
       'pages/index.vue': ['<script>', 'export default {', '  async asyncData({ $axios }) {', "    return { posts: await $axios.$get('/api/posts') }; // runs on the server first", '  }', '};', '</script>'],
-      terminal: ['$ npx create-nuxt-app myhomepage', '✨  Generating Nuxt.js project in myhomepage'],
+      terminal: ['$ npx create-nuxt-app {site}', '✨  Generating Nuxt.js project in {site}'],
     },
   },
   emptyFile: (fileName) => PLATFORM_EMPTY_FILES[fileName] ?? `// ${fileName}\n`,
@@ -303,7 +304,8 @@ function buildOtherFile(state: GameState, code: EraCode, fileName: string): stri
 }
 
 /** The code typed into one file: the main file holds the page, the others what your skills put there. */
+/** The editor escapes what it shows, so the name goes into the code as text. */
 export function buildEditorSource(state: GameState, fileName: string): string {
   const code = codeFor(state);
-  return fileName === code.mainFile ? buildMainFile(state, code) : buildOtherFile(state, code, fileName);
+  return fillSiteNameText(fileName === code.mainFile ? buildMainFile(state, code) : buildOtherFile(state, code, fileName), state);
 }

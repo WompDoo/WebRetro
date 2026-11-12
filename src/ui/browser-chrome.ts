@@ -2,7 +2,7 @@ import { calculateMobileStayShare, ERAS_BY_ID, findChosenFramework, FRAMEWORKS_B
 import type { EconomySnapshot, EraId, FrameworkId, GameState, UpgradeId } from '../engine';
 import { resolveEditorTabs, resolveEditorTitle } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
-import { siteName } from './sites';
+import { fillSiteNameText, siteBrand } from './sites';
 import { mainEditorFile } from './skill-code';
 
 /** Backend knowledge mostly shows up here: the address bar, the status bar and the editor. */
@@ -50,12 +50,11 @@ function describeScheme(eraId: EraId): string {
 
 export function buildSiteUrl(state: GameState): string {
   const path = SITE_PATHS[state.eraId](state);
-  return path === null ? ERA_PRESENTATION[state.eraId].siteUrl : `${describeScheme(state.eraId)}://www.${siteName(state)}.com${path}`;
+  return path === null ? fillSiteNameText(ERA_PRESENTATION[state.eraId].siteUrl, state) : `${describeScheme(state.eraId)}://www.${siteBrand(state)}.com${path}`;
 }
 
 export function buildBrowserTitle(state: GameState): string {
-  const title = ERA_PRESENTATION[state.eraId].browserTitle;
-  return state.eraId === 'homepage-1997' ? title : title.replace('myhomepage', siteName(state));
+  return fillSiteNameText(ERA_PRESENTATION[state.eraId].browserTitle, state);
 }
 
 function formatSeconds(seconds: number): string {

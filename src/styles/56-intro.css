@@ -1,0 +1,47 @@
+/* ---------- The intro: typed lines on black, then a Windows 95 setup wizard names the site ---------- */
+.intro {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow-y: auto;
+  background: #000000; color: #C0C0C0; font: 15px/1.6 'Courier New', Courier, monospace;
+}
+.intro[data-phase="wizard"] { background: #008080; }
+.intro[data-phase="story"] .wizard, .intro[data-phase="wizard"] .intro-story, .intro[data-phase="wizard"] .intro-skip { display: none; }
+.intro-story { width: min(640px, 100%); cursor: pointer; }
+.intro-line { min-height: 1.6em; margin: 0 0 6px; }
+.intro-line:first-child { color: #33FF66; }
+/* The caret sits after the line being typed: the last one with text in it. */
+.intro-line:not(:empty):not(:has(+ .intro-line:not(:empty)))::after { content: "▌"; animation: intro-caret 1s steps(1) infinite; }
+@keyframes intro-caret { 50% { opacity: 0; } }
+.intro-skip { position: fixed; bottom: max(16px, env(safe-area-inset-bottom, 0px)); left: 0; right: 0; margin: 0; text-align: center; color: #6B6B6B; font-size: 12px; }
+
+/* The wizard: grey, bevelled, MS Sans Serif, a navy title bar and a picture panel on the left. */
+.wizard {
+  width: min(520px, 100%); background: #C0C0C0; border: 2px outset #FFFFFF; box-shadow: 1px 1px 0 #000000;
+  color: #000000; font: 13px/1.4 'MS Sans Serif', Tahoma, Geneva, Verdana, sans-serif;
+}
+.wizard-titlebar { display: flex; justify-content: space-between; align-items: center; padding: 3px 4px 3px 6px; background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; font-weight: 700; }
+.wizard-titlebar-x { display: grid; place-items: center; width: 16px; height: 14px; border: 2px outset #FFFFFF; background: #C0C0C0; color: #000000; font-size: 11px; line-height: 1; }
+.wizard-body { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 14px; padding: 14px; }
+.wizard-art { display: grid; place-content: center; justify-items: center; min-height: 170px; border: 2px inset #FFFFFF; background: linear-gradient(160deg, #000080, #008080); }
+.wizard-monitor { display: grid; place-items: center; width: 84px; height: 66px; border: 3px outset #FFFFFF; background: #C0C0C0; }
+.wizard-globe { width: 42px; height: 42px; border: 2px inset #FFFFFF; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #7FDBFF, #0074D9 60%, #001F3F); }
+.wizard-base { width: 52px; height: 8px; border: 2px outset #FFFFFF; border-top: 0; background: #C0C0C0; }
+.wizard-form { display: grid; align-content: start; gap: 8px; }
+.wizard-step { margin: 0; color: #000080; font-weight: 700; }
+.wizard-label { font-weight: 700; }
+.wizard-input { width: 100%; padding: 3px 4px; border: 2px inset #DFDFDF; border-radius: 0; background: #FFFFFF; color: #000000; font: inherit; }
+.wizard-input:focus { outline: 1px dotted #000000; outline-offset: 1px; }
+.wizard-preview { margin: 0; color: #404040; font-size: 12px; overflow-wrap: anywhere; }
+.wizard-preview span { color: #0000EE; text-decoration: underline; }
+.wizard-buttons { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px 12px; border-top: 1px solid #808080; box-shadow: inset 0 1px 0 #FFFFFF; }
+.wizard-button {
+  justify-self: start; min-width: 84px; padding: 4px 12px; border: 2px outset #FFFFFF; border-radius: 0; background: #C0C0C0;
+  color: #000000; font: inherit; cursor: pointer;
+}
+.wizard-button:active:not(:disabled) { border-style: inset; }
+.wizard-button:disabled { color: #808080; text-shadow: 1px 1px 0 #FFFFFF; cursor: default; }
+/* The default button: Enter presses it, and Windows drew it with a black frame. */
+.wizard-button.is-default { outline: 1px solid #000000; outline-offset: 0; }
+@media (max-width: 460px) {
+  .wizard-body { grid-template-columns: minmax(0, 1fr); }
+  .wizard-art { display: none; }
+}

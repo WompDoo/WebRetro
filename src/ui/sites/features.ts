@@ -4,7 +4,7 @@ import { escapeHtml, pickCyclic } from '../dom';
 import { BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, TAGS } from '../presentation';
 import type { MessageCopy } from '../presentation';
 import { renderInfectionOverlay } from './infections';
-import { formatMinutesAndSeconds, heading, is1997, levelOf, siteName, toWholeSeconds } from './site-context';
+import { formatMinutesAndSeconds, heading, is1997, levelOf, siteBrand, toWholeSeconds } from './site-context';
 import type { FeatureRenderer, SiteContext } from './site-context';
 
 const COUNTER_DIGITS = 7;
@@ -178,7 +178,7 @@ const renderForum: FeatureRenderer = (context) => {
 };
 
 const renderFlashIntro: FeatureRenderer = (context) =>
-  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteName(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">Requires Flash Player 8 · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
+  `${heading(context, 'flash-intro', 'Intro')}<div class="flash-intro"><div class="flash-stage"><span class="flash-swoosh"></span><span class="flash-logo">${escapeHtml(siteBrand(context.state))}</span></div><div class="flash-bar"><span></span></div><p class="flash-caption">Loading intro… <span class="fake-link">SKIP INTRO &gt;&gt;</span></p><p class="flash-note">Requires Flash Player 8 · ${levelOf(context, 'flash-intro') * FLASH_INTRO_SECONDS_PER_LEVEL} seconds of intro</p></div>`;
 
 function countVisibleThumbnails(level: number): number {
   return Math.min(BASE_THUMBNAILS + level, MAX_THUMBNAILS);
@@ -329,7 +329,7 @@ const renderPricingTable: FeatureRenderer = (context) =>
 
 /** The bubble in the corner. Its count of unread messages only goes up. */
 const renderLiveChat: FeatureRenderer = (context) =>
-  `<span class="chat-bubble"><span class="chat-avatar" aria-hidden="true">S</span><span class="chat-text"><b>Sam from ${escapeHtml(siteName(context.state))}</b>Hi! 👋 Any questions?</span><span class="chat-unread">${levelOf(context, 'live-chat')}</span></span>`;
+  `<span class="chat-bubble"><span class="chat-avatar" aria-hidden="true">S</span><span class="chat-text"><b>Sam from ${escapeHtml(siteBrand(context.state))}</b>Hi! 👋 Any questions?</span><span class="chat-unread">${levelOf(context, 'live-chat')}</span></span>`;
 
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {

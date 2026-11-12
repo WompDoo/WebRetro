@@ -3,7 +3,7 @@ import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml } from '../dom';
 import { listAds, renderAdPicture, renderAdText } from './ads';
 import { ownedFeatures, renderDeadNotice, renderFeatureBlocks, renderFeatureSection, renderSignInWithButtons } from './features';
-import { siteName } from './site-context';
+import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2005Site } from './site-2005';
 
@@ -98,7 +98,7 @@ function renderStoryBand(context: SiteContext): string {
 
 /** "Get our app!": across the top of the page, above even the navbar. */
 function renderAppBanner(context: SiteContext): string {
-  const name = escapeHtml(siteName(context.state));
+  const name = escapeHtml(siteBrand(context.state));
   return knows(context.state, 'app-banner')
     ? `<div class="bs-app-banner"><span class="bs-app-close" aria-hidden="true">×</span><span class="bs-app-icon" aria-hidden="true">${name.charAt(0).toUpperCase()}</span><span class="bs-app-text"><b>${name}</b>Get our app! FREE</span><span class="bs-app-view">VIEW</span></div>`
     : '';
@@ -122,11 +122,11 @@ function renderBootstrapSite(context: SiteContext): string {
   const nav = NAV_ITEMS.map((item, index) => `<span${index === 0 ? ' class="is-active"' : ''}>${item}</span>`).join('');
   return `<div class="site-2011${renderLookClasses(context)}">
     ${renderAppBanner(context)}
-    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteName(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderNavbarSignIn(context)}</header>
+    <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteBrand(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderNavbarSignIn(context)}</header>
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
-    <footer class="bs-footer">© ${siteName(context.state)} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
+    <footer class="bs-footer">© ${escapeHtml(siteBrand(context.state))} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
     ${renderFeatureBlocks(context, ['live-chat']).join('')}
   </div>`;
 }

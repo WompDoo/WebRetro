@@ -69,7 +69,8 @@ function describeJump(stage: PlaytestStage, eraId: EraId): string {
 
 function jumpTo(eraId: EraId, stage: PlaytestStage, framework: FrameworkId, renderer: Renderer, minigame: MinigameModal): void {
   backUpOwnGameOnce();
-  replaceGame(createPlaytestState(eraId, stage, createSeed(), framework));
+  // A jump changes where you are in history, not what your site is called.
+  replaceGame({ ...createPlaytestState(eraId, stage, createSeed(), framework), siteName: store.game.siteName });
   afterGameSwap(renderer, minigame, describeJump(stage, eraId));
 }
 

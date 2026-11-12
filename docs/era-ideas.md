@@ -320,6 +320,13 @@ shows up in it.
   one by one.
 - **Learn it for real.** Learned skills (and bought boosts that are real technologies) link to MDN, the
   official docs or Wikipedia. Joke boosts stay plain text, so nothing looks clickable that isn't.
+- **Name your site.** A new game (or Start over) opens with about five seconds of typed lines on black
+  ("CONNECT 28800 / It's 1997…"), skippable with a click or a key, then a Windows 95 *Home Page Wizard*: a
+  bevelled box, a 🎲 Random name button, and the address the name will have. Playtests and saves skip it.
+  The name (`GameState.siteName`, cleaned to letters, digits and a little punctuation, at most 24) titles the
+  1997 page and its window; from 2005 its address form is the brand (`kevinskoolpage`), and *Drop the vowels*
+  works on any name (`kvnsklpg`: the first letter stays, and a name too short to lose its vowels keeps them).
+  Copy written before naming says `{site}` and `{name}`, filled escaped for HTML and as-is for plain text.
 
 ## The 2005 hosting ladder (built)
 

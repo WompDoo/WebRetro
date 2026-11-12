@@ -2,7 +2,7 @@ import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
 import { TEXT_ADS } from '../presentation';
 import { renderFeatureBlocks } from './features';
-import { siteName } from './site-context';
+import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { renderOldSchoolPage } from './site-1997';
 import type { HomepageContent, HomepageSkills } from './site-1997';
@@ -17,7 +17,7 @@ const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.
 /** 2005 content crammed into a 1997 page: what you get before you learn CSS. */
 function legacy2005Content(skills: HomepageSkills, state: GameState): HomepageContent {
   return {
-    title: skills.font ? `Welcome to ${siteName(state)} 2.0!!!` : `${siteName(state)} 2.0`,
+    title: skills.font ? `Welcome to ${escapeHtml(siteBrand(state))} 2.0!!!` : `${escapeHtml(siteBrand(state))} 2.0`,
     sidebarFeatures: LEGACY_SIDEBAR_FEATURES,
     mainFeatures: LEGACY_MAIN_FEATURES,
   };
@@ -50,8 +50,8 @@ function renderSponsoredLinks(adCount: number): string {
 function render2005DivSite(context: SiteContext): string {
   const main = renderFeatureBlocks(context, WEB2_MAIN_FEATURES).join('');
   const sidebar = renderFeatureBlocks(context, WEB2_SIDEBAR_FEATURES).join('');
-  const intro = main === '' ? '<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new myhomepage!</h2><p>We relaunched. Start a blog to fill this space.</p></section>' : main;
-  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${siteName(context.state)}</span><span class="w2-beta"><span>beta</span></span><nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state.adCount)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${siteName(context.state)} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
+  const intro = main === '' ? '<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new ${escapeHtml(siteBrand(context.state))}!</h2><p>We relaunched. Start a blog to fill this space.</p></section>' : main;
+  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span><span class="w2-beta"><span>beta</span></span><nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav></header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state.adCount)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
 }
 
 /** The relaunch keeps the old hand-written page until you learn CSS; then it becomes a div layout. */

@@ -1,4 +1,5 @@
 import type { CodeEditorElements } from './code-editor';
+import type { IntroElements } from './intro';
 import { requireElement } from './dom';
 import type { MinigameModalElements } from './minigames/minigame-modal';
 
@@ -62,4 +63,13 @@ export const minigameElements: MinigameModalElements = {
   stage: requireElement('#minigame-stage'),
   status: requireElement('#minigame-status'),
   retry: requireElement('#minigame-retry'),
+};
+
+export const introElements: IntroElements = {
+  overlay: requireElement<HTMLElement>('#intro'),
+  story: requireElement<HTMLElement>('#intro-story'),
+  form: requireElement<HTMLFormElement>('#intro-wizard'),
+  input: requireElement<HTMLInputElement>('#intro-name'),
+  random: requireElement<HTMLElement>('#intro-random'),
+  address: requireElement<HTMLElement>('#intro-address'),
 };
