@@ -107,4 +107,10 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'process-manager': `${WIKIPEDIA}/Process_supervision`,
   'certificate-automation': `${WIKIPEDIA}/Automatic_Certificate_Management_Environment`,
   'blue-green-deploys': 'https://martinfowler.com/bliki/BlueGreenDeployment.html',
+  // 2018 additions
+  'learn-i18n': `${MDN}/Glossary/Internationalization`,
+  'learn-email-marketing': `${WIKIPEDIA}/Email_marketing`,
+  'scroll-animations': `${MDN}/Web/API/Intersection_Observer_API`,
+  'legal-pages': `${WIKIPEDIA}/Privacy_policy`,
+  'retargeting-cookies': `${WIKIPEDIA}/Behavioral_retargeting`,
 };

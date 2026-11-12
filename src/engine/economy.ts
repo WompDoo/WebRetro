@@ -123,6 +123,7 @@ interface EffectSummary {
   readonly upkeepShare: number;
   readonly quickFixWindowFactor: number;
   readonly overloadTolerance: number;
+  readonly privacyFineFactor: number;
   /** How long until each kind of infection clears up by itself, where something does that. */
   readonly autoCleanAfterMs: Readonly<Partial<Record<InfectionKind, number>>>;
   readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
@@ -167,7 +168,7 @@ function multiplyTypingFactors(effects: readonly UpgradeEffect[]): number {
   return multiplyAll(effects.flatMap((effect) => (effect.kind === 'keystroke-value-multiplier' ? [effect.factor] : [])));
 }
 
-function multiplyEffectFactors(effects: readonly UpgradeEffect[], kind: 'quick-fix-window-multiplier' | 'overload-tolerance-multiplier'): number {
+function multiplyEffectFactors(effects: readonly UpgradeEffect[], kind: 'quick-fix-window-multiplier' | 'overload-tolerance-multiplier' | 'privacy-fine-multiplier'): number {
   return multiplyAll(effects.flatMap((effect) => (effect.kind === kind ? [effect.factor] : [])));
 }
 
@@ -197,6 +198,7 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     upkeepShare: sumAll(effects.flatMap((effect) => (effect.kind === 'revenue-upkeep-share' ? [effect.share] : []))),
     quickFixWindowFactor: multiplyEffectFactors(effects, 'quick-fix-window-multiplier'),
     overloadTolerance: multiplyEffectFactors(effects, 'overload-tolerance-multiplier'),
+    privacyFineFactor: multiplyEffectFactors(effects, 'privacy-fine-multiplier'),
     autoCleanAfterMs: collectAutoCleans(effects),
     kinds: new Set(effects.map((effect) => effect.kind)),
   };
@@ -636,6 +638,11 @@ export function calculateRevenuePerVisitor(state: GameState): number {
 /** What defenses and the ops you run cost, as a share of revenue. */
 export function calculateUpkeepShare(state: GameState): number {
   return sumAll(getEnabledDefenses(state).map((defense) => defense.revenueUpkeepShare)) + getEffectSummary(state).upkeepShare;
+}
+
+/** Lawyers make the GDPR's fines smaller; retargeting everyone makes them bigger. */
+export function calculatePrivacyFineFactor(state: GameState): number {
+  return getEffectSummary(state).privacyFineFactor;
 }
 
 /** How long after an infection appears it still counts as a quick fix: longer when monitoring tells you sooner. */

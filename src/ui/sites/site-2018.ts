@@ -10,7 +10,7 @@ import type { SiteContext } from './site-context';
 import { render2011Site } from './site-2011';
 
 /** Under the hero: what the old site still has, as sections of the landing page. */
-const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'activity-feed', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
+const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'language-switcher', 'activity-feed', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Product', 'Pricing', 'Blog', 'Careers'];
 /** "Trusted by": made-up companies, as every landing page's were to everyone outside them. */
 const TRUSTED_BY: readonly string[] = ['Brightloop', 'Quantly', 'Stackwise', 'Paperkite', 'Blinko'];
@@ -66,9 +66,25 @@ function renderHero(context: SiteContext): string {
   return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary${renderAbVariant(context)}">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
 }
 
+/** With a language switcher, the menu gets its globe. */
+function renderLanguageMenu(context: SiteContext): string {
+  return ownedFeatures(context, ['language-switcher']).length > 0 ? '<span class="lp-lang">🌐 EN ▾</span>' : '';
+}
+
 function renderNav(context: SiteContext): string {
   const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
-  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="lp-links">${items}</nav><span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
+  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="lp-links">${items}</nav>${renderLanguageMenu(context)}<span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
+}
+
+/** What a lawyer adds to the footer: every page anyone could ask for, all updated the day the GDPR applied. */
+const LEGAL_LINKS: readonly string[] = [
+  'Terms of Service', 'Privacy Policy', 'Cookie Policy', 'Cookie Settings', 'Imprint', 'Accessibility', 'Do Not Sell My Personal Information',
+  'Acceptable Use Policy', 'Data Processing Addendum', 'Subprocessors', 'Security', 'Trust Center', 'Transparency Report', 'Modern Slavery Statement',
+];
+
+function renderLegalWall(context: SiteContext): string {
+  if (!context.state.purchasedUpgradeIds.includes('legal-pages')) return '';
+  return `<nav class="lp-legal">${LEGAL_LINKS.map((link) => `<span>${link}</span>`).join('')}<p>Last updated May 25, 2018. By scrolling this page you agree to all of the above.</p></nav>`;
 }
 
 function renderSections(context: SiteContext): string {
@@ -103,9 +119,13 @@ function renderAccountBand(context: SiteContext): string {
 }
 
 function renderLookClasses(context: SiteContext, framework: FrameworkId): string {
-  const responsive = isMobileFriendly(context.state) ? ' is-responsive' : '';
-  const stories = ownedFeatures(context, ['stories']).length > 0 ? ' has-stories' : '';
-  return ` fw-${framework}${responsive}${stories}`;
+  const looks: readonly (readonly [boolean, string])[] = [
+    [isMobileFriendly(context.state), 'is-responsive'],
+    [ownedFeatures(context, ['stories']).length > 0, 'has-stories'],
+    // Animate on scroll: each section fades and slides in as it comes into view.
+    [context.state.purchasedUpgradeIds.includes('scroll-animations'), 'has-scroll-reveal'],
+  ];
+  return [` fw-${framework}`, ...looks.filter(([applies]) => applies).map(([, name]) => ` ${name}`)].join('');
 }
 
 /** The single-page app a framework rewrote your site into: a SaaS landing page, like every other one. */
@@ -122,9 +142,11 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     ${renderCommentsOff(context)}
     ${renderFeatureBlocks(context, ['pricing-table']).join('')}
     <section class="lp-testimonials">${renderTestimonials()}</section>
+    ${renderFeatureBlocks(context, ['newsletter']).join('')}
     ${renderAccountBand(context)}
     ${renderAroundTheWeb(context)}
     <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms</footer>
+    ${renderLegalWall(context)}
     ${renderCornerDock(context)}
   </div>`;
 }

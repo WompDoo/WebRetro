@@ -196,6 +196,28 @@
 .lp-account { margin: 26px 28px 0; }
 .lp-account > .feature-block { padding: 18px; border: 1px solid #E6EBF1; border-radius: 10px; }
 .lp-footer { margin: auto 28px 0; padding: 26px 0 18px; border-top: 1px solid #E6EBF1; color: #8898AA; font-size: 12px; }
+/* The lawyer's footer: a wall of links nobody reads, under the one people do. */
+.lp-legal { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 28px 24px; color: #8898AA; font-size: 11px; }
+.lp-legal p { flex-basis: 100%; margin: 6px 0 0; font-style: italic; }
+/* The language switcher: a globe in the menu, and a chip per language in its section. */
+.lp-lang { padding: 4px 8px; border: 1px solid #E6EBF1; border-radius: 6px; color: #525F7F; font-size: 12px; white-space: nowrap; }
+.lang-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.lang-chip { padding: 3px 10px; border: 1px solid #E6EBF1; border-radius: 12px; font-size: 12px; }
+.lang-chip.is-current { border-color: #635BFF; color: #635BFF; font-weight: 600; }
+/* The newsletter: a band of its own between the testimonials and the footer. */
+.site-2018 > [data-feature="newsletter"] { margin: 26px 28px 0; padding: 22px 24px; border-radius: 12px; background: linear-gradient(135deg, #F6F9FC, #EEF0FF); }
+.newsletter-form { display: flex; gap: 8px; max-width: 420px; margin: 10px 0; }
+.newsletter-input { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid #CFD7DF; border-radius: 6px; background: #FFFFFF; color: #8898AA; font-size: 13px; }
+.newsletter-button { padding: 8px 16px; border-radius: 6px; background: #635BFF; color: #FFFFFF; font-size: 13px; font-weight: 600; }
+.newsletter-form + .post-meta small { color: #C1C9D2; font-size: 9px; }
+/* Animate on scroll: each card fades and rises in as it scrolls into view. Without scroll timelines it just shows. */
+@keyframes lp-reveal { from { opacity: 0; transform: translateY(48px) scale(0.97); } }
+@supports (animation-timeline: view()) {
+  .site-2018.has-scroll-reveal :is(.lp-sections > .feature-block, .lp-card, .lp-quote, .plan, .lp-chum) { animation: lp-reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-2018.has-scroll-reveal :is(.lp-sections > .feature-block, .lp-card, .lp-quote, .plan, .lp-chum) { animation: none; }
+}
 .site-2018 > .lp-footer { margin-top: 30px; }
 .site-2018 .feature-block { position: relative; min-height: 60px; overflow: hidden; }
 .site-2018 .feature-heading { margin: 0 0 10px; color: #32325D; font-size: 20px; font-weight: 700; line-height: 1.3; }
@@ -214,7 +236,7 @@
   .site-2018 .lp-sections { columns: 1; }
   .site-2018 .lp-logos, .site-2018 .lp-cards, .site-2018 .lp-sections, .site-2018 .lp-testimonials, .site-2018 .lp-account, .site-2018 > [data-feature="pricing-table"] { margin-inline: 14px; }
   .site-2018 > [data-feature="stories"] { margin: 0 14px; }
-  .site-2018 .lp-footer { margin-inline: 14px; }
+  .site-2018 .lp-footer, .site-2018 .lp-legal, .site-2018 > [data-feature="newsletter"] { margin-inline: 14px; }
 }
 
 /*

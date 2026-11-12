@@ -387,6 +387,26 @@ const renderPricingTable: FeatureRenderer = (context) =>
 const renderLiveChat: FeatureRenderer = (context) =>
   `<span class="chat-bubble"><span class="chat-avatar" aria-hidden="true">S</span><span class="chat-text"><b>Sam from ${escapeHtml(siteBrand(context.state))}</b>Hi! 👋 Any questions?</span><span class="chat-unread">${levelOf(context, 'live-chat')}</span></span>`;
 
+/** One per level after the first: the site starts in English, and each level adds a language. */
+const LANGUAGES: readonly string[] = ['English', 'Deutsch', 'Français', 'Español', '日本語', 'Português', 'Italiano', 'Nederlands', '한국어', 'Polski', 'Svenska', 'Türkçe', 'Bahasa Indonesia', 'Русский', '中文', 'العربية'];
+
+function renderLanguageChip(language: string, index: number): string {
+  return `<span class="lang-chip${index === 0 ? ' is-current' : ''}">${escapeHtml(language)}</span>`;
+}
+
+/** The languages the site speaks, one more per level: the German ones overflow their buttons. */
+const renderLanguageSwitcher: FeatureRenderer = (context) => {
+  const count = levelOf(context, 'language-switcher') + 1;
+  const chips = LANGUAGES.slice(0, count).map(renderLanguageChip).join('');
+  return `${heading(context, 'language-switcher', 'Speak your language')}<p class="post-meta">🌐 ${count} languages · “Kostenlose Testversion starten” doesn’t fit the button</p><div class="lang-chips">${chips}</div>`;
+};
+
+const READERS_PER_LEVEL = 1_200;
+
+/** The sign-up box: one field, one button, and the unsubscribe link in tiny grey text. */
+const renderNewsletter: FeatureRenderer = (context) =>
+  `${heading(context, 'newsletter', 'Get the weekly newsletter')}<p>The best of ${escapeHtml(siteBrand(context.state))}, every Tuesday. No spam. Mostly.</p><div class="newsletter-form"><span class="newsletter-input">you@example.com</span><span class="newsletter-button">Subscribe</span></div><p class="post-meta">Join ${formatCompactNumber(levelOf(context, 'newsletter') * READERS_PER_LEVEL)} readers · <small>unsubscribe any time</small></p>`;
+
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'hit-counter': renderHitCounter,
@@ -409,6 +429,8 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   stories: renderStories,
   'pricing-table': renderPricingTable,
   'live-chat': renderLiveChat,
+  'language-switcher': renderLanguageSwitcher,
+  newsletter: renderNewsletter,
 };
 
 interface DeadFeatureCopy {

@@ -15,6 +15,7 @@ import { FRAMEWORKS_BY_ID } from './content/frameworks';
 import {
   calculateFeatureVisitorsPerSecond,
   calculateNetRevenuePerSecond,
+  calculatePrivacyFineFactor,
   canCertificateExpire,
   findChosenFramework,
   findOpsAutoCleanMs,
@@ -294,7 +295,7 @@ export function calculateAverageMsBetweenFines(banner: ConsentBannerDefinition):
 
 /** What a privacy fine costs right now: that many seconds of what visitors bring in. */
 export function calculatePrivacyFine(state: GameState): number {
-  return calculateNetRevenuePerSecond(state) * CONSENT_BANNERS_BY_ID[state.consentBanner].fineRevenueSeconds;
+  return calculateNetRevenuePerSecond(state) * CONSENT_BANNERS_BY_ID[state.consentBanner].fineRevenueSeconds * calculatePrivacyFineFactor(state);
 }
 
 /**

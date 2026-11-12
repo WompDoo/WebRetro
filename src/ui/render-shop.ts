@@ -255,6 +255,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'revenue-upkeep-share': (effect) => `Costs ${formatPercent(effect.share)} of revenue to run`,
   'secure-connection': () => 'Served over https, with a padlock',
   'automatic-certificate-renewal': () => 'The certificate never expires',
+  'privacy-fine-multiplier': (effect) => `Privacy fines ${formatFactor(effect.factor)}`,
 };
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {

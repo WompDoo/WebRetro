@@ -29,6 +29,10 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'pricing-table': svg('<rect x="2" y="7" width="6" height="12" rx="1"/><rect x="9" y="4" width="6" height="16" rx="1"/><rect x="16" y="7" width="6" height="12" rx="1"/>'),
   // The bubble in the corner, with its unread dot.
   'live-chat': svg('<path d="M4 5h13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-5 4Z"/><circle cx="19.5" cy="5.5" r="2.5"/>'),
+  // A globe: lines of latitude and one of longitude.
+  'language-switcher': svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'),
+  // An envelope.
+  newsletter: svg('<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 6 9-6"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
@@ -37,6 +41,8 @@ export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
   captcha: svg('<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M6 14c1.5-4 3-4 4 0s2.5 4 4 0 2.5-4 4 0"/>'),
   // A cloud with a filter under it: attack traffic is scrubbed before it reaches you.
   'ddos-protection': svg('<path d="M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 15Z"/><path d="M8 19h8M10 22h4"/>'),
+  // A window with a line through it: no pop-ups, ever.
+  'no-popups': svg('<rect x="4" y="5" width="16" height="13" rx="1"/><path d="M4 8h16M3 21 21 3"/>'),
 };
 
 export const AD_ICON = svg('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 14l1.5-4L9 14M6.5 12.8h2M12 10v4h1.5a2 2 0 0 0 0-4Z"/>');

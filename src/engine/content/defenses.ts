@@ -6,7 +6,7 @@ const NO_DELAY_MS = 0;
 const NO_PENALTY = 1;
 const NO_UPKEEP = 0;
 
-export const DEFENSE_IDS: readonly DefenseId[] = ['antivirus', 'premium-ad-network', 'captcha', 'ddos-protection'];
+export const DEFENSE_IDS: readonly DefenseId[] = ['antivirus', 'premium-ad-network', 'captcha', 'ddos-protection', 'no-popups'];
 
 export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
   antivirus: {
@@ -70,6 +70,22 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     adValueFactor: NO_PENALTY,
     revenueUpkeepShare: 0.05,
   },
+  // Browsers built pop-up blockers in from 2004: from then on a site could promise none at all.
+  'no-popups': {
+    id: 'no-popups',
+    eraId: 'web2-2005',
+    name: 'Pop-up-free ad deal',
+    description: 'Write “no pop-ups” into your ad contract and they never come back. Advertisers pay less for the privilege of behaving.',
+    cost: 800_000,
+    countersHazard: 'popup',
+    counterMode: 'prevents-spawn',
+    spawnRateFactor: 1,
+    autoCleanDelayMs: NO_DELAY_MS,
+    trafficFactor: NO_PENALTY,
+    penalizedFeatureId: null,
+    adValueFactor: 0.8,
+    revenueUpkeepShare: NO_UPKEEP,
+  },
 };
 
 /** What a defense is called and does, as the player reads it. */
@@ -85,6 +101,10 @@ export interface DefenseCopy {
 const LATER_ERA_COPY: Readonly<Partial<Record<DefenseId, Readonly<Partial<Record<EraId, DefenseCopy>>>>>> = {
   'premium-ad-network': {
     'social-2011': { name: 'Ad blocker', description: 'Blocks most pop-ups, though the odd one gets past it. It hides some of your own ads along with them.' },
+  },
+  'no-popups': {
+    'social-2011': { name: 'No-overlays clause', description: 'No pop-ups, no lightbox ads, nothing on top of the page, ever. Your ad network agrees, for a smaller cut.' },
+    'platform-2018': { name: 'Better-ads pledge', description: 'Sign up to the better-ads standards: no pop-ups, no interstitials, no sound that plays by itself. Browsers stop filtering your ads; advertisers pay a bit less.' },
   },
 };
 
