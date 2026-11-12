@@ -74,4 +74,5 @@ export const introElements: IntroElements = {
   address: requireElement<HTMLElement>('#intro-address'),
   uploadTarget: requireElement<HTMLElement>('#intro-upload-target'),
   uploadStatus: requireElement<HTMLElement>('#intro-upload-status'),
+  covered: requireElement<HTMLElement>('#app'),
 };

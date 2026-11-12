@@ -326,7 +326,9 @@ shows up in it.
   bevelled box, a 🎲 Random name button, and the address the name will have. Finish plays a parody of the Windows
   copy dialog, uploading `index.htm` to the free host (a page flying from a folder to a globe, a blocky progress
   bar, "Estimating time remaining…", "3 hours remaining", "1 second remaining", "Done!"), and the desktop fades
-  into the game, about three seconds, skippable. TypeScript owns the timings and passes them to CSS as custom
+  while the game assembles behind it: kept unseen while covered, then the top bar, your site, the editor, the shop
+  and the news fade up one after another (a skip takes the same way in, so the game never pops). About four
+  seconds in all. TypeScript owns the timings and passes them to CSS as custom
   properties; the simulation waits until it's over. Playtests and saves skip all of it. Start over also shows on
   laptop-width screens now: the one-screen layout used to hide the row it lives in.
   The name (`GameState.siteName`, cleaned to letters, digits and a little punctuation, at most 24) titles the

@@ -1,6 +1,6 @@
 import { cleanSiteName, DEFAULT_SITE_NAME, toSiteSlug } from '../engine';
 import { escapeHtml } from './dom';
-import { INTRO_LINE_COUNT, INTRO_TYPING_MS, LEAVE_MS, pickRandomSiteName, revealIntroLines, UPLOAD_MESSAGES, UPLOAD_MS } from './intro-script';
+import { ENTER_MS, ENTER_PANEL_MS, ENTER_STEP_MS, INTRO_LINE_COUNT, INTRO_TYPING_MS, LEAVE_MS, pickRandomSiteName, revealIntroLines, UPLOAD_MESSAGES, UPLOAD_MS } from './intro-script';
 
 export interface IntroElements {
   readonly overlay: HTMLElement;
@@ -11,6 +11,8 @@ export interface IntroElements {
   readonly address: HTMLElement;
   readonly uploadTarget: HTMLElement;
   readonly uploadStatus: HTMLElement;
+  /** The game the intro covers: kept unseen behind it, then brought in panel by panel. */
+  readonly covered: HTMLElement;
 }
 
 export interface Intro {
@@ -32,6 +34,12 @@ function describeHome(raw: string): string {
   return `${FREE_HOST}/~${toSiteSlug(name === '' ? DEFAULT_SITE_NAME : name)}`;
 }
 
+/** Clears a timeout if one is set, and gives back the empty value for the variable that held it. */
+function clearTimer(timer: number | null): null {
+  if (timer !== null) window.clearTimeout(timer);
+  return null;
+}
+
 /** Every status line at once; CSS shows each in its own share of the upload (`--from` to `--to`). */
 function renderUploadMessages(): string {
   return UPLOAD_MESSAGES.map((message) => `<span style="--from:${message.from};--to:${message.to}">${escapeHtml(message.text)}</span>`).join('');
@@ -46,11 +54,14 @@ export function createIntro(elements: IntroElements, onNamed: (name: string) => 
   let phase: IntroPhase = 'story';
   let frameRequest: number | null = null;
   let phaseTimer: number | null = null;
+  let enterTimer: number | null = null;
   let startedAt = 0;
   elements.story.innerHTML = `${Array.from({ length: INTRO_LINE_COUNT }, () => '<p class="intro-line"></p>').join('')}${CONTINUE_PROMPT}`;
   elements.uploadStatus.innerHTML = renderUploadMessages();
   elements.overlay.style.setProperty('--upload-ms', `${UPLOAD_MS}ms`);
   elements.overlay.style.setProperty('--leave-ms', `${LEAVE_MS}ms`);
+  elements.covered.style.setProperty('--enter-panel-ms', `${ENTER_PANEL_MS}ms`);
+  elements.covered.style.setProperty('--enter-step-ms', `${ENTER_STEP_MS}ms`);
   const lines = [...elements.story.querySelectorAll<HTMLElement>('.intro-line')];
 
   const setPhase = (next: IntroPhase): void => {
@@ -62,17 +73,33 @@ export function createIntro(elements: IntroElements, onNamed: (name: string) => 
   };
   const stopTimers = (): void => {
     if (frameRequest !== null) window.cancelAnimationFrame(frameRequest);
-    if (phaseTimer !== null) window.clearTimeout(phaseTimer);
     frameRequest = null;
-    phaseTimer = null;
+    phaseTimer = clearTimer(phaseTimer);
+    enterTimer = clearTimer(enterTimer);
   };
-  const close = (): void => {
-    stopTimers();
+  const setCovered = (state: 'covered' | 'entering' | null): void => {
+    if (state === null) delete elements.covered.dataset['intro'];
+    else elements.covered.dataset['intro'] = state;
+  };
+  /** The game comes in panel by panel. Once it's in, nothing is left over to affect later animations. */
+  const bringInGame = (): void => {
+    enterTimer = clearTimer(enterTimer);
+    setCovered('entering');
+    enterTimer = window.setTimeout(() => setCovered(null), ENTER_MS);
+  };
+  const hide = (): void => {
     elements.overlay.hidden = true;
+  };
+  /** A skip goes the same way as the end of the upload, only without waiting: the game never pops in. */
+  const skipToGame = (): void => {
+    stopTimers();
+    hide();
+    bringInGame();
   };
   const leave = (): void => {
     setPhase('leaving');
-    phaseTimer = window.setTimeout(close, LEAVE_MS);
+    bringInGame();
+    phaseTimer = window.setTimeout(hide, LEAVE_MS);
   };
   const upload = (): void => {
     elements.uploadTarget.textContent = `'${describeHome(elements.input.value)}'`;
@@ -108,7 +135,7 @@ export function createIntro(elements: IntroElements, onNamed: (name: string) => 
    * What a click or a key does in each phase: hurrying the typing finishes it rather than skipping it, so nobody
    * misses the story. In the wizard they belong to the form.
    */
-  const skips: Readonly<Record<IntroPhase, (() => void) | null>> = { story: finishTyping, told: openWizard, wizard: null, upload: close, leaving: close };
+  const skips: Readonly<Record<IntroPhase, (() => void) | null>> = { story: finishTyping, told: openWizard, wizard: null, upload: skipToGame, leaving: skipToGame };
   const skip = (event: Event): void => {
     const action = elements.overlay.hidden ? null : skips[phase];
     if (action === null) return;
@@ -139,6 +166,7 @@ export function createIntro(elements: IntroElements, onNamed: (name: string) => 
         line.textContent = '';
       });
       setPhase('story');
+      setCovered('covered');
       elements.overlay.hidden = false;
       startedAt = performance.now();
       frameRequest = window.requestAnimationFrame(typeLines);

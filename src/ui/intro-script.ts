@@ -71,6 +71,15 @@ export function pickRandomSiteName(current: string, roll: number): string {
 export const UPLOAD_MS = 2_600;
 export const LEAVE_MS = 450;
 
+/**
+ * The game doesn't pop in under the fading desktop: it assembles, panel by panel, each fading up a little after
+ * the one before (the top bar, your site, the editor, the shop, the news; the tab bar too on phones).
+ */
+export const ENTER_PANEL_MS = 520;
+export const ENTER_STEP_MS = 110;
+const ENTER_PANELS = 5;
+export const ENTER_MS = ENTER_PANEL_MS + ENTER_STEP_MS * (ENTER_PANELS - 1);
+
 /** One line of the upload dialog's status, shown from one share of the upload to another. */
 export interface UploadMessage {
   readonly text: string;
