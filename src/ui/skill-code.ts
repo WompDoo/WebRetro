@@ -44,6 +44,8 @@ const HOMEPAGE_CODE: EraCode = {
     'banner-exchange': ['<A HREF="http://bannerswap.example/click?id=42"><IMG SRC="http://bannerswap.example/ad?id=42"></A>'],
     'html-validator': ['<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">'],
     'bigger-monitor': ['<!-- now designed for 1024x768 on a 17" monitor. 800x600 users: scroll sideways -->'],
+    'own-domain': ['<!-- we moved!! new address: http://www.{site}.com/ (update your bookmarks) -->'],
+    'learn-ftp': ['<!-- ftp> put INDEX.HTM ... 226 Transfer complete. 4.2 KB in 3.1 sec -->'],
     'learn-javascript': ['<SCRIPT LANGUAGE="JavaScript">', '<!-- hide from old browsers', 'function welcomeVisitor() {', '  alert("Welcome!!! Please sign my guestbook!!!");', '}', 'window.status = "Welcome to my homepage!!! *** Welcome!!! ***";', '// -->', '</SCRIPT>'],
   },
   files: {},
@@ -92,6 +94,15 @@ const WEB2_CODE: EraCode = {
     },
     j2ee: {
       'web.xml': ['<?xml version="1.0" encoding="UTF-8"?>', '<web-app xmlns="http://java.sun.com/xml/ns/j2ee" version="2.4">', '  <servlet><servlet-name>HelloWorld</servlet-name><servlet-class>com.example.HelloWorldServlet</servlet-class></servlet>', '  <servlet-mapping><servlet-name>HelloWorld</servlet-name><url-pattern>/hello</url-pattern></servlet-mapping>', '</web-app>', '<!-- 13 more files like this one to go -->'],
+    },
+    'nightly-backups': {
+      crontab: ['# crontab -e', '0 3 * * * mysqldump blog > /var/backups/blog-$(date +%F).sql', "# same disk as the database. it's fine."],
+    },
+    'ssl-certificate': {
+      'ssl.conf': ['<VirtualHost *:443>', '  ServerName www.{site}.com', '  SSLEngine on', '  SSLCertificateFile /etc/ssl/certs/www.{site}.com.crt  # valid for one year. set a reminder?', '</VirtualHost>'],
+    },
+    'database-indexes': {
+      'schema.sql': ['EXPLAIN SELECT * FROM comments WHERE post_id = 42;', '-- type: ALL   rows: 48213', 'CREATE INDEX idx_comments_post ON comments (post_id);', '-- type: ref   rows: 12'],
     },
     rails: {
       'config/routes.rb': ['# config/routes.rb', 'ActionController::Routing::Routes.draw do |map|', '  map.resources :posts, :has_many => :comments', 'end', '# app/controllers/posts_controller.rb', 'class PostsController < ApplicationController', '  def index; @posts = Post.find(:all, :order => "created_at DESC"); end', 'end'],
@@ -151,6 +162,15 @@ const SOCIAL_CODE: EraCode = {
     'learn-bcrypt': {
       'server.js': ['var bcrypt = require("bcrypt");', 'bcrypt.hash(password, 10, function (err, hash) {', '  db.users.update({ name: name }, { $set: { password: hash } }); // no more plain text', '});'],
     },
+    'uptime-monitoring': {
+      'monitor.js': ['setInterval(function () {', '  http.get("http://www.{site}.com/health", function (res) {', '    if (res.statusCode !== 200) sms.send(ME, "{site} is down"); // yes, at 3am', '  });', '}, 60 * 1000);'],
+    },
+    'staging-environment': {
+      'deploy.sh': ['#!/bin/sh', 'git push staging master     # staging.{site}.com: try it here first', 'git push production master  # only once staging looks right'],
+    },
+    'process-manager': {
+      'server.js': ['// $ forever start server.js', '// warn: Process exited. Restarting... (restart #14 today)'],
+    },
     'learn-nodejs': {
       'server.js': ['var app = require("express")();', 'var server = require("http").createServer(app);', 'var io = require("socket.io").listen(server);', 'io.sockets.on("connection", function (socket) {', '  socket.on("like", function (data) {', '    io.sockets.emit("activity", data); // callback inside a callback inside a callback', '  });', '});', 'server.listen(3000);'],
     },
@@ -183,6 +203,12 @@ const PLATFORM_SHARED_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<
   'learn-oauth': {
     terminal: ['$ npm install passport passport-oauth2 jsonwebtoken', '+ passport@0.4.0', '+ jsonwebtoken@8.3.0', 'added 14 packages and audited 31886 packages in 7.4s'],
     'server.js': ['app.get("/auth/callback", async (req, res) => {', '  const { access_token, refresh_token } = await oauth.exchange(req.query.code);', '  res.cookie("session", jwt.sign({ sub: user.id }, SECRET, { expiresIn: "1h" }), { httpOnly: true });', '});'],
+  },
+  'certificate-automation': {
+    terminal: ['$ crontab -l', '0 */12 * * * certbot renew --quiet   # free certificates, renewed twice a day', '$ certbot certificates', '  Expiry Date: in 89 days (VALID)'],
+  },
+  'blue-green-deploys': {
+    terminal: ['$ kubectl apply -f deploy-green.yaml', 'deployment.apps/{site}-green created', '$ kubectl patch service {site} -p \'{"spec":{"selector":{"slot":"green"}}}\'', 'service/{site} patched   # blue stays warm: rolling back is the same command'],
   },
   'learn-websockets': {
     terminal: ['$ npm install socket.io', '+ socket.io@2.1.1', 'added 47 packages and audited 31933 packages in 8.9s'],

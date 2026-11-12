@@ -1,4 +1,4 @@
-import { calculateServerLoad, ERAS_BY_ID, findInfection, formatPercent, MS_PER_SECOND } from '../../engine';
+import { calculateCertificateRenewalFee, calculateServerLoad, ERAS_BY_ID, findInfection, formatMoney, formatPercent, MS_PER_SECOND } from '../../engine';
 import type { GameState } from '../../engine';
 import { setHtmlIfChanged, setTextIfChanged } from '../dom';
 import { calculateDisplayedCounter, renderCounterDigits, renderGalleryLightbox, renderGuestbookEntries, renderMusicStatus } from './features';
@@ -21,7 +21,7 @@ function renderInfectionTimerSlot(id: number, state: GameState): string | null {
   return infection === null ? null : renderInfectionTimer(infection);
 }
 
-export type LiveSlotName = 'counter' | 'guestbook' | 'music' | 'js-clock' | 'gallery-lightbox' | 'infection-timer' | 'server-load' | 'spike-remaining';
+export type LiveSlotName = 'counter' | 'guestbook' | 'music' | 'js-clock' | 'gallery-lightbox' | 'infection-timer' | 'server-load' | 'spike-remaining' | 'certificate-fee';
 
 /** Keys match the data-live attributes the renderers put on the page. */
 const LIVE_SLOTS: Readonly<Record<LiveSlotName, LiveSlot>> = {
@@ -33,6 +33,7 @@ const LIVE_SLOTS: Readonly<Record<LiveSlotName, LiveSlot>> = {
   'infection-timer': { write: setTextIfChanged, render: renderInfectionTimerSlot },
   'server-load': { write: setTextIfChanged, render: (_id, state) => `${formatPercent(calculateServerLoad(state))} load` },
   'spike-remaining': { write: setTextIfChanged, render: (_id, state) => `${formatMinutesAndSeconds(Math.ceil(state.trafficSpikeRemainingMs / MS_PER_SECOND))} left` },
+  'certificate-fee': { write: setTextIfChanged, render: (_id, state) => `renewal ${formatMoney(calculateCertificateRenewalFee(state))}` },
 };
 
 /** The first text of a slot, for markup rendered before the live update takes over. */

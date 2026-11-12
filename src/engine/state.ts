@@ -17,6 +17,8 @@ export const INITIAL_HAZARD_COUNTDOWNS_MS: Readonly<Record<HazardKind, number>> 
   // 2018's: these count down only once they apply, after a framework is picked and while ads track visitors.
   'broken-build': 180_000,
   'privacy-fine': 240_000,
+  // Counts down only once you serve over HTTPS, and never once renewal is automated. Two or three times an era.
+  'certificate-expiry': 900_000,
 };
 
 const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
@@ -69,6 +71,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     trafficSpikeRemainingMs: 0,
     quickFixBonusRemainingMs: 0,
     consentBanner: 'none',
+    isCertificateExpired: false,
     siteName: DEFAULT_SITE_NAME,
     reachedMilestoneIds: [],
     prototypeComplete: false,

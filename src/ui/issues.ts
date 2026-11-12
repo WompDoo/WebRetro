@@ -2,6 +2,7 @@ import {
   getDefenseCopy,
   calculateInfectionDifficulty,
   ERAS_BY_ID,
+  getAvailableOpsIds,
   getAvailableSkillIds,
   getFeatureDisplayName,
   getNextHostingTier,
@@ -18,7 +19,7 @@ import { MINIGAME_NAMES } from './minigame-names';
 import type { ShopTab } from './render-shop';
 
 export type IssueSeverity = 'critical' | 'major' | 'minor';
-export type IssueLiveSlot = 'infection-timer' | 'server-load' | 'spike-remaining';
+export type IssueLiveSlot = 'infection-timer' | 'server-load' | 'spike-remaining' | 'certificate-fee';
 
 export interface IssueButton {
   readonly label: string;
@@ -51,6 +52,8 @@ const BUG_NUMBER_OFFSET = 1_000;
 const SITE_DOWN_NUMBER = 503;
 const OVERLOAD_NUMBER = 429;
 const SPIKE_NUMBER = 200;
+/** nginx answers 495 when a certificate is the problem. */
+const CERTIFICATE_NUMBER = 495;
 const SEVERITY_ORDER: readonly IssueSeverity[] = ['critical', 'major', 'minor'];
 
 
@@ -184,6 +187,28 @@ function spikeIssue(state: GameState): Issue | null {
   };
 }
 
+function certificatePrevention(state: GameState): IssueButton | null {
+  return getAvailableOpsIds(state).includes('certificate-automation') ? shopButton(`Prevent: ${UPGRADES_BY_ID['certificate-automation'].name}`, 'security') : null;
+}
+
+/** The certificate ran out: until you renew it, browsers warn most visitors away. */
+function certificateIssue(state: GameState): Issue | null {
+  if (!state.isCertificateExpired) return null;
+  return {
+    key: 'certificate',
+    number: CERTIFICATE_NUMBER,
+    severity: 'critical',
+    title: 'SSL certificate expired: browsers warn visitors away',
+    sender: 'renewals@trustcert.example',
+    subject: 'Your SSL certificate has expired',
+    summary: 'Certificate expired',
+    liveSlot: 'certificate-fee',
+    liveId: 0,
+    fix: shopButton('Renew it', 'security'),
+    prevention: certificatePrevention(state),
+  };
+}
+
 function compareIssues(first: Issue, second: Issue): number {
   return SEVERITY_ORDER.indexOf(first.severity) - SEVERITY_ORDER.indexOf(second.severity) || first.number - second.number;
 }
@@ -191,6 +216,6 @@ function compareIssues(first: Issue, second: Issue): number {
 /** Everything that needs you right now, most urgent first. Pop-ups aren't tickets: you close them on the page. */
 export function listIssues(state: GameState): readonly Issue[] {
   const server = ERAS_BY_ID[state.eraId].hasServerLoad ? [serverIssue(state), spikeIssue(state)] : [];
-  const issues = [...state.infections.map((infection) => infectionIssue(state, infection)), ...server];
+  const issues = [...state.infections.map((infection) => infectionIssue(state, infection)), certificateIssue(state), ...server];
   return issues.filter((issue): issue is Issue => issue !== null).sort(compareIssues);
 }

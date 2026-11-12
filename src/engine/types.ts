@@ -104,13 +104,24 @@ export type UpgradeId =
   | 'code-splitting'
   | 'lazy-loading'
   | 'growth-hacking'
-  | 'ci-pipeline';
+  | 'ci-pipeline'
+  | 'own-domain'
+  | 'learn-ftp'
+  | 'nightly-backups'
+  | 'database-indexes'
+  | 'ssl-certificate'
+  | 'staging-environment'
+  | 'uptime-monitoring'
+  | 'process-manager'
+  | 'certificate-automation'
+  | 'blue-green-deploys';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
-export type UpgradeKind = 'skill' | 'boost';
+/** Skills are learned, boosts are bought, ops are how you run the site: they live in the Ops tab. */
+export type UpgradeKind = 'skill' | 'boost' | 'ops';
 
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection';
-export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos' | 'broken-build' | 'privacy-fine';
+export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos' | 'broken-build' | 'privacy-fine' | 'certificate-expiry';
 export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos' | 'broken-build';
 /**
  * 2018's cookie banner, under the GDPR. None risks complaints and fines; an honest one asks, and many say no to
@@ -132,7 +143,8 @@ export type HostingTierId =
   | `extra-racks-${number}`
   | `cloud-${number}`
   | `pods-${number}`;
-export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans';
+/** A defense stops a hazard, cleans it up on its own, or makes it rarer. */
+export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans' | 'slows-spawn';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
 export type GameEventKind = 'hazard' | 'defense' | 'milestone' | 'cleanup';
@@ -202,7 +214,19 @@ export type UpgradeEffect =
    */
   | { readonly kind: 'client-side-rendering' }
   /** The server sends the page already rendered: it shows at once, and search engines can read it. */
-  | { readonly kind: 'server-side-rendering' };
+  | { readonly kind: 'server-side-rendering' }
+  /** A passive fix for one kind of infection: it clears up on its own after a while. */
+  | { readonly kind: 'auto-cleans-infection'; readonly infection: InfectionKind; readonly afterMs: number }
+  /** You hear about problems sooner, so the window for a quick fix is longer. */
+  | { readonly kind: 'quick-fix-window-multiplier'; readonly factor: number }
+  /** The server keeps serving past the load that used to take it down. */
+  | { readonly kind: 'overload-tolerance-multiplier'; readonly factor: number }
+  /** A share of revenue spent on running it, every second. */
+  | { readonly kind: 'revenue-upkeep-share'; readonly share: number }
+  /** Served over HTTPS: a padlock, and a certificate that has to be renewed. */
+  | { readonly kind: 'secure-connection' }
+  /** The certificate renews itself: it never expires on you. */
+  | { readonly kind: 'automatic-certificate-renewal' };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -225,6 +249,8 @@ export interface DefenseDefinition {
   readonly cost: number;
   readonly countersHazard: HazardKind;
   readonly counterMode: DefenseCounterMode;
+  /** For a defense that slows a hazard: how often it still comes, against the usual pace. 1 for the others. */
+  readonly spawnRateFactor: number;
   readonly autoCleanDelayMs: number;
   readonly trafficFactor: number;
   /** The one feature whose visitors pay trafficFactor, or null when every visitor does. */
@@ -345,6 +371,8 @@ export interface GameState {
   /** Fixing an infection quickly earns a short traffic bonus. */
   readonly quickFixBonusRemainingMs: number;
   readonly consentBanner: ConsentBanner;
+  /** HTTPS without automatic renewal: the certificate ran out, and browsers warn every visitor. */
+  readonly isCertificateExpired: boolean;
   /** What the player named the site, as typed (cleaned). Addresses and logos use forms made from it. */
   readonly siteName: string;
   readonly reachedMilestoneIds: readonly MilestoneId[];

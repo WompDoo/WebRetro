@@ -1,4 +1,4 @@
-import { calculateMobileStayShare, ERAS_BY_ID, findChosenFramework, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMobileFriendly, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
+import { calculateMobileStayShare, ERAS_BY_ID, findChosenFramework, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMarkedNotSecure, isMobileFriendly, isServedSecurely, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
 import type { EconomySnapshot, EraId, FrameworkId, GameState, UpgradeId } from '../engine';
 import { resolveEditorTabs, resolveEditorTitle } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
@@ -37,20 +37,34 @@ function findPlatformPath(state: GameState): string {
 }
 
 const SITE_PATHS: Readonly<Record<EraId, (state: GameState) => string | null>> = {
-  'homepage-1997': () => null,
+  // Free web space lives at someone else's address until you register your own.
+  'homepage-1997': (state) => (knows(state, 'own-domain') ? '/index.htm' : null),
   'web2-2005': (state) => (knows(state, 'learn-url-rewriting') ? '/blog/2005/04/my-first-post/' : '/index.php?id=42&cat=3&sid=8f3a9c2e71b04d55'),
   'social-2011': () => SOCIAL_PATH,
   'platform-2018': findPlatformPath,
 };
 
-/** By 2018 certificates were free, and browsers called every plain http page "Not secure". */
-function describeScheme(eraId: EraId): string {
-  return eraId === 'platform-2018' ? 'https' : 'http';
+/** https once you have a certificate: bought in 2005, or renewed by a cron job from 2018. */
+function describeScheme(state: GameState): string {
+  return isServedSecurely(state) ? 'https' : 'http';
 }
 
 export function buildSiteUrl(state: GameState): string {
   const path = SITE_PATHS[state.eraId](state);
-  return path === null ? fillSiteNameText(ERA_PRESENTATION[state.eraId].siteUrl, state) : `${describeScheme(state.eraId)}://www.${siteBrand(state)}.com${path}`;
+  return path === null ? fillSiteNameText(ERA_PRESENTATION[state.eraId].siteUrl, state) : `${describeScheme(state)}://www.${siteBrand(state)}.com${path}`;
+}
+
+/** What the address bar says about the connection. The CSS draws the padlock, the warning or "Not secure". */
+export type ConnectionSecurity = 'secure' | 'not-secure' | 'expired' | 'plain';
+
+const CONNECTION_RULES: readonly (readonly [(state: GameState) => boolean, ConnectionSecurity])[] = [
+  [(state) => state.isCertificateExpired, 'expired'],
+  [isServedSecurely, 'secure'],
+  [isMarkedNotSecure, 'not-secure'],
+];
+
+export function describeConnectionSecurity(state: GameState): ConnectionSecurity {
+  return CONNECTION_RULES.find(([applies]) => applies(state))?.[1] ?? 'plain';
 }
 
 export function buildBrowserTitle(state: GameState): string {
@@ -346,13 +360,13 @@ function listEditorFiles(state: GameState): readonly string[] {
  * Only 2005 collapses its tabs: the joke is that J2EE needs more files than anyone can open. In other eras every file
  * is a real tab you can reach by scrolling the tab bar.
  */
-function findVisibleTabLimit(eraId: EraId): number {
-  return eraId === 'web2-2005' ? J2EE_VISIBLE_TABS : Number.POSITIVE_INFINITY;
+function findVisibleTabLimit(state: GameState): number {
+  return state.eraId === 'web2-2005' && knows(state, 'j2ee') ? J2EE_VISIBLE_TABS : Number.POSITIVE_INFINITY;
 }
 
 export function buildEditorTabs(state: GameState): EditorTabs {
   const files = listEditorFiles(state);
-  const limit = findVisibleTabLimit(state.eraId);
+  const limit = findVisibleTabLimit(state);
   const hiddenCount = Math.max(0, files.length - limit);
   return { files: files.slice(0, limit), hiddenCount, hiddenTitle: `Enterprise Java: ${hiddenCount} more XML files` };
 }

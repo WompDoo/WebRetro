@@ -96,4 +96,15 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'lazy-loading': `${MDN}/Web/Performance/Lazy_loading`,
   'code-splitting': `${MDN}/Glossary/Code_splitting`,
   'growth-hacking': `${WIKIPEDIA}/Growth_hacking`,
+  // Ops: running the site
+  'own-domain': `${MDN}/Glossary/Domain_name`,
+  'learn-ftp': `${MDN}/Glossary/FTP`,
+  'nightly-backups': `${WIKIPEDIA}/Cron`,
+  'database-indexes': 'https://use-the-index-luke.com/',
+  'ssl-certificate': `${MDN}/Glossary/TLS`,
+  'staging-environment': `${WIKIPEDIA}/Deployment_environment`,
+  'uptime-monitoring': `${WIKIPEDIA}/Website_monitoring`,
+  'process-manager': `${WIKIPEDIA}/Process_supervision`,
+  'certificate-automation': `${WIKIPEDIA}/Automatic_Certificate_Management_Environment`,
+  'blue-green-deploys': 'https://martinfowler.com/bliki/BlueGreenDeployment.html',
 };

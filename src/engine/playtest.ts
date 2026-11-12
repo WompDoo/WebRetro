@@ -10,6 +10,7 @@ import {
   calculateHostingCapacity,
   calculateNetRevenuePerSecond,
   calculateVisitorsPerSecond,
+  canCertificateExpire,
   getEraIndex,
 } from './economy';
 import { calculateGateChecks } from './era-gate';
@@ -199,6 +200,11 @@ export function addPlaytestInfection(state: GameState, minigameId: MinigameId): 
 export function addPlaytestPopup(state: GameState, roll: number): GameState {
   const id = state.nextEntityId;
   return { ...state, popups: [...state.popups, { id, variantRoll: roll, anchorX: roll, anchorY: 1 - roll }], nextEntityId: id + 1 };
+}
+
+/** Only a certificate renewed by hand can run out. */
+export function expirePlaytestCertificate(state: GameState): GameState {
+  return { ...state, isCertificateExpired: canCertificateExpire(state) };
 }
 
 /** Only eras with a server have traffic spikes. */

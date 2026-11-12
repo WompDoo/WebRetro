@@ -44,4 +44,7 @@ export const COOKIE_ICON = svg('<path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3-3 3 3 0
 export const UPGRADE_ICON = svg('<path d="M12 19V5M6 11l6-6 6 6"/><path d="M5 21h14"/>');
 export const CODE_ICON = svg('<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>');
 export const SERVER_ICON = svg('<rect x="4" y="3" width="16" height="7" rx="1"/><rect x="4" y="14" width="16" height="7" rx="1"/><path d="M8 6.5h.01M8 17.5h.01"/>');
+/** A terminal prompt: the things you run, not the things you build. */
+export const OPS_ICON = svg('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M12 15h5"/>');
+export const LOCK_ICON = svg('<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>');
 export const LEARN_ICON = svg('<path d="M3 7 12 3l9 4-9 4Z"/><path d="M7 9v5c0 1.5 2.2 3 5 3s5-1.5 5-3V9"/><path d="M21 7v6"/>');

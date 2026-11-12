@@ -7,6 +7,7 @@ import {
   buildPerformanceReadout,
   buildPhoneCaption,
   buildSiteUrl,
+  describeConnectionSecurity,
   buildStatusText,
   classifyPerformance,
   describeLighthouseRating,
@@ -169,6 +170,7 @@ function renderSkillChrome(editor: CodeEditor, file: string): void {
   const tabs = buildEditorTabs(store.game);
   editor.setTabs(tabs.files, tabs.hiddenCount, file, tabs.hiddenTitle);
   setTextIfChanged(elements.browserUrl, buildSiteUrl(store.game));
+  elements.browserUrl.dataset['security'] = describeConnectionSecurity(store.game);
   setTextIfChanged(elements.browserTitle, buildBrowserTitle(store.game));
 }
 
@@ -318,7 +320,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   const renderStructure = (): void => {
     renderEraChromeOnce();
     const file = resolveEditorFile(store.game, store.editorFile);
-    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}|${store.game.siteName}`, () => renderSkillChrome(editor, file));
+    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}|${store.game.siteName}|${store.game.isCertificateExpired}`, () => renderSkillChrome(editor, file));
     renderWhenChanged('site', calculateSiteSignature(store.game), renderSiteAndReload);
     renderWhenChanged('popups', calculatePopupSignature(store.game), () => syncPopups(elements.popupLayer, store.game));
     renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, readShopView()), renderShop);

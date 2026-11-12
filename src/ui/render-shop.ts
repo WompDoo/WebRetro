@@ -1,5 +1,9 @@
 import {
   calculateAverageMsBetweenFines,
+  calculateCertificateRenewalFee,
+  canRenewCertificate,
+  getAvailableOpsIds,
+  SITE_DOWN_SERVER_LOAD,
   calculateFeatureLevelsNetVisitors,
   calculateUpgradeCost,
   findPriceBreak,
@@ -36,6 +40,7 @@ import {
   getRevealedBoostIds,
   getUnlockedDefenseIds,
   getUnlockedFeatureIds,
+  isEraBoundEffect,
   isEraUnlocked,
   isFeatureBuildable,
   calculateTradeIn,
@@ -45,11 +50,11 @@ import {
   MS_PER_SECOND,
   UPGRADES_BY_ID,
 } from '../engine';
-import type { ConsentBanner, ConsentBannerDefinition, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
+import type { ConsentBanner, ConsentBannerDefinition, DefenseCounterMode, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
 import { describeTradeIn } from './retirement';
-import { AD_ICON, CODE_ICON, COOKIE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
+import { AD_ICON, CODE_ICON, COOKIE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, LOCK_ICON, OPS_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
 export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security';
 
@@ -240,6 +245,12 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'mobile-friendly': () => 'Phone visitors stop leaving',
   'client-side-rendering': () => 'Blank until the JavaScript runs: slower pages, and search visitors lost',
   'server-side-rendering': () => 'Renders on the server: no blank page, and search engines find you again',
+  'auto-cleans-infection': (effect) => `Undoes ${HAZARD_NAMES[effect.infection]} on its own after ${Math.round(effect.afterMs / MS_PER_SECOND)} s`,
+  'quick-fix-window-multiplier': (effect) => `Quick-fix bonus window ${formatFactor(effect.factor)}`,
+  'overload-tolerance-multiplier': (effect) => `The site stays up until ${formatPercent(SITE_DOWN_SERVER_LOAD * effect.factor)} server load`,
+  'revenue-upkeep-share': (effect) => `Costs ${formatPercent(effect.share)} of revenue to run`,
+  'secure-connection': () => 'Served over https, with a padlock',
+  'automatic-certificate-renewal': () => 'The certificate never expires',
 };
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
@@ -249,6 +260,11 @@ function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
 
 export function describeUpgradeEffects(effects: readonly UpgradeEffect[], eraId: EraId): string {
   return effects.map((effect) => describeOneEffect(effect, eraId)).join(' · ');
+}
+
+/** Cheapest first: what you can afford soonest is at the top. */
+function sortByCost(state: GameState, upgradeIds: readonly UpgradeId[]): readonly UpgradeId[] {
+  return [...upgradeIds].sort((first, second) => calculateUpgradeCost(state, first) - calculateUpgradeCost(state, second));
 }
 
 /** A real link to where you can learn it for real, or plain text when there's nothing worth linking. */
@@ -309,7 +325,7 @@ function learnedSkills(state: GameState): readonly UpgradeId[] {
 }
 
 function renderLearnTab(state: GameState): string {
-  const available = [...getAvailableSkillIds(state)].sort((a, b) => calculateUpgradeCost(state, a) - calculateUpgradeCost(state, b));
+  const available = sortByCost(state, getAvailableSkillIds(state));
   const rows = available.length === 0
     ? '<p class="shop-empty">You know everything this era has to teach. Time to relaunch.</p>'
     : available.map((skillId) => renderSkillRow(state, skillId)).join('');
@@ -324,18 +340,30 @@ function isTypingBoost(upgradeId: UpgradeId): boolean {
   return UPGRADES_BY_ID[upgradeId].effects.some((effect) => TYPING_EFFECT_KINDS.includes(effect.kind));
 }
 
-function renderBoostRow(state: GameState, upgradeId: UpgradeId): string {
+const ERA_BOUND_NOTE = '<p class="shop-effect is-muted">The multiplier lasts this era: by the next relaunch, everyone has one.</p>';
+
+function describeEraBound(upgradeId: UpgradeId): string {
+  return UPGRADES_BY_ID[upgradeId].effects.some((effect) => isEraBoundEffect(upgradeId, effect)) ? ERA_BOUND_NOTE : '';
+}
+
+/** A boost or an ops upgrade: bought once, for good. */
+function renderUpgradeRow(state: GameState, upgradeId: UpgradeId, icon: string): string {
   const upgrade = UPGRADES_BY_ID[upgradeId];
   return `<article class="shop-row">
-    <div class="shop-icon">${isTypingBoost(upgradeId) ? CODE_ICON : UPGRADE_ICON}</div>
+    <div class="shop-icon">${icon}</div>
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(upgrade.name)}</h3>
       <p class="shop-desc">${escapeHtml(upgrade.description)}</p>
       <p class="shop-effect">${escapeHtml(describeUpgradeEffects(upgrade.effects, state.eraId) + describeUpgradeWeight(upgradeId))}</p>
+      ${describeEraBound(upgradeId)}
       ${describePriceBreak(state, upgradeId)}
     </div>
     ${buyButton('buy-upgrade', upgradeId, calculateUpgradeCost(state, upgradeId))}
   </article>`;
+}
+
+function renderBoostRow(state: GameState, upgradeId: UpgradeId): string {
+  return renderUpgradeRow(state, upgradeId, isTypingBoost(upgradeId) ? CODE_ICON : UPGRADE_ICON);
 }
 
 function boughtBoosts(state: GameState): readonly UpgradeId[] {
@@ -343,7 +371,7 @@ function boughtBoosts(state: GameState): readonly UpgradeId[] {
 }
 
 function renderUpgradesTab(state: GameState): string {
-  const revealed = [...getRevealedBoostIds(state)].sort((a, b) => calculateUpgradeCost(state, a) - calculateUpgradeCost(state, b));
+  const revealed = sortByCost(state, getRevealedBoostIds(state));
   const rows = revealed.length === 0
     ? '<p class="shop-empty">No upgrades yet. Keep earning and new ones will show up here.</p>'
     : revealed.map((upgradeId) => renderBoostRow(state, upgradeId)).join('');
@@ -362,14 +390,18 @@ const HAZARD_NAMES: Readonly<Record<HazardKind, string>> = {
   ddos: 'DDoS attacks',
   'broken-build': 'broken builds',
   'privacy-fine': 'privacy fines',
+  'certificate-expiry': 'expired certificates',
+};
+
+const BENEFIT_DESCRIPTIONS: Readonly<Record<DefenseCounterMode, (defense: DefenseDefinition, hazard: string) => string>> = {
+  'prevents-spawn': (_defense, hazard) => `Stops ${hazard}`,
+  'auto-cleans': (defense, hazard) => `Removes ${hazard} on its own after ${Math.round(defense.autoCleanDelayMs / MS_PER_SECOND)} s`,
+  'slows-spawn': (defense, hazard) => `Makes ${hazard} ${formatPercent(NEUTRAL_FACTOR - defense.spawnRateFactor)} rarer`,
 };
 
 /** What the defense does for you. Without this line a defense reads like a pure cost. */
 function describeBenefit(defense: DefenseDefinition): string {
-  const hazard = HAZARD_NAMES[defense.countersHazard];
-  return defense.counterMode === 'prevents-spawn'
-    ? `Stops ${hazard}`
-    : `Removes ${hazard} on its own after ${Math.round(defense.autoCleanDelayMs / MS_PER_SECOND)} s`;
+  return BENEFIT_DESCRIPTIONS[defense.counterMode](defense, HAZARD_NAMES[defense.countersHazard]);
 }
 
 function describeTrafficTradeOff(defense: DefenseDefinition, eraId: EraId): string {
@@ -483,9 +515,37 @@ function renderHostingRow(state: GameState): string {
   </article>`;
 }
 
+// ---------- DevOps ----------
+
+/** Shown only while it's urgent: browsers are turning your visitors away. */
+function renderCertificateRow(state: GameState): string {
+  if (!state.isCertificateExpired) return '';
+  const fee = calculateCertificateRenewalFee(state);
+  return `<article class="shop-row">
+    <div class="shop-icon">${LOCK_ICON}</div>
+    <div class="shop-info">
+      <h3 class="shop-name">SSL certificate <span class="level-chip is-hot">expired</span></h3>
+      <p class="shop-desc">Browsers show every visitor a warning page instead of your site, and most of them turn back. Renewing means a fee, a form and a fax.</p>
+    </div>
+    ${buyButton('renew-certificate', 'certificate', fee, `Renew ${formatMoney(fee)}`)}
+  </article>`;
+}
+
+function boughtOps(state: GameState): readonly UpgradeId[] {
+  return state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'ops');
+}
+
+function renderOpsGroup(state: GameState): string {
+  const available = sortByCost(state, getAvailableOpsIds(state));
+  const rows = available.length === 0
+    ? '<p class="shop-empty">Everything this era can run is running.</p>'
+    : available.map((upgradeId) => renderUpgradeRow(state, upgradeId, OPS_ICON)).join('');
+  return `<h3 class="shop-group-title">DevOps</h3>${rows}${renderVisitedList(state, boughtOps(state), 'Running')}`;
+}
+
 function renderSecurityTab(state: GameState): string {
   const defenses = getUnlockedDefenseIds(state).map((defenseId) => renderDefenseRow(state, defenseId)).join('');
-  return `<h3 class="shop-group-title">Monetization</h3>${renderAdRow(state)}${renderConsentRow(state)}<h3 class="shop-group-title">Hosting</h3>${renderHostingRow(state)}<h3 class="shop-group-title">Security</h3>${defenses}`;
+  return `${renderCertificateRow(state)}<h3 class="shop-group-title">Monetization</h3>${renderAdRow(state)}${renderConsentRow(state)}<h3 class="shop-group-title">Hosting</h3>${renderHostingRow(state)}${renderOpsGroup(state)}<h3 class="shop-group-title">Security</h3>${defenses}`;
 }
 
 // ---------- Tabs ----------
@@ -508,15 +568,29 @@ export function renderShopTabs(activeTab: ShopTab): string {
   ).join('');
 }
 
+function countAffordableDefenses(state: GameState): number {
+  return getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost).length;
+}
+
+function countAffordableOps(state: GameState): number {
+  return getAvailableOpsIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)).length;
+}
+
+function canPlaceAnotherAd(state: GameState): boolean {
+  return canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state);
+}
+
 const AFFORDABLE_COUNTERS: Readonly<Record<ShopTab, (state: GameState) => number>> = {
   learn: (state) => getAvailableSkillIds(state).filter((skillId) => state.money >= calculateUpgradeCost(state, skillId)).length,
   build: (state) =>
     getUnlockedFeatureIds(state).filter((featureId) => isFeatureBuildable(state, featureId) && state.money >= calculateNextFeatureCost(state, featureId)).length,
   upgrades: (state) => getRevealedBoostIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)).length,
   security: (state) =>
-    getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost).length +
-    (canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state) ? 1 : 0) +
-    (canUpgradeHosting(state) ? 1 : 0),
+    countAffordableDefenses(state) +
+    countAffordableOps(state) +
+    Number(canPlaceAnotherAd(state)) +
+    Number(canUpgradeHosting(state)) +
+    Number(canRenewCertificate(state)),
 };
 
 export function countAffordable(state: GameState, tab: ShopTab): number {
@@ -540,5 +614,6 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
     ERAS_BY_ID[state.eraId].hasServerLoad ? Math.round(calculateServerLoad(state) * 20) : 0,
     getRevealedBoostIds(state).join(','),
     state.infections.map((infection) => infection.featureId).join(','),
+    state.isCertificateExpired ? calculateCertificateRenewalFee(state) : 0,
   ].join('|');
 }

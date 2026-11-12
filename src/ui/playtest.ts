@@ -1,4 +1,4 @@
-import { ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
+import { canCertificateExpire, ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { MINIGAME_NAMES } from './minigame-names';
@@ -77,7 +77,8 @@ function renderMinigames(): string {
 
 function renderHazards(state: GameState): string {
   const noServer = ERAS_BY_ID[state.eraId].hasServerLoad ? '' : ' disabled title="1997 has no server to overload"';
-  return `<h3 class="playtest-heading">Hazards</h3><p class="playtest-buttons">${button('playtest-popup', 'popup', 'Pop-up')}${button('playtest-spike', 'spike', 'Traffic spike', noServer)}</p>`;
+  const noCertificate = canCertificateExpire(state) ? '' : ' disabled title="No certificate renewed by hand: buy an SSL certificate under Ops"';
+  return `<h3 class="playtest-heading">Hazards</h3><p class="playtest-buttons">${button('playtest-popup', 'popup', 'Pop-up')}${button('playtest-spike', 'spike', 'Traffic spike', noServer)}${button('playtest-certificate', 'certificate', 'Expire the certificate', noCertificate)}</p>`;
 }
 
 function renderSpeed(view: PlaytestView): string {
