@@ -1,4 +1,4 @@
-import { ERAS_BY_ID, FEATURE_IDS } from '../../engine';
+import { ERAS_BY_ID, FEATURE_IDS, getActiveUpgradeIds } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
 import { BANNER_ADS } from '../presentation';
@@ -47,7 +47,22 @@ function readHomepageSkills(state: GameState): HomepageSkills {
   };
 }
 
-function homepageClasses(skills: HomepageSkills): string {
+/** Boosts that change how the whole page looks: blinking banners, 16-colour GIFs, the GIF pack. */
+const BOOST_CLASSES: Readonly<Partial<Record<UpgradeId, string>>> = {
+  'animated-banners': 'has-animated-banners',
+  'optimize-gifs': 'has-16-colors',
+  'animated-gif-pack': 'has-gif-pack',
+};
+
+/** Only boosts still in fashion: a retired one leaves the page with its effect. */
+function boostClasses(state: GameState): readonly string[] {
+  return getActiveUpgradeIds(state).flatMap((upgradeId) => {
+    const className = BOOST_CLASSES[upgradeId];
+    return className === undefined ? [] : [className];
+  });
+}
+
+function homepageClasses(skills: HomepageSkills, state: GameState): string {
   const modifiers = [
     skills.font ? 'has-font' : '',
     skills.background ? 'has-background' : '',
@@ -55,7 +70,7 @@ function homepageClasses(skills: HomepageSkills): string {
     skills.tables ? 'is-table-layout' : '',
     skills.javascript ? 'has-javascript' : '',
   ].filter((modifier) => modifier !== '');
-  return ['site-1997', ...modifiers].join(' ');
+  return ['site-1997', ...modifiers, ...boostClasses(state)].join(' ');
 }
 
 function homepage1997Content(skills: HomepageSkills, state: GameState): HomepageContent {
@@ -84,10 +99,22 @@ function renderHomepageIntro(skills: HomepageSkills): string {
   return `<p class="site-intro">Hi!! I like computers, my cat, and pizza.${blink} This is my first web page. Hope you like it!!</p>`;
 }
 
-function renderHomepageFooter(skills: HomepageSkills): string {
-  if (!skills.font) return '';
+/** Little 88×31 buttons at the bottom of every 1997 page: what you signed up for, and what you validated. */
+const FOOTER_BADGES: readonly (readonly [UpgradeId, string])[] = [
+  ['html-validator', '<span class="badge97 is-valid">✓ HTML 3.2 checked!</span>'],
+  ['web-directories', '<span class="badge97 is-listed">★ Listed in Webcrawlr ★</span>'],
+  ['banner-exchange', '<span class="badge97 is-swap">BannerSwap: your banner here!</span>'],
+];
+
+function renderBadges(state: GameState): string {
+  const badges = FOOTER_BADGES.filter(([upgradeId]) => state.purchasedUpgradeIds.includes(upgradeId)).map(([, badge]) => badge);
+  return badges.length === 0 ? '' : `<p class="site-badges">${badges.join('')}</p>`;
+}
+
+function renderHomepageFooter(skills: HomepageSkills, state: GameState): string {
   const email = skills.links ? ' · <span class="fake-link">Email me!</span>' : '';
-  return `<p class="site-footer">Last updated 10/31/97 · Made with a text editor${email}</p>`;
+  const footer = skills.font ? `<p class="site-footer">Last updated 10/31/97 · Made with a text editor${email}</p>` : '';
+  return `${footer}${renderBadges(state)}`;
 }
 
 function renderNavLinks(skills: HomepageSkills): string {
@@ -129,13 +156,13 @@ function render1997TableSite(context: SiteContext, skills: HomepageSkills, conte
   const about = intro === '' ? [] : [`<section class="feature-block t97-about"><h2 class="feature-heading">About me</h2>${intro}</section>`];
   const blocks = [...about, ...mainBlocks];
   const banners = Array.from({ length: context.state.adCount }, (_, index) => renderBanner(index));
-  return `<div class="${homepageClasses(skills)}">
+  return `<div class="${homepageClasses(skills, context.state)}">
     <div class="t97-header">${renderHomepageTitle(context, skills, content.title)}</div>
     <div class="t97-table">
       <nav class="t97-nav"><div class="t97-menu"><p class="t97-nav-title">~ Navigation ~</p><ul class="t97-links">${renderNavLinks(skills)}</ul></div>${sidebar}${banners.slice(mainColumnBanners(blocks)).join('')}</nav>
       <div class="t97-main">${bannerAfterEveryBlock(blocks, banners)}</div>
     </div>
-    ${renderHomepageFooter(skills)}
+    ${renderHomepageFooter(skills, context.state)}
   </div>`;
 }
 
@@ -143,7 +170,7 @@ function render1997TableSite(context: SiteContext, skills: HomepageSkills, conte
 function render1997StackedSite(context: SiteContext, skills: HomepageSkills, content: HomepageContent): string {
   const blocks = renderFeatureBlocks(context, [...content.mainFeatures, ...content.sidebarFeatures]);
   const body = blocks.length === 0 && context.state.adCount === 0 ? '' : interleaveBanners(blocks, context.state.adCount);
-  return `<div class="${homepageClasses(skills)}">${renderHomepageTitle(context, skills, content.title)}${renderHomepageIntro(skills)}${body}${renderHomepageFooter(skills)}</div>`;
+  return `<div class="${homepageClasses(skills, context.state)}">${renderHomepageTitle(context, skills, content.title)}${renderHomepageIntro(skills)}${body}${renderHomepageFooter(skills, context.state)}</div>`;
 }
 
 /** The hand-written page: stacked until you learn tables. 2005 keeps using it until you learn CSS. */

@@ -36,6 +36,8 @@ export interface CodeEditor {
   readonly setTabs: (files: readonly string[], hiddenCount: number, activeFile: string, hiddenTitle: string) => void;
   /** How code arrives can change mid-era: picking a 2018 framework changes what a typo is. */
   readonly setTyping: (style: TypingStyle) => void;
+  /** Syntax colours can arrive mid-era too: 2005 buys them. */
+  readonly setHighlights: (isOn: boolean) => void;
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
 }
 
@@ -209,5 +211,11 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     typing = style;
   };
 
-  return { setEra, showFile, setTitle, setTabs, updateRate, setTyping };
+  const setHighlights = (isOn: boolean): void => {
+    if (highlights === isOn) return;
+    highlights = isOn;
+    render();
+  };
+
+  return { setEra, showFile, setTitle, setTabs, updateRate, setTyping, setHighlights };
 }

@@ -201,7 +201,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     kind: 'skill',
     eraId: 'web2-2005',
     name: 'Learn the Web 2.0 look',
-    description: 'Glossy gradients, reflections under the logo, rounded everything and a beta starburst.',
+    description: 'Glossy gradients, reflections under the logo, rounded everything.',
     cost: 1_500_000,
     pageWeightKb: 45,
     effects: [{ kind: 'global-traffic-multiplier', factor: 1.1 }],
@@ -326,7 +326,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Spinning globes, flaming text and a mailbox that opens.',
     cost: 800,
     pageWeightKb: 20,
-    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'under-construction', factor: 2 }],
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.05 }],
     requiredFeatureId: 'under-construction',
   },
   'view-source': {
@@ -447,7 +447,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Sparkly headings, straight from a social profile page.',
     cost: 100000,
     pageWeightKb: 25,
-    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'guestbook', factor: 2 }],
+    effects: [{ kind: 'global-traffic-multiplier', factor: 1.06 }],
     requiredFeatureId: null,
   },
   'xhtml-badges': {
@@ -981,5 +981,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
  * Google started demoting pages behind app-install banners in 2017.
  */
 export const UPGRADE_SUNSETS: Readonly<Partial<Record<UpgradeId, EraId>>> = {
+  'animated-gif-pack': 'web2-2005',
+  'glitter-text': 'social-2011',
   'app-banner': 'platform-2018',
 };

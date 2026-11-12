@@ -348,6 +348,31 @@ shows up in it.
   works on any name (`kvnsklpg`: the first letter stays, and a name too short to lose its vowels keeps them).
   Copy written before naming says `{site}` and `{name}`, filled escaped for HTML and as-is for plain text.
 
+## Promises: every buyable thing does what it says (built)
+
+A four-era audit bought every skill, boost, feature, defense and ad with and without, in its own era's end state, and
+measured everything it could touch: visitors, revenue, page weight, load times, server load, typing pay, typos, the
+page, every editor file and the browser chrome. It found:
+- **Dead mechanics** (fixed separately): the "keystrokes ×N" skills, the typo reductions, and Deploy with git push.
+- **Promises nobody could see**, now drawn: 1997's guestbook smileys, blinking banners, 16-colour GIFs, the animated
+  GIF pack (a spinning globe, flaming HOT!, a mailbox), META keywords and the other code lines, footer buttons for the
+  validator, the web directories and the banner exchange, a MegaRing for the bigger webring, a dozen MIDI files a
+  level. 2005's beta badge (Perpetual beta's, not the Web 2.0 look's), contextual ads ("Ads by Searchly", matched to
+  the page), permalinks instead of index.php?p=42, threaded replies, readers' misspelled tags, AJAX everything's
+  spinners that never finish, SVN's $Id$, and syntax colours only once you buy them. 2011's MongoDB and git push
+  deploys in the code (a Procfile tab). 2018's "● Live" feed (WebSockets), the A/B-tested main button (growth hacking),
+  and code for CI (a ci.yml tab), lazy-loading and code-splitting.
+- **Tabs drifted from code:** the editor's tabs came from a hand-kept list beside the code tables, so code written to a
+  file nobody listed never showed. The tabs now include every file a skill writes into.
+- **Purchases that hurt:** the animated GIF pack lowered visitors (its weight beat doubling a tiny feature). It and
+  glitter text now raise all traffic a little and go out of fashion at the next relaunch (`UPGRADE_SUNSETS`), so the
+  boost doesn't follow you for thirty years. And when one more level of a feature costs more visitors in load time
+  than it brings, the shop says so in red.
+- **The audit is a test now** (`tests/promises.test.ts`): every upgrade must change something measurable or visible
+  in its own era (the page cache is the one exception: it acts only during a traffic spike), no boost may lower both
+  visitors and revenue, every typing skill must pay its factor, every typo tool must cut typos, and every feature must
+  show on the page from its first level.
+
 ## The 2005 hosting ladder (built)
 
 How a growing site scaled between 2001 and 2009, in the order people did it. Each step carries about 2.3×

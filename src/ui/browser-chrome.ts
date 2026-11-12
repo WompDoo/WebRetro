@@ -3,7 +3,7 @@ import type { EconomySnapshot, EraId, FrameworkId, GameState, UpgradeId } from '
 import { resolveEditorTabs, resolveEditorTitle } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
 import { fillSiteNameText, siteBrand } from './sites';
-import { mainEditorFile } from './skill-code';
+import { listWrittenFiles, mainEditorFile } from './skill-code';
 
 /** Backend knowledge mostly shows up here: the address bar, the status bar and the editor. */
 
@@ -335,10 +335,11 @@ const SKILL_FILES: Readonly<Partial<Record<EraId, readonly (readonly [UpgradeId,
   ],
 };
 
+/** The era's own tabs, every file your skills wrote code into, and the files listed above with nothing in them yet. */
 function listEditorFiles(state: GameState): readonly string[] {
-  const extra = (SKILL_FILES[state.eraId] ?? []).filter(([skillId]) => knows(state, skillId)).flatMap(([, files]) => files);
+  const listed = (SKILL_FILES[state.eraId] ?? []).filter(([skillId]) => knows(state, skillId)).flatMap(([, files]) => files);
   // Several skills can write to the same file; it gets one tab.
-  return [...new Set([...resolveEditorTabs(state), ...extra])];
+  return [...new Set([...resolveEditorTabs(state), ...listWrittenFiles(state), ...listed])];
 }
 
 /**

@@ -255,6 +255,15 @@ function calculateSynergyFactor(state: GameState, definition: FeatureDefinition)
 }
 
 /** Visitors one more level of this feature would add, before ads and pop-ups. */
+/**
+ * What buying these levels really does to visitors: what they bring, less what their weight costs by slowing the
+ * page. Late in an era a heavy feature can lose more than it brings.
+ */
+export function calculateFeatureLevelsNetVisitors(state: GameState, featureId: FeatureId, count: number): number {
+  const after: GameState = { ...state, featureLevels: { ...state.featureLevels, [featureId]: state.featureLevels[featureId] + count } };
+  return calculateVisitorsPerSecond(after) - calculateVisitorsPerSecond(state);
+}
+
 export function calculateFeatureVisitorsPerLevel(state: GameState, featureId: FeatureId): number {
   const definition = FEATURES_BY_ID[featureId];
   return (

@@ -157,8 +157,14 @@ function renderDeviceView(issues: readonly Issue[]): void {
 }
 
 /** A new skill adds to the file being typed; picking another tab brings that file back as it was left. */
+/** The era's editor highlights syntax, or you bought it the colours. */
+function hasSyntaxColours(state: GameState): boolean {
+  return ERA_PRESENTATION[state.eraId].editorHighlightsSyntax || state.purchasedUpgradeIds.includes('syntax-highlighting');
+}
+
 function renderSkillChrome(editor: CodeEditor, file: string): void {
   editor.setTyping(resolveTyping(store.game));
+  editor.setHighlights(hasSyntaxColours(store.game));
   editor.showFile(file, buildEditorSource(store.game, file));
   const tabs = buildEditorTabs(store.game);
   editor.setTabs(tabs.files, tabs.hiddenCount, file, tabs.hiddenTitle);

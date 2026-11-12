@@ -125,3 +125,30 @@
 .js-scold-title { padding: 3px 8px; background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; font-weight: 700; font-size: 12px; }
 .js-scold p { margin: 0; padding: 12px; }
 .browser-status-text.is-scrolling { display: inline-block; padding-left: 100%; overflow: visible; text-overflow: clip; animation: marquee 12s linear infinite; }
+
+/* ---------- 1997 boosts you can see ---------- */
+/* Guestbook smileys: little yellow GIF faces, and every third one spins. */
+.smiley { display: inline-block; color: #FFD400; text-shadow: 1px 1px 0 #000000; font-size: 1.15em; line-height: 1; }
+.smiley.is-grin { color: #FFB000; }
+.smiley.is-spinning { animation: smiley-spin 1.2s linear infinite; }
+@keyframes smiley-spin { to { transform: rotate(360deg); } }
+/* Animated banners: blinking text sells. */
+.site-1997.has-animated-banners .banner-headline { animation: blink 0.8s steps(1) infinite; }
+.site-1997.has-animated-banners .banner-cta { animation: banner-flash 0.6s steps(1) infinite; }
+@keyframes banner-flash { 50% { background: #FF0000; color: #FFFF00; } }
+/* Optimize GIFs: down to 16 colours each. Nobody will notice. Probably. */
+.site-1997.has-16-colors :is(.counter, .construction-sign, .banner-ad, .gif-globe, .gif-flames) { filter: saturate(2.2) contrast(1.4) brightness(1.05); image-rendering: pixelated; }
+/* The animated GIF pack: a spinning globe, flaming text and a mailbox that opens. */
+.gif-globe { width: 31px; height: 31px; border-radius: 50%; background: repeating-linear-gradient(90deg, #1F8F4E 0 6px, #2E6FD8 6px 12px); background-size: 24px 100%; box-shadow: inset -5px -4px 0 rgba(0, 0, 0, 0.35); animation: gif-globe-turn 1.6s linear infinite; }
+@keyframes gif-globe-turn { to { background-position: 24px 0; } }
+.gif-flames { align-self: center; padding: 0 4px; font: italic 900 20px/1 Impact, 'Arial Black', sans-serif; color: #FFD400; text-shadow: 0 -2px 0 #FF6A00, 0 -4px 2px #FF2000; animation: gif-flicker 0.25s steps(2) infinite; }
+@keyframes gif-flicker { 50% { text-shadow: 0 -3px 1px #FF6A00, 0 -6px 3px #FF2000; color: #FFF27A; } }
+.gif-mailbox { position: relative; width: 34px; height: 24px; align-self: flex-end; border-radius: 12px 12px 2px 2px; background: #2E6FD8; }
+.gif-mailbox i { position: absolute; left: 6px; top: 4px; width: 14px; height: 10px; background: #FFFFFF; transform-origin: bottom; animation: gif-mail 1.4s steps(2) infinite; }
+@keyframes gif-mail { 50% { transform: translateY(-9px) rotate(-12deg); } }
+/* Footer buttons: 88×31 badges for what you validated, where you're listed and the exchange you joined. */
+.site-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0 0; }
+.badge97 { display: inline-grid; place-items: center; min-width: 88px; height: 31px; padding: 0 6px; border: 2px outset #FFFFFF; font: 700 10px/1.1 Verdana, Arial, sans-serif; text-align: center; }
+.badge97.is-valid { background: #FFFFFF; color: #0000AA; }
+.badge97.is-listed { background: #000080; color: #FFFF00; }
+.badge97.is-swap { background: linear-gradient(#FF66FF, #990099); color: #FFFFFF; animation: blink 1s steps(1) infinite; }
