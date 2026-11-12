@@ -5,6 +5,7 @@ import { ERA_PRESENTATION } from '../presentation';
 import { backupRestoreView } from './backup-restore-view';
 import { crossTrafficView } from './cross-traffic-view';
 import { firewallView } from './firewall-view';
+import { fixBuildView } from './fix-build-view';
 import { snakeView } from './snake-view';
 import { resetPasswordsView } from './reset-passwords-view';
 import { rerouteTrafficView } from './reroute-traffic-view';
@@ -47,6 +48,7 @@ const VIEWS: Readonly<Record<MinigameId, MinigameView>> = {
   'reset-passwords': resetPasswordsView,
   'reroute-traffic': rerouteTrafficView,
   'cross-traffic': crossTrafficView,
+  'fix-build': fixBuildView,
 };
 
 const OTHER_TITLES: Readonly<Record<Exclude<MinigameId, 'snake' | 'virus-scan' | 'firewall'>, string>> = {
@@ -55,6 +57,7 @@ const OTHER_TITLES: Readonly<Record<Exclude<MinigameId, 'snake' | 'virus-scan' |
   'reset-passwords': 'Admin · Users · Force password reset',
   'reroute-traffic': 'Cloud console · Reroute traffic',
   'cross-traffic': 'ssh admin@server · rate limiting',
+  'fix-build': 'Terminal · build failed',
 };
 
 const CLOSE_AFTER_WIN_MS = 900;

@@ -23,6 +23,7 @@ import { findInfection } from './hazards';
 import { drawRandoms } from './random';
 import type {
   CodeInputResult,
+  ConsentBanner,
   DefenseId,
   EraId,
   FeatureId,
@@ -167,6 +168,11 @@ export function toggleDefense(state: GameState, defenseId: DefenseId): GameState
   return state.enabledDefenseIds.includes(defenseId) ? withoutDefense(state, defenseId) : withDefense(state, defenseId);
 }
 
+/** The cookie banner can be changed any time once the GDPR applies, for free: it's a choice, not a purchase. */
+export function chooseConsentBanner(state: GameState, banner: ConsentBanner): GameState {
+  return isEraUnlocked(state, 'platform-2018') ? { ...state, consentBanner: banner } : state;
+}
+
 export function closePopup(state: GameState, popupId: number): GameState {
   return { ...state, popups: state.popups.filter((popup) => popup.id !== popupId) };
 }
@@ -192,6 +198,7 @@ const CLEANUP_MESSAGES: Readonly<Record<MinigameId, (featureName: string) => str
   'reset-passwords': (featureName) => `Every leaked ${featureName} password is reset. The crackers gave up.`,
   'reroute-traffic': (featureName) => `You rerouted the flood through the scrubbing centre. Your ${featureName} is back.`,
   'cross-traffic': (featureName) => `You got through the flood and switched on rate limiting. Your ${featureName} is back.`,
+  'fix-build': (featureName) => `The build is green again. Your ${featureName} is back.`,
 };
 
 function describeCleanup(infection: Infection, eraId: EraId): GameEvent {

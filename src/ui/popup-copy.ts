@@ -1,6 +1,7 @@
-export type PopupDesign = 'dialog' | 'alert' | 'prize' | 'download' | 'lightbox' | 'survey' | 'messenger' | 'toolbar';
+/** Interstitial: 2018's full-screen ad with a countdown before you can skip it. */
+export type PopupDesign = 'dialog' | 'alert' | 'prize' | 'download' | 'lightbox' | 'survey' | 'messenger' | 'toolbar' | 'interstitial';
 
-/** Every button either closes the pop-up for free or springs the scam. The title bar × is always safe. */
+/** Every button either closes the pop-up for free or springs the scam. The title bar × is always safe (once it shows). */
 export type PopupButtonAction = 'dismiss' | 'scam';
 export type PopupButtonStyle = 'button' | 'primary' | 'cta' | 'link';
 
@@ -73,6 +74,10 @@ export const PLATFORM_POPUPS: readonly PopupCopy[] = [
   { design: 'alert', title: 'Security alert', headline: 'Your phone has (4) viruses!', body: 'Remove them now with our free cleaner app, or your battery will be damaged.', details: NO_DETAILS, buttons: [scam('Clean my phone', 'cta'), dismiss('Close', 'link')], scamOutcome: 'The “cleaner” subscribed you to a weekly ringtone club. Your battery is fine.' },
   { design: 'toolbar', title: 'Cookies', headline: 'We use cookies to improve your experience', body: 'And to show you the same shoes for a month.', details: NO_DETAILS, buttons: [dismiss('Got it')], scamOutcome: '' },
   { design: 'survey', title: 'Quick question', headline: 'How likely are you to recommend us to a friend?', body: 'On a scale of 0 to 10. It takes 2 minutes (it takes 14).', details: ['0', '7', '10'], buttons: [scam('Submit', 'primary'), dismiss('Skip')], scamOutcome: 'The survey “partner” needed your card to send your gift card. There is no gift card.' },
+  // Full screen, and the only button there from the start is the ad's own. Wait for Skip, or spot the × early.
+  { design: 'interstitial', title: 'Advertisement', headline: 'Learn to code in 12 weeks', body: 'Become a full-stack developer. Next cohort starts Monday. Job guaranteed*', details: NO_DETAILS, buttons: [scam('Apply now', 'cta')], scamOutcome: 'You hit “Apply now” reaching for Skip. The deposit was non-refundable, and the asterisk said “guaranteed to exist”.' },
+  { design: 'interstitial', title: 'Advertisement', headline: 'The phone everyone’s switching to', body: 'Edge to edge. Notch included. Headphone jack not.', details: NO_DETAILS, buttons: [scam('Shop now', 'cta')], scamOutcome: 'You tapped “Shop now” on the way to Skip. The “exclusive offer” was a case for a phone you don’t own.' },
+  { design: 'interstitial', title: 'Sponsored', headline: 'This one weird trick halves your load time', body: 'Web developers hate it. Watch the 11-minute video.', details: NO_DETAILS, buttons: [scam('Watch now', 'cta')], scamOutcome: 'The trick was a $49 course. Lesson one: “remove your ads”.' },
 ];
 
 export const SOCIAL_POPUPS: readonly PopupCopy[] = [

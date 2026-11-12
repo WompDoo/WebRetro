@@ -4,6 +4,7 @@
  */
 import {
   advanceEra,
+  chooseConsentBanner,
   advanceSimulation,
   buyDefense,
   buyFeature,
@@ -58,6 +59,7 @@ import {
   type GameState,
   type Infection,
   type UpgradeId,
+  type ConsentBanner,
 } from '../src/engine';
 
 interface PlayerProfile {
@@ -67,6 +69,8 @@ interface PlayerProfile {
   readonly buysDefenses: boolean;
   /** 2018's framework wars: the bot would always pick the best payback, so each run is told which one. */
   readonly framework: FrameworkId;
+  /** 2018's cookie banner, chosen on arrival: the hurried player takes the dark pattern, the careful one asks honestly. */
+  readonly consentBanner: ConsentBanner;
 }
 
 /** Where a run is when it relaunches into an era: the other frameworks' runs start from here. */
@@ -117,8 +121,8 @@ const SEED = 1997;
 const MIN_REVENUE_FOR_GROWTH = 100;
 
 const PROFILES: readonly PlayerProfile[] = [
-  { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false, framework: 'react' },
-  { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true, framework: 'angular' },
+  { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false, framework: 'react', consentBanner: 'dark-pattern' },
+  { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true, framework: 'angular', consentBanner: 'honest' },
 ];
 const FRAMEWORK_ERA: EraId = 'platform-2018';
 /**
@@ -126,6 +130,14 @@ const FRAMEWORK_ERA: EraId = 'platform-2018';
  * the fastest. (Two minutes when eras took ten; eras are long now, so it's a share.)
  */
 const MAX_FRAMEWORK_SPREAD_SHARE = 0.15;
+/**
+ * Every hazard draws from one seeded random stream, so a framework whose builds break more often also shifts when
+ * every later traffic spike lands: one seed per framework measures luck as much as balance. Each framework plays
+ * 2018 this many times from the same relaunch, each with its own seed, and the medians are compared.
+ */
+const SEEDS_PER_FRAMEWORK = 3;
+/** Far enough apart that the seeded rolls share nothing. */
+const SEED_STRIDE = 7_919;
 
 /** Only the profile's framework is on its shopping list. */
 function isOtherFramework(skillId: UpgradeId, profile: PlayerProfile): boolean {
@@ -335,7 +347,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
           `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s (phone ${calculatePhoneLoadTimeSeconds(state).toFixed(1)}s, ${(calculatePerformanceTrafficFactor(state) * 100).toFixed(0)}% wait) · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
       );
       reportTradeIn(profile.name, state);
-      state = advanceEra(state);
+      state = chooseConsentBanner(advanceEra(state), profile.consentBanner);
       if (state.eraId === FRAMEWORK_ERA && entry2018 === null) entry2018 = { state, now };
       eraStartedAt = now;
       minigameMsThisEra = 0;
@@ -377,44 +389,85 @@ function find2018Minutes(reports: readonly EraReport[]): number | null {
   return report === undefined ? null : report.durationMs;
 }
 
+/** 2018 with one framework, once per seed; null where a run never finished 2018. */
+interface FrameworkOutcome {
+  readonly framework: FrameworkId;
+  readonly durationsMs: readonly (number | null)[];
+}
+
 interface ProfileOutcome {
   readonly name: string;
   readonly finishedEveryEra: boolean;
-  /** 2018's duration with each framework; null where that run never finished 2018. */
-  readonly frameworkDurationsMs: readonly (number | null)[];
+  /** The profile's own framework first. */
+  readonly frameworks: readonly FrameworkOutcome[];
 }
 
-/** The full run with the profile's own framework, then 2018 again from the same relaunch with each other one. */
+function reseed(entry: EraEntry, attempt: number): EraEntry {
+  return { ...entry, state: { ...entry.state, randomSeed: entry.state.randomSeed + attempt * SEED_STRIDE } };
+}
+
+function play2018(profile: PlayerProfile, framework: FrameworkId, entry: EraEntry, attempt: number): number | null {
+  const branch = { ...profile, name: `${profile.name}/${framework}#${attempt + 1}`, framework };
+  const result = runProfile(branch, reseed(entry, attempt));
+  printReports(branch.name, result.reports);
+  return find2018Minutes(result.reports);
+}
+
+/** Seeds from `firstAttempt` on: the full run already played the profile's own framework with the first seed. */
+function playSeeds(profile: PlayerProfile, framework: FrameworkId, entry: EraEntry, firstAttempt: number): readonly (number | null)[] {
+  return Array.from({ length: SEEDS_PER_FRAMEWORK - firstAttempt }, (_, index) => play2018(profile, framework, entry, firstAttempt + index));
+}
+
+function playFrameworks(profile: PlayerProfile, entry: EraEntry, ownDurationMs: number | null): readonly FrameworkOutcome[] {
+  const own = { framework: profile.framework, durationsMs: [ownDurationMs, ...playSeeds(profile, profile.framework, entry, 1)] };
+  const others = FRAMEWORK_IDS.filter((framework) => framework !== profile.framework).map((framework) => ({ framework, durationsMs: playSeeds(profile, framework, entry, 0) }));
+  return [own, ...others];
+}
+
+function isFinished(outcome: FrameworkOutcome): boolean {
+  return outcome.durationsMs.every((duration) => duration !== null);
+}
+
+/** The full run with the profile's own framework, then 2018 again from the same relaunch: every framework, every seed. */
 function playProfile(profile: PlayerProfile): ProfileOutcome {
   const full = runProfile(profile, { state: createInitialGameState(SEED), now: 0 });
   printReports(profile.name, full.reports);
-  const others = FRAMEWORK_IDS.filter((framework) => framework !== profile.framework);
-  const branches = full.entry2018 === null ? [] : others.map((framework) => {
-    const branch = { ...profile, name: `${profile.name}/${framework}`, framework };
-    const result = runProfile(branch, full.entry2018 ?? { state: createInitialGameState(SEED), now: 0 });
-    printReports(branch.name, result.reports);
-    return result.reports;
-  });
-  const finishedBranches = branches.every((reports) => find2018Minutes(reports) !== null);
+  const frameworks = full.entry2018 === null ? [] : playFrameworks(profile, full.entry2018, find2018Minutes(full.reports));
   return {
     name: profile.name,
-    finishedEveryEra: full.reports.length === ERA_IDS.length && finishedBranches && branches.length === others.length,
-    frameworkDurationsMs: [find2018Minutes(full.reports), ...branches.map(find2018Minutes)],
+    finishedEveryEra: full.reports.length === ERA_IDS.length && frameworks.length === FRAMEWORK_IDS.length && frameworks.every(isFinished),
+    frameworks,
   };
 }
 
-/** How much longer the slowest framework took than the fastest, as a share of the fastest. */
-function measureSpread(durations: readonly (number | null)[]): number {
-  const finished = durations.filter((duration): duration is number => duration !== null);
-  return finished.length === 0 ? 0 : (Math.max(...finished) - Math.min(...finished)) / Math.min(...finished);
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((first, second) => first - second);
+  return sorted[Math.floor(sorted.length / 2)] ?? 0;
+}
+
+function medianDurationMs(outcome: FrameworkOutcome): number {
+  return median(outcome.durationsMs.filter((duration): duration is number => duration !== null));
+}
+
+/** How much longer the slowest framework's median took than the fastest's, as a share of the fastest. */
+function measureSpread(frameworks: readonly FrameworkOutcome[]): number {
+  const medians = frameworks.map(medianDurationMs);
+  return medians.length === 0 ? 0 : (Math.max(...medians) - Math.min(...medians)) / Math.min(...medians);
+}
+
+function describeFramework(outcome: FrameworkOutcome): string {
+  const runs = outcome.durationsMs.map((ms) => (ms === null ? 'stuck' : (ms / MS_PER_MINUTE).toFixed(1))).join(', ');
+  return `${outcome.framework} ${(medianDurationMs(outcome) / MS_PER_MINUTE).toFixed(1)} min (${runs})`;
 }
 
 console.log('Balance simulation');
 const outcomes = PROFILES.map(playProfile);
 const stuckProfiles = outcomes.filter((outcome) => !outcome.finishedEveryEra);
-const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworkDurationsMs) > MAX_FRAMEWORK_SPREAD_SHARE);
+const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworks) > MAX_FRAMEWORK_SPREAD_SHARE);
 outcomes.forEach((outcome) =>
-  console.log(`  [${outcome.name}] 2018 by framework: ${outcome.frameworkDurationsMs.map((ms) => (ms === null ? 'stuck' : `${(ms / MS_PER_MINUTE).toFixed(1)} min`)).join(' · ')} (own pick first)`),
+  console.log(
+    `  [${outcome.name}] 2018 by framework, median of ${SEEDS_PER_FRAMEWORK} seeds: ${outcome.frameworks.map(describeFramework).join(' · ')} · spread ${(measureSpread(outcome.frameworks) * 100).toFixed(1)}%`,
+  ),
 );
 
 // CI checks: every scripted player has to finish every era with every framework, and no framework may be a
@@ -425,7 +478,7 @@ if (stuckProfiles.length > 0) {
   process.exitCode = 1;
 } else if (lopsided.length > 0) {
   const names = lopsided.map((outcome) => outcome.name).join(', ');
-  console.error(`FAILED: for ${names}, one framework makes 2018 more than ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% slower than another.`);
+  console.error(`FAILED: for ${names}, one framework's median makes 2018 more than ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% slower than another's.`);
   process.exitCode = 1;
 } else {
   console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% of the fastest.`);

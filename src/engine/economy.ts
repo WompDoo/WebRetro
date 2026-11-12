@@ -11,6 +11,7 @@ import {
   TRAFFIC_SPIKE_DEMAND_FACTOR,
   UPGRADE_REVEAL_EARNINGS_SHARE,
 } from './constants';
+import { CONSENT_BANNERS_BY_ID } from './content/consent-banners';
 import { DEFENSE_IDS, DEFENSE_SUNSETS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
@@ -524,7 +525,8 @@ export const calculateVisitorsPerSecond = memoizeByState((state: GameState): num
 export function calculateAdValuePerAd(state: GameState): number {
   const defenseFactors = getEnabledDefenses(state).map((defense) => defense.adValueFactor);
   const era = ERAS_BY_ID[state.eraId];
-  return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors)) / era.revenuePace;
+  const consentFactor = CONSENT_BANNERS_BY_ID[state.consentBanner].adValueFactor;
+  return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors) * consentFactor) / era.revenuePace;
 }
 
 export function calculateRevenuePerVisitor(state: GameState): number {

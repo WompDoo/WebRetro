@@ -1,4 +1,7 @@
 import {
+  calculateAverageMsBetweenFines,
+  CONSENT_BANNER_IDS,
+  CONSENT_BANNERS_BY_ID,
   getDefenseCopy,
   calculateAdAnnoyancePerAd,
   calculateAdTrafficFactor,
@@ -39,11 +42,11 @@ import {
   MS_PER_SECOND,
   UPGRADES_BY_ID,
 } from '../engine';
-import type { DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
+import type { ConsentBanner, ConsentBannerDefinition, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
 import { describeTradeIn } from './retirement';
-import { AD_ICON, CODE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
+import { AD_ICON, CODE_ICON, COOKIE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
 export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security';
 
@@ -57,6 +60,7 @@ const SHOP_TAB_LABELS: Readonly<Record<ShopTab, string>> = {
 };
 
 const NEUTRAL_FACTOR = 1;
+const MS_PER_MINUTE = 60 * MS_PER_SECOND;
 
 function formatFactor(factor: number): string {
   return `×${Number.isInteger(factor) ? factor : factor.toFixed(2).replace(/0$/, '')}`;
@@ -339,6 +343,8 @@ const HAZARD_NAMES: Readonly<Record<HazardKind, string>> = {
   'traffic-spike': 'traffic spikes',
   'password-leak': 'password leaks',
   ddos: 'DDoS attacks',
+  'broken-build': 'broken builds',
+  'privacy-fine': 'privacy fines',
 };
 
 /** What the defense does for you. Without this line a defense reads like a pure cost. */
@@ -409,6 +415,37 @@ function renderAdRow(state: GameState): string {
   </article>`;
 }
 
+function describeFineRisk(banner: ConsentBannerDefinition): string {
+  if (banner.fineRate === 0) return 'never fined';
+  const minutes = Math.round(calculateAverageMsBetweenFines(banner) / MS_PER_MINUTE);
+  return `fined about every ${minutes} min, ${banner.fineRevenueSeconds} s of revenue each time`;
+}
+
+function describeConsentEffects(banner: ConsentBannerDefinition): string {
+  const adValue = banner.adValueFactor < NEUTRAL_FACTOR ? `ads pay ${formatPercent(NEUTRAL_FACTOR - banner.adValueFactor)} less` : 'ads pay full price';
+  return `Now: ${adValue}, ${describeFineRisk(banner)}`;
+}
+
+function renderConsentOption(state: GameState, banner: ConsentBanner): string {
+  const isChosen = state.consentBanner === banner;
+  return `<button type="button" class="consent-option${isChosen ? ' is-chosen' : ''}" data-action="choose-consent-banner" data-id="${banner}" aria-pressed="${isChosen}">${escapeHtml(CONSENT_BANNERS_BY_ID[banner].name)}</button>`;
+}
+
+/** 2018's GDPR: how the site asks for consent to track. A choice, not a purchase, and it can change any time. */
+function renderConsentRow(state: GameState): string {
+  if (!isEraUnlocked(state, 'platform-2018')) return '';
+  const chosen = CONSENT_BANNERS_BY_ID[state.consentBanner];
+  return `<article class="shop-row consent-row">
+    <div class="shop-icon">${COOKIE_ICON}</div>
+    <div class="shop-info">
+      <h3 class="shop-name">Cookie banner</h3>
+      <p class="shop-desc">The GDPR is in force: ads may only track visitors who said yes. ${escapeHtml(chosen.description)}</p>
+      <div class="consent-options" role="group" aria-label="Cookie banner">${CONSENT_BANNER_IDS.map((banner) => renderConsentOption(state, banner)).join('')}</div>
+      <p class="shop-effect">${escapeHtml(describeConsentEffects(chosen))}</p>
+    </div>
+  </article>`;
+}
+
 function renderHostingRow(state: GameState): string {
   if (!ERAS_BY_ID[state.eraId].hasServerLoad) {
     return `<article class="shop-row"><div class="shop-icon">${SERVER_ICON}</div><div class="shop-info"><h3 class="shop-name">Free web space</h3><p class="shop-desc">2 MB on a free host, banner on top included. Servers are someone else’s problem until 2005.</p></div></article>`;
@@ -431,7 +468,7 @@ function renderHostingRow(state: GameState): string {
 
 function renderSecurityTab(state: GameState): string {
   const defenses = getUnlockedDefenseIds(state).map((defenseId) => renderDefenseRow(state, defenseId)).join('');
-  return `<h3 class="shop-group-title">Monetization</h3>${renderAdRow(state)}<h3 class="shop-group-title">Hosting</h3>${renderHostingRow(state)}<h3 class="shop-group-title">Security</h3>${defenses}`;
+  return `<h3 class="shop-group-title">Monetization</h3>${renderAdRow(state)}${renderConsentRow(state)}<h3 class="shop-group-title">Hosting</h3>${renderHostingRow(state)}<h3 class="shop-group-title">Security</h3>${defenses}`;
 }
 
 // ---------- Tabs ----------
@@ -481,6 +518,7 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
     state.ownedDefenseIds.join(','),
     state.enabledDefenseIds.join(','),
     state.switchedOffFeatureIds.join(','),
+    state.consentBanner,
     state.hostingTier,
     ERAS_BY_ID[state.eraId].hasServerLoad ? Math.round(calculateServerLoad(state) * 20) : 0,
     getRevealedBoostIds(state).join(','),

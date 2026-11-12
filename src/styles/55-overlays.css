@@ -140,3 +140,22 @@
 
 /* The relaunch story names what goes out of fashion. */
 .story-retiring { margin: 0 0 14px; padding: 8px 10px; border-left: 4px solid var(--caution-deep); background: var(--panel-sunken); font-size: 13.5px; }
+/* Fix the build: a terminal of packages or code lines; the broken ones get removed. Hidden until the build runs. */
+.build-terminal { display: grid; gap: 8px; padding: 10px; border: 2px solid var(--line); border-radius: 6px; background: #0B1022; color: #D7DCF5; font: 12.5px/1.35 var(--font-numbers); }
+.build-command { margin: 0 !important; color: #8C93B5; }
+.build-run { justify-self: start; padding: 8px 14px; border: 2px solid #3DDC84; border-radius: 4px; background: transparent; color: #3DDC84; font: 700 13px var(--font-numbers); cursor: pointer; }
+.build-terminal:not([data-status="waiting"]) .build-run { display: none; }
+.build-terminal[data-status="waiting"] .build-lines { display: none; }
+.build-lines { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.build-line {
+  display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 0 8px; width: 100%; padding: 6px 8px; border: 1px solid #2A3358; border-radius: 4px;
+  background: #121933; color: inherit; font: inherit; text-align: left; cursor: pointer; touch-action: manipulation; user-select: none;
+}
+.build-key { grid-row: span 2; color: #8C93B5; font-size: 11px; }
+.build-code { overflow-wrap: anywhere; color: #FFFFFF; }
+.build-detail { font-size: 11.5px; color: #C9CEEA; }
+.build-story { display: none; grid-column: 2; margin-top: 4px; font-size: 11px; line-height: 1.35; color: #FFD43B; }
+.build-line.is-removed .build-story, .build-line.is-missed .build-story { display: block; }
+.build-line.is-removed { border-style: dashed; cursor: default; }
+.build-line.is-removed .build-code, .build-line.is-removed .build-detail { text-decoration: line-through; opacity: 0.5; }
+.build-line.is-missed { border-color: var(--hazard); background: color-mix(in srgb, var(--hazard) 22%, #121933); }

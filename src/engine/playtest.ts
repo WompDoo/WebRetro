@@ -168,6 +168,7 @@ const MINIGAME_KINDS: Readonly<Record<MinigameId, InfectionKind>> = {
   'reset-passwords': 'password-leak',
   'reroute-traffic': 'ddos',
   'cross-traffic': 'ddos',
+  'fix-build': 'broken-build',
 };
 const PREFERRED_TARGETS: Readonly<Record<InfectionKind, readonly FeatureId[]>> = {
   virus: ['guestbook', 'hit-counter'],
@@ -175,6 +176,7 @@ const PREFERRED_TARGETS: Readonly<Record<InfectionKind, readonly FeatureId[]>> =
   'sql-injection': ['blog', 'comments', 'forum'],
   'password-leak': ['forum', 'guestbook'],
   ddos: ['blog', 'video-player', 'share-buttons'],
+  'broken-build': ['stories', 'pricing-table', 'blog'],
 };
 
 function pickTarget(state: GameState, kind: InfectionKind): FeatureId | null {

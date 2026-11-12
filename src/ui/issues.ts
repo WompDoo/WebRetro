@@ -88,12 +88,21 @@ const INFECTION_COPY: Readonly<Record<InfectionKind, InfectionCopy>> = {
     title: (feature) => `DDoS: botnet flooding ${feature}`,
     subjects: [(feature) => `is your ${feature} down for everyone or just me`, (feature) => `${feature} won't load, been refreshing for 10 min`],
   },
+  'broken-build': {
+    severity: 'major',
+    title: (feature) => `Build failing: ${feature} won't load`,
+    subjects: [(feature) => `your ${feature} page is just white??`, (feature) => `${feature} broke after your last deploy`],
+  },
 };
 
 /** The defense that would have stopped this kind of infection. */
 const PREVENTING_DEFENSES: Readonly<Partial<Record<InfectionKind, DefenseId>>> = { virus: 'antivirus', spam: 'captcha', ddos: 'ddos-protection' };
 /** The skill that ends this kind of infection for good. */
-const PREVENTING_SKILLS: Readonly<Partial<Record<InfectionKind, UpgradeId>>> = { 'sql-injection': 'prepared-statements', 'password-leak': 'learn-bcrypt' };
+const PREVENTING_SKILLS: Readonly<Partial<Record<InfectionKind, UpgradeId>>> = {
+  'sql-injection': 'prepared-statements',
+  'password-leak': 'learn-bcrypt',
+  'broken-build': 'ci-pipeline',
+};
 
 function shopButton(label: string, tab: ShopTab): IssueButton {
   return { label, action: 'open-shop-tab', id: tab };

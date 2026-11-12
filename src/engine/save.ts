@@ -41,6 +41,8 @@ export function restoreGameState(value: unknown, fallbackSeed: number): GameStat
     // Features added since the save was made start at level 0.
     featureLevels: { ...initial.featureLevels, ...restored.featureLevels },
     featureEarnings: { ...initial.featureEarnings, ...restored.featureEarnings },
+    // Hazards added since: their first countdown, not an empty one that would spawn at once.
+    hazardCountdownsMs: { ...initial.hazardCountdownsMs, ...restored.hazardCountdownsMs },
     infections: restored.infections.map(withMinigame),
     purchasedUpgradeIds: restored.purchasedUpgradeIds.filter(isKnownUpgrade),
   };

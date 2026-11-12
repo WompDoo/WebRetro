@@ -239,3 +239,47 @@
 @media (prefers-reduced-motion: reduce) { .lp-leaderboard, .lp-chum { animation: none; } }
 .lp-comments-off { margin: 14px 28px 0; padding: 10px 14px; border-radius: 8px; background: #F6F9FC; color: #8898AA; font-size: 13px; }
 @container (max-width: 640px) { .site-2018 .lp-comments-off { margin-inline: 14px; } }
+/* The GDPR cookie banner: bottom left, pinned while the page scrolls, like the chat bubble on the right. */
+.cookie-banner {
+  position: sticky; bottom: 12px; z-index: 6; width: min(300px, calc(100% - 24px)); margin: 0 auto 0 12px; padding: 12px 14px;
+  border-radius: 8px; background: #FFFFFF; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2); color: #32325D;
+  font: 12px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+.cookie-banner p { margin: 0 0 10px; }
+.cookie-banner b { display: block; margin-bottom: 4px; font-size: 13.5px; }
+.cookie-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cookie-button { display: block; padding: 7px 10px; border: 1.5px solid #635BFF; border-radius: 6px; color: #635BFF; font-weight: 600; text-align: center; }
+/* The dark pattern: one big friendly button, and the way out in small grey text under it. */
+.cookie-banner.is-dark-pattern .cookie-button { padding: 10px; border-color: #635BFF; background: #635BFF; color: #FFFFFF; font-size: 14px; }
+.cookie-manage { display: block; margin-top: 8px; color: #B0B3C5; font-size: 10px; text-align: center; text-decoration: underline; }
+
+/* ---------- Interstitials: full-screen ads, "Skip in 5", and a × that sneaks in a few seconds early ---------- */
+/* An animated integer drives a CSS counter: the countdown runs without JavaScript or re-renders. */
+@property --skip { syntax: '<integer>'; inherits: true; initial-value: 0; }
+@keyframes interstitial-count { from { --skip: var(--skip-seconds); } to { --skip: 0; } }
+@keyframes interstitial-hide { to { visibility: hidden; } }
+/* Hidden through the delay (fill: backwards), then fades in. With animations off it is simply there. */
+@keyframes interstitial-reveal { from { visibility: hidden; opacity: 0; } }
+[data-era="2018"] .popup.popup--interstitial {
+  inset: 0; width: auto; display: flex; flex-direction: column; border-radius: 0; background: #111318; color: #E8EAED; box-shadow: none;
+}
+[data-era="2018"] .popup--interstitial .popup-titlebar { background: transparent; color: #9AA0A6; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+/* The × is small and faint on purpose, and only there from --close-after on. */
+[data-era="2018"] .popup--interstitial .popup-close { color: #9AA0A6; font-size: 13px; opacity: 0.55; animation: interstitial-reveal 300ms ease-out var(--close-after) backwards; }
+.popup--interstitial .popup-body { position: relative; flex: 1; align-content: center; justify-items: center; gap: 12px; padding-bottom: 56px; }
+.interstitial-art { width: min(240px, 72%); aspect-ratio: 16 / 9; border-radius: 10px; background: radial-gradient(circle at 30% 35%, #FFD43B 0 14%, transparent 15%), linear-gradient(135deg, #FF6B6B, #845EF7 60%, #339AF0); }
+[data-era="2018"] .popup--interstitial .popup-headline { color: #FFFFFF; font-size: 22px; }
+[data-era="2018"] .popup--interstitial .popup-text { color: #BDC1C6; }
+.interstitial-skip-area { position: absolute; right: 12px; bottom: 12px; display: grid; }
+.interstitial-skip-area > * { grid-area: 1 / 1; }
+.interstitial-countdown, .interstitial-skip { padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.45); background: rgba(0, 0, 0, 0.65); color: #FFFFFF; font: 13px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.interstitial-countdown {
+  counter-reset: skip var(--skip); pointer-events: none;
+  animation: interstitial-count calc(var(--skip-seconds) * 1s) steps(var(--skip-seconds), end) forwards, interstitial-hide 1ms linear calc(var(--skip-seconds) * 1s) forwards;
+}
+.interstitial-countdown::after { content: counter(skip); }
+.interstitial-skip { cursor: pointer; animation: interstitial-reveal 200ms ease-out calc(var(--skip-seconds) * 1s) backwards; }
+/* Reduced motion shortens every animation, but a countdown isn't motion: it keeps its seconds. */
+@media (prefers-reduced-motion: reduce) {
+  .interstitial-countdown { animation-duration: calc(var(--skip-seconds) * 1s), 1ms !important; }
+}

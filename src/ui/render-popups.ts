@@ -44,13 +44,40 @@ const DESIGN_RENDERERS: Readonly<Record<PopupDesign, DesignRenderer>> = {
   survey: (copy) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${detailList(copy, 'popup-options', '○')}`,
   messenger: (copy) => `<ul class="popup-chat">${copy.details.map((line) => `<li><b>${escapeHtml(copy.title)}:</b> ${escapeHtml(line)}</li>`).join('')}</ul>`,
   toolbar: (copy) => `${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}${detailList(copy, 'popup-checks', '☑')}`,
+  interstitial: (copy) => `<span class="interstitial-art" aria-hidden="true"></span>${text(copy.headline, 'popup-headline')}${text(copy.body, 'popup-text')}`,
 };
 
 const MESSENGER_INPUT = '<span class="popup-chat-input">Type a message…</span>';
 
+/** How long an interstitial counts down before its Skip button shows. */
+const INTERSTITIAL_SKIP_SECONDS = 5;
+/** The × sneaks in this many seconds before the countdown ends, for whoever spots it. */
+const INTERSTITIAL_CLOSE_EARLY_SECONDS = 3;
+
+/**
+ * "Skip in 5…", then "Skip ad ▸". The countdown is all CSS: an animated integer drives a counter, and the
+ * button is hidden until its delay is up. Nothing runs on the main thread each second, and nothing re-renders.
+ */
+function renderInterstitialSkip(popupId: number): string {
+  return `<span class="interstitial-skip-area"><span class="interstitial-countdown" aria-hidden="true">Skip in </span><button type="button" class="interstitial-skip" data-action="close-popup" data-id="${popupId}">Skip ad ▸</button></span>`;
+}
+
+/** Extras that only some designs have: the chat box under a messenger, the skip button on an interstitial. */
+const DESIGN_EXTRAS: Readonly<Partial<Record<PopupDesign, (popupId: number) => string>>> = {
+  messenger: () => MESSENGER_INPUT,
+  interstitial: renderInterstitialSkip,
+};
+
 function renderPopupBody(copy: PopupCopy, popupId: number): string {
-  const input = copy.design === 'messenger' ? MESSENGER_INPUT : '';
-  return `${DESIGN_RENDERERS[copy.design](copy)}${renderButtons(copy, popupId)}${input}`;
+  const extra = DESIGN_EXTRAS[copy.design]?.(popupId) ?? '';
+  return `${DESIGN_RENDERERS[copy.design](copy)}${renderButtons(copy, popupId)}${extra}`;
+}
+
+/** The interstitial's timings, as custom properties: TypeScript owns the numbers, CSS runs the clock. */
+const INTERSTITIAL_TIMING = `--skip-seconds:${INTERSTITIAL_SKIP_SECONDS};--close-after:${INTERSTITIAL_SKIP_SECONDS - INTERSTITIAL_CLOSE_EARLY_SECONDS}s`;
+
+function renderTimingStyle(copy: PopupCopy): string {
+  return copy.design === 'interstitial' ? `;${INTERSTITIAL_TIMING}` : '';
 }
 
 function pickCopy(state: GameState, popup: Popup): PopupCopy {
@@ -62,14 +89,14 @@ export function findPopupCopy(state: GameState, popupId: number): PopupCopy | nu
   return popup === undefined ? null : pickCopy(state, popup);
 }
 
-function renderPopup(state: GameState, popup: Popup): string {
+export function renderPopup(state: GameState, popup: Popup): string {
   const copy = pickCopy(state, popup);
   // Anchors are fractions of the free space, so a pop-up never hangs off the edge and hides its close button.
   // Custom properties, not left/top: the phone view puts every pop-up full screen instead.
   const left = `calc((100% - ${POPUP_WIDTH_CSS}) * ${popup.anchorX.toFixed(3)})`;
   const top = `max(${POPUP_EDGE_GAP_PX}px, calc((100% - ${POPUP_HEIGHT_ESTIMATE_PX}px) * ${popup.anchorY.toFixed(3)} + ${POPUP_EDGE_GAP_PX}px))`;
   const title = copy.design === 'messenger' ? `Chat with ${copy.title}` : copy.title;
-  return `<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="--popup-left:${left};--popup-top:${top};z-index:${popup.id}">
+  return `<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="--popup-left:${left};--popup-top:${top};z-index:${popup.id}${renderTimingStyle(copy)}">
     <div class="popup-titlebar"><span>${escapeHtml(title)}</span><button type="button" class="popup-close" data-action="close-popup" data-id="${popup.id}" aria-label="Close pop-up">×</button></div>
     <div class="popup-body">${renderPopupBody(copy, popup.id)}</div>
   </div>`;

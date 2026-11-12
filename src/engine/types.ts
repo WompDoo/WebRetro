@@ -103,14 +103,20 @@ export type UpgradeId =
   | 'learn-oauth'
   | 'code-splitting'
   | 'lazy-loading'
-  | 'growth-hacking';
+  | 'growth-hacking'
+  | 'ci-pipeline';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 export type UpgradeKind = 'skill' | 'boost';
 
 export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection';
-export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos';
-export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos';
+export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos' | 'broken-build' | 'privacy-fine';
+export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos' | 'broken-build';
+/**
+ * 2018's cookie banner, under the GDPR. None risks complaints and fines; an honest one asks, and many say no to
+ * ad tracking; a dark pattern makes "Accept all" the easy button, and gets fined less often, but harder.
+ */
+export type ConsentBanner = 'none' | 'honest' | 'dark-pattern';
 /** 2005: the named 2001–2009 steps, then extra racks one at a time. 2011: cloud instances. 2018: Kubernetes pods. */
 export type HostingTierId =
   | 'shared-hosting'
@@ -293,7 +299,7 @@ export interface Popup {
 }
 
 /** The games that fix infections. Which kind each one fixes is in INFECTION_MINIGAMES. */
-export type MinigameId = 'snake' | 'virus-scan' | 'firewall' | 'spam-sort' | 'backup-restore' | 'reset-passwords' | 'reroute-traffic' | 'cross-traffic';
+export type MinigameId = 'snake' | 'virus-scan' | 'firewall' | 'spam-sort' | 'backup-restore' | 'reset-passwords' | 'reroute-traffic' | 'cross-traffic' | 'fix-build';
 
 /** Something broke a feature: it brings in nothing until you win its minigame. */
 export interface Infection {
@@ -338,6 +344,7 @@ export interface GameState {
   readonly trafficSpikeRemainingMs: number;
   /** Fixing an infection quickly earns a short traffic bonus. */
   readonly quickFixBonusRemainingMs: number;
+  readonly consentBanner: ConsentBanner;
   readonly reachedMilestoneIds: readonly MilestoneId[];
   readonly prototypeComplete: boolean;
 }

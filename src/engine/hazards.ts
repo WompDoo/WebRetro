@@ -7,12 +7,26 @@ import {
   POPUP_FREQUENCY_PER_EXTRA_AD,
   TRAFFIC_SPIKE_DURATION_MS,
 } from './constants';
+import { CONSENT_BANNERS_BY_ID } from './content/consent-banners';
+import type { ConsentBannerDefinition } from './content/consent-banners';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
-import { calculateFeatureVisitorsPerSecond, getEnabledDefenses, hasTrafficSpikeCache, isEraUnlocked, isFeatureInfected, isFeatureOnPage } from './economy';
+import { FRAMEWORKS_BY_ID } from './content/frameworks';
+import {
+  calculateFeatureVisitorsPerSecond,
+  calculateNetRevenuePerSecond,
+  findChosenFramework,
+  getEnabledDefenses,
+  hasTrafficSpikeCache,
+  isEraUnlocked,
+  isFeatureInfected,
+  isFeatureOnPage,
+} from './economy';
+import { formatMoney } from './format';
 import { drawRandoms, interpolateRange } from './random';
 import type {
   FeatureId,
+  FrameworkId,
   GameEvent,
   GameState,
   GameStep,
@@ -62,6 +76,7 @@ export const INFECTION_MINIGAMES: Readonly<Record<InfectionKind, readonly [Minig
   'sql-injection': ['backup-restore'],
   'password-leak': ['reset-passwords'],
   ddos: ['reroute-traffic', 'cross-traffic'],
+  'broken-build': ['fix-build'],
 };
 
 /** Every minigame, in the order the playtest panel lists them. */
@@ -238,7 +253,77 @@ const DDOS_RULE: HazardRule = {
   },
 };
 
-const HAZARD_RULES: readonly HazardRule[] = [POPUP_RULE, VIRUS_RULE, SPAM_RULE, SQL_INJECTION_RULE, TRAFFIC_SPIKE_RULE, PASSWORD_LEAK_RULE, DDOS_RULE];
+/** How each framework's build breaks: the npm supply chain, the next major version, a plugin nobody maintains. */
+const BUILD_BREAK_MESSAGES: Readonly<Record<FrameworkId, (featureName: string) => string>> = {
+  react: (featureName) => `A package deep in your npm tree was swapped for a lookalike, and the build is failing. Your ${featureName} won't load until you fix it.`,
+  angular: (featureName) => `ng update took you to the next major version, RxJS with it, and the build broke. Your ${featureName} won't load until you fix it.`,
+  vue: (featureName) => `A plugin behind your ${featureName} was abandoned and doesn't work with the latest Vue. Your ${featureName} won't load until you fix the build.`,
+};
+
+/** The framework whose build can break: none before one is picked, and none once CI catches breaks first. */
+function findBuildBreakingFramework(state: GameState): FrameworkId | null {
+  return state.purchasedUpgradeIds.includes('ci-pipeline') ? null : findChosenFramework(state);
+}
+
+/** 2018: a framework's build breaks the way that framework's did. A CI pipeline catches it before it ships. */
+const BROKEN_BUILD_RULE: HazardRule = {
+  kind: 'broken-build',
+  intervalRangeMs: [220_000, 340_000],
+  isActive: (state) =>
+    findBuildBreakingFramework(state) !== null && countInfections(state, 'broken-build') === 0 && findInfectableFeatureIds(state).length > 0,
+  countdownSpeed: (state) => FRAMEWORKS_BY_ID[findChosenFramework(state) ?? 'react'].buildBreakageRate,
+  spawn: (state, rolls, entityId) => {
+    const candidates = findInfectableFeatureIds(state);
+    const featureId = candidates[Math.floor(rollAt(rolls, 0) * candidates.length)] ?? 'blog';
+    const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
+    return {
+      state: addInfection(state, createInfection(entityId, 'broken-build', featureId, rollAt(rolls, 1))),
+      events: hazardEvent(BUILD_BREAK_MESSAGES[findChosenFramework(state) ?? 'react'](featureName)),
+    };
+  },
+};
+
+/** How long fines take to come, on average, under this banner. Infinite for one that's never fined. */
+export function calculateAverageMsBetweenFines(banner: ConsentBannerDefinition): number {
+  const [shortestMs, longestMs] = PRIVACY_FINE_INTERVAL_RANGE_MS;
+  return (shortestMs + longestMs) / 2 / banner.fineRate;
+}
+
+/** What a privacy fine costs right now: that many seconds of what visitors bring in. */
+export function calculatePrivacyFine(state: GameState): number {
+  return calculateNetRevenuePerSecond(state) * CONSENT_BANNERS_BY_ID[state.consentBanner].fineRevenueSeconds;
+}
+
+/**
+ * 2018: the GDPR. Ads track visitors, and a visitor who wasn't asked complains. A fine can take you below zero:
+ * the next income pays it back before anything else can be bought.
+ */
+const PRIVACY_FINE_INTERVAL_RANGE_MS: readonly [number, number] = [200_000, 320_000];
+const PRIVACY_FINE_RULE: HazardRule = {
+  kind: 'privacy-fine',
+  intervalRangeMs: PRIVACY_FINE_INTERVAL_RANGE_MS,
+  isActive: (state) => isEraUnlocked(state, 'platform-2018') && state.adCount > 0,
+  countdownSpeed: (state) => CONSENT_BANNERS_BY_ID[state.consentBanner].fineRate,
+  spawn: (state) => {
+    const fine = calculatePrivacyFine(state);
+    return {
+      state: { ...state, money: state.money - fine },
+      events: hazardEvent(`A visitor complained to the data protection regulator: your ads track people who never said yes. Fined ${formatMoney(fine)}.`),
+    };
+  },
+};
+
+const HAZARD_RULES: readonly HazardRule[] = [
+  POPUP_RULE,
+  VIRUS_RULE,
+  SPAM_RULE,
+  SQL_INJECTION_RULE,
+  TRAFFIC_SPIKE_RULE,
+  PASSWORD_LEAK_RULE,
+  DDOS_RULE,
+  BROKEN_BUILD_RULE,
+  PRIVACY_FINE_RULE,
+];
 
 export function isHazardPrevented(state: GameState, kind: HazardKind): boolean {
   return getEnabledDefenses(state).some(
