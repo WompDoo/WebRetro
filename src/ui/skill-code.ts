@@ -210,6 +210,23 @@ const PLATFORM_SHARED_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<
   'blue-green-deploys': {
     terminal: ['$ kubectl apply -f deploy-green.yaml', 'deployment.apps/{site}-green created', '$ kubectl patch service {site} -p \'{"spec":{"selector":{"slot":"green"}}}\'', 'service/{site} patched   # blue stays warm: rolling back is the same command'],
   },
+  'learn-i18n': {
+    terminal: ['$ npm install i18next', '+ i18next@11.3.2'],
+    'locales/de.json': ['{', '  "hero.title": "Die All-in-one-Plattform für alles, was Sie online tun.",', '  "cta.start": "Kostenlose Testversion starten",', '  "cta.demo": "TODO: translate"', '}'],
+  },
+  'learn-email-marketing': {
+    'api/subscribe.js': ['export default async function subscribe(req, res) {', '  await mailer.lists.add("weekly", req.body.email, { doubleOptIn: true }); // the GDPR says ask twice', '  res.json({ ok: true });', '}'],
+  },
+  'scroll-animations': {
+    terminal: ['$ npm install aos', '+ aos@2.3.4'],
+    'styles.scss': ['[data-aos] { opacity: 0; transform: translateY(40px); transition: all 0.6s; }', '[data-aos].aos-animate { opacity: 1; transform: none; } // every section, on every scroll'],
+  },
+  'legal-pages': {
+    'legal/terms.md': ['# Terms of Service', '_Last updated: May 25, 2018_', '', '1.1 By breathing near this website you agree to these Terms, our Privacy Policy, our Cookie Policy and', '    our Acceptable Use Policy, each of which may change at any time without notice.', '', '(41 more pages)'],
+  },
+  'retargeting-cookies': {
+    'tracking.js': ['// one pixel per ad network, all on every page', 'pixel("init", "1234567890");', 'pixel("track", "ViewContent", { product: "shoes", followFor: "30 days" });'],
+  },
   'learn-websockets': {
     terminal: ['$ npm install socket.io', '+ socket.io@2.1.1', 'added 47 packages and audited 31933 packages in 8.9s'],
     'server.js': ['const io = require("socket.io")(server);', 'io.on("connection", (socket) => {', '  socket.emit("chat", "Hi! 👋 Any questions?"); // a bot, until someone answers', '});'],

@@ -23,7 +23,9 @@ export type FeatureId =
   | 'social-login'
   | 'stories'
   | 'pricing-table'
-  | 'live-chat';
+  | 'live-chat'
+  | 'language-switcher'
+  | 'newsletter';
 
 export type UpgradeId =
   | 'img-tag'
@@ -114,13 +116,18 @@ export type UpgradeId =
   | 'uptime-monitoring'
   | 'process-manager'
   | 'certificate-automation'
-  | 'blue-green-deploys';
+  | 'blue-green-deploys'
+  | 'learn-i18n'
+  | 'learn-email-marketing'
+  | 'scroll-animations'
+  | 'legal-pages'
+  | 'retargeting-cookies';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 /** Skills are learned, boosts are bought, ops are how you run the site: they live in the Ops tab. */
 export type UpgradeKind = 'skill' | 'boost' | 'ops';
 
-export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection';
+export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection' | 'no-popups';
 export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos' | 'broken-build' | 'privacy-fine' | 'certificate-expiry';
 export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos' | 'broken-build';
 /**
@@ -226,7 +233,9 @@ export type UpgradeEffect =
   /** Served over HTTPS: a padlock, and a certificate that has to be renewed. */
   | { readonly kind: 'secure-connection' }
   /** The certificate renews itself: it never expires on you. */
-  | { readonly kind: 'automatic-certificate-renewal' };
+  | { readonly kind: 'automatic-certificate-renewal' }
+  /** How big the GDPR's fines are: lawyers shrink them, tracking everyone grows them. */
+  | { readonly kind: 'privacy-fine-multiplier'; readonly factor: number };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;

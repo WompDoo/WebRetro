@@ -42,6 +42,8 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   stories: 0,
   'pricing-table': 0,
   'live-chat': 0,
+  'language-switcher': 0,
+  newsletter: 0,
 };
 
 export function createInitialGameState(randomSeed: number): GameState {

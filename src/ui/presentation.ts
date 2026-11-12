@@ -241,9 +241,19 @@ export const SPONSORED_POSTS: readonly DisplayAdCopy[] = [
   { advertiser: 'CollegeNow', headline: 'Get your degree online', text: 'From your phone. In your pajamas.' },
 ];
 
+/** With retargeting cookies: ads for the very things your visitors looked at somewhere else this week. */
+export const RETARGETED_ADS: readonly DisplayAdCopy[] = [
+  { advertiser: 'Sneakr', headline: 'Still thinking about these shoes?', text: 'They’re still in your cart. And in every ad.' },
+  { advertiser: 'StayFinder', headline: 'Your room in Lisbon is still available', text: 'Prices for your dates went up 4%.' },
+  { advertiser: 'DeskCo', headline: 'Remember that standing desk?', text: 'You looked at it 6 times. Here it is again.' },
+  { advertiser: 'BoxChef', headline: 'You left 3 meals in your box', text: 'Come back for 50% off. Just this once. Again.' },
+  { advertiser: 'SleepWell', headline: 'You already bought a mattress', text: 'So here is another mattress.' },
+  { advertiser: 'TaskPilot', headline: 'Still deciding on a to-do app?', text: 'You visited our pricing page at 2:14am.' },
+];
+
 /** 2018: programmatic ads, sold in an auction while the page loads, that follow you around the web. */
 export const PROGRAMMATIC_ADS: readonly DisplayAdCopy[] = [
-  { advertiser: 'Sneakr', headline: 'Still thinking about these shoes?', text: 'They’re still in your cart. And in every ad.' },
+  { advertiser: 'Sneakr', headline: 'New season sneakers are here', text: 'Free returns. Free everything, almost.' },
   { advertiser: 'BoxChef', headline: 'Dinner in a box for $9', text: 'Use code PODCAST for 60% off.' },
   { advertiser: 'Sponsored', headline: 'You won’t believe what these child stars look like now', text: 'Slide 1 of 47' },
   { advertiser: 'PipelineCRM', headline: 'The #1 CRM for teams like yours', text: 'Book a demo. Then another one.' },
