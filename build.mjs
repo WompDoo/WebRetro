@@ -1,10 +1,12 @@
 import { build } from 'esbuild';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, rm, writeFile } from 'node:fs/promises';
 
 const simOnly = process.argv.includes('--sim-only');
 const testsOnly = process.argv.includes('--tests');
 
 if (testsOnly) {
+  // Start empty: a bundle left from another branch would still run, and pass, as if it were one of this branch's tests.
+  await rm('dist/tests', { recursive: true, force: true });
   const testFiles = (await readdir('tests')).filter((name) => name.endsWith('.test.ts'));
   await build({
     entryPoints: testFiles.map((name) => `tests/${name}`),

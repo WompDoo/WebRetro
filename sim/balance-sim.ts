@@ -2,8 +2,11 @@
  * Headless balance check. A scripted player plays the real engine and we measure pacing.
  * Planned for CI: fail the merge request when an era's time leaves its target window.
  */
+import { availableParallelism } from 'node:os';
+import { isMainThread, MessagePort, parentPort, Worker } from 'node:worker_threads';
 import {
   advanceEra,
+  MS_PER_SECOND,
   chooseConsentBanner,
   advanceSimulation,
   buyDefense,
@@ -78,6 +81,9 @@ interface EraEntry {
   readonly state: GameState;
   readonly now: number;
 }
+
+/** Where a run's report lines go: collected per run, so runs in parallel can't interleave them. */
+type Log = (line: string) => void;
 
 interface RunResult {
   readonly reports: readonly EraReport[];
@@ -285,7 +291,7 @@ function typeKeystrokes(state: GameState, count: number): GameState {
   return Array.from({ length: count }).reduce<GameState>((current) => writeCode(current).state, state);
 }
 
-function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
+function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResult {
   let state = start.state;
   let now = start.now;
   let entry2018: EraEntry | null = null;
@@ -310,7 +316,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
 
     if (process.env['SIM_TIMELINE'] === profile.name && now % MS_PER_MINUTE === 0) {
       const levels = Object.values(state.featureLevels).join('/');
-      console.log(
+      log(
         `    ${(now / MS_PER_MINUTE).toFixed(0).padStart(3)}m ${formatMoney(state.money).padStart(8)} ` +
           `rev ${formatMoney(calculateNetRevenuePerSecond(state)).padStart(7)}/s ` +
           `typing ${formatMoney(calculateKeystrokeValue(state) * profile.keystrokesPerSecond).padStart(7)}/s ` +
@@ -340,13 +346,13 @@ function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
         keystrokeIncomeShareAtEnd: typingIncome / effectiveIncome(state, profile),
         minigameShare: minigameMsThisEra / Math.max(1, now - eraStartedAt),
       });
-      console.log(
+      log(
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
           `${formatCompactNumber(calculateVisitorsPerSecond(state))} visitors/s · ` +
           `${formatMoney(calculateNetRevenuePerSecond(state))}/s · ads ${state.adCount} · ` +
           `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s (phone ${calculatePhoneLoadTimeSeconds(state).toFixed(1)}s, ${(calculatePerformanceTrafficFactor(state) * 100).toFixed(0)}% wait) · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
       );
-      reportTradeIn(profile.name, state);
+      reportTradeIn(profile.name, state, log);
       state = chooseConsentBanner(advanceEra(state), profile.consentBanner);
       if (state.eraId === FRAMEWORK_ERA && entry2018 === null) entry2018 = { state, now };
       eraStartedAt = now;
@@ -355,28 +361,28 @@ function runProfile(profile: PlayerProfile, start: EraEntry): RunResult {
     now += TICK_MS;
   }
 
-  console.log(
+  log(
     `  [${profile.name}] first purchases: ` +
       [...firstPurchases.entries()].map(([id, at]) => `${id} @ ${(at / MS_PER_MINUTE).toFixed(1)}m`).join(', '),
   );
-  console.log(`  [${profile.name}] steepest minute: underlying income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
+  log(`  [${profile.name}] steepest minute: underlying income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
-  console.log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
+  log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
   return { reports, entry2018 };
 }
 
 /** What the relaunch pays back for retired features, in seconds of the income the player has right then. */
-function reportTradeIn(profileName: string, state: GameState): void {
+function reportTradeIn(profileName: string, state: GameState, log: Log): void {
   const nextEraId = ERAS_BY_ID[state.eraId].nextEraId;
   if (nextEraId === null) return;
   const tradeIn = calculateRetirementPayout(state, nextEraId);
   const seconds = tradeIn / Math.max(1, calculateNetRevenuePerSecond(state));
-  console.log(`  [${profileName}] trade-in at the relaunch into ${nextEraId}: ${formatMoney(tradeIn)}, ${seconds.toFixed(1)} s of income`);
+  log(`  [${profileName}] trade-in at the relaunch into ${nextEraId}: ${formatMoney(tradeIn)}, ${seconds.toFixed(1)} s of income`);
 }
 
-function printReports(name: string, reports: readonly EraReport[]): void {
+function printReports(name: string, reports: readonly EraReport[], log: Log): void {
   reports.forEach((report) =>
-    console.log(
+    log(
       `  [${name}] ${report.eraId}: ${(report.durationMs / MS_PER_MINUTE).toFixed(1)} min, ` +
         `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end, ` +
         `minigames = ${(report.minigameShare * 100).toFixed(0)}% of play time`,
@@ -406,37 +412,149 @@ function reseed(entry: EraEntry, attempt: number): EraEntry {
   return { ...entry, state: { ...entry.state, randomSeed: entry.state.randomSeed + attempt * SEED_STRIDE } };
 }
 
-function play2018(profile: PlayerProfile, framework: FrameworkId, entry: EraEntry, attempt: number): number | null {
-  const branch = { ...profile, name: `${profile.name}/${framework}#${attempt + 1}`, framework };
-  const result = runProfile(branch, reseed(entry, attempt));
-  printReports(branch.name, result.reports);
-  return find2018Minutes(result.reports);
+// ---------- Running in parallel ----------
+// Every run is independent and seeded, so they run on every core at once, each in a worker thread, with the same
+// results as one after another. A run's lines come back with its result and are printed in a fixed order.
+
+/** One run: a profile's whole game from the start, or 2018 again from its relaunch, with one framework and seed. */
+interface RunTask {
+  readonly profile: PlayerProfile;
+  readonly start: EraEntry;
 }
 
-/** Seeds from `firstAttempt` on: the full run already played the profile's own framework with the first seed. */
-function playSeeds(profile: PlayerProfile, framework: FrameworkId, entry: EraEntry, firstAttempt: number): readonly (number | null)[] {
-  return Array.from({ length: SEEDS_PER_FRAMEWORK - firstAttempt }, (_, index) => play2018(profile, framework, entry, firstAttempt + index));
+interface TaskResult extends RunResult {
+  readonly lines: readonly string[];
 }
 
-function playFrameworks(profile: PlayerProfile, entry: EraEntry, ownDurationMs: number | null): readonly FrameworkOutcome[] {
-  const own = { framework: profile.framework, durationsMs: [ownDurationMs, ...playSeeds(profile, profile.framework, entry, 1)] };
-  const others = FRAMEWORK_IDS.filter((framework) => framework !== profile.framework).map((framework) => ({ framework, durationsMs: playSeeds(profile, framework, entry, 0) }));
-  return [own, ...others];
+interface TaskMessage {
+  readonly id: number;
+  readonly task: RunTask;
+}
+
+interface ResultMessage {
+  readonly id: number;
+  readonly result: TaskResult;
+}
+
+function runTask(task: RunTask): TaskResult {
+  const lines: string[] = [];
+  const log: Log = (line) => {
+    lines.push(line);
+  };
+  const result = runProfile(task.profile, task.start, log);
+  printReports(task.profile.name, result.reports, log);
+  return { ...result, lines };
+}
+
+interface WorkerPool {
+  readonly run: (task: RunTask) => Promise<TaskResult>;
+  readonly close: () => Promise<void>;
+}
+
+function failLoudly(error: Error): void {
+  console.error(error);
+  process.exit(1);
+}
+
+/** Workers take the next waiting task as soon as they finish one. */
+function createWorkerPool(size: number): WorkerPool {
+  const waiting: TaskMessage[] = [];
+  const idle: Worker[] = [];
+  const pending = new Map<number, (result: TaskResult) => void>();
+  let nextId = 0;
+  const startNext = (worker: Worker): void => {
+    const next = waiting.shift();
+    if (next === undefined) idle.push(worker);
+    else worker.postMessage(next);
+  };
+  const workers = Array.from({ length: size }, () => {
+    const worker = new Worker(__filename);
+    worker.on('message', (message: ResultMessage) => {
+      pending.get(message.id)?.(message.result);
+      pending.delete(message.id);
+      startNext(worker);
+    });
+    worker.on('error', failLoudly);
+    idle.push(worker);
+    return worker;
+  });
+  return {
+    run: (task) =>
+      new Promise((resolve) => {
+        pending.set(nextId, resolve);
+        waiting.push({ id: nextId, task });
+        nextId += 1;
+        const worker = idle.pop();
+        if (worker !== undefined) startNext(worker);
+      }),
+    close: async () => {
+      await Promise.all(workers.map((worker) => worker.terminate()));
+    },
+  };
+}
+
+function serveTasks(port: MessagePort): void {
+  port.on('message', (message: TaskMessage) => {
+    const reply: ResultMessage = { id: message.id, result: runTask(message.task) };
+    port.postMessage(reply);
+  });
+}
+
+// ---------- The 2018 branches: every framework, every seed ----------
+
+interface Branch {
+  readonly framework: FrameworkId;
+  readonly attempt: number;
+}
+
+/** The full run already played the profile's own framework with the first seed. */
+function listBranches(profile: PlayerProfile): readonly Branch[] {
+  return FRAMEWORK_IDS.flatMap((framework) => {
+    const firstAttempt = framework === profile.framework ? 1 : 0;
+    return Array.from({ length: SEEDS_PER_FRAMEWORK - firstAttempt }, (_, index) => ({ framework, attempt: firstAttempt + index }));
+  });
+}
+
+function toBranchTask(profile: PlayerProfile, branch: Branch, entry: EraEntry): RunTask {
+  return { profile: { ...profile, name: `${profile.name}/${branch.framework}#${branch.attempt + 1}`, framework: branch.framework }, start: reseed(entry, branch.attempt) };
 }
 
 function isFinished(outcome: FrameworkOutcome): boolean {
   return outcome.durationsMs.every((duration) => duration !== null);
 }
 
-/** The full run with the profile's own framework, then 2018 again from the same relaunch: every framework, every seed. */
-function playProfile(profile: PlayerProfile): ProfileOutcome {
-  const full = runProfile(profile, { state: createInitialGameState(SEED), now: 0 });
-  printReports(profile.name, full.reports);
-  const frameworks = full.entry2018 === null ? [] : playFrameworks(profile, full.entry2018, find2018Minutes(full.reports));
+interface PlayedProfile {
+  readonly outcome: ProfileOutcome;
+  readonly lines: readonly string[];
+}
+
+function collectFrameworks(profile: PlayerProfile, full: TaskResult, branches: readonly Branch[], results: readonly TaskResult[]): readonly FrameworkOutcome[] {
+  return FRAMEWORK_IDS.map((framework) => {
+    const own = framework === profile.framework ? [find2018Minutes(full.reports)] : [];
+    const seeded = branches.flatMap((branch, index) => (branch.framework === framework ? [find2018Minutes(results[index]?.reports ?? [])] : []));
+    return { framework, durationsMs: [...own, ...seeded] };
+  });
+}
+
+/** The own framework first, as the report lists it. */
+function ownFirst(profile: PlayerProfile, frameworks: readonly FrameworkOutcome[]): readonly FrameworkOutcome[] {
+  return [...frameworks.filter((outcome) => outcome.framework === profile.framework), ...frameworks.filter((outcome) => outcome.framework !== profile.framework)];
+}
+
+/** The full run, then 2018 again from the same relaunch: every framework, every seed, queued as soon as it can be. */
+async function playProfile(pool: WorkerPool, profile: PlayerProfile): Promise<PlayedProfile> {
+  const full = await pool.run({ profile, start: { state: createInitialGameState(SEED), now: 0 } });
+  const entry = full.entry2018;
+  const branches = entry === null ? [] : listBranches(profile);
+  const results = entry === null ? [] : await Promise.all(branches.map((branch) => pool.run(toBranchTask(profile, branch, entry))));
+  const frameworks = entry === null ? [] : ownFirst(profile, collectFrameworks(profile, full, branches, results));
   return {
-    name: profile.name,
-    finishedEveryEra: full.reports.length === ERA_IDS.length && frameworks.length === FRAMEWORK_IDS.length && frameworks.every(isFinished),
-    frameworks,
+    outcome: {
+      name: profile.name,
+      finishedEveryEra: full.reports.length === ERA_IDS.length && frameworks.length === FRAMEWORK_IDS.length && frameworks.every(isFinished),
+      frameworks,
+    },
+    lines: [...full.lines, ...results.flatMap((result) => result.lines)],
   };
 }
 
@@ -460,26 +578,39 @@ function describeFramework(outcome: FrameworkOutcome): string {
   return `${outcome.framework} ${(medianDurationMs(outcome) / MS_PER_MINUTE).toFixed(1)} min (${runs})`;
 }
 
-console.log('Balance simulation');
-const outcomes = PROFILES.map(playProfile);
-const stuckProfiles = outcomes.filter((outcome) => !outcome.finishedEveryEra);
-const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworks) > MAX_FRAMEWORK_SPREAD_SHARE);
-outcomes.forEach((outcome) =>
-  console.log(
-    `  [${outcome.name}] 2018 by framework, median of ${SEEDS_PER_FRAMEWORK} seeds: ${outcome.frameworks.map(describeFramework).join(' · ')} · spread ${(measureSpread(outcome.frameworks) * 100).toFixed(1)}%`,
-  ),
-);
-
-// CI checks: every scripted player has to finish every era with every framework, and no framework may be a
-// clearly worse pick. Other timing is reported, never enforced.
-if (stuckProfiles.length > 0) {
-  const names = stuckProfiles.map((outcome) => outcome.name).join(', ');
-  console.error(`FAILED: ${names} could not finish every era within ${MAX_SIMULATED_MS / MS_PER_MINUTE} simulated minutes.`);
-  process.exitCode = 1;
-} else if (lopsided.length > 0) {
-  const names = lopsided.map((outcome) => outcome.name).join(', ');
-  console.error(`FAILED: for ${names}, one framework's median makes 2018 more than ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% slower than another's.`);
-  process.exitCode = 1;
-} else {
-  console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% of the fastest.`);
+/** CI checks: every scripted player has to finish every era with every framework, and no framework may be a clearly worse pick. */
+function judge(outcomes: readonly ProfileOutcome[]): void {
+  const stuckProfiles = outcomes.filter((outcome) => !outcome.finishedEveryEra);
+  const lopsided = outcomes.filter((outcome) => measureSpread(outcome.frameworks) > MAX_FRAMEWORK_SPREAD_SHARE);
+  if (stuckProfiles.length > 0) {
+    const names = stuckProfiles.map((outcome) => outcome.name).join(', ');
+    console.error(`FAILED: ${names} could not finish every era within ${MAX_SIMULATED_MS / MS_PER_MINUTE} simulated minutes.`);
+    process.exitCode = 1;
+  } else if (lopsided.length > 0) {
+    const names = lopsided.map((outcome) => outcome.name).join(', ');
+    console.error(`FAILED: for ${names}, one framework's median makes 2018 more than ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% slower than another's.`);
+    process.exitCode = 1;
+  } else {
+    console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% of the fastest.`);
+  }
 }
+
+async function main(): Promise<void> {
+  const startedAt = performance.now();
+  const pool = createWorkerPool(availableParallelism());
+  const played = await Promise.all(PROFILES.map((profile) => playProfile(pool, profile)));
+  await pool.close();
+  console.log('Balance simulation');
+  played.forEach(({ lines }) => lines.forEach((line) => console.log(line)));
+  played.forEach(({ outcome }) =>
+    console.log(
+      `  [${outcome.name}] 2018 by framework, median of ${SEEDS_PER_FRAMEWORK} seeds: ${outcome.frameworks.map(describeFramework).join(' · ')} · spread ${(measureSpread(outcome.frameworks) * 100).toFixed(1)}%`,
+    ),
+  );
+  console.log(`  ${played.length} players on ${availableParallelism()} cores in ${((performance.now() - startedAt) / MS_PER_SECOND).toFixed(0)} s`);
+  judge(played.map(({ outcome }) => outcome));
+}
+
+// The same file is the main program and every worker.
+if (isMainThread) void main();
+else if (parentPort !== null) serveTasks(parentPort);

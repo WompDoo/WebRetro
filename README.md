@@ -41,14 +41,13 @@ npm run sim        # headless balance simulation: how long each era takes
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs on every pull request and every push to `main`:
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`, as two jobs side by side:
 
-1. `npm ci`
-2. `npm run typecheck`
-3. `npm test`
-4. `npm run build`
-5. `npm run sim`: fails if any scripted player can't finish every era, or if one 2018 framework makes the era more
-   than 15% slower than another. Other timing is printed, not enforced.
+- **Type-check, test, build** (seconds): `npm ci`, `npm run typecheck`, `npm test`, `npm run build`.
+- **Balance simulation** (about 3 minutes): `npm run sim` fails if any scripted player can't finish every era, or
+  if one 2018 framework's median over three seeds makes the era more than 15% slower than another's. Other
+  timing is printed, not enforced. Every run is independent and seeded, so the sim runs them in worker threads
+  on every core, with the same results as one after another; each run's lines are printed in a fixed order.
 
 Each run uploads the built `under-construction.html` as an artifact, so every pull request has a playable copy.
 Actions are pinned to commit SHAs; Dependabot opens weekly pull requests to keep them and the npm dev dependencies current.
