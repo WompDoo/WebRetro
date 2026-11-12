@@ -181,7 +181,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Scripts that run in the browser. Mostly scrolling text in the status bar.',
     cost: 9_000,
     pageWeightKb: 3,
-    effects: [{ kind: 'keystroke-revenue-share', share: 0.01 }],
+    effects: [{ kind: 'keystroke-revenue-share', share: 0.0015 }],
     requiredFeatureId: null,
   },
   // ---------- 2005 skills: you arrive still knowing only 1997 HTML ----------
@@ -524,7 +524,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Build a blog in 15 minutes, like in the video.',
     cost: 10_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'keystroke-value-multiplier', factor: 2 }],
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.5 }],
     requiredFeatureId: null,
   },
   'memcached': {
@@ -613,7 +613,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'JavaScript on the server, and everything is a callback now. Unlocks the live activity feed.',
     cost: 12_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.5 }],
+    effects: [{ kind: 'keystroke-value-multiplier', factor: 1.3 }],
     requiredFeatureId: null,
   },
   'learn-bcrypt': {
@@ -668,7 +668,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Your data at URLs like /api/posts.json, for your app, your widgets and everyone else’s mashups. The feed loads faster. Unlocks "Sign in with…".',
     cost: 6_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'activity-feed', factor: 1.3 }, { kind: 'keystroke-value-multiplier', factor: 1.3 }],
+    effects: [{ kind: 'feature-traffic-multiplier', featureId: 'activity-feed', factor: 1.3 }, { kind: 'keystroke-value-multiplier', factor: 1.2 }],
     requiredFeatureId: null,
   },
   'learn-sass': {
