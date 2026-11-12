@@ -87,7 +87,6 @@ export function getActiveUpgradeIds(state: GameState): readonly UpgradeId[] {
 
 /** Upgrade effects that multiply one number of the economy. */
 type FactorKind =
-  | 'keystroke-value-multiplier'
   | 'global-traffic-multiplier'
   | 'ad-value-multiplier'
   | 'ad-annoyance-multiplier'
@@ -98,7 +97,6 @@ type FactorEffect = Extract<UpgradeEffect, { readonly kind: FactorKind }>;
 type FeatureTrafficEffect = Extract<UpgradeEffect, { readonly kind: 'feature-traffic-multiplier' }>;
 
 const FACTOR_KINDS: readonly FactorKind[] = [
-  'keystroke-value-multiplier',
   'global-traffic-multiplier',
   'ad-value-multiplier',
   'ad-annoyance-multiplier',
@@ -116,7 +114,10 @@ interface EffectSummary {
   readonly factors: Readonly<Record<FactorKind, number>>;
   readonly featureFactors: ReadonlyMap<FeatureId, number>;
   readonly keystrokeRevenueShare: number;
-  readonly bugChanceReduction: number;
+  /** This era's typing skills only: what each keystroke's whole value is multiplied by. */
+  readonly typingFactor: number;
+  /** This era's typo reductions only. */
+  readonly typoReduction: number;
   readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
 }
 
@@ -138,12 +139,25 @@ function collectFeatureFactors(effects: readonly UpgradeEffect[]): ReadonlyMap<F
     .reduce<ReadonlyMap<FeatureId, number>>(multiplyFeatureFactor, new Map());
 }
 
-function summarizeEffects(effects: readonly UpgradeEffect[]): EffectSummary {
+function multiplyTypingFactors(effects: readonly UpgradeEffect[]): number {
+  return multiplyAll(effects.flatMap((effect) => (effect.kind === 'keystroke-value-multiplier' ? [effect.factor] : [])));
+}
+
+function sumTypoReductions(effects: readonly UpgradeEffect[]): number {
+  return sumAll(effects.flatMap((effect) => (effect.kind === 'bug-chance-reduction' ? [effect.amount] : [])));
+}
+
+/**
+ * Typing skills belong to their era's tools: Notepad's tricks don't speed up a 2018 editor. So typing pay and
+ * typos read this era's purchases; everything else reads all of them.
+ */
+function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: readonly UpgradeEffect[]): EffectSummary {
   return {
     factors: Object.fromEntries(FACTOR_KINDS.map((kind) => [kind, multiplyFactors(effects, kind)])) as Record<FactorKind, number>,
     featureFactors: collectFeatureFactors(effects),
     keystrokeRevenueShare: sumAll(effects.flatMap((effect) => (effect.kind === 'keystroke-revenue-share' ? [effect.share] : []))),
-    bugChanceReduction: sumAll(effects.flatMap((effect) => (effect.kind === 'bug-chance-reduction' ? [effect.amount] : []))),
+    typingFactor: multiplyTypingFactors(thisEraEffects),
+    typoReduction: sumTypoReductions(thisEraEffects),
     kinds: new Set(effects.map((effect) => effect.kind)),
   };
 }
@@ -163,7 +177,12 @@ function findSummariesByEra(upgradeIds: readonly UpgradeId[]): Map<EraId, Effect
 }
 
 function summarizePurchases(state: GameState, byEra: Map<EraId, EffectSummary>): EffectSummary {
-  const summary = summarizeEffects(getActiveUpgradeIds(state).flatMap((id) => UPGRADES_BY_ID[id].effects));
+  const active = getActiveUpgradeIds(state);
+  const thisEra = active.filter((id) => UPGRADES_BY_ID[id].eraId === state.eraId);
+  const summary = summarizeEffects(
+    active.flatMap((id) => UPGRADES_BY_ID[id].effects),
+    thisEra.flatMap((id) => UPGRADES_BY_ID[id].effects),
+  );
   byEra.set(state.eraId, summary);
   return summary;
 }
@@ -200,15 +219,20 @@ function calculateKeystrokeRevenueShare(state: GameState): number {
   return getEffectSummary(state).keystrokeRevenueShare;
 }
 
-/** Freelance pay per keystroke, plus a share of the site's revenue per second once you know enough to automate. */
+/**
+ * Freelance pay per keystroke, plus a share of the site's revenue per second once you know enough to automate,
+ * all of it times this era's typing skills. Each era's base pay already includes what the earlier eras' skills
+ * were worth, so a relaunch starts where the last era left off.
+ */
 export function calculateKeystrokeValue(state: GameState): number {
   const eraMultiplier = ERAS_BY_ID[state.eraId].keystrokeValueMultiplier;
-  const freelancePay = (BASE_KEYSTROKE_VALUE * eraMultiplier * readFactor(state, 'keystroke-value-multiplier')) / ERAS_BY_ID[state.eraId].typingPace;
-  return freelancePay + calculateKeystrokeRevenueShare(state) * calculateNetRevenuePerSecond(state);
+  const freelancePay = (BASE_KEYSTROKE_VALUE * eraMultiplier) / ERAS_BY_ID[state.eraId].typingPace;
+  const revenueShare = calculateKeystrokeRevenueShare(state) * calculateNetRevenuePerSecond(state);
+  return (freelancePay + revenueShare) * getEffectSummary(state).typingFactor;
 }
 
 export function calculateBugChance(state: GameState): number {
-  return Math.max(MIN_BUG_CHANCE, BASE_BUG_CHANCE - getEffectSummary(state).bugChanceReduction);
+  return Math.max(MIN_BUG_CHANCE, BASE_BUG_CHANCE - getEffectSummary(state).typoReduction);
 }
 
 export function isFeatureInfected(state: GameState, featureId: FeatureId): boolean {

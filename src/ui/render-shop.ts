@@ -217,9 +217,9 @@ function renderBuildTab(state: GameState, view: ShopView): string {
 // ---------- Effects ----------
 
 const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Extract<UpgradeEffect, { kind: K }>, eraId: EraId) => string } = {
-  'keystroke-value-multiplier': (effect) => `Keystrokes earn ${formatFactor(effect.factor)}`,
+  'keystroke-value-multiplier': (effect) => `Typing earns ${formatFactor(effect.factor)} this era`,
   'keystroke-revenue-share': (effect) => `Each keystroke also earns ${formatPercent(effect.share)} of your revenue per second`,
-  'bug-chance-reduction': (effect) => `Typo chance −${formatPercent(effect.amount)}`,
+  'bug-chance-reduction': (effect) => `Typo chance −${formatPercent(effect.amount)} this era`,
   'feature-traffic-multiplier': (effect, eraId) => `${getFeatureDisplayName(effect.featureId, eraId)} traffic ${formatFactor(effect.factor)}`,
   'global-traffic-multiplier': (effect) => `All traffic ${formatFactor(effect.factor)}`,
   'ad-value-multiplier': (effect) => `Ads pay ${formatFactor(effect.factor)}`,

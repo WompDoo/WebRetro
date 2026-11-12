@@ -471,6 +471,15 @@ like viruses and DDoS have, can come later for the others.
   on every core: 2 minutes 20 on four, with identical results. CI runs it beside the other checks, which report in
   seconds. Cheaper and better, later: one random stream per hazard kind ("common random numbers"), so a broken
   build can't move the next traffic spike.
+- **Typing skills belong to their era.** An audit found that from late 1997 on, 97–100% of a keystroke's value was
+  the revenue share (Learn JavaScript, Learn PHP), so the twenty-odd "keystrokes ×N" skills, the frameworks' among
+  them, changed almost nothing, and typo reductions had hit the 3% floor by the end of 2005. Now a typing skill
+  multiplies a keystroke's whole value, revenue share included, but only in its own era: every era's tools are new.
+  Typo reductions work the same way, and each era starts at 25% again. Each era's base pay carries what the earlier
+  eras' skills were worth, so a relaunch starts where the last era left off. Typing now builds through an era, from
+  about a tenth of a fast typist's income to a quarter, and the frameworks type differently: at the end of 2018 a
+  keystroke is worth 30% more with React than with Vue. Retuned: JavaScript's share 0.01 → 0.0015 (1997's ×18
+  would otherwise make late-1997 typing half of all income), Rails ×2 → ×1.5, Node.js ×1.5 → ×1.3, REST ×1.3 → ×1.2.
 - **The 2018 hazards cost about 5–8% of the era.** Broken builds take 7–8% of play time in minigames, and the GDPR
   is tuned so every banner costs something: none about 11% of revenue in fines, honest about 7% in ad value, a dark
   pattern about the same on average but in lumps. The first pass cost 15% whichever was picked, and stretched 2018
