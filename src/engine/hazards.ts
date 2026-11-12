@@ -15,7 +15,9 @@ import { FRAMEWORKS_BY_ID } from './content/frameworks';
 import {
   calculateFeatureVisitorsPerSecond,
   calculateNetRevenuePerSecond,
+  canCertificateExpire,
   findChosenFramework,
+  findOpsAutoCleanMs,
   getEnabledDefenses,
   hasTrafficSpikeCache,
   isEraUnlocked,
@@ -25,6 +27,7 @@ import {
 import { formatMoney } from './format';
 import { drawRandoms, interpolateRange } from './random';
 import type {
+  EraId,
   FeatureId,
   FrameworkId,
   GameEvent,
@@ -295,6 +298,21 @@ export function calculatePrivacyFine(state: GameState): number {
 }
 
 /**
+ * 2005 on: a certificate bought by hand runs out, and browsers warn every visitor away until it's renewed. Automated
+ * renewal (2018) ends it for good.
+ */
+const CERTIFICATE_EXPIRY_RULE: HazardRule = {
+  kind: 'certificate-expiry',
+  intervalRangeMs: [900_000, 1_500_000],
+  isActive: (state) => canCertificateExpire(state) && !state.isCertificateExpired,
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state) => ({
+    state: { ...state, isCertificateExpired: true },
+    events: hazardEvent('Your SSL certificate expired. Browsers now tell visitors “Your connection is not private”, and most of them leave. Renew it under Ops.'),
+  }),
+};
+
+/**
  * 2018: the GDPR. Ads track visitors, and a visitor who wasn't asked complains. A fine can take you below zero:
  * the next income pays it back before anything else can be bought.
  */
@@ -323,12 +341,20 @@ const HAZARD_RULES: readonly HazardRule[] = [
   DDOS_RULE,
   BROKEN_BUILD_RULE,
   PRIVACY_FINE_RULE,
+  CERTIFICATE_EXPIRY_RULE,
 ];
 
 export function isHazardPrevented(state: GameState, kind: HazardKind): boolean {
   return getEnabledDefenses(state).some(
     (defense) => defense.countersHazard === kind && defense.counterMode === 'prevents-spawn',
   );
+}
+
+/** Defenses that make a hazard rarer rather than impossible: the ad blocker lets the odd pop-up through. */
+function calculateSpawnRateFactor(state: GameState, kind: HazardKind): number {
+  return getEnabledDefenses(state)
+    .filter((defense) => defense.countersHazard === kind && defense.counterMode === 'slows-spawn')
+    .reduce((rate, defense) => rate * defense.spawnRateFactor, NORMAL_SPEED);
 }
 
 function withHazardCountdown(state: GameState, kind: HazardKind, remainingMs: number): GameState {
@@ -346,13 +372,13 @@ function spawnHazard(state: GameState, rule: HazardRule): GameStep {
 function tickHazardRule(state: GameState, rule: HazardRule, deltaMs: number): GameStep {
   const canSpawn = rule.isActive(state) && !isHazardPrevented(state, rule.kind);
   if (!canSpawn) return { state, events: [] };
-  const remainingMs = state.hazardCountdownsMs[rule.kind] - deltaMs * rule.countdownSpeed(state);
+  const remainingMs = state.hazardCountdownsMs[rule.kind] - deltaMs * rule.countdownSpeed(state) * calculateSpawnRateFactor(state, rule.kind);
   return remainingMs > 0
     ? { state: withHazardCountdown(state, rule.kind, remainingMs), events: [] }
     : spawnHazard(state, rule);
 }
 
-function isAutoCleaned(state: GameState, infection: Infection): boolean {
+function isCleanedByDefense(state: GameState, infection: Infection): boolean {
   return getEnabledDefenses(state).some(
     (defense) =>
       defense.counterMode === 'auto-cleans' &&
@@ -361,14 +387,33 @@ function isAutoCleaned(state: GameState, infection: Infection): boolean {
   );
 }
 
+function isCleanedByOps(state: GameState, infection: Infection): boolean {
+  const afterMs = findOpsAutoCleanMs(state, infection.kind);
+  return afterMs !== null && infection.ageMs >= afterMs;
+}
+
+function isAutoCleaned(state: GameState, infection: Infection): boolean {
+  return isCleanedByDefense(state, infection) || isCleanedByOps(state, infection);
+}
+
+/** What the news says when something cleaned an infection up without you. */
+const AUTO_CLEAN_MESSAGES: Readonly<Partial<Record<InfectionKind, (featureName: string) => string>>> = {
+  virus: (featureName) => `Antivirus removed a virus from your ${featureName}.`,
+  'sql-injection': (featureName) => `Last night’s backup put your ${featureName} back. Some of today is gone with the attack.`,
+  'broken-build': (featureName) => `Blue-green rolled the broken release back before it took much traffic. Your ${featureName} is fine.`,
+};
+
+function describeAutoClean(infection: Infection, eraId: EraId): string {
+  const featureName = getFeatureDisplayName(infection.featureId, eraId).toLowerCase();
+  const describe = AUTO_CLEAN_MESSAGES[infection.kind];
+  return describe === undefined ? `Your ${featureName} recovered on its own.` : describe(featureName);
+}
+
 function ageAndAutoCleanInfections(state: GameState, deltaMs: number): GameStep {
   const aged = state.infections.map((infection) => ({ ...infection, ageMs: infection.ageMs + deltaMs }));
   const agedState = { ...state, infections: aged };
   const autoCleaned = aged.filter((infection) => isAutoCleaned(agedState, infection));
-  const events = autoCleaned.map<GameEvent>((infection) => ({
-    kind: 'defense',
-    message: `Antivirus removed a virus from your ${getFeatureDisplayName(infection.featureId, state.eraId).toLowerCase()}.`,
-  }));
+  const events = autoCleaned.map<GameEvent>((infection) => ({ kind: 'defense', message: describeAutoClean(infection, state.eraId) }));
   return { state: { ...agedState, infections: aged.filter((infection) => !isAutoCleaned(agedState, infection)) }, events };
 }
 

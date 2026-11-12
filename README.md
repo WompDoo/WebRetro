@@ -5,7 +5,8 @@ Playable now: 1997 (personal homepage), 2005 (Web 2.0), 2011 (social and mobile)
 (platforms, and the framework wars: React, Angular or Vue). Each era takes 45–60 minutes: three to four hours in all.
 You write code to earn freelance money, learn HTML tag by tag, build features that bring
 in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
-with short minigames. Each era ends with a relaunch.
+with short minigames. The Ops tab is where you run the site: your own domain, nightly backups, https
+and the certificate that keeps running out, monitoring, blue-green deploys. Each era ends with a relaunch.
 
 ## Run it
 
@@ -25,7 +26,8 @@ which also works inside the claude.ai preview and on phones. A 🧪 Playtest but
 - **Jump to an era**: the start of any era, or its end with the checklist done and Launch ready. Presets are
   built from the game's own data (`src/engine/playtest.ts`), and a test checks every end preset passes its gate.
 - **Your own game is safe**: the first jump backs it up; *Back to my own game* restores it.
-- **Money** (+10 minutes of income, ×10), **any minigame** on demand, a **pop-up** or a **traffic spike**,
+- **Money** (+10 minutes of income, ×10), **any minigame** on demand, a **pop-up**, a **traffic spike** or an
+  **expired certificate**,
   and **game speed** 1×, 10× or 60× for testing idle play.
 - *Hide the playtest button* turns it off again.
 
@@ -37,7 +39,9 @@ npm test           # unit tests (node:test)
 npm run sim        # headless balance simulation: how long each era takes
 ```
 
-`SIM_TIMELINE=active npm run sim` prints a minute-by-minute log for the scripted player.
+`SIM_TIMELINE=active npm run sim` prints a minute-by-minute log for the scripted player. `SIM_SEED=42 npm run sim`
+plays everything from another seed: one seed is one sample, and a scripted player's choices are chaotic enough that
+a single unlucky event can move an era by ten minutes. Compare a balance change across a few seeds.
 
 ## Continuous integration
 

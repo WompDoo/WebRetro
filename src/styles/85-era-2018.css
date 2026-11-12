@@ -30,7 +30,8 @@
 [data-era="2018"] .browser-address-label { display: none; }
 /* The padlock: every 2018 site is on https, and the browser says "Not secure" about the ones that aren't. */
 [data-era="2018"] .browser-url { background: #F1F3F4; border: 0; border-radius: 16px; }
-[data-era="2018"] .browser-url::before { content: "🔒"; margin-right: 6px; font-size: 11px; filter: grayscale(1); }
+[data-era="2018"] .browser-url[data-security="secure"]::before { filter: grayscale(1); }
+[data-era="2018"] .browser-url[data-security="expired"]::before { content: "⚠ Not secure"; }
 [data-era="2018"] .browser-statusbar { background: #FFFFFF; border-top: 1px solid #DADCE0; }
 /* The speed score's circle, coloured like the speed test colours it. */
 .browser-perf[data-lighthouse="good"], .browser-perf[data-lighthouse="average"], .browser-perf[data-lighthouse="poor"] { --lighthouse: #0CCE6B; }

@@ -16,6 +16,8 @@ import {
   isEraGateComplete,
   findChosenFramework,
   isRenderedOnlyInBrowser,
+  isMarkedNotSecure,
+  getAvailableOpsIds,
 } from '../engine';
 import type { GameState, GateCheck, GateRequirementKind } from '../engine';
 import { escapeHtml } from './dom';
@@ -61,7 +63,7 @@ const HINT_RULES: readonly HintRule[] = [
   },
   {
     applies: (state) => state.adCount === 0 && canUseAds(state),
-    text: 'You have visitors, but visitors don’t pay the bills. Place a banner ad under Ads & security.',
+    text: 'You have visitors, but visitors don’t pay the bills. Place a banner ad under Ops.',
   },
   {
     applies: (state) => state.infections.some((infection) => infection.kind === 'virus'),
@@ -70,6 +72,10 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => state.infections.length > 0,
     text: 'Something broke one of your features. Click it to fix it in a minigame. Fix it fast for a traffic bonus.',
+  },
+  {
+    applies: (state) => state.isCertificateExpired,
+    text: 'Your SSL certificate has expired: browsers show every visitor a warning page instead of your site, and most turn back. Renew it under Ops.',
   },
   {
     applies: (state) => isSiteDown(state),
@@ -98,6 +104,10 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => state.eraId === 'platform-2018' && findChosenFramework(state) === null,
     text: 'It’s 2018 and everyone is arguing about frameworks. Learn React, Angular or Vue: it rewrites your site as a single-page app. You can only pick one, so read the trade-offs.',
+  },
+  {
+    applies: (state) => isMarkedNotSecure(state) && getAvailableOpsIds(state).includes('certificate-automation'),
+    text: 'Browsers now mark every plain http page “Not secure” in the address bar, and some visitors turn back. Certificates are free now: automate them under Ops.',
   },
   {
     applies: isRenderedOnlyInBrowser,

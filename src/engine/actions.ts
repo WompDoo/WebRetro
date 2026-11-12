@@ -1,4 +1,4 @@
-import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_BONUS_MS, QUICK_FIX_TRAFFIC_FACTOR, QUICK_FIX_WINDOW_MS } from './constants';
+import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_BONUS_MS, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
 import { formatPercent } from './format';
 import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
@@ -9,6 +9,8 @@ import {
   calculateNextAdCost,
   calculateFeatureLevelsCost,
   calculateNextFeatureCost,
+  calculateNetRevenuePerSecond,
+  calculateQuickFixWindowMs,
   calculateUpgradeCost,
   canUseAds,
   getNextHostingTier,
@@ -173,6 +175,33 @@ export function chooseConsentBanner(state: GameState, banner: ConsentBanner): Ga
   return isEraUnlocked(state, 'platform-2018') ? { ...state, consentBanner: banner } : state;
 }
 
+/** Renewing by hand: a fee, and the fax. Ten seconds of what visitors bring in. */
+const CERTIFICATE_RENEWAL_REVENUE_SECONDS = 10;
+
+/** Rounded up to two significant figures, so the price on the button holds still while revenue wobbles. */
+const FEE_SIGNIFICANT_FIGURES = 2;
+const DECIMAL_BASE = 10;
+const MIN_FEE = 1;
+
+function roundUpToSignificantFigures(amount: number): number {
+  const atLeastMin = Math.max(amount, MIN_FEE);
+  const scale = DECIMAL_BASE ** Math.max(0, Math.floor(Math.log10(atLeastMin)) - (FEE_SIGNIFICANT_FIGURES - 1));
+  return Math.ceil(atLeastMin / scale) * scale;
+}
+
+export function calculateCertificateRenewalFee(state: GameState): number {
+  return roundUpToSignificantFigures(calculateNetRevenuePerSecond(state) * CERTIFICATE_RENEWAL_REVENUE_SECONDS);
+}
+
+export function canRenewCertificate(state: GameState): boolean {
+  return state.isCertificateExpired && state.money >= calculateCertificateRenewalFee(state);
+}
+
+export function renewCertificate(state: GameState): GameState {
+  if (!canRenewCertificate(state)) return state;
+  return { ...spend(state, calculateCertificateRenewalFee(state)), isCertificateExpired: false };
+}
+
 export function closePopup(state: GameState, popupId: number): GameState {
   return { ...state, popups: state.popups.filter((popup) => popup.id !== popupId) };
 }
@@ -206,12 +235,12 @@ function describeCleanup(infection: Infection, eraId: EraId): GameEvent {
   return { kind: 'cleanup', message: CLEANUP_MESSAGES[infection.minigameId](featureName) };
 }
 
-export function isQuickFix(infection: Infection): boolean {
-  return infection.ageMs <= QUICK_FIX_WINDOW_MS;
+export function isQuickFix(state: GameState, infection: Infection): boolean {
+  return infection.ageMs <= calculateQuickFixWindowMs(state);
 }
 
 function withQuickFixBonus(state: GameState, infection: Infection): GameStep {
-  if (!isQuickFix(infection)) return { state, events: [] };
+  if (!isQuickFix(state, infection)) return { state, events: [] };
   return {
     state: { ...state, quickFixBonusRemainingMs: QUICK_FIX_BONUS_MS },
     events: [{ kind: 'cleanup', message: `Quick fix! Visitors noticed: +${formatPercent(QUICK_FIX_TRAFFIC_FACTOR - 1)} traffic for a minute.` }],

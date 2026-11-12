@@ -172,9 +172,10 @@ describe('2018: how each framework shows', () => {
     assert.match(renderSite(in2018(['learn-react']), NOW), /<h2 class="feature-heading">Video<\/h2>/);
   });
 
-  it('serves everything over https, and Vue’s router puts a # in the address', () => {
-    assert.equal(buildSiteUrl(in2018(['learn-react'])), 'https://www.myhomepage.com/');
-    assert.equal(buildSiteUrl(in2018(['learn-vue'])), 'https://www.myhomepage.com/#/');
+  it('serves over https once certificates are automated, and Vue’s router puts a # in the address', () => {
+    assert.equal(buildSiteUrl(in2018(['learn-react'])), 'http://www.myhomepage.com/');
+    assert.equal(buildSiteUrl(in2018(['learn-react', 'certificate-automation'])), 'https://www.myhomepage.com/');
+    assert.equal(buildSiteUrl(in2018(['learn-vue', 'certificate-automation'])), 'https://www.myhomepage.com/#/');
   });
 
   it('grows node_modules with every keystroke, fastest for React', () => {

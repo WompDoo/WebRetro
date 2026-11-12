@@ -35,6 +35,7 @@ import {
   getAvailableSkillIds,
   getNextHostingTier,
   upgradeHosting,
+  UPGRADES_BY_ID,
   toggleFeature,
   canUpgradeHosting,
   calculateLoadTimeSeconds,
@@ -42,6 +43,8 @@ import {
   calculatePerformanceTrafficFactor,
   calculateServerLoad,
   getRevealedBoostIds,
+  getAvailableOpsIds,
+  renewCertificate,
   canUseAds,
   isFeatureBuildable,
   isEraUnlocked,
@@ -107,6 +110,9 @@ interface EraReport {
   readonly keystrokeIncomeShareAtEnd: number;
   /** Share of the era spent playing minigames: the time budget is about a tenth. */
   readonly minigameShare: number;
+  /** How much of the era the site sat behind an expired certificate's warning page. */
+  readonly certificateExpiredShare: number;
+  readonly certificateRenewals: number;
 }
 
 interface HazardReaction {
@@ -122,7 +128,8 @@ const MS_PER_MINUTE = 60_000;
 const REQUIRED_PURCHASE_PRIORITY = 0.25;
 /** Rough time a player needs per difficulty level in any minigame (about 5, 10 or 15 seconds). */
 const MINIGAME_MS_PER_DIFFICULTY = 5_000;
-const SEED = 1997;
+/** SIM_SEED reruns everything from another start: one seed is one sample, and a run can be unlucky. */
+const SEED = Number(process.env['SIM_SEED'] ?? 1997);
 /** Early on, income is tiny and doubles easily; growth only counts once it's real. */
 const MIN_REVENUE_FOR_GROWTH = 100;
 
@@ -209,6 +216,11 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
     const cost = calculateUpgradeCost(state, upgradeId);
     return { label: `boost:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };
   });
+  const ops = getAvailableOpsIds(state).map<PurchaseOption>((upgradeId) => {
+    const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
+    const cost = calculateUpgradeCost(state, upgradeId);
+    return { label: `ops:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };
+  });
   const adCost = calculateNextAdCost(state);
   const ads: PurchaseOption[] =
     canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds
@@ -231,7 +243,7 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
     const apply = (current: GameState): GameState => toggleFeature(current, featureId);
     return { label: `switch:${featureId}`, cost: 0, isRequiredForGate: false, apply, canApply: () => true, valueCost: 0, valueApply: apply };
   });
-  return [...features, ...skills, ...boosts, ...ads, ...defenses, ...hosting, ...switches];
+  return [...features, ...skills, ...boosts, ...ops, ...ads, ...defenses, ...hosting, ...switches];
 }
 
 function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
@@ -287,6 +299,20 @@ function reactToHazards(state: GameState, seenAt: Map<number, number>, now: numb
   };
 }
 
+/** The expired certificate's id in seenAt: hazards count up from 1. */
+const CERTIFICATE_SEEN_ID = -1;
+
+/** Renews an expired certificate once the player has noticed it, like closing a pop-up. */
+function renewWhenNoticed(state: GameState, seenAt: Map<number, number>, now: number, profile: PlayerProfile): GameState {
+  if (!state.isCertificateExpired) {
+    seenAt.delete(CERTIFICATE_SEEN_ID);
+    return state;
+  }
+  const noticedAt = seenAt.get(CERTIFICATE_SEEN_ID) ?? now;
+  seenAt.set(CERTIFICATE_SEEN_ID, noticedAt);
+  return now - noticedAt >= profile.reactionMs ? renewCertificate(state) : state;
+}
+
 function typeKeystrokes(state: GameState, count: number): GameState {
   return Array.from({ length: count }).reduce<GameState>((current) => writeCode(current).state, state);
 }
@@ -298,6 +324,8 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
   let typingDebt = 0;
   let eraStartedAt = start.now;
   let minigameMsThisEra = 0;
+  let certificateExpiredMsThisEra = 0;
+  let certificateRenewalsThisEra = 0;
   let revenueAMinuteAgo = 0;
   let steepestMinute = { ratio: 1, atMinute: 0 };
   const reports: EraReport[] = [];
@@ -311,7 +339,10 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     state = typeKeystrokes(state, keystrokes);
     state = advanceSimulation(state, TICK_MS, 'live').state;
     const reaction = reactToHazards(state, seenAt, now, profile);
-    state = reaction.state;
+    const wasExpired = reaction.state.isCertificateExpired;
+    state = renewWhenNoticed(reaction.state, seenAt, now, profile);
+    certificateExpiredMsThisEra += Number(state.isCertificateExpired) * TICK_MS;
+    certificateRenewalsThisEra += Number(wasExpired && !state.isCertificateExpired);
     minigameMsThisEra += reaction.minigameMs;
 
     if (process.env['SIM_TIMELINE'] === profile.name && now % MS_PER_MINUTE === 0) {
@@ -332,10 +363,15 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     }
     if (now % DECISION_INTERVAL_MS === 0) {
       const before = state.featureLevels;
+      const upgradesBefore = state.purchasedUpgradeIds;
       state = decide(state, profile);
       Object.entries(state.featureLevels)
         .filter(([featureId, level]) => level > 0 && before[featureId as keyof typeof before] === 0)
         .forEach(([featureId]) => firstPurchases.set(featureId, now));
+      // Ops are the purchases that don't build anything: worth seeing when, and whether, a player sets them up.
+      state.purchasedUpgradeIds
+        .filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'ops' && !upgradesBefore.includes(upgradeId))
+        .forEach((upgradeId) => firstPurchases.set(`ops:${upgradeId}`, now));
     }
 
     if (isEraGateComplete(state)) {
@@ -345,6 +381,8 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
         durationMs: now - eraStartedAt,
         keystrokeIncomeShareAtEnd: typingIncome / effectiveIncome(state, profile),
         minigameShare: minigameMsThisEra / Math.max(1, now - eraStartedAt),
+        certificateExpiredShare: certificateExpiredMsThisEra / Math.max(1, now - eraStartedAt),
+        certificateRenewals: certificateRenewalsThisEra,
       });
       log(
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
@@ -357,6 +395,8 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
       if (state.eraId === FRAMEWORK_ERA && entry2018 === null) entry2018 = { state, now };
       eraStartedAt = now;
       minigameMsThisEra = 0;
+      certificateExpiredMsThisEra = 0;
+      certificateRenewalsThisEra = 0;
     }
     now += TICK_MS;
   }
@@ -385,7 +425,8 @@ function printReports(name: string, reports: readonly EraReport[], log: Log): vo
     log(
       `  [${name}] ${report.eraId}: ${(report.durationMs / MS_PER_MINUTE).toFixed(1)} min, ` +
         `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end, ` +
-        `minigames = ${(report.minigameShare * 100).toFixed(0)}% of play time`,
+        `minigames = ${(report.minigameShare * 100).toFixed(0)}% of play time, ` +
+        `certificate expired ${(report.certificateExpiredShare * 100).toFixed(1)}% of it (${report.certificateRenewals} renewals)`,
     ),
   );
 }

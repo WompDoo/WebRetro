@@ -17,6 +17,22 @@
 .site-down hr { border: 0; border-top: 1px solid #000000; }
 .site-down address { font-style: italic; }
 
+/* The browser's own warning page for an expired certificate, in each era's browser. */
+.cert-warning { min-height: 100%; padding: 32px 24px; background: #FFFFFF; color: #202124; font-family: Tahoma, Verdana, sans-serif; font-size: 13px; }
+.cert-warning-icon { margin-bottom: 12px; font-size: 40px; line-height: 1; }
+.cert-warning-title { margin: 0 0 14px; font-size: 20px; font-weight: 700; }
+.cert-warning p { margin: 0 0 10px; max-width: 560px; line-height: 1.5; }
+.cert-warning-code { color: #5F6368; font-family: monospace; font-size: 11px; }
+.cert-warning-button { display: inline-block; margin-top: 12px; padding: 6px 14px; border: 1px solid #8A8A8A; background: #ECECEC; color: #000000; }
+.cert-warning.is-2005 .cert-warning-title { color: #A00000; }
+.cert-warning.is-2005 .cert-warning-button { border: 0; background: none; color: #0033CC; text-decoration: underline; }
+.cert-warning.is-2011 { background: #EDEFF1; }
+.cert-warning.is-2011 .cert-warning-body { max-width: 560px; padding: 20px 24px; border: 1px solid #C9CDD2; border-radius: 6px; background: #FFFFFF; }
+.cert-warning.is-2018 { padding-top: 48px; font-family: Roboto, Arial, sans-serif; font-size: 14px; }
+.cert-warning.is-2018 .cert-warning-icon { color: #D93025; }
+.cert-warning.is-2018 .cert-warning-title { font-size: 24px; font-weight: 400; }
+.cert-warning.is-2018 .cert-warning-button { border: 0; border-radius: 4px; background: #1A73E8; color: #FFFFFF; font-weight: 500; }
+
 /* ---------- SQL injection ---------- */
 .infection[data-kind="sql-injection"] { align-items: flex-start; justify-content: flex-start; gap: 6px; padding: 10px; background: #FFFFFF; color: #000000; border: 2px solid #B91C1C; font-family: 'Times New Roman', Tinos, Times, serif; text-align: left; }
 .infection-error { font-size: 12.5px; line-height: 1.35; }

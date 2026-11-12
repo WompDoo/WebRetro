@@ -6,6 +6,7 @@ import {
   FEATURE_COST_GROWTH,
   MIN_BUG_CHANCE,
   POPUP_TRAFFIC_PENALTY,
+  QUICK_FIX_WINDOW_MS,
   SITE_DOWN_SERVER_LOAD,
   QUICK_FIX_TRAFFIC_FACTOR,
   TRAFFIC_SPIKE_DEMAND_FACTOR,
@@ -27,6 +28,7 @@ import type {
   FeatureDefinition,
   FeatureId,
   FrameworkId,
+  InfectionKind,
   GameState,
   HostingTierDefinition,
   UpgradeEffect,
@@ -117,7 +119,30 @@ interface EffectSummary {
   readonly typingFactor: number;
   /** This era's typo reductions only. */
   readonly typoReduction: number;
+  /** Shares of revenue that running things costs: blue-green's second production, and so on. */
+  readonly upkeepShare: number;
+  readonly quickFixWindowFactor: number;
+  readonly overloadTolerance: number;
+  /** How long until each kind of infection clears up by itself, where something does that. */
+  readonly autoCleanAfterMs: Readonly<Partial<Record<InfectionKind, number>>>;
   readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
+}
+
+function isFactorEffect(effect: UpgradeEffect): effect is FactorEffect {
+  return FACTOR_KINDS.some((kind) => kind === effect.kind);
+}
+
+/**
+ * Ops multipliers are an edge for the era you set them up in: by the next relaunch everyone has a domain, https and
+ * indexes, and what set you apart is the baseline. What ops keep doing for good is the resilience: https itself,
+ * backups, monitoring, the process manager.
+ */
+export function isEraBoundEffect(upgradeId: UpgradeId, effect: UpgradeEffect): boolean {
+  return UPGRADES_BY_ID[upgradeId].kind === 'ops' && isFactorEffect(effect);
+}
+
+function countsInEra(upgradeId: UpgradeId, effect: UpgradeEffect, eraId: EraId): boolean {
+  return !isEraBoundEffect(upgradeId, effect) || UPGRADES_BY_ID[upgradeId].eraId === eraId;
 }
 
 function isFactorOfKind(effect: UpgradeEffect, kind: FactorKind): effect is FactorEffect {
@@ -142,6 +167,18 @@ function multiplyTypingFactors(effects: readonly UpgradeEffect[]): number {
   return multiplyAll(effects.flatMap((effect) => (effect.kind === 'keystroke-value-multiplier' ? [effect.factor] : [])));
 }
 
+function multiplyEffectFactors(effects: readonly UpgradeEffect[], kind: 'quick-fix-window-multiplier' | 'overload-tolerance-multiplier'): number {
+  return multiplyAll(effects.flatMap((effect) => (effect.kind === kind ? [effect.factor] : [])));
+}
+
+/** The soonest each infection clears up on its own, when several things clean the same kind. */
+function collectAutoCleans(effects: readonly UpgradeEffect[]): Readonly<Partial<Record<InfectionKind, number>>> {
+  return effects.reduce<Partial<Record<InfectionKind, number>>>((soonest, effect) => {
+    if (effect.kind !== 'auto-cleans-infection') return soonest;
+    return { ...soonest, [effect.infection]: Math.min(effect.afterMs, soonest[effect.infection] ?? Number.POSITIVE_INFINITY) };
+  }, {});
+}
+
 function sumTypoReductions(effects: readonly UpgradeEffect[]): number {
   return sumAll(effects.flatMap((effect) => (effect.kind === 'bug-chance-reduction' ? [effect.amount] : [])));
 }
@@ -157,6 +194,10 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     keystrokeRevenueShare: sumAll(effects.flatMap((effect) => (effect.kind === 'keystroke-revenue-share' ? [effect.share] : []))),
     typingFactor: multiplyTypingFactors(thisEraEffects),
     typoReduction: sumTypoReductions(thisEraEffects),
+    upkeepShare: sumAll(effects.flatMap((effect) => (effect.kind === 'revenue-upkeep-share' ? [effect.share] : []))),
+    quickFixWindowFactor: multiplyEffectFactors(effects, 'quick-fix-window-multiplier'),
+    overloadTolerance: multiplyEffectFactors(effects, 'overload-tolerance-multiplier'),
+    autoCleanAfterMs: collectAutoCleans(effects),
     kinds: new Set(effects.map((effect) => effect.kind)),
   };
 }
@@ -179,7 +220,7 @@ function summarizePurchases(state: GameState, byEra: Map<EraId, EffectSummary>):
   const active = getActiveUpgradeIds(state);
   const thisEra = active.filter((id) => UPGRADES_BY_ID[id].eraId === state.eraId);
   const summary = summarizeEffects(
-    active.flatMap((id) => UPGRADES_BY_ID[id].effects),
+    active.flatMap((id) => UPGRADES_BY_ID[id].effects.filter((effect) => countsInEra(id, effect, state.eraId))),
     thisEra.flatMap((id) => UPGRADES_BY_ID[id].effects),
   );
   byEra.set(state.eraId, summary);
@@ -456,7 +497,8 @@ export const calculateDemandVisitorsPerSecond = memoizeByState((state: GameState
     calculateTrafficSpikeFactor(state) *
     calculateQuickFixFactor(state) *
     calculateMobileTrafficFactor(state) *
-    calculateRenderingTrafficFactor(state)
+    calculateRenderingTrafficFactor(state) *
+    calculateSecurityTrafficFactor(state)
   );
 });
 
@@ -533,7 +575,7 @@ export const calculatePhoneLoadTimeSeconds = memoizeByState((state: GameState): 
 
 /** Past twice its capacity, most visitors get a 503 page. The server still serves what it can. */
 export function isSiteDown(state: GameState): boolean {
-  return calculateServerLoad(state) >= SITE_DOWN_SERVER_LOAD;
+  return calculateServerLoad(state) >= SITE_DOWN_SERVER_LOAD * getEffectSummary(state).overloadTolerance;
 }
 
 /** At this many times the era's patience, half of the visitors who would ever give up have given up. */
@@ -590,8 +632,55 @@ export function calculateRevenuePerVisitor(state: GameState): number {
   return state.adCount * calculateAdValuePerAd(state);
 }
 
+/** What defenses and the ops you run cost, as a share of revenue. */
 export function calculateUpkeepShare(state: GameState): number {
-  return sumAll(getEnabledDefenses(state).map((defense) => defense.revenueUpkeepShare));
+  return sumAll(getEnabledDefenses(state).map((defense) => defense.revenueUpkeepShare)) + getEffectSummary(state).upkeepShare;
+}
+
+/** How long after an infection appears it still counts as a quick fix: longer when monitoring tells you sooner. */
+export function calculateQuickFixWindowMs(state: GameState): number {
+  return QUICK_FIX_WINDOW_MS * getEffectSummary(state).quickFixWindowFactor;
+}
+
+/** When an ops upgrade clears this kind of infection by itself: backups restore, blue-green rolls back. */
+export function findOpsAutoCleanMs(state: GameState, kind: InfectionKind): number | null {
+  return getEffectSummary(state).autoCleanAfterMs[kind] ?? null;
+}
+
+/** The ops you can set up now: they live in the Ops tab, like skills, always on show in their era. */
+export function getAvailableOpsIds(state: GameState): readonly UpgradeId[] {
+  return UPGRADE_IDS.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'ops' && isUpgradeAvailable(state, upgradeId));
+}
+
+// ---------- HTTPS ----------
+
+/** From July 2018 browsers marked every plain http page "Not secure", and some visitors turned back. */
+const NOT_SECURE_TRAFFIC_FACTOR = 0.9;
+/** "Your connection is not private": most visitors leave rather than click through the warning. */
+const EXPIRED_CERTIFICATE_TRAFFIC_FACTOR = 0.4;
+const NOT_SECURE_FROM_ERA: EraId = 'platform-2018';
+
+export function isServedSecurely(state: GameState): boolean {
+  return hasEffect(state, 'secure-connection');
+}
+
+export function isCertificateRenewedAutomatically(state: GameState): boolean {
+  return hasEffect(state, 'automatic-certificate-renewal');
+}
+
+/** A certificate renewed by hand runs out now and then; one renewed by a cron job never does. */
+export function canCertificateExpire(state: GameState): boolean {
+  return isServedSecurely(state) && !isCertificateRenewedAutomatically(state);
+}
+
+/** Plain http is marked "Not secure" from 2018 on. */
+export function isMarkedNotSecure(state: GameState): boolean {
+  return !isServedSecurely(state) && isEraUnlocked(state, NOT_SECURE_FROM_ERA);
+}
+
+function calculateSecurityTrafficFactor(state: GameState): number {
+  if (state.isCertificateExpired) return EXPIRED_CERTIFICATE_TRAFFIC_FACTOR;
+  return isMarkedNotSecure(state) ? NOT_SECURE_TRAFFIC_FACTOR : NEUTRAL_FACTOR;
 }
 
 export const calculateNetRevenuePerSecond = memoizeByState((state: GameState): number => {

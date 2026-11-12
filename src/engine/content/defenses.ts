@@ -17,6 +17,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     cost: 2_500,
     countersHazard: 'virus',
     counterMode: 'auto-cleans',
+    spawnRateFactor: 1,
     autoCleanDelayMs: ANTIVIRUS_CLEAN_DELAY_MS,
     trafficFactor: NO_PENALTY,
     penalizedFeatureId: null,
@@ -27,10 +28,11 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     id: 'premium-ad-network',
     eraId: 'homepage-1997',
     name: 'Premium ad network',
-    description: 'A picky ad network that never sneaks pop-ups onto your page.',
+    description: 'A picky ad network: pop-ups get rare, though the odd one still sneaks through.',
     cost: 6_000,
     countersHazard: 'popup',
-    counterMode: 'prevents-spawn',
+    counterMode: 'slows-spawn',
+    spawnRateFactor: 0.2,
     autoCleanDelayMs: NO_DELAY_MS,
     trafficFactor: NO_PENALTY,
     penalizedFeatureId: null,
@@ -45,6 +47,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     cost: 1_000_000,
     countersHazard: 'spam',
     counterMode: 'prevents-spawn',
+    spawnRateFactor: 1,
     autoCleanDelayMs: NO_DELAY_MS,
     // Only people who comment meet the CAPTCHA, so only the comments lose visitors.
     trafficFactor: 0.9,
@@ -60,6 +63,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     cost: 5_000_000_000,
     countersHazard: 'ddos',
     counterMode: 'prevents-spawn',
+    spawnRateFactor: 1,
     autoCleanDelayMs: NO_DELAY_MS,
     trafficFactor: NO_PENALTY,
     penalizedFeatureId: null,
@@ -80,7 +84,7 @@ export interface DefenseCopy {
  */
 const LATER_ERA_COPY: Readonly<Partial<Record<DefenseId, Readonly<Partial<Record<EraId, DefenseCopy>>>>>> = {
   'premium-ad-network': {
-    'social-2011': { name: 'Ad blocker', description: 'Pop-ups never open. It hides some of your own ads along with them.' },
+    'social-2011': { name: 'Ad blocker', description: 'Blocks most pop-ups, though the odd one gets past it. It hides some of your own ads along with them.' },
   },
 };
 
