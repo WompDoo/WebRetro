@@ -72,4 +72,7 @@ export const introElements: IntroElements = {
   input: requireElement<HTMLInputElement>('#intro-name'),
   random: requireElement<HTMLElement>('#intro-random'),
   address: requireElement<HTMLElement>('#intro-address'),
+  uploadTarget: requireElement<HTMLElement>('#intro-upload-target'),
+  uploadStatus: requireElement<HTMLElement>('#intro-upload-status'),
+  covered: requireElement<HTMLElement>('#app'),
 };

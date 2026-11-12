@@ -14,7 +14,7 @@ import {
 } from '../src/engine';
 import type { GameState, UpgradeId } from '../src/engine';
 import { buildBrowserTitle, buildSiteUrl } from '../src/ui/browser-chrome';
-import { INTRO_DURATION_MS, pickRandomSiteName, RANDOM_SITE_NAMES, revealIntroLines } from '../src/ui/intro-script';
+import { INTRO_TYPING_MS, pickRandomSiteName, RANDOM_SITE_NAMES, revealIntroLines, UPLOAD_MESSAGES } from '../src/ui/intro-script';
 import { findPopupCopy, renderPopup } from '../src/ui/render-popups';
 import { renderSite } from '../src/ui/sites';
 import { fillSiteName, fillSiteNameText, siteBrand } from '../src/ui/sites/site-context';
@@ -112,11 +112,17 @@ describe('naming the site: everywhere it shows', () => {
 });
 
 describe('the intro', () => {
-  it('types its lines out over about five seconds, starting from nothing', () => {
+  it('types its lines out over a few seconds, starting from nothing', () => {
     assert.ok(revealIntroLines(0).every((line) => line === ''));
-    const done = revealIntroLines(INTRO_DURATION_MS);
+    const done = revealIntroLines(INTRO_TYPING_MS);
     assert.ok(done.every((line) => line.length > 0));
-    assert.ok(INTRO_DURATION_MS >= 4_000 && INTRO_DURATION_MS <= 6_000);
+    assert.ok(INTRO_TYPING_MS >= 3_000 && INTRO_TYPING_MS <= 6_000);
+  });
+
+  it('fills the whole upload with status lines, one after another, ending on done', () => {
+    UPLOAD_MESSAGES.forEach((message, index) => assert.equal(message.from, UPLOAD_MESSAGES[index - 1]?.to ?? 0));
+    assert.equal(UPLOAD_MESSAGES[UPLOAD_MESSAGES.length - 1]?.to, 1);
+    assert.match(UPLOAD_MESSAGES[UPLOAD_MESSAGES.length - 1]?.text ?? '', /Done/);
   });
 
   it('gives a different name every time the random button is pressed', () => {

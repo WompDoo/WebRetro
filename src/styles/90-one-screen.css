@@ -15,5 +15,7 @@
 @media (min-width: 781px) and (max-width: 1220px) and (min-height: 620px) {
   .workbench { grid-template-rows: auto minmax(0, 1fr) minmax(0, 120px); }
   .editor-surface { height: 150px; }
-  .news-panel .panel-header, .news-panel .save-row { display: none; }
+  .news-panel .panel-header { display: none; }
+  /* Kept, as one tight line: it holds Start over, which nothing else on these screens offers. */
+  .news-panel .save-row { padding: 4px 0 6px; }
 }

@@ -1,6 +1,6 @@
 /**
- * The opening: three lines typed out on a black screen, about five seconds, then the wizard that names the site.
- * Pure timing, so it's testable; intro.ts draws it.
+ * The opening: three lines typed out on a black screen, about four seconds, then "Press any key to continue": the
+ * reader sets the pace. Pure timing, so it's testable; intro.ts draws it.
  */
 const INTRO_TEXTS: readonly string[] = [
   'CONNECT 28800',
@@ -9,8 +9,6 @@ const INTRO_TEXTS: readonly string[] = [
 ];
 const MS_PER_CHARACTER = 22;
 const PAUSE_BETWEEN_LINES_MS = 350;
-/** The last line stays on screen a moment before the wizard opens. */
-const HOLD_AFTER_LAST_LINE_MS = 700;
 
 interface TimedLine {
   readonly text: string;
@@ -29,8 +27,8 @@ const INTRO_LINES: readonly TimedLine[] = INTRO_TEXTS.reduce<readonly TimedLine[
 
 const LAST_LINE = INTRO_LINES[INTRO_LINES.length - 1];
 
-/** When the wizard opens on its own, if nobody skips. */
-export const INTRO_DURATION_MS = (LAST_LINE?.startsAtMs ?? 0) + typingMs(LAST_LINE?.text ?? '') + HOLD_AFTER_LAST_LINE_MS;
+/** When the last line is typed out, if nobody hurries it. */
+export const INTRO_TYPING_MS = (LAST_LINE?.startsAtMs ?? 0) + typingMs(LAST_LINE?.text ?? '');
 
 export const INTRO_LINE_COUNT = INTRO_LINES.length;
 
@@ -68,3 +66,32 @@ export function pickRandomSiteName(current: string, roll: number): string {
   const choices = RANDOM_SITE_NAMES.filter((name) => name !== current);
   return choices[Math.floor(roll * choices.length)] ?? RANDOM_SITE_NAMES[0] ?? current;
 }
+
+/** After Finish: the wizard "uploads" the page, then the desktop fades into the game. Both skippable. */
+export const UPLOAD_MS = 2_600;
+export const LEAVE_MS = 450;
+
+/**
+ * The game doesn't pop in under the fading desktop: it assembles, panel by panel, each fading up a little after
+ * the one before (the top bar, your site, the editor, the shop, the news; the tab bar too on phones).
+ */
+export const ENTER_PANEL_MS = 520;
+export const ENTER_STEP_MS = 110;
+const ENTER_PANELS = 5;
+export const ENTER_MS = ENTER_PANEL_MS + ENTER_STEP_MS * (ENTER_PANELS - 1);
+
+/** One line of the upload dialog's status, shown from one share of the upload to another. */
+export interface UploadMessage {
+  readonly text: string;
+  readonly from: number;
+  readonly to: number;
+}
+
+/** Windows' time estimates, as everyone remembers them. The last one stays. */
+export const UPLOAD_MESSAGES: readonly UploadMessage[] = [
+  { text: 'Connecting to members.freewebspace.net…', from: 0, to: 0.2 },
+  { text: 'Estimating time remaining…', from: 0.2, to: 0.42 },
+  { text: '3 hours remaining', from: 0.42, to: 0.64 },
+  { text: '1 second remaining', from: 0.64, to: 0.88 },
+  { text: 'Done! Your home page is on the Internet.', from: 0.88, to: 1 },
+];
