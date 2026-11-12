@@ -20,7 +20,7 @@ import type { CodeEditor } from './code-editor';
 import { escapeHtml, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { elements } from './elements';
 import { showEndCard } from './overlays';
-import { resolveTyping } from './framework-presentation';
+import { calculateBootMs, resolveTyping } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
 import { calculatePopupSignature, syncPopups } from './render-popups';
@@ -73,22 +73,31 @@ function playReloadProgress(loadTimeSeconds: number): number {
  */
 type BootPhase = 'blank' | 'hydrating';
 
-/** Hydration takes a share of the reload, and never less than a moment you can notice. */
-const HYDRATION_SHARE_OF_RELOAD = 0.6;
-const MIN_HYDRATION_MS = 500;
+/** Hydration takes a share of the boot, and never less than a moment you can notice. */
+const HYDRATION_SHARE_OF_BOOT = 0.4;
+const MIN_HYDRATION_MS = 600;
 
 function classifyBoot(state: GameState): BootPhase {
   return isRenderedOnlyInBrowser(state) ? 'blank' : 'hydrating';
 }
 
-function findBootPhase(state: GameState): BootPhase | null {
-  return findChosenFramework(state) === null ? null : classifyBoot(state);
+const BOOT_DURATIONS: Readonly<Record<BootPhase, (bootMs: number) => number>> = {
+  blank: (bootMs) => bootMs,
+  hydrating: (bootMs) => Math.max(MIN_HYDRATION_MS, bootMs * HYDRATION_SHARE_OF_BOOT),
+};
+
+interface Boot {
+  readonly phase: BootPhase;
+  readonly durationMs: number;
 }
 
-const BOOT_DURATIONS: Readonly<Record<BootPhase, (reloadMs: number) => number>> = {
-  blank: (reloadMs) => reloadMs,
-  hydrating: (reloadMs) => Math.max(MIN_HYDRATION_MS, reloadMs * HYDRATION_SHARE_OF_RELOAD),
-};
+/** A 2018 single-page app boots on every load: blank until the bundle runs, or, rendered on the server, deaf until it hydrates. */
+function findBoot(state: GameState): Boot | null {
+  const framework = findChosenFramework(state);
+  if (framework === null) return null;
+  const phase = classifyBoot(state);
+  return { phase, durationMs: BOOT_DURATIONS[phase](calculateBootMs(framework)) };
+}
 
 /** The phase sits on #site (the page's CSS) and the status bar (its "Hydrating…"); both outlive re-renders. */
 function setBootPhase(phase: BootPhase | null): void {
@@ -268,20 +277,23 @@ export function createRenderer(editor: CodeEditor): Renderer {
   let bootTimer = 0;
 
   /** A 2018 single-page app shows its boot phase for as long as it lasts, then the page as it is. */
-  const playBoot = (reloadMs: number): void => {
-    const phase = findBootPhase(store.game);
+  const playBoot = (): void => {
     window.clearTimeout(bootTimer);
-    setBootPhase(phase);
-    if (phase !== null) bootTimer = window.setTimeout(() => setBootPhase(null), BOOT_DURATIONS[phase](reloadMs));
+    const boot = findBoot(store.game);
+    setBootPhase(boot === null ? null : boot.phase);
+    if (boot !== null) bootTimer = window.setTimeout(() => setBootPhase(null), boot.durationMs);
   };
 
   const reloadPage = (): void => {
-    playBoot(playReloadProgress(pickLoadTime(calculateEconomySnapshot(store.game), resolveDeviceView(store.game, store.deviceView))));
+    playReloadProgress(pickLoadTime(calculateEconomySnapshot(store.game), resolveDeviceView(store.game, store.deviceView)));
+    playBoot();
   };
 
+  /** Every change reloads the page; the first render is the page loading, so a single-page app boots then too. */
   const renderSiteAndReload = (): void => {
     elements.site.innerHTML = renderSite(store.game, Date.now());
     if (hasRenderedSite) reloadPage();
+    else playBoot();
     hasRenderedSite = true;
   };
 

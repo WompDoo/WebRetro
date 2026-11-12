@@ -189,6 +189,18 @@ memcached, a CDN and a static page cache as server boosts.
   - Engine: `content/frameworks.ts` maps each framework to its skill and its server rendering; picking one
     closes the others (`isUpgradeAvailable`). UI: `framework-presentation.ts` and `FRAMEWORK_CODE`, both
     `Record<FrameworkId, …>`, so a fourth framework is a new row the compiler asks for everywhere.
+- **Each framework has a signature** (from the four-era audit, which found them nearly identical in practice):
+  *React*, the ecosystem: npm has a package for it, so 2018's other skills and upgrades cost 20% less, and its
+  typing pays most (×1.8); its builds break most. *Angular*, batteries included: forms, HTTP, RxJS and the CLI's
+  test and build, so Payments, OAuth, WebSockets and the CI pipeline cost half; the strictest compiler cuts typos 6%
+  and it draws a little more traffic (×1.65); the heaviest bundle and the longest "Loading...". *Vue*, progressive:
+  before server rendering it loses 15% of search visitors instead of 30% and pages slow by ×1.25 instead of ×1.5;
+  the smallest bundle and the cheapest skill, but the least typing pay. The shop shows the price break where you pay
+  it ("React: npm has a package for it: −20%"). The sim's framework spread: 5.3% (active), 5.1% (relaxed).
+- **The blank page shows.** It used to last as long as the status bar's reload, 0.3 s after a change and never on
+  load, so nobody saw it. Now a single-page app boots on every load and every change for as long as its bundle takes
+  to run on a 2018 phone: React's empty page 2.2 s, Angular's "Loading..." 3 s, Vue's raw template 1.6 s. Server
+  rendering replaces it with "hydrating…" for 40% of that.
 - **The blank page.** A single-page app renders in the browser: until server rendering, load time is ×1.5
   and the three in ten visitors who come from search engines never arrive (crawlers index an empty page).
   On every reload the page shows each framework's own failure while the bundle runs: React's empty root div,

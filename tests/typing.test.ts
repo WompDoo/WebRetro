@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { BASE_BUG_CHANCE, calculateBugChance, calculateKeystrokeValue, createPlaytestState } from '../src/engine';
+import { BASE_BUG_CHANCE, calculateBugChance, calculateKeystrokeValue, calculateNetRevenuePerSecond, createPlaytestState } from '../src/engine';
 import type { GameState, UpgradeId } from '../src/engine';
 
 const SEED = 5;
@@ -26,8 +26,8 @@ describe('typing: every era has its own tools', () => {
     assert.equal(calculateKeystrokeValue(withViewSource), calculateKeystrokeValue(withoutViewSource));
   });
 
-  it('makes the frameworks type differently: React’s ecosystem pays most per keystroke, Vue’s least', () => {
-    const value = (skill: UpgradeId): number => calculateKeystrokeValue(with2018([skill]));
+  it('makes the frameworks type differently: per dollar of revenue, React’s keystrokes pay most and Vue’s least', () => {
+    const value = (skill: UpgradeId): number => calculateKeystrokeValue(with2018([skill])) / calculateNetRevenuePerSecond(with2018([skill]));
     assert.ok(value('learn-react') > value('learn-angular'));
     assert.ok(value('learn-angular') > value('learn-vue'));
   });

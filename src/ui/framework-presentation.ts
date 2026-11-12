@@ -1,4 +1,4 @@
-import { findChosenFramework, FRAMEWORKS_BY_ID } from '../engine';
+import { findChosenFramework, FRAMEWORKS_BY_ID, UPGRADES_BY_ID } from '../engine';
 import type { FrameworkId, GameState } from '../engine';
 import { ERA_PRESENTATION } from './presentation';
 import type { TypingStyle } from './presentation';
@@ -45,6 +45,17 @@ export const FRAMEWORK_PRESENTATION: Readonly<Record<FrameworkId, FrameworkPrese
     deathNotice: 'A blog post asks: “Is Vue just a toy? No enterprise uses it.” Several enterprises reply that they do. You picked Vue this morning.',
   },
 };
+
+/**
+ * How long the bundle takes to run on a 2018 phone before anything shows: the heavier the framework, the longer.
+ * Angular's "Loading..." lasts about three seconds, React's empty page two, Vue's raw template one and a half.
+ */
+const BOOT_BASE_MS = 600;
+const BOOT_MS_PER_BUNDLE_KB = 3.75;
+
+export function calculateBootMs(framework: FrameworkId): number {
+  return BOOT_BASE_MS + UPGRADES_BY_ID[FRAMEWORKS_BY_ID[framework].skillId].pageWeightKb * BOOT_MS_PER_BUNDLE_KB;
+}
 
 export function findFrameworkPresentation(state: GameState): FrameworkPresentation | null {
   const framework = findChosenFramework(state);

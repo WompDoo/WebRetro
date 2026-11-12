@@ -1,5 +1,7 @@
 import {
   calculateAverageMsBetweenFines,
+  calculateUpgradeCost,
+  findPriceBreak,
   CONSENT_BANNER_IDS,
   CONSENT_BANNERS_BY_ID,
   getDefenseCopy,
@@ -274,6 +276,12 @@ function describeUpgradeWeight(upgradeId: UpgradeId): string {
   return weightKb > 0 ? ` · +${weightKb} KB per page` : '';
 }
 
+/** Your framework's price break, said where you pay it. */
+function describePriceBreak(state: GameState, upgradeId: UpgradeId): string {
+  const priceBreak = findPriceBreak(state, upgradeId);
+  return priceBreak === null ? '' : `<p class="shop-effect is-discount">${escapeHtml(priceBreak.reason)}: −${formatPercent(NEUTRAL_FACTOR - priceBreak.factor)}</p>`;
+}
+
 function renderSkillRow(state: GameState, skillId: UpgradeId): string {
   const skill = UPGRADES_BY_ID[skillId];
   return `<article class="shop-row">
@@ -283,8 +291,9 @@ function renderSkillRow(state: GameState, skillId: UpgradeId): string {
       <p class="shop-desc">${escapeHtml(skill.description)}</p>
       ${describeUnlocks(state, skillId)}
       <p class="shop-effect">${escapeHtml(describeUpgradeEffects(skill.effects, state.eraId) + describeUpgradeWeight(skillId))}</p>
+      ${describePriceBreak(state, skillId)}
     </div>
-    ${buyButton('buy-upgrade', skillId, skill.cost)}
+    ${buyButton('buy-upgrade', skillId, calculateUpgradeCost(state, skillId))}
   </article>`;
 }
 
@@ -293,7 +302,7 @@ function learnedSkills(state: GameState): readonly UpgradeId[] {
 }
 
 function renderLearnTab(state: GameState): string {
-  const available = [...getAvailableSkillIds(state)].sort((a, b) => UPGRADES_BY_ID[a].cost - UPGRADES_BY_ID[b].cost);
+  const available = [...getAvailableSkillIds(state)].sort((a, b) => calculateUpgradeCost(state, a) - calculateUpgradeCost(state, b));
   const rows = available.length === 0
     ? '<p class="shop-empty">You know everything this era has to teach. Time to relaunch.</p>'
     : available.map((skillId) => renderSkillRow(state, skillId)).join('');
@@ -316,8 +325,9 @@ function renderBoostRow(state: GameState, upgradeId: UpgradeId): string {
       <h3 class="shop-name">${escapeHtml(upgrade.name)}</h3>
       <p class="shop-desc">${escapeHtml(upgrade.description)}</p>
       <p class="shop-effect">${escapeHtml(describeUpgradeEffects(upgrade.effects, state.eraId) + describeUpgradeWeight(upgradeId))}</p>
+      ${describePriceBreak(state, upgradeId)}
     </div>
-    ${buyButton('buy-upgrade', upgradeId, upgrade.cost)}
+    ${buyButton('buy-upgrade', upgradeId, calculateUpgradeCost(state, upgradeId))}
   </article>`;
 }
 
@@ -326,7 +336,7 @@ function boughtBoosts(state: GameState): readonly UpgradeId[] {
 }
 
 function renderUpgradesTab(state: GameState): string {
-  const revealed = [...getRevealedBoostIds(state)].sort((a, b) => UPGRADES_BY_ID[a].cost - UPGRADES_BY_ID[b].cost);
+  const revealed = [...getRevealedBoostIds(state)].sort((a, b) => calculateUpgradeCost(state, a) - calculateUpgradeCost(state, b));
   const rows = revealed.length === 0
     ? '<p class="shop-empty">No upgrades yet. Keep earning and new ones will show up here.</p>'
     : revealed.map((upgradeId) => renderBoostRow(state, upgradeId)).join('');
@@ -492,10 +502,10 @@ export function renderShopTabs(activeTab: ShopTab): string {
 }
 
 const AFFORDABLE_COUNTERS: Readonly<Record<ShopTab, (state: GameState) => number>> = {
-  learn: (state) => getAvailableSkillIds(state).filter((skillId) => state.money >= UPGRADES_BY_ID[skillId].cost).length,
+  learn: (state) => getAvailableSkillIds(state).filter((skillId) => state.money >= calculateUpgradeCost(state, skillId)).length,
   build: (state) =>
     getUnlockedFeatureIds(state).filter((featureId) => isFeatureBuildable(state, featureId) && state.money >= calculateNextFeatureCost(state, featureId)).length,
-  upgrades: (state) => getRevealedBoostIds(state).filter((upgradeId) => state.money >= UPGRADES_BY_ID[upgradeId].cost).length,
+  upgrades: (state) => getRevealedBoostIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)).length,
   security: (state) =>
     getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost).length +
     (canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state) ? 1 : 0) +
