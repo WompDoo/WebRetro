@@ -5,7 +5,7 @@ import { describeBuiltWith, FRAMEWORK_PRESENTATION } from '../framework-presenta
 import { listAds, renderAdPicture, renderAdText } from './ads';
 import { renderCookieBanner } from './cookie-banner';
 import { ownedFeatures, renderFeatureBlocks } from './features';
-import { siteName } from './site-context';
+import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2011Site } from './site-2011';
 
@@ -56,12 +56,12 @@ function renderHeroPhoto(): string {
 }
 
 function renderHero(context: SiteContext): string {
-  return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteName(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
+  return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
 }
 
 function renderNav(context: SiteContext): string {
   const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
-  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteName(context.state))}</span><nav class="lp-links">${items}</nav><span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
+  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="lp-links">${items}</nav><span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
 }
 
 function renderSections(context: SiteContext): string {
@@ -117,7 +117,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     <section class="lp-testimonials">${renderTestimonials()}</section>
     ${renderAccountBand(context)}
     ${renderAroundTheWeb(context)}
-    <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteName(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms</footer>
+    <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms</footer>
     ${renderCookieBanner(context.state)}
     ${renderFeatureBlocks(context, ['live-chat']).join('')}
   </div>`;

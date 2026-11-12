@@ -160,7 +160,7 @@ function renderSkillChrome(editor: CodeEditor, file: string): void {
 function renderEraChrome(editor: CodeEditor): void {
   const presentation = ERA_PRESENTATION[store.game.eraId];
   elements.app.dataset['era'] = String(presentation.year);
-  elements.browserTitle.textContent = presentation.browserTitle;
+  elements.browserTitle.textContent = buildBrowserTitle(store.game);
   elements.issueTitle.textContent = issuePanelTitle(store.game.eraId);
   elements.tabbarInboxLabel.textContent = issuePanelTitle(store.game.eraId);
   editor.setEra(store.game.eraId);
@@ -300,7 +300,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   const renderStructure = (): void => {
     renderEraChromeOnce();
     const file = resolveEditorFile(store.game, store.editorFile);
-    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}`, () => renderSkillChrome(editor, file));
+    renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}|${store.game.siteName}`, () => renderSkillChrome(editor, file));
     renderWhenChanged('site', calculateSiteSignature(store.game), renderSiteAndReload);
     renderWhenChanged('popups', calculatePopupSignature(store.game), () => syncPopups(elements.popupLayer, store.game));
     renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, readShopView()), renderShop);

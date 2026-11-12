@@ -36,6 +36,7 @@ import { createPlaytestHandlers } from './playtest-actions';
 import { flashMoneyLoss } from './renderer';
 import { describeRetirement } from './retirement';
 import type { Renderer } from './renderer';
+import type { Intro } from './intro';
 import type { MinigameModal } from './minigames/minigame-modal';
 import { MOBILE_TABS, pushMessage, startNewGame, store, updateGame } from './store';
 import type { MobileTab } from './store';
@@ -45,6 +46,7 @@ type ActionHandler = (target: HTMLElement) => void;
 export interface ActionDependencies {
   readonly minigame: MinigameModal;
   readonly renderer: Renderer;
+  readonly intro: Intro;
 }
 
 const WIPE_SWAP_DELAY_MS = 700;
@@ -140,12 +142,14 @@ function fallForScam(popupId: number): void {
   flashMoneyLoss();
 }
 
-function resetGame(renderer: Renderer): void {
+/** Starting over is a new site: it gets a new name. */
+function resetGame(renderer: Renderer, intro: Intro): void {
   clearSave();
   startNewGame();
   renderer.forgetRenderedState();
   hideOverlay(elements.resetOverlay);
   hideOverlay(elements.endOverlay);
+  intro.show();
 }
 
 /** The framework wars: the moment you pick a side, someone posts that it's dead. */
@@ -161,7 +165,7 @@ function buyUpgradeAndAnnounce(upgradeId: UpgradeId): void {
 }
 
 /** Every clickable thing in the game carries data-action; this maps each action to what it does. */
-export function createActionHandlers({ minigame, renderer }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
+export function createActionHandlers({ minigame, renderer, intro }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
   return {
     'buy-feature': withId(isFeatureId, (id) => updateGame((state) => buyFeatureLevels(state, id, store.buyAmount))),
     'buy-amount': withId(isBuyAmount, (amount) => {
@@ -212,7 +216,7 @@ export function createActionHandlers({ minigame, renderer }: ActionDependencies)
     'cancel-migration': () => hideOverlay(elements.storyOverlay),
     'open-reset': () => showOverlay(elements.resetOverlay),
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
-    'confirm-reset': () => resetGame(renderer),
+    'confirm-reset': () => resetGame(renderer, intro),
     'keep-playing': () => hideOverlay(elements.endOverlay),
     ...createPlaytestHandlers(renderer, minigame),
   };

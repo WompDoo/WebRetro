@@ -1,8 +1,9 @@
-import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getFeatureDisplayName } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getFeatureDisplayName, nameSite } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
-import { editorElements, elements, minigameElements } from './elements';
+import { editorElements, elements, introElements, minigameElements } from './elements';
+import { createIntro } from './intro';
 import { installJavaScriptEffects } from './javascript-effects';
 import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readPlaytestFlag, restoreGame, restorePreferences, writeSave } from './persistence';
 import { createTapCounter, isPlaytestRequested } from './playtest';
@@ -13,7 +14,7 @@ import { openPlaytestPanel, setPlaytestEnabled } from './playtest-actions';
 import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
-import { applyStep, pickStartingMobileTab, store } from './store';
+import { applyStep, pickStartingMobileTab, store, updateGame } from './store';
 
 interface ClaudeHotApi {
   readonly data?: unknown;
@@ -31,12 +32,15 @@ const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 5_000;
 
 let lastTickAt = performance.now();
+/** Nothing runs behind the intro, so a reload in the middle of naming the site is still a new game. */
+let isSimulationPaused = (): boolean => false;
 
 /** The simulation runs on a timer, separate from rendering, so it keeps going in a background tab. */
 function tick(): void {
   const now = performance.now();
   const elapsedMs = Math.min(now - lastTickAt, MAX_OFFLINE_MS);
   lastTickAt = now;
+  if (isSimulationPaused()) return;
   const mode: SimulationMode = elapsedMs > OFFLINE_THRESHOLD_MS ? 'offline' : 'live';
   // Playtest speed runs more game time per tick; live or offline still depends on real time.
   applyStep(advanceSimulation(store.game, elapsedMs * store.playtestSpeed, mode));
@@ -59,6 +63,16 @@ function isJavaScriptLearnedIn1997(): boolean {
   return store.game.eraId === 'homepage-1997' && store.game.purchasedUpgradeIds.includes('learn-javascript');
 }
 
+/** A game nobody has played yet opens with the intro. Playtests and saves go straight in. */
+function isNewGame(): boolean {
+  return store.game.playTimeMs === 0 && !isPlaytestRequested(window.location);
+}
+
+function nameSiteAndSave(name: string): void {
+  updateGame((state) => nameSite(state, name));
+  writeSave();
+}
+
 function saveWhenHidden(): void {
   if (document.visibilityState === 'hidden') writeSave();
 }
@@ -73,6 +87,8 @@ function start(hotData: unknown): void {
     onWin: (infectionId) => applyStep(cleanInfection(store.game, infectionId)),
   });
   const renderer = createRenderer(editor);
+  const intro = createIntro(introElements, nameSiteAndSave);
+  isSimulationPaused = intro.isOpen;
   installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
   installPhoneSwipe(elements.browserViewport, elements.site);
   installScrollDepth(elements.site);
@@ -84,7 +100,7 @@ function start(hotData: unknown): void {
     setPlaytestEnabled(true);
     openPlaytestPanel();
   });
-  document.addEventListener('click', createClickHandler(createActionHandlers({ minigame, renderer }), renderer));
+  document.addEventListener('click', createClickHandler(createActionHandlers({ minigame, renderer, intro }), renderer));
   document.addEventListener('keydown', createKeydownHandler(minigame));
   document.addEventListener('visibilitychange', saveWhenHidden);
   window.addEventListener('pagehide', writeSave);
@@ -93,6 +109,7 @@ function start(hotData: unknown): void {
   window.claude?.hot?.snapshot?.(() => ({ save: store.game }));
   lastTickAt = performance.now();
   renderer.startFrames();
+  if (isNewGame()) intro.show();
 }
 
 const hot = window.claude?.hot;

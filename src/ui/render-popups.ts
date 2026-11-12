@@ -2,6 +2,7 @@ import type { GameState, Popup } from '../engine';
 import { escapeHtml, pickCyclic } from './dom';
 import type { PopupButton, PopupButtonAction, PopupButtonStyle, PopupCopy, PopupDesign } from './popup-copy';
 import { ERA_PRESENTATION } from './presentation';
+import { fillSiteName } from './sites';
 
 /** Must match .popup's width in page.html. */
 const POPUP_WIDTH_CSS = 'min(280px, 88%)';
@@ -96,10 +97,11 @@ export function renderPopup(state: GameState, popup: Popup): string {
   const left = `calc((100% - ${POPUP_WIDTH_CSS}) * ${popup.anchorX.toFixed(3)})`;
   const top = `max(${POPUP_EDGE_GAP_PX}px, calc((100% - ${POPUP_HEIGHT_ESTIMATE_PX}px) * ${popup.anchorY.toFixed(3)} + ${POPUP_EDGE_GAP_PX}px))`;
   const title = copy.design === 'messenger' ? `Chat with ${copy.title}` : copy.title;
-  return `<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="--popup-left:${left};--popup-top:${top};z-index:${popup.id}${renderTimingStyle(copy)}">
+  // Copy says {site} for the player's own address ("www.{site}.com wants to show notifications").
+  return fillSiteName(`<div class="popup popup--${copy.design}" data-popup-id="${popup.id}" role="dialog" aria-label="${escapeHtml(title)}" style="--popup-left:${left};--popup-top:${top};z-index:${popup.id}${renderTimingStyle(copy)}">
     <div class="popup-titlebar"><span>${escapeHtml(title)}</span><button type="button" class="popup-close" data-action="close-popup" data-id="${popup.id}" aria-label="Close pop-up">×</button></div>
     <div class="popup-body">${renderPopupBody(copy, popup.id)}</div>
-  </div>`;
+  </div>`, state);
 }
 
 /**

@@ -1,7 +1,7 @@
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import type { Issue, IssueButton } from './issues';
-import { renderLiveSlotText } from './sites';
+import { renderLiveSlotText, siteBrand } from './sites';
 
 interface TrackerStyle {
   readonly panelTitle: string;
@@ -48,7 +48,7 @@ function renderMention(issue: Issue, state: GameState, nowMs: number): string {
   const handle = issue.sender.split('@')[0] ?? 'someone';
   return `<li class="issue issue--mention" data-severity="${issue.severity}">
     <span class="issue-from">@${escapeHtml(handle)} · ${issue.severity === 'critical' ? 'now' : 'just now'}</span>
-    <span class="issue-subject">@myhomepage ${escapeHtml(issue.title.toLowerCase())} ${issue.severity === 'critical' ? '#fail' : '#annoyed'}</span>
+    <span class="issue-subject">@${escapeHtml(siteBrand(state))} ${escapeHtml(issue.title.toLowerCase())} ${issue.severity === 'critical' ? '#fail' : '#annoyed'}</span>
     ${renderMeta(issue, state, nowMs)}${renderActions(issue)}
   </li>`;
 }

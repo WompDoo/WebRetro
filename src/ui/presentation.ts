@@ -57,8 +57,8 @@ export interface EraPresentation {
 export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   'homepage-1997': {
     year: 1997,
-    browserTitle: 'My Homepage - Web Navigator',
-    siteUrl: 'http://members.freewebspace.net/~you/index.htm',
+    browserTitle: '{name} - Web Navigator',
+    siteUrl: 'http://members.freewebspace.net/~{site}/index.htm',
     editorTitle: 'INDEX.HTM - Text Editor',
     editorMenu: ['File', 'Edit', 'Search', 'Help'],
     editorTabs: [],
@@ -81,8 +81,8 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   },
   'web2-2005': {
     year: 2005,
-    browserTitle: 'myhomepage | blog',
-    siteUrl: 'http://www.myhomepage.com/blog/',
+    browserTitle: '{site} | blog',
+    siteUrl: 'http://www.{site}.com/blog/',
     editorTitle: 'blog.php — CodeStudio',
     editorMenu: [],
     editorTabs: ['blog.php', 'ajax.js', 'style.css'],
@@ -119,8 +119,8 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   },
   'social-2011': {
     year: 2011,
-    browserTitle: 'myhomepage',
-    siteUrl: 'http://www.myhomepage.com/#!/home',
+    browserTitle: '{site}',
+    siteUrl: 'http://www.{site}.com/#!/home',
     editorTitle: 'index.html — Lime Text',
     editorMenu: [],
     editorTabs: ['index.html', 'app.js', 'style.css'],
@@ -160,8 +160,8 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   },
   'platform-2018': {
     year: 2018,
-    browserTitle: 'myhomepage — The all-in-one platform',
-    siteUrl: 'https://www.myhomepage.com/',
+    browserTitle: '{site} — The all-in-one platform',
+    siteUrl: 'https://www.{site}.com/',
     // The title has no room for the editor's name: it shows the size of node_modules instead.
     editorTitle: 'index.html',
     editorMenu: [],

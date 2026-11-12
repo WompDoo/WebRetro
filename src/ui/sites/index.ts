@@ -1,13 +1,14 @@
 import { FEATURE_IDS, calculateInfectionDifficulty, isSiteDown, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, GameState } from '../../engine';
-import { siteName } from './site-context';
+import { escapeHtml } from '../dom';
+import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render1997Site } from './site-1997';
 import { render2005Site } from './site-2005';
 import { render2011Site } from './site-2011';
 import { render2018Site } from './site-2018';
 
-export { siteName } from './site-context';
+export { fillSiteName, fillSiteNameText, siteBrand } from './site-context';
 export { renderLiveSlotText, updateLiveSlots } from './live-slots';
 export type { LiveSlotName } from './live-slots';
 
@@ -19,7 +20,7 @@ const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> 
 };
 
 function renderApacheUnavailable(state: GameState): string {
-  return `<div class="site-down"><h1>Service Temporarily Unavailable</h1><p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p><hr><address>Apache/2.0.54 (Unix) PHP/4.4.0 Server at www.${siteName(state)}.com Port 80</address></div>`;
+  return `<div class="site-down"><h1>Service Temporarily Unavailable</h1><p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p><hr><address>Apache/2.0.54 (Unix) PHP/4.4.0 Server at www.${escapeHtml(siteBrand(state))}.com Port 80</address></div>`;
 }
 
 /** 2018: the load balancer in front of Kubernetes answers, and the pods behind it don't. */
@@ -45,5 +46,5 @@ export function calculateSiteSignature(state: GameState): string {
   const levels = FEATURE_IDS.map((featureId) => state.featureLevels[featureId]).join(',');
   const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
   const boosts = state.purchasedUpgradeIds.length;
-  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.enabledDefenseIds.join(',')}|${state.adCount}|${calculateInfectionSignature(state)}|${isSiteDown(state) ? 'down' : 'up'}|${state.consentBanner}`;
+  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.enabledDefenseIds.join(',')}|${state.adCount}|${calculateInfectionSignature(state)}|${isSiteDown(state) ? 'down' : 'up'}|${state.consentBanner}|${state.siteName}`;
 }

@@ -58,8 +58,8 @@ function homepageClasses(skills: HomepageSkills): string {
   return ['site-1997', ...modifiers].join(' ');
 }
 
-function homepage1997Content(skills: HomepageSkills): HomepageContent {
-  const title = skills.font ? 'Welcome to My Homepage!!!' : 'Hello World!';
+function homepage1997Content(skills: HomepageSkills, state: GameState): HomepageContent {
+  const title = skills.font ? `Welcome to ${state.siteName}!!!` : 'Hello World!';
   return skills.tables
     ? { title, sidebarFeatures: TABLE_SIDEBAR_FEATURES, mainFeatures: TABLE_MAIN_FEATURES }
     : { title, sidebarFeatures: [], mainFeatures: STACKED_1997_ORDER };
@@ -75,7 +75,7 @@ export function renderJavaScriptClock(nowMs: number, year: number): string {
 function renderHomepageTitle(context: SiteContext, skills: HomepageSkills, title: string): string {
   const marquee = skills.marquee ? `<div class="site-marquee"><span>${MARQUEE_TEXT}</span></div>` : '';
   const clock = skills.javascript ? `<p class="js-clock" data-live="js-clock">${renderJavaScriptClock(context.nowMs, ERAS_BY_ID[context.eraId].year)}</p>` : '';
-  return `<h1 class="site-title">${title}</h1>${marquee}${clock}`;
+  return `<h1 class="site-title">${escapeHtml(title)}</h1>${marquee}${clock}`;
 }
 
 function renderHomepageIntro(skills: HomepageSkills): string {

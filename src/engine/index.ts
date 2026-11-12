@@ -15,6 +15,7 @@ export * from './hazards';
 export * from './milestones';
 export * from './simulation';
 export * from './save';
+export * from './site-name';
 export * from './state';
 export * from './snake';
 export * from './minigames/status';

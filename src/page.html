@@ -141,6 +141,29 @@
   </div>
 </div>
 
+<!-- The opening: a few typed lines, then a 1997 setup wizard names the site. Only on a new game. -->
+<div class="intro" id="intro" data-phase="story" hidden>
+  <div class="intro-story" id="intro-story" aria-live="polite"></div>
+  <p class="intro-skip" id="intro-skip">Click or press any key to skip</p>
+  <form class="wizard" id="intro-wizard" role="dialog" aria-modal="true" aria-labelledby="wizard-title" autocomplete="off">
+    <div class="wizard-titlebar"><span id="wizard-title">Home Page Wizard</span><span class="wizard-titlebar-x" aria-hidden="true">×</span></div>
+    <div class="wizard-body">
+      <div class="wizard-art" aria-hidden="true"><span class="wizard-monitor"><span class="wizard-globe"></span></span><span class="wizard-base"></span></div>
+      <div class="wizard-form">
+        <p class="wizard-step">Step 1 of 1</p>
+        <label class="wizard-label" for="intro-name">What do you want to call your home page?</label>
+        <input class="wizard-input" id="intro-name" name="site-name" type="text" maxlength="24" placeholder="My Homepage" spellcheck="false">
+        <button type="button" class="wizard-button" id="intro-random">🎲 Random name</button>
+        <p class="wizard-preview">Your address: <span id="intro-address"></span></p>
+      </div>
+    </div>
+    <div class="wizard-buttons">
+      <button type="button" class="wizard-button" disabled>&lt; Back</button>
+      <button type="submit" class="wizard-button is-default">Finish</button>
+    </div>
+  </form>
+</div>
+
 <div class="overlay" id="minigame-overlay" hidden>
   <div class="overlay-card minigame-card" role="dialog" aria-modal="true" aria-labelledby="minigame-title">
     <div class="minigame-titlebar"><span id="minigame-title">ANTIVIRUS.EXE</span><button type="button" class="minigame-close" data-action="close-minigame" aria-label="Close the minigame">×</button></div>
