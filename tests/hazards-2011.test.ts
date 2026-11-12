@@ -36,6 +36,13 @@ const in2011: GameState = {
 const dueNow = (state: GameState, kind: HazardKind): GameState => ({ ...state, hazardCountdownsMs: { ...QUIET_HAZARDS, [kind]: 1 } });
 
 describe('2011 hazards', () => {
+  it('never floods comments with spam while a DDoS already has them down: one trouble per feature', () => {
+    const withComments: GameState = { ...in2011, featureLevels: { ...in2011.featureLevels, comments: 5 } };
+    const flooded = { ...dueNow(withComments, 'spam'), infections: [{ id: 9, kind: 'ddos' as const, featureId: 'comments' as const, ageMs: 0, minigameId: 'reroute-traffic' as const }] };
+    assert.deepEqual(advanceHazards(flooded, FRAME_MS).state.infections.map((infection) => infection.kind), ['ddos']);
+    assert.ok(advanceHazards(dueNow(withComments, 'spam'), FRAME_MS).state.infections.some((infection) => infection.kind === 'spam'));
+  });
+
   it('leaks the passwords of something people log into, until bcrypt ends it', () => {
     const leaked = advanceHazards(dueNow(in2011, 'password-leak'), FRAME_MS).state.infections;
     assert.equal(leaked.length, 1);

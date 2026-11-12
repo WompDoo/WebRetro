@@ -36,8 +36,9 @@
 .site-2005 .feature-block { position: relative; min-height: 70px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #CCCCCC; overflow: hidden; }
 .site-2005 .feature-heading { margin: -10px -12px 10px; padding: 5px 12px; font-size: 13px; color: #336699; background: #F0F0F0; border-bottom: 1px solid #CCCCCC; }
 .site-2005 .w2-intro p { margin: 0; }
-.site-2005 .counter { display: inline-flex; gap: 3px; }
-.site-2005 .counter-digit { padding: 2px 5px; background: #F0F0F0; border: 1px solid #CCCCCC; font-weight: 700; font-size: 15px; color: #333333; }
+/* A busy 2005 site has a nine-digit count: the digits tighten up, and wrap rather than spill out of the box. */
+.site-2005 .counter { display: inline-flex; flex-wrap: wrap; max-width: 100%; gap: 3px; }
+.site-2005 .counter-digit { padding: 2px 3px; background: #F0F0F0; border: 1px solid #CCCCCC; font-weight: 700; font-size: 15px; color: #333333; }
 .site-2005 .counter-label { margin: 6px 0 0; font-size: 11px; color: #888888; }
 .site-2005 .construction-row { justify-content: flex-start; }
 .site-2005 .construction-sign span { display: block; padding: 3px 10px; background: #FF9900; color: #FFFFFF; font-weight: 700; }

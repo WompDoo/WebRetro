@@ -50,8 +50,13 @@
 
 /* ---------- Status bar: load time, page weight, server load, reload progress ---------- */
 .browser-statusbar { position: relative; display: flex; justify-content: space-between; gap: 12px; align-items: center; overflow: hidden; white-space: nowrap; }
-.browser-status-text { overflow: hidden; text-overflow: ellipsis; }
-.browser-perf { flex: none; font-variant-numeric: tabular-nums; }
+/*
+ * Both halves give way on a narrow screen, each to an ellipsis, instead of the readout being cut off mid-word. The
+ * status text sits in a clipping box so 1997's scrolling "Welcome!!!" can't push the readout out of the bar.
+ */
+.browser-status { flex: 1 1 auto; min-width: 4em; overflow: hidden; }
+.browser-status-text { display: block; overflow: hidden; text-overflow: ellipsis; }
+.browser-perf { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 .browser-statusbar[data-performance="slow"] .browser-perf, .browser-statusbar[data-performance="overloaded"] .browser-perf { color: #B45309; font-weight: 700; }
 .browser-statusbar[data-performance="down"] { color: #B91C1C; font-weight: 700; }
 .browser-progress { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: #1E40E6; opacity: 0; }

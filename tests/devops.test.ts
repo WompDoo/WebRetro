@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   advanceHazards,
+  buyUpgrade,
   calculateAdValuePerAd,
   calculateCertificateRenewalFee,
   calculateDemandVisitorsPerSecond,
@@ -134,6 +135,11 @@ describe('certificates', () => {
     assert.equal(renewed.money, lapsed.money - fee);
     assert.equal(canRenewCertificate(secure2005), false);
     assert.deepEqual(renewCertificate({ ...lapsed, money: 0 }), { ...lapsed, money: 0 });
+  });
+
+  it('renews an expired certificate at once when renewal is automated', () => {
+    const lapsed = { ...expired(endOf('platform-2018', ['ssl-certificate'])), money: 1e15 };
+    assert.equal(buyUpgrade(lapsed, 'certificate-automation').isCertificateExpired, false);
   });
 
   it('marks plain http “Not secure” from 2018, and some visitors turn back', () => {
