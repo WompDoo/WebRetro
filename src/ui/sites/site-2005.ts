@@ -10,10 +10,14 @@ import { renderOldSchoolPage } from './site-1997';
 import type { HomepageContent, HomepageSkills } from './site-1997';
 
 // 2011 features land here too while the 2011 site still wears its 2005 look.
-const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup'];
+/**
+ * The 2005 layout lasts as long as you don't learn Bootstrap, and in 2018 until a framework rewrites it: whatever you
+ * build in those eras still needs a place on it. 2018's features go at the top and the bottom of the main column.
+ */
+const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter'];
 const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'share-buttons', 'hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'webring'];
 const LEGACY_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'webring', 'tag-cloud', 'share-buttons', 'social-login'];
-const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'under-construction', 'guestbook'];
+const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'under-construction', 'guestbook'];
 const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.0', 'PHP powered', 'MySQL', 'Get the fox browser'];
 
 /** 2005 content crammed into a 1997 page: what you get before you learn CSS. */

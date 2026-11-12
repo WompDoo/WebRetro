@@ -10,7 +10,7 @@ import type { SiteContext } from './site-context';
 import { render2011Site } from './site-2011';
 
 /** Under the hero: what the old site still has, as sections of the landing page. */
-const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'language-switcher', 'activity-feed', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
+const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'activity-feed', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Product', 'Pricing', 'Blog', 'Careers'];
 /** "Trusted by": made-up companies, as every landing page's were to everyone outside them. */
 const TRUSTED_BY: readonly string[] = ['Brightloop', 'Quantly', 'Stackwise', 'Paperkite', 'Blinko'];
@@ -133,7 +133,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
   return `<div class="site-2018${renderLookClasses(context, framework)}">
     ${renderBootScreen(framework)}
     ${renderNav(context)}
-    ${renderFeatureBlocks(context, ['stories']).join('')}
+    ${renderFeatureBlocks(context, ['language-switcher', 'stories']).join('')}
     ${renderHero(context)}
     ${renderLeaderboard(context)}
     <section class="lp-logos"><span>Trusted by teams at</span>${TRUSTED_BY.map((name) => `<b>${name}</b>`).join('')}</section>

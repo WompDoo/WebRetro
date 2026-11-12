@@ -394,11 +394,11 @@ function renderLanguageChip(language: string, index: number): string {
   return `<span class="lang-chip${index === 0 ? ' is-current' : ''}">${escapeHtml(language)}</span>`;
 }
 
-/** The languages the site speaks, one more per level: the German ones overflow their buttons. */
+/** A bar under the menu, where every site put it: the languages it speaks, one more per level. */
 const renderLanguageSwitcher: FeatureRenderer = (context) => {
   const count = levelOf(context, 'language-switcher') + 1;
   const chips = LANGUAGES.slice(0, count).map(renderLanguageChip).join('');
-  return `${heading(context, 'language-switcher', 'Speak your language')}<p class="post-meta">🌐 ${count} languages · “Kostenlose Testversion starten” doesn’t fit the button</p><div class="lang-chips">${chips}</div>`;
+  return `<div class="lang-bar"><span class="lang-globe" aria-hidden="true">🌐</span><span class="lang-chips">${chips}</span><span class="post-meta">${count} languages · “Kostenlose Testversion starten” doesn’t fit the button</span></div>`;
 };
 
 const READERS_PER_LEVEL = 1_200;

@@ -199,9 +199,15 @@
 /* The lawyer's footer: a wall of links nobody reads, under the one people do. */
 .lp-legal { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 28px 24px; color: #8898AA; font-size: 11px; }
 .lp-legal p { flex-basis: 100%; margin: 6px 0 0; font-style: italic; }
-/* The language switcher: a globe in the menu, and a chip per language in its section. */
+/* The language switcher: a globe in the menu, and a bar under it with a chip per language. */
 .lp-lang { padding: 4px 8px; border: 1px solid #E6EBF1; border-radius: 6px; color: #525F7F; font-size: 12px; white-space: nowrap; }
+.lang-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.lang-bar .post-meta { margin: 0; }
 .lang-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Right under the menu, the full width of the page, on the landing page and on the Bootstrap page before it. */
+.site-2018 > [data-feature="language-switcher"], .site-2011 > [data-feature="language-switcher"] {
+  min-height: 0; margin: 0; padding: 8px 28px; border: 0; border-bottom: 1px solid #E6EBF1; border-radius: 0; background: #F6F9FC; box-shadow: none; font-size: 12px;
+}
 .lang-chip { padding: 3px 10px; border: 1px solid #E6EBF1; border-radius: 12px; font-size: 12px; }
 .lang-chip.is-current { border-color: #635BFF; color: #635BFF; font-weight: 600; }
 /* The newsletter: a band of its own between the testimonials and the footer. */
@@ -237,6 +243,12 @@
   .site-2018 .lp-logos, .site-2018 .lp-cards, .site-2018 .lp-sections, .site-2018 .lp-testimonials, .site-2018 .lp-account, .site-2018 > [data-feature="pricing-table"] { margin-inline: 14px; }
   .site-2018 > [data-feature="stories"] { margin: 0 14px; }
   .site-2018 .lp-footer, .site-2018 .lp-legal, .site-2018 > [data-feature="newsletter"] { margin-inline: 14px; }
+  .site-2018 > [data-feature="language-switcher"], .site-2011 > [data-feature="language-switcher"] { padding-inline: 14px; }
+  /* One line on a phone: the globe, then the languages, sliding sideways like the stories. */
+  .lang-bar { flex-wrap: nowrap; }
+  .lang-bar .lang-chips { flex-wrap: nowrap; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .lang-bar .lang-chip { flex: none; }
+  .lang-bar .post-meta { display: none; }
 }
 
 /*
