@@ -16,6 +16,7 @@ import { DEFENSE_IDS, DEFENSE_SUNSETS, DEFENSES_BY_ID } from './content/defenses
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
 import { findFrameworkPickedBy, findFrameworkRenderedBy, FRAMEWORK_IDS, FRAMEWORKS_BY_ID } from './content/frameworks';
+import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
 import type {
@@ -37,9 +38,7 @@ const NO_TRAFFIC = 0;
 /** Before responsive design, about one phone visitor in four puts up with pinching and zooming. */
 const MOBILE_STAY_SHARE_UNFRIENDLY = 0.25;
 /** A single-page app shows nothing until its bundle has loaded and run: the wait is this much longer. */
-const CLIENT_RENDERING_LOAD_TIME_FACTOR = 1.5;
 /** Visitors who arrive from search engines. Crawlers index a single-page app's empty page, so they never find it. */
-const SEARCH_VISITOR_SHARE = 0.3;
 const FALLBACK_HOSTING_TIER: HostingTierDefinition = {
   id: 'shared-hosting',
   eraId: 'web2-2005',
@@ -380,13 +379,38 @@ export function isRenderedOnlyInBrowser(state: GameState): boolean {
   return hasEffect(state, 'client-side-rendering') && !hasEffect(state, 'server-side-rendering');
 }
 
+/** What the chosen framework pays for rendering only in the browser; nothing once it renders on the server. */
+function findClientRenderingCost(state: GameState): ClientRenderingCost | null {
+  const framework = findChosenFramework(state);
+  return framework === null || !isRenderedOnlyInBrowser(state) ? null : FRAMEWORKS_BY_ID[framework].clientRendering;
+}
+
 /** Search engines read a browser-only app as an empty page, so the visitors they'd send never come. */
 export function calculateRenderingTrafficFactor(state: GameState): number {
-  return isRenderedOnlyInBrowser(state) ? NEUTRAL_FACTOR - SEARCH_VISITOR_SHARE : NEUTRAL_FACTOR;
+  const cost = findClientRenderingCost(state);
+  return cost === null ? NEUTRAL_FACTOR : NEUTRAL_FACTOR - cost.searchVisitorsLost;
 }
 
 function calculateRenderingLoadTimeFactor(state: GameState): number {
-  return isRenderedOnlyInBrowser(state) ? CLIENT_RENDERING_LOAD_TIME_FACTOR : NEUTRAL_FACTOR;
+  const cost = findClientRenderingCost(state);
+  return cost === null ? NEUTRAL_FACTOR : cost.loadTimeFactor;
+}
+
+function findChosenPriceBreak(state: GameState): PriceBreak | null {
+  const framework = findChosenFramework(state);
+  return framework === null ? null : FRAMEWORKS_BY_ID[framework].priceBreak;
+}
+
+/** The chosen framework's price break on this upgrade, if it has one. */
+export function findPriceBreak(state: GameState, upgradeId: UpgradeId): PriceBreak | null {
+  const priceBreak = findChosenPriceBreak(state);
+  return priceBreak !== null && priceBreak.upgradeIds.includes(upgradeId) ? priceBreak : null;
+}
+
+/** What an upgrade costs you: its price, less what your framework takes off. Everything that sells or prices one reads this. */
+export function calculateUpgradeCost(state: GameState, upgradeId: UpgradeId): number {
+  const priceBreak = findPriceBreak(state, upgradeId);
+  return Math.ceil(UPGRADES_BY_ID[upgradeId].cost * (priceBreak === null ? NEUTRAL_FACTOR : priceBreak.factor));
 }
 
 export function isMobileFriendly(state: GameState): boolean {

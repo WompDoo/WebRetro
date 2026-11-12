@@ -22,6 +22,8 @@
 .shop-desc { margin: 2px 0 0; font-size: 13px; color: var(--ink-soft); }
 .shop-effect { margin: 4px 0 0; font-size: 12.5px; font-weight: 600; color: var(--link); }
 .shop-effect.is-tradeoff { color: var(--hazard); }
+/* Your framework took something off the price. */
+.shop-effect.is-discount { color: var(--money); font-weight: 600; }
 .shop-effect.is-muted { color: var(--ink-soft); font-weight: 500; }
 .shop-empty { margin: 0; padding: 10px 14px; color: var(--ink-soft); font-size: 13.5px; }
 .ad-row { align-items: start; }

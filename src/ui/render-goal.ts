@@ -8,7 +8,7 @@ import {
   isSiteDown,
   canUseAds,
   getAvailableSkillIds,
-  UPGRADES_BY_ID,
+  calculateUpgradeCost,
   ERAS_BY_ID,
   formatCompactNumber,
   formatMoney,
@@ -124,7 +124,7 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'It’s 2005: ads pay less, but you have room for more. With contextual text ads, your 1997 ad count is no longer the best.',
   },
   {
-    applies: (state) => getAvailableSkillIds(state).some((skillId) => state.money >= UPGRADES_BY_ID[skillId].cost),
+    applies: (state) => getAvailableSkillIds(state).some((skillId) => state.money >= calculateUpgradeCost(state, skillId)),
     text: 'You can afford a new skill. Every tag you learn changes your page and unlocks new things to build.',
   },
 ];

@@ -8,6 +8,7 @@ import {
   advanceEra,
   MS_PER_SECOND,
   chooseConsentBanner,
+  calculateUpgradeCost,
   advanceSimulation,
   buyDefense,
   buyFeature,
@@ -53,7 +54,6 @@ import {
   placeAd,
   calculateInfectionDifficulty,
   cleanInfection,
-  UPGRADES_BY_ID,
   writeCode,
   findFrameworkPickedBy,
   FRAMEWORK_IDS,
@@ -195,7 +195,7 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
     const learn = (current: GameState): GameState => buyUpgrade(current, skillId);
     const unlocked = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].requiredSkillId === skillId && isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId));
     const firstFeature = unlocked[0];
-    const cost = UPGRADES_BY_ID[skillId].cost;
+    const cost = calculateUpgradeCost(state, skillId);
     const featureCost = firstFeature === undefined ? 0 : calculateNextFeatureCost(state, firstFeature);
     const valueApply = (current: GameState): GameState => {
       const learned = learn(current);
@@ -206,7 +206,7 @@ function listOptions(state: GameState, profile: PlayerProfile): readonly Purchas
   });
   const boosts = getRevealedBoostIds(state).map<PurchaseOption>((upgradeId) => {
     const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
-    const cost = UPGRADES_BY_ID[upgradeId].cost;
+    const cost = calculateUpgradeCost(state, upgradeId);
     return { label: `boost:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };
   });
   const adCost = calculateNextAdCost(state);

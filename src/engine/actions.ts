@@ -3,13 +3,13 @@ import { formatPercent } from './format';
 import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
-import { UPGRADES_BY_ID } from './content/upgrades';
 import {
   calculateBugChance,
   calculateKeystrokeValue,
   calculateNextAdCost,
   calculateFeatureLevelsCost,
   calculateNextFeatureCost,
+  calculateUpgradeCost,
   canUseAds,
   getNextHostingTier,
   isEraUnlocked,
@@ -128,13 +128,13 @@ export function removeAd(state: GameState): GameState {
 }
 
 export function canBuyUpgrade(state: GameState, upgradeId: UpgradeId): boolean {
-  return isUpgradeAvailable(state, upgradeId) && state.money >= UPGRADES_BY_ID[upgradeId].cost;
+  return isUpgradeAvailable(state, upgradeId) && state.money >= calculateUpgradeCost(state, upgradeId);
 }
 
 export function buyUpgrade(state: GameState, upgradeId: UpgradeId): GameState {
   if (!canBuyUpgrade(state, upgradeId)) return state;
   const purchased = [...state.purchasedUpgradeIds, upgradeId];
-  return { ...spend(state, UPGRADES_BY_ID[upgradeId].cost), purchasedUpgradeIds: purchased };
+  return { ...spend(state, calculateUpgradeCost(state, upgradeId)), purchasedUpgradeIds: purchased };
 }
 
 export function canBuyDefense(state: GameState, defenseId: DefenseId): boolean {
