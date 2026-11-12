@@ -124,6 +124,8 @@
 .photo { margin: 0; }
 .photo-name { margin-top: 3px; font-size: 10px; text-align: center; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thumb { display: block; aspect-ratio: 4 / 3; border: 3px solid #FFFFFF; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
+/* Optimized images: as few colours as each picture can stand. */
+.site-2005.has-16-colors :is(.thumb, .avatar, .counter) { filter: saturate(2.2) contrast(1.4) brightness(1.05); image-rendering: pixelated; }
 .thumb--0 { background: linear-gradient(#FFB86B 0 55%, #2E5E8C 55%); }
 .thumb--1 { background: radial-gradient(circle at 70% 30%, #FFF6A8 0 12%, transparent 13%), linear-gradient(#7CC4FF, #2E7D32 60%); }
 .thumb--2 { background: linear-gradient(135deg, #8E9EAB, #EEF2F3); }
@@ -182,8 +184,9 @@
 
 /* ---------- 2005 boosts you can see ---------- */
 /* Threaded replies: every other comment answers the one above, indented with a hook. */
-.comment.is-reply { margin-left: 26px; }
-.comment.is-reply::before { content: "↳"; margin-right: 4px; color: #999999; }
+/* The arrow hangs in the indent: inside the comment's grid it would take the avatar's column. */
+.comment.is-reply { position: relative; margin-left: 26px; }
+.comment.is-reply::before { content: "↳"; position: absolute; top: 4px; left: -16px; color: #999999; }
 /* Folksonomy: readers' own tags, spelled their way. */
 .tag.is-reader-tag { color: #CC3366; font-style: italic; }
 /* AJAX everything: spinners that never finish. */

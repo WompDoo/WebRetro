@@ -47,10 +47,9 @@ function readHomepageSkills(state: GameState): HomepageSkills {
   };
 }
 
-/** Boosts that change how the whole page looks: blinking banners, 16-colour GIFs, the GIF pack. */
+/** Boosts that change how the whole page looks: blinking banners, the GIF pack. */
 const BOOST_CLASSES: Readonly<Partial<Record<UpgradeId, string>>> = {
   'animated-banners': 'has-animated-banners',
-  'optimize-gifs': 'has-16-colors',
   'animated-gif-pack': 'has-gif-pack',
 };
 

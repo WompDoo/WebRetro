@@ -35,7 +35,10 @@
 .floater--bugged-line { color: #D0202B; }
 .floater--fixed-bug { color: #1E40E6; }
 @keyframes float-up { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-110px); opacity: 0; } }
-.editor-statusbar { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 3px 8px; font-size: 11.5px; }
+.editor-statusbar { display: flex; justify-content: space-between; gap: 8px; padding: 3px 8px; font-size: 11.5px; white-space: nowrap; }
+/* Always one line: the position keeps its width, the rate gives way. */
+.editor-statusbar > :first-child { flex: none; }
+.editor-statusbar > :last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 [data-era="1997"] .editor-window { font-family: 'Courier New', Courier, monospace; }
 [data-era="1997"] .editor-titlebar { background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; font-family: Arial, sans-serif; }

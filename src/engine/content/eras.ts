@@ -40,7 +40,7 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
   };
 }
 
-const HOMEPAGE_MIGRATION_COST = 3_000_000;
+const HOMEPAGE_MIGRATION_COST = 6_500_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
 const SOCIAL_MIGRATION_COST = 550_000_000_000;
 const PLATFORM_MIGRATION_COST = 50_000_000_000_000;
@@ -58,7 +58,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     gateRequirements: [
       requireEveryFeatureOf('homepage-1997', 1997),
       requireFeatureLevel('guestbook', 35),
-      requireVisitorsPerSecond(46_000),
+      requireVisitorsPerSecond(70_000),
       requireMigrationBudget(HOMEPAGE_MIGRATION_COST),
     ],
     adLabel: 'Banner ad',
@@ -72,6 +72,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     basePageWeightKb: 2,
     adPageWeightKb: 12,
     hasServerLoad: false,
+    hasPageWeight: false,
     mobileShare: 0,
     adValuePerVisitor: 0.15,
     adAnnoyancePerAd: 0.18,
@@ -105,6 +106,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     basePageWeightKb: 20,
     adPageWeightKb: 6,
     hasServerLoad: true,
+    hasPageWeight: true,
     mobileShare: 0,
     adValuePerVisitor: 0.09,
     adAnnoyancePerAd: 0.18,
@@ -139,6 +141,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     basePageWeightKb: 60,
     adPageWeightKb: 30,
     hasServerLoad: true,
+    hasPageWeight: true,
     mobileShare: 0.4,
     adValuePerVisitor: 0.07,
     adAnnoyancePerAd: 0.15,
@@ -175,6 +178,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     // An ad slot is a script that loads an auction that loads trackers that load the ad.
     adPageWeightKb: 150,
     hasServerLoad: true,
+    hasPageWeight: true,
     mobileShare: 0.6,
     adValuePerVisitor: 0.05,
     adAnnoyancePerAd: 0.13,

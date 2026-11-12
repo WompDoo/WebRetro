@@ -52,5 +52,5 @@ export function calculateSiteSignature(state: GameState): string {
   const levels = FEATURE_IDS.map((featureId) => state.featureLevels[featureId]).join(',');
   const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
   const boosts = state.purchasedUpgradeIds.length;
-  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.enabledDefenseIds.join(',')}|${state.adCount}|${calculateInfectionSignature(state)}|${isSiteDown(state) ? 'down' : 'up'}|${state.consentBanner}|${state.siteName}|${state.isCertificateExpired}`;
+  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.enabledDefenseIds.join(',')}|${state.adCount}|${calculateInfectionSignature(state)}|${isSiteDown(state) ? 'down' : 'up'}|${state.consentBanner}|${state.isCookieBannerDismissed}|${state.siteName}|${state.isCertificateExpired}`;
 }

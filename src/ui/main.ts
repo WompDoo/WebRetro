@@ -90,9 +90,8 @@ function start(hotData: unknown): void {
   const intro = createIntro(introElements, nameSiteAndSave);
   isSimulationPaused = intro.isOpen;
   installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
-  installPhoneSwipe(elements.browserViewport, elements.site);
   installScrollDepth(elements.site);
-  installStoryChapters(elements.site);
+  installPhoneSwipe(elements.browserViewport, elements.site, installStoryChapters(elements.site));
   setPlaytestEnabled(isPlaytestRequested(window.location) || readPlaytestFlag());
   const countMoneyTap = createTapCounter(() => performance.now());
   elements.statMoney.addEventListener('pointerdown', () => {

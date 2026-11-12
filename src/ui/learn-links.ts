@@ -61,7 +61,7 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'animated-banners': null,
   'more-midi-files': `${WIKIPEDIA}/MIDI`,
   'bigger-webring': `${WIKIPEDIA}/Webring`,
-  'optimize-gifs': `${WIKIPEDIA}/GIF`,
+  'optimize-gifs': `${WIKIPEDIA}/Image_compression`,
   // 2005 boosts
   'ie6-hacks': `${WIKIPEDIA}/Internet_Explorer_6`,
   'xhtml-badges': `${WIKIPEDIA}/XHTML`,

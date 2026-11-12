@@ -601,6 +601,7 @@ function calculatePhoneShareOfDemand(state: GameState): number {
 
 /** Share of visitors who wait for the page: desktop visitors on their connection, phone visitors on theirs. */
 export const calculatePerformanceTrafficFactor = memoizeByState((state: GameState): number => {
+  if (!ERAS_BY_ID[state.eraId].hasPageWeight) return NEUTRAL_FACTOR;
   const patience = ERAS_BY_ID[state.eraId].patienceSeconds;
   const phoneShare = calculatePhoneShareOfDemand(state);
   const desktopStay = calculateStayShare(calculateLoadTimeSeconds(state), patience);

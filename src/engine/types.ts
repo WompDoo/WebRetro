@@ -302,6 +302,11 @@ export interface EraDefinition {
   readonly adPageWeightKb: number;
   /** From 2005 on you pay for hosting, and the server can be overloaded. */
   readonly hasServerLoad: boolean;
+  /**
+   * Whether visitors wait for the page or leave. 1997 keeps it simple: build, place ads, fight viruses. Page weight
+   * and load times arrive with 2005, a system per era.
+   */
+  readonly hasPageWeight: boolean;
   /** Share of visitors on phones. Until your page fits on a phone, most of them leave. */
   readonly mobileShare: number;
 }
@@ -371,6 +376,8 @@ export interface GameState {
   /** Fixing an infection quickly earns a short traffic bonus. */
   readonly quickFixBonusRemainingMs: number;
   readonly consentBanner: ConsentBanner;
+  /** You answered the banner on your own site: it stays closed until you pick another banner. */
+  readonly isCookieBannerDismissed: boolean;
   /** HTTPS without automatic renewal: the certificate ran out, and browsers warn every visitor. */
   readonly isCertificateExpired: boolean;
   /** What the player named the site, as typed (cleaned). Addresses and logos use forms made from it. */

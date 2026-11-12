@@ -3,7 +3,7 @@ import type { FeatureId, FrameworkId } from '../../engine';
 import { escapeHtml } from '../dom';
 import { describeBuiltWith, FRAMEWORK_PRESENTATION } from '../framework-presentation';
 import { listAds, renderAdPicture, renderAdText } from './ads';
-import { renderCookieBanner } from './cookie-banner';
+import { renderCornerDock } from './cookie-banner';
 import { ownedFeatures, renderFeatureBlocks } from './features';
 import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
@@ -125,8 +125,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     ${renderAccountBand(context)}
     ${renderAroundTheWeb(context)}
     <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms</footer>
-    ${renderCookieBanner(context.state)}
-    ${renderFeatureBlocks(context, ['live-chat']).join('')}
+    ${renderCornerDock(context)}
   </div>`;
 }
 
@@ -136,5 +135,5 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
  */
 export function render2018Site(context: SiteContext): string {
   const framework = findChosenFramework(context.state);
-  return framework === null ? `${render2011Site(context)}${renderCookieBanner(context.state)}` : renderLandingPage(context, framework);
+  return framework === null ? `${render2011Site(context)}${renderCornerDock(context)}` : renderLandingPage(context, framework);
 }

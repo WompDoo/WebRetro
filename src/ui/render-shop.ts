@@ -106,6 +106,11 @@ function renderBuyAmountPicker(buyAmount: BuyAmount): string {
   return `<div class="buy-amount" role="group" aria-label="Levels per click"><span class="buy-amount-label">Buy</span>${options}</div>`;
 }
 
+/** Only from 2005, when visitors start timing the page: before that, kilobytes are nobody's business. */
+function describeAddedWeight(state: GameState, weightKb: number, suffix: string): string {
+  return ERAS_BY_ID[state.eraId].hasPageWeight && weightKb > 0 ? ` · +${weightKb} KB${suffix}` : '';
+}
+
 function renderBuildableEffect(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
   const perLevel =
     buyAmount * calculateFeatureVisitorsPerLevel(state, featureId) * calculateGlobalTrafficFactor(state) * calculateAdTrafficFactor(state);
@@ -113,8 +118,7 @@ function renderBuildableEffect(state: GameState, featureId: FeatureId, buyAmount
   const definition = FEATURES_BY_ID[featureId];
   // Page weight is the base weight once the feature exists, plus its per-level weight for every level.
   const weightKb = buyAmount * definition.pageWeightKbPerLevel + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
-  const weight = weightKb > 0 ? ` · +${weightKb} KB` : '';
-  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${weight}</p>${describeNetLoss(state, featureId, buyAmount)}`;
+  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${describeAddedWeight(state, weightKb, '')}</p>${describeNetLoss(state, featureId, buyAmount)}`;
 }
 
 /** Said out loud when it happens: more of this feature now costs more visitors in load time than it brings. */
@@ -294,9 +298,8 @@ function describeUnlocks(state: GameState, skillId: UpgradeId): string {
   return unlocked.length === 0 ? '' : `<p class="shop-effect is-unlock">Unlocks: ${escapeHtml(unlocked.join(', '))}</p>`;
 }
 
-function describeUpgradeWeight(upgradeId: UpgradeId): string {
-  const weightKb = UPGRADES_BY_ID[upgradeId].pageWeightKb;
-  return weightKb > 0 ? ` · +${weightKb} KB per page` : '';
+function describeUpgradeWeight(state: GameState, upgradeId: UpgradeId): string {
+  return describeAddedWeight(state, UPGRADES_BY_ID[upgradeId].pageWeightKb, ' per page');
 }
 
 /** Your framework's price break, said where you pay it. */
@@ -313,7 +316,7 @@ function renderSkillRow(state: GameState, skillId: UpgradeId): string {
       <h3 class="shop-name">${escapeHtml(skill.name)}</h3>
       <p class="shop-desc">${escapeHtml(skill.description)}</p>
       ${describeUnlocks(state, skillId)}
-      <p class="shop-effect">${escapeHtml(describeUpgradeEffects(skill.effects, state.eraId) + describeUpgradeWeight(skillId))}</p>
+      <p class="shop-effect">${escapeHtml(describeUpgradeEffects(skill.effects, state.eraId) + describeUpgradeWeight(state, skillId))}</p>
       ${describePriceBreak(state, skillId)}
     </div>
     ${buyButton('buy-upgrade', skillId, calculateUpgradeCost(state, skillId))}
@@ -354,7 +357,7 @@ function renderUpgradeRow(state: GameState, upgradeId: UpgradeId, icon: string):
     <div class="shop-info">
       <h3 class="shop-name">${escapeHtml(upgrade.name)}</h3>
       <p class="shop-desc">${escapeHtml(upgrade.description)}</p>
-      <p class="shop-effect">${escapeHtml(describeUpgradeEffects(upgrade.effects, state.eraId) + describeUpgradeWeight(upgradeId))}</p>
+      <p class="shop-effect">${escapeHtml(describeUpgradeEffects(upgrade.effects, state.eraId) + describeUpgradeWeight(state, upgradeId))}</p>
       ${describeEraBound(upgradeId)}
       ${describePriceBreak(state, upgradeId)}
     </div>
@@ -497,7 +500,7 @@ function renderConsentRow(state: GameState): string {
 
 function renderHostingRow(state: GameState): string {
   if (!ERAS_BY_ID[state.eraId].hasServerLoad) {
-    return `<article class="shop-row"><div class="shop-icon">${SERVER_ICON}</div><div class="shop-info"><h3 class="shop-name">Free web space</h3><p class="shop-desc">2 MB on a free host, banner on top included. Servers are someone else’s problem until 2005.</p></div></article>`;
+    return `<article class="shop-row"><div class="shop-icon">${SERVER_ICON}</div><div class="shop-info"><h3 class="shop-name">Free web space</h3><p class="shop-desc">A free host, its banner on top of your page included. Servers, and how fast your page loads, are someone else’s problem until 2005.</p></div></article>`;
   }
   const tier = getHostingTier(state);
   const next = getNextHostingTier(state);

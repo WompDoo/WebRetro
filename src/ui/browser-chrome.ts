@@ -105,12 +105,19 @@ function describeLoadTimes(state: GameState, economy: EconomySnapshot, device: D
   return hasPhones ? `${own} · ${formatSeconds(economy.phoneLoadTimeSeconds)} on phones` : own;
 }
 
+/** Netscape's "Document: Done" until load times count; from 2005, how long the page took. */
+function describeDone(state: GameState, economy: EconomySnapshot, device: DeviceView): string {
+  return ERAS_BY_ID[state.eraId].hasPageWeight ? `Done (${describeLoadTimes(state, economy, device)})` : 'Document: Done';
+}
+
+function describeCache(state: GameState): string {
+  return isTrafficSpikeCached(state) ? ' · served from cache' : '';
+}
+
 export function buildStatusText(state: GameState, economy: EconomySnapshot, device: DeviceView): string {
   if (economy.isSiteDown) return '503 Service Unavailable';
   if (state.eraId === 'homepage-1997' && knows(state, 'learn-javascript')) return JAVASCRIPT_STATUS_TEXT;
-  const done = state.eraId === 'homepage-1997' ? 'Document: Done' : 'Done';
-  const cache = isTrafficSpikeCached(state) ? ' · served from cache' : '';
-  return `${done} (${describeLoadTimes(state, economy, device)})${cache}`;
+  return `${describeDone(state, economy, device)}${describeCache(state)}`;
 }
 
 function renderServerMeter(serverLoad: number): string {
@@ -269,7 +276,8 @@ function renderHostingReadout(state: GameState, economy: EconomySnapshot): strin
 }
 
 const PERFORMANCE_READOUTS: Readonly<Record<EraId, (state: GameState, economy: EconomySnapshot, weight: string) => string>> = {
-  'homepage-1997': (state, _economy, weight) => `${weight} · ${ERAS_BY_ID[state.eraId].connectionLabel}`,
+  // 1997 has no page weight and no server: only the modem, for the look of it.
+  'homepage-1997': (state) => ERAS_BY_ID[state.eraId].connectionLabel,
   'web2-2005': (state, economy, weight) => `${weight} · ${renderHostingReadout(state, economy)}`,
   'social-2011': (state, economy, weight) =>
     `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.phoneLoadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
