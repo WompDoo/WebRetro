@@ -144,7 +144,6 @@
 <!-- The opening: a few typed lines, then a 1997 setup wizard names the site. Only on a new game. -->
 <div class="intro" id="intro" data-phase="story" hidden>
   <div class="intro-story" id="intro-story" aria-live="polite"></div>
-  <p class="intro-skip" id="intro-skip">Click or press any key to skip</p>
   <form class="wizard" id="intro-wizard" role="dialog" aria-modal="true" aria-labelledby="wizard-title" autocomplete="off">
     <div class="wizard-titlebar"><span id="wizard-title">Home Page Wizard</span><span class="wizard-titlebar-x" aria-hidden="true">×</span></div>
     <div class="wizard-body">
@@ -162,6 +161,17 @@
       <button type="submit" class="wizard-button is-default">Finish</button>
     </div>
   </form>
+  <div class="upload" role="dialog" aria-modal="true" aria-labelledby="upload-title">
+    <div class="wizard-titlebar"><span id="upload-title">Uploading…</span><span class="wizard-titlebar-x" aria-hidden="true">×</span></div>
+    <div class="upload-body">
+      <div class="upload-scene" aria-hidden="true"><span class="upload-folder"></span><span class="upload-paper"></span><span class="wizard-globe upload-globe"></span></div>
+      <p class="upload-file">index.htm</p>
+      <p class="upload-to">To <span id="intro-upload-target"></span></p>
+      <span class="upload-progress" aria-hidden="true"><span></span></span>
+      <p class="upload-status" id="intro-upload-status" aria-live="polite"></p>
+    </div>
+    <div class="wizard-buttons"><button type="button" class="wizard-button" disabled>Cancel</button></div>
+  </div>
 </div>
 
 <div class="overlay" id="minigame-overlay" hidden>

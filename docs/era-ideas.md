@@ -320,9 +320,15 @@ shows up in it.
   one by one.
 - **Learn it for real.** Learned skills (and bought boosts that are real technologies) link to MDN, the
   official docs or Wikipedia. Joke boosts stay plain text, so nothing looks clickable that isn't.
-- **Name your site.** A new game (or Start over) opens with about five seconds of typed lines on black
-  ("CONNECT 28800 / It's 1997…"), skippable with a click or a key, then a Windows 95 *Home Page Wizard*: a
-  bevelled box, a 🎲 Random name button, and the address the name will have. Playtests and saves skip it.
+- **Name your site.** A new game (or Start over) opens with typed lines on black ("CONNECT 28800 / It's
+  1997…"); a click or key finishes the typing rather than skipping it, and "Press any key or tap to continue . . ."
+  waits for the reader (auto-advancing felt rushed in a playtest). Then a Windows 95 *Home Page Wizard*: a
+  bevelled box, a 🎲 Random name button, and the address the name will have. Finish plays a parody of the Windows
+  copy dialog, uploading `index.htm` to the free host (a page flying from a folder to a globe, a blocky progress
+  bar, "Estimating time remaining…", "3 hours remaining", "1 second remaining", "Done!"), and the desktop fades
+  into the game, about three seconds, skippable. TypeScript owns the timings and passes them to CSS as custom
+  properties; the simulation waits until it's over. Playtests and saves skip all of it. Start over also shows on
+  laptop-width screens now: the one-screen layout used to hide the row it lives in.
   The name (`GameState.siteName`, cleaned to letters, digits and a little punctuation, at most 24) titles the
   1997 page and its window; from 2005 its address form is the brand (`kevinskoolpage`), and *Drop the vowels*
   works on any name (`kvnsklpg`: the first letter stays, and a name too short to lose its vowels keeps them).

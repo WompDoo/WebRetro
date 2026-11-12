@@ -3,15 +3,25 @@
   position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow-y: auto;
   background: #000000; color: #C0C0C0; font: 15px/1.6 'Courier New', Courier, monospace;
 }
-.intro[data-phase="wizard"] { background: #008080; }
-.intro[data-phase="story"] .wizard, .intro[data-phase="wizard"] .intro-story, .intro[data-phase="wizard"] .intro-skip { display: none; }
+/* Each phase shows its own parts: the typed lines, the wizard, then the upload, which stays while the desktop fades. */
+.intro[data-phase="wizard"], .intro[data-phase="upload"], .intro[data-phase="leaving"] { background: #008080; }
+.intro-story, .wizard, .upload { display: none; }
+.intro[data-phase="story"] .intro-story, .intro[data-phase="told"] .intro-story, .intro[data-phase="wizard"] .wizard,
+.intro[data-phase="upload"] .upload, .intro[data-phase="leaving"] .upload { display: block; }
+.intro[data-phase="leaving"] { animation: intro-leave var(--leave-ms) ease-in forwards; }
+.intro[data-phase="leaving"] .upload { animation: upload-away var(--leave-ms) ease-in forwards; }
+@keyframes intro-leave { to { opacity: 0; } }
+@keyframes upload-away { to { transform: scale(0.92); } }
 .intro-story { width: min(640px, 100%); cursor: pointer; }
 .intro-line { min-height: 1.6em; margin: 0 0 6px; }
 .intro-line:first-child { color: #33FF66; }
 /* The caret sits after the line being typed: the last one with text in it. */
-.intro-line:not(:empty):not(:has(+ .intro-line:not(:empty)))::after { content: "▌"; animation: intro-caret 1s steps(1) infinite; }
+.intro[data-phase="story"] .intro-line:not(:empty):not(:has(+ .intro-line:not(:empty)))::after { content: "▌"; animation: intro-caret 1s steps(1) infinite; }
 @keyframes intro-caret { 50% { opacity: 0; } }
-.intro-skip { position: fixed; bottom: max(16px, env(safe-area-inset-bottom, 0px)); left: 0; right: 0; margin: 0; text-align: center; color: #6B6B6B; font-size: 12px; }
+/* Held in place while the lines type, so nothing moves when it appears. */
+.intro-continue { margin: 22px 0 0; visibility: hidden; color: #FFFFFF; }
+.intro[data-phase="told"] .intro-continue { visibility: visible; }
+.intro[data-phase="told"] .intro-continue::after { content: "▌"; animation: intro-caret 1s steps(1) infinite; }
 
 /* The wizard: grey, bevelled, MS Sans Serif, a navy title bar and a picture panel on the left. */
 .wizard {
@@ -45,3 +55,41 @@
   .wizard-body { grid-template-columns: minmax(0, 1fr); }
   .wizard-art { display: none; }
 }
+
+/* ---------- After Finish: the Windows 95 copy dialog, uploading index.htm to the free host ---------- */
+.upload { width: min(400px, 100%); background: #C0C0C0; border: 2px outset #FFFFFF; box-shadow: 1px 1px 0 #000000; color: #000000; font: 13px/1.4 'MS Sans Serif', Tahoma, Geneva, Verdana, sans-serif; }
+.upload-body { display: grid; gap: 4px; padding: 12px 14px 4px; }
+.upload-body p { margin: 0; }
+/* A folder on the left, the internet on the right, and a page flying between them in an arc. */
+.upload-scene { position: relative; height: 56px; margin-bottom: 6px; }
+.upload-folder { position: absolute; left: 8px; bottom: 4px; width: 40px; height: 30px; border: 1px solid #806000; border-radius: 2px; background: linear-gradient(#FFE680, #E6B800); }
+.upload-folder::before { content: ""; position: absolute; left: -1px; top: -7px; width: 16px; height: 7px; border: 1px solid #806000; border-bottom: 0; border-radius: 2px 2px 0 0; background: #FFE680; }
+.upload-globe { position: absolute; right: 8px; bottom: 2px; }
+.upload-paper {
+  position: absolute; left: 22px; bottom: 16px; width: 16px; height: 20px; border: 1px solid #404040; background: linear-gradient(135deg, #FFFFFF 70%, #C0C0C0 70%);
+  animation: upload-fly calc(var(--upload-ms) * 0.23) ease-in-out calc(var(--upload-ms) * 0.2) 3 both;
+}
+@keyframes upload-fly {
+  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translate(calc((min(400px, 100vw) - 150px) / 2), -26px) rotate(-12deg); }
+  90% { opacity: 1; }
+  100% { transform: translate(calc(min(400px, 100vw) - 150px), 0) rotate(0); opacity: 0; }
+}
+.upload-file { font-weight: 700; }
+.upload-to span { overflow-wrap: anywhere; }
+/* Chunky blue blocks, filling in steps the way Windows' did. */
+.upload-progress { display: block; height: 18px; margin-top: 6px; padding: 2px; border: 2px inset #DFDFDF; background: #FFFFFF; }
+.upload-progress span {
+  display: block; width: 0; height: 100%; background: repeating-linear-gradient(90deg, #000080 0 9px, transparent 9px 11px);
+  animation: upload-fill calc(var(--upload-ms) * 0.68) steps(18, end) calc(var(--upload-ms) * 0.2) forwards;
+}
+@keyframes upload-fill { to { width: 100%; } }
+/* Every status line is there; each shows in its own share of the upload, the last one stays. */
+.upload-status { display: grid; min-height: 1.4em; margin-top: 4px !important; }
+.upload-status span {
+  grid-area: 1 / 1; visibility: hidden;
+  animation: upload-message calc((var(--to) - var(--from)) * var(--upload-ms)) steps(1) calc(var(--from) * var(--upload-ms));
+}
+.upload-status span:last-child { animation-fill-mode: forwards; font-weight: 700; }
+@keyframes upload-message { from, to { visibility: visible; } }
