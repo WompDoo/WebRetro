@@ -37,6 +37,13 @@ const HOMEPAGE_CODE: EraCode = {
     'cgi-forms': ['<FORM ACTION="/cgi-bin/guestbook.pl" METHOD="POST">', '<INPUT TYPE="text" NAME="message" SIZE="40">', '<INPUT TYPE="submit" VALUE="Sign it!">', '</FORM>', '#!/usr/bin/perl', 'print "Content-type: text/html\\n\\n";', 'open(GUESTBOOK, ">>guestbook.txt");', 'print GUESTBOOK "$name says: $message<BR>\\n";', 'close(GUESTBOOK);'],
     'table-layouts': ['<TABLE BORDER="1" CELLPADDING="4" CELLSPACING="0" WIDTH="600">', '<TR><TD WIDTH="150" BGCOLOR="#000080" VALIGN="top">', '<A HREF="index.htm">Home</A><BR><A HREF="about.htm">About me</A>', '</TD><TD VALIGN="top">', '<!-- TODO: make it look right in the other browser too -->', '</TD></TR>', '</TABLE>'],
     'embed-tag': ['<EMBED SRC="song.mid" AUTOSTART="true" LOOP="true" HIDDEN="true">', '<NOEMBED><BGSOUND SRC="song.mid" LOOP="infinite"></NOEMBED>'],
+    'meta-keywords': ['<META NAME="keywords" CONTENT="cool, free, games, cool, cool, pizza, cats, cool">'],
+    'view-source': ['<!-- borrowed from www.coolest-homepage.example. thanks!! -->'],
+    'guestbook-smileys': ['<IMG SRC="smile.gif"> <IMG SRC="biggrin.gif"> <IMG SRC="spin.gif">'],
+    'animated-gif-pack': ['<IMG SRC="globe.gif"> <IMG SRC="flames.gif" ALT="HOT!"> <IMG SRC="mailbox.gif">'],
+    'banner-exchange': ['<A HREF="http://bannerswap.example/click?id=42"><IMG SRC="http://bannerswap.example/ad?id=42"></A>'],
+    'html-validator': ['<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">'],
+    'bigger-monitor': ['<!-- now designed for 1024x768 on a 17" monitor. 800x600 users: scroll sideways -->'],
     'learn-javascript': ['<SCRIPT LANGUAGE="JavaScript">', '<!-- hide from old browsers', 'function welcomeVisitor() {', '  alert("Welcome!!! Please sign my guestbook!!!");', '}', 'window.status = "Welcome to my homepage!!! *** Welcome!!! ***";', '// -->', '</SCRIPT>'],
   },
   files: {},
@@ -61,6 +68,7 @@ const WEB2_CODE: EraCode = {
     'learn-flash': ['<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="550" height="400">', '  <param name="movie" value="intro.swf" />', '  <embed src="intro.swf" quality="high" width="550" height="400"></embed>', '</object>', '<!-- intro.fla, frame 1: stop(); logo_mc.onEnterFrame = function() { this._rotation += 5; }; -->'],
     'learn-jquery': ['<script type="text/javascript" src="jquery-1.2.6.min.js"></script>'],
     'prepared-statements': ['<?php', '$stmt = $pdo->prepare("SELECT * FROM comments WHERE post_id = ?");', '$stmt->execute(array($_GET["id"]));', '// no more DROP TABLE surprises', '?>'],
+    svn: ['<?php // $Id: blog.php 1337 2005-04-12 21:14:02Z you $ ?>'],
     'learn-rss': ['<link rel="alternate" type="application/rss+xml" title="RSS" href="/feed.xml" />', '<?php foreach ($tags as $tag) { echo "<a href=\\"/tag/$tag\\">$tag</a> "; } ?>'],
   },
   files: {
@@ -113,6 +121,12 @@ const SOCIAL_CODE: EraCode = {
     'responsive-design': {
       'style.css': ['@media (max-width: 767px) {', '  .span4 { float: none; width: auto; }', '  .navbar .nav { display: none; } /* hamburger menu instead */', '}', 'img { max-width: 100%; }'],
     },
+    mongodb: {
+      'server.js': ['var db = mongo.connect("mongodb://localhost/{site}");', 'db.posts.insert(post, { w: 0 }); // web scale: doesn\'t wait to hear it landed'],
+    },
+    'git-push-deploys': {
+      Procfile: ['web: node server.js', '# git push deploy master: built, released and live in 40 seconds'],
+    },
     'html5-media': {
       'app.js': ['var video = document.querySelector("video");', 'if (!video.canPlayType("video/mp4")) { video.src = "intro.webm"; } // every browser wants a different file'],
     },
@@ -147,6 +161,18 @@ const SOCIAL_CODE: EraCode = {
 
 /** What every 2018 framework's npm, server and stylesheet get from the skills that aren't about the framework. */
 const PLATFORM_SHARED_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<string, readonly string[]>>>>> = {
+  'ci-pipeline': {
+    'ci.yml': ['pipeline:', '  - npm ci          # the lockfile: the same packages, every time', '  - npm test', '  - npm run build', '  - deploy          # only if everything above passed'],
+  },
+  'lazy-loading': {
+    'styles.scss': ['img[loading="lazy"] { background: #EEF1F6; } // a grey box until it scrolls into view'],
+  },
+  'code-splitting': {
+    terminal: ['$ npm run build', 'main.js            212 KB', 'pricing.chunk.js    38 KB  (only when you open Pricing)', 'chat.chunk.js       51 KB  (only when you open the chat)'],
+  },
+  'growth-hacking': {
+    terminal: ['$ npm install ab-split', '+ ab-split@1.0.3', '// the main button\'s colour: three variants, tested on everyone this week'],
+  },
   'mobile-first': {
     'styles.scss': ['// mobile first: the phone layout is the default, desktops get the extras', '.stories { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }', '@media (min-width: 768px) {', '  .pricing { grid-template-columns: repeat(3, 1fr); }', '}'],
   },
@@ -296,6 +322,15 @@ function buildMainFile(state: GameState, code: EraCode): string {
   const legacy = knowsSkill(state, code.legacyReplacedBy) ? [] : code.legacy;
   const learned = learnedSkills(state).flatMap((upgradeId) => code.skills[upgradeId] ?? []);
   return [...code.opening, ...legacy, ...learned, ...code.closing].join('\n');
+}
+
+/**
+ * Every file your skills and upgrades have written code into, in the order you learned them. The editor opens a tab
+ * for each, so code can never be written to a file nobody can open.
+ */
+export function listWrittenFiles(state: GameState): readonly string[] {
+  const code = codeFor(state);
+  return learnedSkills(state).flatMap((upgradeId) => Object.keys(code.files[upgradeId] ?? {}));
 }
 
 function buildOtherFile(state: GameState, code: EraCode, fileName: string): string {

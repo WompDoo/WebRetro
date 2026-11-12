@@ -179,3 +179,12 @@
 .has-jquery .w2-sidebar .feature-block { animation: jq-slide-down 500ms ease-out both; transform-origin: top; }
 @keyframes jq-fade-in { from { opacity: 0; } }
 @keyframes jq-slide-down { from { opacity: 0; transform: scaleY(0.6); } }
+
+/* ---------- 2005 boosts you can see ---------- */
+/* Threaded replies: every other comment answers the one above, indented with a hook. */
+.comment.is-reply { margin-left: 26px; }
+.comment.is-reply::before { content: "↳"; margin-right: 4px; color: #999999; }
+/* Folksonomy: readers' own tags, spelled their way. */
+.tag.is-reader-tag { color: #CC3366; font-style: italic; }
+/* AJAX everything: spinners that never finish. */
+.endless-loading { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; color: #888888; font-size: 12px; }

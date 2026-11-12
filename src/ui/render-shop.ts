@@ -1,5 +1,6 @@
 import {
   calculateAverageMsBetweenFines,
+  calculateFeatureLevelsNetVisitors,
   calculateUpgradeCost,
   findPriceBreak,
   CONSENT_BANNER_IDS,
@@ -108,7 +109,13 @@ function renderBuildableEffect(state: GameState, featureId: FeatureId, buyAmount
   // Page weight is the base weight once the feature exists, plus its per-level weight for every level.
   const weightKb = buyAmount * definition.pageWeightKbPerLevel + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
   const weight = weightKb > 0 ? ` · +${weightKb} KB` : '';
-  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${weight}</p>`;
+  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${weight}</p>${describeNetLoss(state, featureId, buyAmount)}`;
+}
+
+/** Said out loud when it happens: more of this feature now costs more visitors in load time than it brings. */
+function describeNetLoss(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
+  const net = calculateFeatureLevelsNetVisitors(state, featureId, buyAmount);
+  return net < 0 ? `<p class="shop-effect is-tradeoff">But its weight slows the page: −${formatCompactNumber(-net)} visitors/s overall</p>` : '';
 }
 
 function renderFeatureBuyButton(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {

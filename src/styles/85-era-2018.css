@@ -283,3 +283,7 @@
 @media (prefers-reduced-motion: reduce) {
   .interstitial-countdown { animation-duration: calc(var(--skip-seconds) * 1s), 1ms !important; }
 }
+
+/* Growth hacking: the main button's colour is an A/B test, a different variant on every reload. */
+.lp-button.is-primary.is-ab-1 { background: #FF5A4F; color: #FFFFFF; }
+.lp-button.is-primary.is-ab-2 { background: #12B886; color: #FFFFFF; }

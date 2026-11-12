@@ -1,7 +1,7 @@
-import { FEATURES_BY_ID, formatCompactNumber, isFeatureOnPage, isFeaturePluginDead, UPGRADES_BY_ID } from '../../engine';
-import type { EraId, FeatureId, GameState } from '../../engine';
+import { FEATURES_BY_ID, formatCompactNumber, getActiveUpgradeIds, isFeatureOnPage, isFeaturePluginDead, UPGRADES_BY_ID } from '../../engine';
+import type { EraId, FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
-import { BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, TAGS } from '../presentation';
+import { BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, READER_TAGS, TAGS } from '../presentation';
 import type { MessageCopy } from '../presentation';
 import { renderInfectionOverlay } from './infections';
 import { formatMinutesAndSeconds, heading, is1997, levelOf, siteBrand, toWholeSeconds } from './site-context';
@@ -41,12 +41,19 @@ export function renderCounterDigits(visitors: number): string {
     .join('');
 }
 
-export function renderGuestbookEntries(eraId: EraId, level: number, nowMs: number): string {
-  const pool = ERA_PRESENTATION[eraId].guestbook;
+/** The smiley pack: a little yellow face after every message, and every third one spins. */
+const SMILEYS: readonly string[] = ['<span class="smiley" aria-hidden="true">☺</span>', '<span class="smiley is-grin" aria-hidden="true">☻</span>', '<span class="smiley is-spinning" aria-hidden="true">☺</span>'];
+
+function renderSmiley(state: GameState, index: number): string {
+  return state.purchasedUpgradeIds.includes('guestbook-smileys') ? ` ${pickCyclic(SMILEYS, index, '')}` : '';
+}
+
+export function renderGuestbookEntries(state: GameState, nowMs: number): string {
+  const pool = ERA_PRESENTATION[state.eraId].guestbook;
   const offset = Math.floor(nowMs / GUESTBOOK_ROTATION_MS);
-  const count = Math.min(level + 1, MAX_GUESTBOOK_ENTRIES);
+  const count = Math.min(state.featureLevels.guestbook + 1, MAX_GUESTBOOK_ENTRIES);
   return Array.from({ length: count }, (_, index) => pickCyclic(pool, offset + index, FALLBACK_MESSAGE))
-    .map((entry) => `<li class="guestbook-entry"><b>${escapeHtml(entry.author)}</b> ${escapeHtml(entry.text)}</li>`)
+    .map((entry, index) => `<li class="guestbook-entry"><b>${escapeHtml(entry.author)}</b> ${escapeHtml(entry.text)}${renderSmiley(state, index)}</li>`)
     .join('');
 }
 
@@ -62,23 +69,37 @@ const renderHitCounter: FeatureRenderer = (context) =>
     ? `<p class="counter-label">You are visitor number</p><div class="counter" data-live="counter">${renderCounterDigits(calculateDisplayedCounter(context.state))}</div>`
     : `${heading(context, 'hit-counter')}<div class="counter" data-live="counter">${renderCounterDigits(calculateDisplayedCounter(context.state))}</div><p class="counter-label">visits since launch</p>`;
 
+const GIF_PACK = '<span class="gif-globe" aria-hidden="true"></span><span class="gif-flames">HOT!</span><span class="gif-mailbox" aria-hidden="true"><i></i></span>';
+
+/** Animated GIFs go out of fashion at the 2005 relaunch: the pack comes off the page with its effect. */
+function renderGifPack(context: SiteContext): string {
+  return getActiveUpgradeIds(context.state).includes('animated-gif-pack') ? GIF_PACK : '';
+}
+
 const renderConstruction: FeatureRenderer = (context) => {
   const label = is1997(context) ? 'UNDER CONSTRUCTION' : 'beta';
   const count = Math.min(levelOf(context, 'under-construction'), MAX_CONSTRUCTION_SIGNS);
   const signs = Array.from({ length: count }, () => `<div class="construction-sign"><span>${label}</span></div>`).join('');
-  return `<div class="construction-row">${signs}</div>`;
+  return `<div class="construction-row">${signs}${renderGifPack(context)}</div>`;
 };
 
 const renderGuestbook: FeatureRenderer = (context) => {
   const title = is1997(context) ? 'Sign my guestbook!' : undefined;
-  const entries = renderGuestbookEntries(context.eraId, levelOf(context, 'guestbook'), context.nowMs);
+  const entries = renderGuestbookEntries(context.state, context.nowMs);
   return `${heading(context, 'guestbook', title)}<ul class="guestbook-list" data-live="guestbook">${entries}</ul>`;
 };
+
+/** "More MIDI files": a dozen per level instead of one. */
+const MORE_MIDI_FILES_PER_LEVEL = 12;
+
+function midiFilesPerLevel(context: SiteContext): number {
+  return context.state.purchasedUpgradeIds.includes('more-midi-files') ? MORE_MIDI_FILES_PER_LEVEL : 1;
+}
 
 const renderMusicPlayer: FeatureRenderer = (context) => {
   const bars = Array.from({ length: EQUALIZER_BARS }, () => '<i></i>').join('');
   const note = is1997(context)
-    ? `Playlist: ${levelOf(context, 'midi-player')} MIDI files · autoplay ON`
+    ? `Playlist: ${levelOf(context, 'midi-player') * midiFilesPerLevel(context)} MIDI files${context.state.purchasedUpgradeIds.includes('more-midi-files') ? ' · every game theme ever' : ''} · autoplay ON`
     : `${levelOf(context, 'midi-player')} episodes · subscribe with RSS`;
   const title = is1997(context) ? '' : heading(context, 'midi-player');
   return `${title}<div class="music-player"><span class="music-play" aria-hidden="true">▶</span><span class="music-status" data-live="music">${renderMusicStatus(context.eraId, context.nowMs)}</span><span class="music-eq" aria-hidden="true">${bars}</span></div><p class="music-note">${note}</p>`;
@@ -90,17 +111,37 @@ const renderBlogroll: FeatureRenderer = (context) => {
   return `${heading(context, 'webring')}<ul class="blogroll">${links}</ul>`;
 };
 
+interface Webring {
+  readonly name: string;
+  readonly sizeFactor: number;
+}
+
+const SMALL_WEBRING: Webring = { name: '★ Cool Homepages Webring ★', sizeFactor: 1 };
+const BIGGER_WEBRING: Webring = { name: '★★ The Ultimate Homepage MegaRing ★★', sizeFactor: 40 };
+
 const renderWebring: FeatureRenderer = (context) => {
   if (!is1997(context)) return renderBlogroll(context);
-  const members = levelOf(context, 'webring') * WEBRING_SITES_PER_LEVEL;
-  return `<p class="webring-intro">This site is a proud member of the</p><p class="webring-name">★ Cool Homepages Webring ★</p><p class="webring-nav"><span class="fake-link">&lt;&lt; Prev</span> | <span class="fake-link">Random</span> | <span class="fake-link">Next &gt;&gt;</span></p><p class="webring-count">${members} member sites</p>`;
+  const ring = context.state.purchasedUpgradeIds.includes('bigger-webring') ? BIGGER_WEBRING : SMALL_WEBRING;
+  const members = levelOf(context, 'webring') * WEBRING_SITES_PER_LEVEL * ring.sizeFactor;
+  return `<p class="webring-intro">This site is a proud member of the</p><p class="webring-name">${ring.name}</p><p class="webring-nav"><span class="fake-link">&lt;&lt; Prev</span> | <span class="fake-link">Random</span> | <span class="fake-link">Next &gt;&gt;</span></p><p class="webring-count">${members} member sites</p>`;
 };
+
+const FIRST_POST_ID = 42;
+
+function renderPostLink(context: SiteContext, index: number): string {
+  return knows(context, 'permalinks') ? '<span class="fake-link">Permalink</span>' : `index.php?p=${FIRST_POST_ID + index}`;
+}
+
+/** AJAX everything: nothing reloads any more, not even when it should. */
+function renderEndlessSpinner(context: SiteContext, text: string): string {
+  return knows(context, 'ajax-everything') ? `<p class="endless-loading"><span class="spinner" aria-hidden="true"></span>${escapeHtml(text)}</p>` : '';
+}
 
 const renderBlog: FeatureRenderer = (context) => {
   const posts = BLOG_POSTS.slice(0, Math.min(levelOf(context, 'blog'), MAX_BLOG_POSTS))
-    .map((post) => `<article class="blog-post"><h3>${escapeHtml(post.title)}</h3><p class="post-meta">${post.date} · permalink · ${levelOf(context, 'comments')} comments</p><p>${escapeHtml(post.excerpt)}</p></article>`)
+    .map((post, index) => `<article class="blog-post"><h3>${escapeHtml(post.title)}</h3><p class="post-meta">${post.date} · ${renderPostLink(context, index)} · ${levelOf(context, 'comments')} comments</p><p>${escapeHtml(post.excerpt)}</p></article>`)
     .join('');
-  return `${heading(context, 'blog', 'Latest posts')}${posts}`;
+  return `${heading(context, 'blog', 'Latest posts')}${posts}${renderEndlessSpinner(context, 'Loading more posts…')}`;
 };
 
 const CAPTCHA_WORDS: readonly string[] = ['xK7pQ', 'overlooks', 'w4bT9', 'inquest', 'mR2zV', 'gl0ssy'];
@@ -112,23 +153,33 @@ function renderCaptchaBox(context: SiteContext): string {
   return `<div class="captcha-box"><span class="captcha-word" aria-hidden="true">${escapeHtml(word)}</span><span class="captcha-input">Type the letters above to post</span><span class="captcha-note">Spam bots: blocked</span></div>`;
 }
 
+/** Threaded replies: every other comment answers the one above it, indented. */
+function isReply(context: SiteContext, index: number): boolean {
+  return knows(context, 'threaded-replies') && index % 2 === 1;
+}
+
 const renderComments: FeatureRenderer = (context) => {
   const count = Math.min(levelOf(context, 'comments') + 1, MAX_COMMENTS);
   const items = COMMENTS.slice(0, count)
     .map((comment, index) => {
       const color = pickCyclic(AVATAR_COLORS, index, '#5C9E2E');
-      return `<li class="comment"><span class="avatar" style="background:${color}">${escapeHtml(comment.author.charAt(0).toUpperCase())}</span><span><b>${escapeHtml(comment.author)}</b> ${escapeHtml(comment.text)}</span></li>`;
+      return `<li class="comment${isReply(context, index) ? ' is-reply' : ''}"><span class="avatar" style="background:${color}">${escapeHtml(comment.author.charAt(0).toUpperCase())}</span><span><b>${escapeHtml(comment.author)}</b> ${escapeHtml(comment.text)}</span></li>`;
     })
     .join('');
   return `${heading(context, 'comments', `Comments (${levelOf(context, 'comments')})`)}<ul class="comment-list">${items}<li class="comment-loading"><span class="spinner" aria-hidden="true"></span>Loading new comments…</li></ul>${renderCaptchaBox(context)}`;
 };
+
+function renderReaderTags(context: SiteContext): string {
+  if (!knows(context, 'folksonomy')) return '';
+  return ` ${READER_TAGS.map((tag) => `<span class="tag is-reader-tag">${escapeHtml(tag)}</span>`).join(' ')}`;
+}
 
 const renderTagCloud: FeatureRenderer = (context) => {
   const count = Math.min(BASE_TAG_COUNT + levelOf(context, 'tag-cloud') * TAGS_PER_LEVEL, TAGS.length);
   const tags = TAGS.slice(0, count)
     .map((tag, index) => `<span class="tag" style="font-size:${pickCyclic(TAG_SIZES_PX, index * 3 + tag.length, 13)}px">${escapeHtml(tag)}</span>`)
     .join(' ');
-  return `${heading(context, 'tag-cloud', 'Tags')}<p class="tag-cloud">${tags}</p>`;
+  return `${heading(context, 'tag-cloud', 'Tags')}<p class="tag-cloud">${tags}${renderReaderTags(context)}</p>${renderEndlessSpinner(context, 'Refreshing tags…')}`;
 };
 
 const FORUM_THREADS: readonly string[] = [
@@ -253,10 +304,15 @@ const renderVideoPlayer: FeatureRenderer = (context) => {
 };
 
 /** Infinite scroll: it always says it's loading more. */
+function knows(context: SiteContext, upgradeId: UpgradeId): boolean {
+  return context.state.purchasedUpgradeIds.includes(upgradeId);
+}
+
 const renderActivityFeed: FeatureRenderer = (context) => {
   const count = Math.min(BASE_FEED_ITEMS + levelOf(context, 'activity-feed'), MAX_FEED_ITEMS);
   const items = FEED_ACTIONS.slice(0, count).map((action) => `<li class="feed-item">${escapeHtml(action)}</li>`).join('');
-  return `${heading(context, 'activity-feed', 'Live activity')}<ul class="feed-list">${items}<li class="feed-more"><span class="spinner" aria-hidden="true"></span>Loading more…</li></ul>`;
+  const live = knows(context, 'learn-websockets') ? '<p class="feed-live"><span aria-hidden="true">●</span> Live: new posts arrive on their own</p>' : '';
+  return `${heading(context, 'activity-feed', 'Live activity')}${live}<ul class="feed-list${live === '' ? '' : ' is-live'}">${items}<li class="feed-more"><span class="spinner" aria-hidden="true"></span>Loading more…</li></ul>`;
 };
 
 const SIGN_IN_NETWORKS: readonly string[] = ['Facespace', 'Chirper'];

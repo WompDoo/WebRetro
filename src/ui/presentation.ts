@@ -86,7 +86,8 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorTitle: 'blog.php — CodeStudio',
     editorMenu: [],
     editorTabs: ['blog.php', 'ajax.js', 'style.css'],
-    editorHighlightsSyntax: true,
+    // Plain until Syntax highlighting is bought: that boost is what turns the colours on.
+    editorHighlightsSyntax: false,
     typing: TYPED_BY_HAND,
     popups: WEB2_POPUPS,
     guestbook: [
@@ -277,6 +278,18 @@ export const BLOGROLL: readonly string[] = [
   'css hacks & tips',
   'my friend’s podcast',
 ];
+
+/** Contextual ads: the same slots, matched to what the page is about. */
+export const CONTEXTUAL_TEXT_ADS: readonly TextAdCopy[] = [
+  { title: 'Learn AJAX in 24 hours', url: 'www.ajaxbook.example', text: 'XMLHttpRequest for the rest of us.' },
+  { title: 'Start your own blog', url: 'www.bloghost.example', text: 'Free templates, comments and RSS.' },
+  { title: 'Web 2.0 logo generator', url: 'www.logo20.example', text: 'Reflection and beta badge included.' },
+  { title: 'Tag your photos', url: 'www.taggr.example', text: 'Folksonomy for your holiday snaps.' },
+  { title: 'PHP hosting with MySQL', url: 'www.lamphost.example', text: 'Your database, our servers.' },
+];
+
+/** What readers tag your posts with once they can: nobody can spell the word. */
+export const READER_TAGS: readonly string[] = ['folksonmy', 'ajaxx', 'web2.0', 'teh blog', 'awsome', 'beta!!!'];
 
 export const TAGS: readonly string[] = [
   'ajax', 'web 2.0', 'beta', 'mashup', 'rss', 'folksonomy', 'social', 'wiki', 'podcast',

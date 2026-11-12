@@ -26,7 +26,7 @@ export type LiveSlotName = 'counter' | 'guestbook' | 'music' | 'js-clock' | 'gal
 /** Keys match the data-live attributes the renderers put on the page. */
 const LIVE_SLOTS: Readonly<Record<LiveSlotName, LiveSlot>> = {
   counter: { write: setHtmlIfChanged, render: (_id, state) => renderCounterDigits(calculateDisplayedCounter(state)) },
-  guestbook: { write: setHtmlIfChanged, render: (_id, state, nowMs) => renderGuestbookEntries(state.eraId, state.featureLevels.guestbook, nowMs) },
+  guestbook: { write: setHtmlIfChanged, render: (_id, state, nowMs) => renderGuestbookEntries(state, nowMs) },
   music: { write: setHtmlIfChanged, render: (_id, state, nowMs) => renderMusicStatus(state.eraId, nowMs) },
   'js-clock': { write: setTextIfChanged, render: (_id, state, nowMs) => renderJavaScriptClock(nowMs, ERAS_BY_ID[state.eraId].year) },
   'gallery-lightbox': { write: setHtmlIfChanged, render: (_id, state, nowMs) => renderGalleryLightbox(state.featureLevels['photo-gallery'], nowMs) },

@@ -55,8 +55,15 @@ function renderHeroPhoto(): string {
   return '<div class="lp-hero-photo" aria-hidden="true"><span class="lp-person lp-person--1"></span><span class="lp-person lp-person--2"></span><span class="lp-person lp-person--3"></span><span class="lp-laptop"></span></div>';
 }
 
+/** Growth hacking: the main button's colour is an A/B test, and you're in a different group every time. */
+const AB_VARIANTS = 3;
+
+function renderAbVariant(context: SiteContext): string {
+  return context.state.purchasedUpgradeIds.includes('growth-hacking') ? ` is-ab-${context.state.keystrokes % AB_VARIANTS}` : '';
+}
+
 function renderHero(context: SiteContext): string {
-  return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
+  return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary${renderAbVariant(context)}">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
 }
 
 function renderNav(context: SiteContext): string {

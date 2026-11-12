@@ -287,3 +287,10 @@
 @container (max-width: 640px) {
   .site-2011.is-responsive .bs-sponsored { order: 3; }
 }
+
+/* WebSockets: the feed updates itself, and the newest item slides in. */
+.feed-live { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; color: #2E7D32; font-size: 12px; font-weight: 600; }
+.feed-live span { animation: feed-live-pulse 1.4s ease-in-out infinite; }
+@keyframes feed-live-pulse { 50% { opacity: 0.25; } }
+.feed-list.is-live .feed-item:first-child { animation: feed-arrive 4s ease-out infinite; }
+@keyframes feed-arrive { 0% { opacity: 0; transform: translateY(-6px); background: #FFF8C4; } 15% { opacity: 1; transform: none; } 60% { background: transparent; } }
