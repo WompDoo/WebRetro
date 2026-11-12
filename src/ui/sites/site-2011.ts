@@ -14,7 +14,7 @@ import { render2005Site } from './site-2005';
 const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'video-player', 'blog', 'pricing-table', 'comments', 'photo-gallery', 'forum'];
 /** The span4 sidebar: small widgets, each in a well. */
 /** Sign in with… isn't listed: its buttons go in the sign-in box. Maps were sidebar widgets. */
-const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['share-buttons', 'activity-feed', 'newsletter', 'language-switcher', 'guestbook', 'map-mashup', 'midi-player'];
+const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['share-buttons', 'activity-feed', 'newsletter', 'guestbook', 'map-mashup', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Home', 'Blog', 'Photos', 'About'];
 /** The three supporting columns under the hero, before you've built anything to put there. */
 const PLACEHOLDER_COLUMNS: readonly string[] = ['Heading', 'Heading', 'Heading'];
@@ -123,6 +123,7 @@ function renderBootstrapSite(context: SiteContext): string {
   return `<div class="site-2011${renderLookClasses(context)}">
     ${renderAppBanner(context)}
     <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteBrand(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderNavbarSignIn(context)}</header>
+    ${renderFeatureBlocks(context, ['language-switcher']).join('')}
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
