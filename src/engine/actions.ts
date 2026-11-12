@@ -14,6 +14,7 @@ import {
   calculateUpgradeCost,
   canUseAds,
   getNextHostingTier,
+  isCertificateRenewedAutomatically,
   isEraUnlocked,
   isFeatureBuildable,
   calculateRetirementPayout,
@@ -136,7 +137,9 @@ export function canBuyUpgrade(state: GameState, upgradeId: UpgradeId): boolean {
 export function buyUpgrade(state: GameState, upgradeId: UpgradeId): GameState {
   if (!canBuyUpgrade(state, upgradeId)) return state;
   const purchased = [...state.purchasedUpgradeIds, upgradeId];
-  return { ...spend(state, calculateUpgradeCost(state, upgradeId)), purchasedUpgradeIds: purchased };
+  const bought = { ...spend(state, calculateUpgradeCost(state, upgradeId)), purchasedUpgradeIds: purchased };
+  // Automating renewal issues a fresh certificate right away: an expired one doesn't wait for a manual renewal.
+  return { ...bought, isCertificateExpired: bought.isCertificateExpired && !isCertificateRenewedAutomatically(bought) };
 }
 
 export function canBuyDefense(state: GameState, defenseId: DefenseId): boolean {
