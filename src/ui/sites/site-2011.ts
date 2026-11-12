@@ -127,7 +127,6 @@ function renderBootstrapSite(context: SiteContext): string {
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
     <footer class="bs-footer">© ${escapeHtml(siteBrand(context.state))} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
-    ${renderFeatureBlocks(context, ['live-chat']).join('')}
   </div>`;
 }
 

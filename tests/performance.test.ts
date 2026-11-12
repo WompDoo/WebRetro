@@ -62,10 +62,11 @@ describe('page load', () => {
     assert.ok(calculatePageWeightKb(withBackground) > calculatePageWeightKb(fresh()));
   });
 
-  it('a heavy 1997 page over the modem loses visitors', () => {
+  it('loses no visitors to a heavy page in 1997: load times only count from 2005', () => {
     const heavy: GameState = { ...fresh(), purchasedUpgradeIds: ['img-tag', 'embed-tag'], adCount: 6, featureLevels: { ...fresh().featureLevels, 'hit-counter': 1, 'midi-player': 40 } };
     assert.ok(calculateLoadTimeSeconds(heavy) > 30);
-    assert.ok(calculatePerformanceTrafficFactor(heavy) < 1);
+    assert.equal(calculatePerformanceTrafficFactor(heavy), 1);
+    assert.ok(calculatePerformanceTrafficFactor({ ...heavy, eraId: 'web2-2005' }) < 1);
   });
 });
 

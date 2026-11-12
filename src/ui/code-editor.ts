@@ -182,7 +182,7 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
   };
 
   const updateRate = (keystrokeValue: number, bugChance: number): void => {
-    const text = `${formatMoney(keystrokeValue)} per keystroke · ${formatPercent(bugChance)} typo chance`;
+    const text = `${formatMoney(keystrokeValue)} per keystroke · ${formatPercent(bugChance)} typos`;
     if (elements.rate.textContent !== text) elements.rate.textContent = text;
   };
 

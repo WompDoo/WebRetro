@@ -71,6 +71,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     trafficSpikeRemainingMs: 0,
     quickFixBonusRemainingMs: 0,
     consentBanner: 'none',
+    isCookieBannerDismissed: false,
     isCertificateExpired: false,
     siteName: DEFAULT_SITE_NAME,
     reachedMilestoneIds: [],

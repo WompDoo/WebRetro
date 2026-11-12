@@ -132,7 +132,7 @@
  * class is in the selector so it outranks both layouts' general .feature-block rules (relative, overflow hidden),
  * whichever file they come from.
  */
-.site .feature-block[data-feature="live-chat"] { position: sticky; bottom: 12px; z-index: 5; width: max-content; max-width: calc(100% - 24px); min-height: 0; margin: 0 12px 0 auto; overflow: visible; }
+.site .feature-block[data-feature="live-chat"] { position: static; width: max-content; max-width: 100%; min-height: 0; margin: 0 0 0 auto; padding: 0; border: 0; box-shadow: none; overflow: visible; }
 .chat-bubble { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); color: #202124; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 13px; }
 .chat-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #6C5CE7; color: #FFFFFF; font-weight: 700; }
 .chat-text { display: grid; line-height: 17px; }
@@ -183,8 +183,10 @@
 .lp-card-icon { font-size: 22px; }
 .lp-card b { display: block; margin: 6px 0 4px; color: #32325D; }
 .lp-card p { margin: 0; color: #525F7F; font-size: 13px; line-height: 1.5; }
-.lp-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 26px 28px 0; }
-.lp-sections > .feature-block { padding: 18px; border: 1px solid #E6EBF1; border-radius: 10px; box-shadow: 0 4px 10px rgba(50, 50, 93, 0.06); }
+/* Masonry: each card as tall as its content, in two columns, and the video across both. A grid's rows left gaps. */
+.lp-sections { columns: 2; column-gap: 20px; margin: 26px 28px 0; }
+.lp-sections > .feature-block { break-inside: avoid; margin: 0 0 20px; padding: 18px; border: 1px solid #E6EBF1; border-radius: 10px; box-shadow: 0 4px 10px rgba(50, 50, 93, 0.06); }
+.lp-sections > [data-feature="video-player"] { column-span: all; }
 .site-2018 > [data-feature="pricing-table"] { margin: 30px 28px 0; text-align: center; }
 .lp-testimonials { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 30px 28px 0; }
 .lp-quote { margin: 0; padding: 18px; border-radius: 10px; background: #F6F9FC; }
@@ -208,7 +210,8 @@
   .site-2018 .lp-cta { margin-left: auto; }
   .site-2018 .lp-nav { padding: 12px 14px; }
   .site-2018 .lp-hero { grid-template-columns: minmax(0, 1fr); margin: 10px 14px 0; padding: 22px; }
-  .site-2018 .lp-cards, .site-2018 .lp-sections, .site-2018 .lp-testimonials, .site-2018 .pricing { grid-template-columns: minmax(0, 1fr); }
+  .site-2018 .lp-cards, .site-2018 .lp-testimonials, .site-2018 .pricing { grid-template-columns: minmax(0, 1fr); }
+  .site-2018 .lp-sections { columns: 1; }
   .site-2018 .lp-logos, .site-2018 .lp-cards, .site-2018 .lp-sections, .site-2018 .lp-testimonials, .site-2018 .lp-account, .site-2018 > [data-feature="pricing-table"] { margin-inline: 14px; }
   .site-2018 > [data-feature="stories"] { margin: 0 14px; }
   .site-2018 .lp-footer { margin-inline: 14px; }
@@ -240,16 +243,28 @@
 @media (prefers-reduced-motion: reduce) { .lp-leaderboard, .lp-chum { animation: none; } }
 .lp-comments-off { margin: 14px 28px 0; padding: 10px 14px; border-radius: 8px; background: #F6F9FC; color: #8898AA; font-size: 13px; }
 @container (max-width: 640px) { .site-2018 .lp-comments-off { margin-inline: 14px; } }
-/* The GDPR cookie banner: bottom left, pinned while the page scrolls, like the chat bubble on the right. */
+/*
+ * The corners of the screen: the cookie banner bottom left, the chat bubble bottom right. The dock is pinned to the
+ * bottom and has no height, so it never makes the page longer; its contents hang up from it, over the page.
+ */
+.corner-dock { position: sticky; bottom: 0; z-index: 6; height: 0; }
+.corner-dock-inner { position: absolute; right: 12px; bottom: 12px; left: 12px; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; pointer-events: none; }
+.corner-dock-inner > * { pointer-events: auto; }
+/* A phone screen has no room side by side: the bubble goes up above the banner. */
+@container (max-width: 520px) {
+  .corner-dock-inner { flex-direction: column-reverse; align-items: flex-end; }
+  .corner-dock .cookie-banner { width: 100%; }
+}
+/* The GDPR cookie banner, in the dock's bottom-left corner. */
 .cookie-banner {
-  position: sticky; bottom: 12px; z-index: 6; width: min(300px, calc(100% - 24px)); margin: 0 auto 0 12px; padding: 12px 14px;
+  width: min(300px, 100%); margin: 0; padding: 12px 14px;
   border-radius: 8px; background: #FFFFFF; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2); color: #32325D;
   font: 12px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 .cookie-banner p { margin: 0 0 10px; }
 .cookie-banner b { display: block; margin-bottom: 4px; font-size: 13.5px; }
 .cookie-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cookie-button { display: block; padding: 7px 10px; border: 1.5px solid #635BFF; border-radius: 6px; color: #635BFF; font-weight: 600; text-align: center; }
+.cookie-button { display: block; width: 100%; padding: 7px 10px; border: 1.5px solid #635BFF; border-radius: 6px; background: #FFFFFF; color: #635BFF; font: inherit; font-weight: 600; text-align: center; cursor: pointer; }
 /* The dark pattern: one big friendly button, and the way out in small grey text under it. */
 .cookie-banner.is-dark-pattern .cookie-button { padding: 10px; border-color: #635BFF; background: #635BFF; color: #FFFFFF; font-size: 14px; }
 .cookie-manage { display: block; margin-top: 8px; color: #B0B3C5; font-size: 10px; text-align: center; text-decoration: underline; }

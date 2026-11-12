@@ -172,7 +172,14 @@ export function toggleDefense(state: GameState, defenseId: DefenseId): GameState
 
 /** The cookie banner can be changed any time once the GDPR applies, for free: it's a choice, not a purchase. */
 export function chooseConsentBanner(state: GameState, banner: ConsentBanner): GameState {
-  return isEraUnlocked(state, 'platform-2018') ? { ...state, consentBanner: banner } : state;
+  if (!isEraUnlocked(state, 'platform-2018')) return state;
+  // A new banner asks again; picking the one you have changes nothing.
+  return { ...state, consentBanner: banner, isCookieBannerDismissed: state.isCookieBannerDismissed && state.consentBanner === banner };
+}
+
+/** Accept or reject, the banner goes away: on your own site you only need to answer it once. */
+export function dismissCookieBanner(state: GameState): GameState {
+  return { ...state, isCookieBannerDismissed: true };
 }
 
 /** Renewing by hand: a fee, and the fax. Ten seconds of what visitors bring in. */

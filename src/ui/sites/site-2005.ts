@@ -33,6 +33,7 @@ function web2Classes(state: GameState): string {
     knows('ie6-hacks') ? '' : 'needs-ie6-fix',
     getActiveUpgradeIds(state).includes('glitter-text') ? 'has-glitter' : '',
     knows('learn-jquery') ? 'has-jquery' : '',
+    knows('optimize-gifs') ? 'has-16-colors' : '',
   ].filter((name) => name !== '').join(' ');
 }
 

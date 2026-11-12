@@ -5,6 +5,7 @@ import {
   buyUpgrade,
   chooseConsentBanner,
   closePopup,
+  dismissCookieBanner,
   CONSENT_BANNER_IDS,
   DEFENSE_IDS,
   ERAS_BY_ID,
@@ -177,6 +178,7 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),
     'toggle-feature': withId(isFeatureId, (id) => updateGame((state) => toggleFeature(state, id))),
     'choose-consent-banner': withId(isConsentBanner, (id) => updateGame((state) => chooseConsentBanner(state, id))),
+    'dismiss-cookie-banner': () => updateGame(dismissCookieBanner),
     'toggle-scroll-jacking': () => {
       store.isScrollJackingOn = !store.isScrollJackingOn;
       writePreferences();

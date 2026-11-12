@@ -172,6 +172,11 @@ class StoryPace {
     this.animateTo(nextChapterStop(story, this.site.scrollTop));
   }
 
+  /** A swipe's step: one chapter, unless the last step is still running. */
+  stepTo(target: number): void {
+    if (!this.isLocked()) this.animateTo(target);
+  }
+
   /**
    * A finger going down starts a new gesture from where the page is, even while the last one still glides
    * against its hold. Only a step the page is still animating keeps it waiting.
@@ -276,9 +281,9 @@ class StoryPace {
     this.settleTimer = window.setTimeout(() => this.settle(), GESTURE_GAP_MS);
   }
 
-  /** A finger still on the screen isn't at rest: the release settles it instead. */
+  /** A finger still on the screen isn't at rest, and nor is a step on its way: neither settles. */
   private settle(): void {
-    if (!this.isPointerDown) this.settleAt(findRestingStop(this.site));
+    if (!this.isPointerDown && !this.isAnimating) this.settleAt(findRestingStop(this.site));
   }
 
   private settleAt(stop: number | null): void {
@@ -305,12 +310,24 @@ class StoryPace {
 }
 
 /**
+ * What the phone view's swipe asks before it moves the page. A finger doesn't drag a scroll-jacking story along:
+ * each swipe is one chapter, as each wheel gesture is.
+ */
+export interface SwipeJack {
+  /** Where a swipe this way goes if the story takes it over; null when the page follows the finger. */
+  readonly findStop: (deltaY: number) => number | null;
+  readonly stepTo: (stop: number) => void;
+  /** Where a page following the finger since dragStart may go: it stops at the story's edge. */
+  readonly limit: (dragStart: number, toTop: number) => number;
+}
+
+/**
  * The scroll-jacking one-pager. While its band is pinned, the page's scrolling slides the chapters sideways,
  * and the page sets the pace: one chapter per gesture, each step taking STEP_MS, whatever did the scrolling.
  * A click on a chapter moves on one too. The shop can switch the scroll-jacking off (it's funny twice): the
  * story stays, as a band the page scrolls past and a click reads on. Flipping the switch keeps the reader's place.
  */
-export function installStoryChapters(site: HTMLElement): void {
+export function installStoryChapters(site: HTMLElement): SwipeJack {
   const pace = new StoryPace(site);
   const reader = new StoryReader();
   const isJacking = (): boolean => isScrollJackingOn(site);
@@ -387,4 +404,17 @@ export function installStoryChapters(site: HTMLElement): void {
     pace.reset();
     withStory(keepPlace)();
   }).observe(site, { attributes: true, attributeFilter: ['data-scroll-jacking'] });
+
+  const jackingStory = (): Story | null => (isJacking() ? findStory(site) : null);
+  return {
+    findStop: (deltaY) => {
+      const story = jackingStory();
+      return story === null ? null : findJackedStop(site.scrollTop, deltaY, story.zone);
+    },
+    stepTo: (stop) => pace.stepTo(stop),
+    limit: (dragStart, toTop) => {
+      const story = jackingStory();
+      return story === null ? toTop : clampToGesture(dragStart, toTop, story.zone);
+    },
+  };
 }
