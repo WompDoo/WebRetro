@@ -795,6 +795,19 @@ export function getRevealedBoostIds(state: GameState): readonly UpgradeId[] {
   return UPGRADE_IDS.filter((upgradeId) => isBoostRevealed(state, upgradeId));
 }
 
+/** An upgrade is offered once you own what it upgrades, and stays listed once it's yours. */
+function isDefenseOnOffer(state: GameState, defenseId: DefenseId): boolean {
+  const base = DEFENSES_BY_ID[defenseId].upgradesFrom;
+  return base === null || state.ownedDefenseIds.includes(base) || state.ownedDefenseIds.includes(defenseId);
+}
+
+/** Bought over: the ad blocker once its strict version is yours. */
+function isDefenseReplaced(state: GameState, defenseId: DefenseId): boolean {
+  return state.ownedDefenseIds.some((owned) => DEFENSES_BY_ID[owned].upgradesFrom === defenseId);
+}
+
 export function getUnlockedDefenseIds(state: GameState): readonly DefenseId[] {
-  return DEFENSE_IDS.filter((defenseId) => isEraUnlocked(state, DEFENSES_BY_ID[defenseId].eraId) && !isDefenseRetired(state, defenseId));
+  return DEFENSE_IDS.filter((defenseId) => isEraUnlocked(state, DEFENSES_BY_ID[defenseId].eraId) && !isDefenseRetired(state, defenseId))
+    .filter((defenseId) => isDefenseOnOffer(state, defenseId))
+    .filter((defenseId) => !isDefenseReplaced(state, defenseId));
 }

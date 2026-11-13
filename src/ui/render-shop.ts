@@ -424,8 +424,14 @@ function describeTradeOffs(defense: DefenseDefinition, eraId: EraId): string {
   return `Trade-off while on: ${tradeOffs.join(', ')}`;
 }
 
+/** An upgrade's price says what it is. */
+function describeDefensePrice(defenseId: DefenseId): string | undefined {
+  const defense = DEFENSES_BY_ID[defenseId];
+  return defense.upgradesFrom === null ? undefined : `Upgrade ${formatMoney(defense.cost)}`;
+}
+
 function renderDefenseControl(state: GameState, defenseId: DefenseId): string {
-  if (!state.ownedDefenseIds.includes(defenseId)) return buyButton('buy-defense', defenseId, DEFENSES_BY_ID[defenseId].cost);
+  if (!state.ownedDefenseIds.includes(defenseId)) return buyButton('buy-defense', defenseId, DEFENSES_BY_ID[defenseId].cost, describeDefensePrice(defenseId));
   return renderToggleButton('toggle-defense', defenseId, state.enabledDefenseIds.includes(defenseId));
 }
 

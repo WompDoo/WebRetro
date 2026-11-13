@@ -6,7 +6,8 @@ const NO_DELAY_MS = 0;
 const NO_PENALTY = 1;
 const NO_UPKEEP = 0;
 
-export const DEFENSE_IDS: readonly DefenseId[] = ['antivirus', 'premium-ad-network', 'captcha', 'ddos-protection', 'no-popups'];
+/** In shop order: an upgrade comes right after what it upgrades. */
+export const DEFENSE_IDS: readonly DefenseId[] = ['antivirus', 'premium-ad-network', 'no-popups', 'captcha', 'ddos-protection'];
 
 export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
   antivirus: {
@@ -23,6 +24,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     penalizedFeatureId: null,
     adValueFactor: NO_PENALTY,
     revenueUpkeepShare: 0.1,
+    upgradesFrom: null,
   },
   'premium-ad-network': {
     id: 'premium-ad-network',
@@ -38,6 +40,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     penalizedFeatureId: null,
     adValueFactor: 0.75,
     revenueUpkeepShare: NO_UPKEEP,
+    upgradesFrom: null,
   },
   captcha: {
     id: 'captcha',
@@ -54,6 +57,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     penalizedFeatureId: 'comments',
     adValueFactor: NO_PENALTY,
     revenueUpkeepShare: NO_UPKEEP,
+    upgradesFrom: null,
   },
   'ddos-protection': {
     id: 'ddos-protection',
@@ -69,13 +73,15 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     penalizedFeatureId: null,
     adValueFactor: NO_PENALTY,
     revenueUpkeepShare: 0.05,
+    upgradesFrom: null,
   },
-  // Browsers built pop-up blockers in from 2004: from then on a site could promise none at all.
+  // Browsers built pop-up blockers in from 2004: from then on a site could promise none at all. An upgrade of the
+  // premium ad network, not a second defense: it replaces it, trade-off and all.
   'no-popups': {
     id: 'no-popups',
     eraId: 'web2-2005',
     name: 'Pop-up-free ad deal',
-    description: 'Write “no pop-ups” into your ad contract and they never come back. Advertisers pay less for the privilege of behaving.',
+    description: 'Upgrades your premium ad network: write “no pop-ups” into the contract and they never come back. It replaces the old deal, and its cut.',
     cost: 800_000,
     countersHazard: 'popup',
     counterMode: 'prevents-spawn',
@@ -85,6 +91,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     penalizedFeatureId: null,
     adValueFactor: 0.8,
     revenueUpkeepShare: NO_UPKEEP,
+    upgradesFrom: 'premium-ad-network',
   },
 };
 
@@ -103,8 +110,7 @@ const LATER_ERA_COPY: Readonly<Partial<Record<DefenseId, Readonly<Partial<Record
     'social-2011': { name: 'Ad blocker', description: 'Blocks most pop-ups, though the odd one gets past it. It hides some of your own ads along with them.' },
   },
   'no-popups': {
-    'social-2011': { name: 'No-overlays clause', description: 'No pop-ups, no lightbox ads, nothing on top of the page, ever. Your ad network agrees, for a smaller cut.' },
-    'platform-2018': { name: 'Better-ads pledge', description: 'Sign up to the better-ads standards: no pop-ups, no interstitials, no sound that plays by itself. Browsers stop filtering your ads; advertisers pay a bit less.' },
+    'social-2011': { name: 'Strict ad blocker', description: 'Upgrades your ad blocker: every pop-up and overlay blocked, not just most of them. It replaces the old one.' },
   },
 };
 

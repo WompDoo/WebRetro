@@ -14,6 +14,7 @@ import {
   calculateUpgradeCost,
   canUseAds,
   getNextHostingTier,
+  getUnlockedDefenseIds,
   isCertificateRenewedAutomatically,
   isEraUnlocked,
   isFeatureBuildable,
@@ -143,20 +144,18 @@ export function buyUpgrade(state: GameState, upgradeId: UpgradeId): GameState {
 }
 
 export function canBuyDefense(state: GameState, defenseId: DefenseId): boolean {
-  const definition = DEFENSES_BY_ID[defenseId];
-  return (
-    !state.ownedDefenseIds.includes(defenseId) &&
-    isEraUnlocked(state, definition.eraId) &&
-    state.money >= definition.cost
-  );
+  return !state.ownedDefenseIds.includes(defenseId) && getUnlockedDefenseIds(state).includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost;
 }
 
+/** An upgrade takes the place of what it upgrades: one defense, one trade-off, switched on. */
 export function buyDefense(state: GameState, defenseId: DefenseId): GameState {
   if (!canBuyDefense(state, defenseId)) return state;
+  const replaced = DEFENSES_BY_ID[defenseId].upgradesFrom;
+  const isKept = (id: DefenseId): boolean => id !== replaced;
   return {
     ...spend(state, DEFENSES_BY_ID[defenseId].cost),
-    ownedDefenseIds: [...state.ownedDefenseIds, defenseId],
-    enabledDefenseIds: [...state.enabledDefenseIds, defenseId],
+    ownedDefenseIds: [...state.ownedDefenseIds.filter(isKept), defenseId],
+    enabledDefenseIds: [...state.enabledDefenseIds.filter(isKept), defenseId],
   };
 }
 

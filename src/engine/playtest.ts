@@ -63,8 +63,10 @@ function learnedFor(eraId: EraId, stage: PlaytestStage, framework: FrameworkId):
   return UPGRADE_IDS.filter((upgradeId) => counts(UPGRADES_BY_ID[upgradeId].eraId) && !isOtherFramework(upgradeId, framework));
 }
 
+/** Every earlier era's defense, upgraded where it can be: an upgrade replaces what it upgrades. */
 function defensesFor(eraId: EraId): GameState['ownedDefenseIds'] {
-  return DEFENSE_IDS.filter((defenseId) => isBefore(DEFENSES_BY_ID[defenseId].eraId, eraId));
+  const earlier = DEFENSE_IDS.filter((defenseId) => isBefore(DEFENSES_BY_ID[defenseId].eraId, eraId));
+  return earlier.filter((defenseId) => !earlier.some((other) => DEFENSES_BY_ID[other].upgradesFrom === defenseId));
 }
 
 function levelsFor(eraId: EraId, stage: PlaytestStage): GameState['featureLevels'] {

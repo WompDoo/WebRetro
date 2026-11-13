@@ -14,6 +14,7 @@ import {
   cleanInfection,
   closePopup,
   CONSENT_BANNER_IDS,
+  DEFENSES_BY_ID,
   createPlaytestState,
   dismissCookieBanner,
   ERA_IDS,
@@ -39,7 +40,7 @@ import {
   upgradeHosting,
   writeCode,
 } from '../src/engine';
-import type { EraId, FrameworkId, GameState } from '../src/engine';
+import type { DefenseId, EraId, FrameworkId, GameState } from '../src/engine';
 import { buildEditorTabs, buildPerformanceReadout, buildSiteUrl, buildStatusText } from '../src/ui/browser-chrome';
 import { listIssues } from '../src/ui/issues';
 import { renderShopBody, SHOP_TABS } from '../src/ui/render-shop';
@@ -80,6 +81,7 @@ interface Invariant {
 
 const isFiniteNumber = (value: unknown): boolean => typeof value !== 'number' || Number.isFinite(value);
 const isUnique = (values: readonly unknown[]): boolean => new Set(values).size === values.length;
+const isOwnedBase = (state: GameState, base: DefenseId | null): boolean => base !== null && state.ownedDefenseIds.includes(base);
 
 const INVARIANTS: readonly Invariant[] = [
   { name: 'money and earnings are finite', holds: (state) => Number.isFinite(state.money) && Number.isFinite(state.lifetimeEarnings) },
@@ -90,6 +92,7 @@ const INVARIANTS: readonly Invariant[] = [
   { name: 'feature levels are whole and not negative', holds: (state) => FEATURE_IDS.every((id) => Number.isInteger(state.featureLevels[id]) && state.featureLevels[id] >= 0) },
   { name: 'nothing is bought twice', holds: (state) => isUnique(state.purchasedUpgradeIds) && isUnique(state.ownedDefenseIds) },
   { name: 'only owned defenses are on', holds: (state) => state.enabledDefenseIds.every((id) => state.ownedDefenseIds.includes(id)) },
+  { name: 'an upgraded defense replaces what it upgrades', holds: (state) => state.ownedDefenseIds.every((id) => !isOwnedBase(state, DEFENSES_BY_ID[id].upgradesFrom)) },
   { name: 'pop-ups stay under the cap', holds: (state) => state.popups.length <= MAX_OPEN_POPUPS },
   { name: 'one trouble per feature at a time', holds: (state) => isUnique(state.infections.map((infection) => infection.featureId)) },
   { name: 'ads stay within the era’s slots', holds: (state) => state.adCount >= 0 && state.adCount <= ERAS_BY_ID[state.eraId].maxAds },
