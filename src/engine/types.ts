@@ -266,6 +266,8 @@ export interface DefenseDefinition {
   readonly penalizedFeatureId: FeatureId | null;
   readonly adValueFactor: number;
   readonly revenueUpkeepShare: number;
+  /** The defense this one upgrades: it's offered once you own that one, and buying it replaces it. */
+  readonly upgradesFrom: DefenseId | null;
 }
 
 export interface EraGateRequirement {

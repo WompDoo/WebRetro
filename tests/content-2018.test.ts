@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   advanceHazards,
+  buyDefense,
   calculateAdValuePerAd,
   calculatePrivacyFine,
   chooseConsentBanner,
@@ -67,11 +68,23 @@ describe('2018: the language switcher and the newsletter', () => {
 describe('switching pop-ups off completely', () => {
   const withAds: GameState = { ...createInitialGameState(SEED), eraId: 'web2-2005', adCount: 6, hazardCountdownsMs: { ...QUIET_HAZARDS, popup: 1 } };
 
-  it('is on offer from 2005, under each era’s name', () => {
-    assert.ok(!getUnlockedDefenseIds(createInitialGameState(SEED)).includes('no-popups'));
-    assert.ok(getUnlockedDefenseIds(withAds).includes('no-popups'));
-    assert.equal(getDefenseCopy('no-popups', 'social-2011').name, 'No-overlays clause');
-    assert.equal(getDefenseCopy('no-popups', 'platform-2018').name, 'Better-ads pledge');
+  const withBlocker: GameState = { ...withAds, money: 1e9, ownedDefenseIds: ['premium-ad-network'], enabledDefenseIds: ['premium-ad-network'] };
+
+  it('is an upgrade of the ad blocker from 2005: offered once you own it, under each era’s name', () => {
+    assert.ok(!getUnlockedDefenseIds({ ...withBlocker, eraId: 'homepage-1997' }).includes('no-popups'));
+    assert.ok(!getUnlockedDefenseIds(withAds).includes('no-popups'));
+    assert.ok(getUnlockedDefenseIds(withBlocker).includes('no-popups'));
+    assert.deepEqual(buyDefense({ ...withAds, money: 1e9 }, 'no-popups').ownedDefenseIds, []);
+    assert.equal(getDefenseCopy('no-popups', 'social-2011').name, 'Strict ad blocker');
+    assert.equal(getDefenseCopy('no-popups', 'platform-2018').name, 'Strict ad blocker');
+  });
+
+  it('replaces the ad blocker when bought, rather than running on top of it', () => {
+    const upgraded = buyDefense(withBlocker, 'no-popups');
+    assert.deepEqual(upgraded.ownedDefenseIds, ['no-popups']);
+    assert.deepEqual(upgraded.enabledDefenseIds, ['no-popups']);
+    assert.ok(!getUnlockedDefenseIds(upgraded).includes('premium-ad-network'));
+    assert.deepEqual(buyDefense(upgraded, 'premium-ad-network'), upgraded);
   });
 
   it('stops every pop-up while it is on, for a cut of what ads pay', () => {
