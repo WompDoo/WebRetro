@@ -256,6 +256,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'secure-connection': () => 'Served over https, with a padlock',
   'automatic-certificate-renewal': () => 'The certificate never expires',
   'privacy-fine-multiplier': (effect) => `Privacy fines ${formatFactor(effect.factor)}`,
+  'ai-answer-share-multiplier': (effect) => `Visitors kept away by AI answers ${formatFactor(effect.factor)}`,
 };
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
@@ -395,6 +396,8 @@ const HAZARD_NAMES: Readonly<Record<HazardKind, string>> = {
   'broken-build': 'broken builds',
   'privacy-fine': 'privacy fines',
   'certificate-expiry': 'expired certificates',
+  'scraper-swarm': 'AI scraper swarms',
+  hallucination: 'chatbot hallucinations',
 };
 
 const BENEFIT_DESCRIPTIONS: Readonly<Record<DefenseCounterMode, (defense: DefenseDefinition, hazard: string) => string>> = {

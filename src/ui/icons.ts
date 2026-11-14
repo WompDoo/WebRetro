@@ -33,6 +33,16 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'language-switcher': svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'),
   // An envelope.
   newsletter: svg('<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 6 9-6"/>'),
+  // 2024: a speech bubble with a sparkle in it.
+  'ai-chatbot': svg('<path d="M4 5h13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-5 4Z"/><path d="m11.5 7.5.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8Z"/>'),
+  // A page of text, many of them.
+  'ai-articles': svg('<path d="M6 3h9l4 4v14H6Z"/><path d="M9 11h7M9 15h7M9 7h3"/>'),
+  // A magnifying glass with a plus: it answers, not just finds.
+  'ai-search': svg('<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M10 7v6M7 10h6"/>'),
+  // A picture: a sun and a hill.
+  'ai-images': svg('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/>'),
+  // A feed of lines, and a dot where it picks for you.
+  'for-you-feed': svg('<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
@@ -43,6 +53,10 @@ export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
   'ddos-protection': svg('<path d="M7 15a4 4 0 1 1 1-7.9A5 5 0 0 1 17.6 9 3.5 3.5 0 0 1 17 15Z"/><path d="M8 19h8M10 22h4"/>'),
   // A window with a line through it: no pop-ups, ever.
   'no-popups': svg('<rect x="4" y="5" width="16" height="13" rx="1"/><path d="M4 8h16M3 21 21 3"/>'),
+  // A shield with a little robot face: bots stop here.
+  'bot-shield': svg('<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><rect x="9" y="10" width="6" height="5" rx="1"/><path d="M12 8v2"/>'),
+  // A railing.
+  guardrails: svg('<path d="M3 8h18M3 16h18M6 5v14M12 5v14M18 5v14"/>'),
 };
 
 export const AD_ICON = svg('<rect x="2" y="7" width="20" height="10" rx="1"/><path d="M6 14l1.5-4L9 14M6.5 12.8h2M12 10v4h1.5a2 2 0 0 0 0-4Z"/>');

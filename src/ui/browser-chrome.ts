@@ -1,4 +1,4 @@
-import { calculateMobileStayShare, ERAS_BY_ID, findChosenFramework, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMarkedNotSecure, isMobileFriendly, isServedSecurely, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
+import { calculateAiAnswerShare, calculateMobileStayShare, ERAS_BY_ID, isEraUnlocked, findChosenFramework, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMarkedNotSecure, isMobileFriendly, isServedSecurely, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
 import type { EconomySnapshot, EraId, FrameworkId, GameState, UpgradeId } from '../engine';
 import { resolveEditorTabs, resolveEditorTitle } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
@@ -42,6 +42,7 @@ const SITE_PATHS: Readonly<Record<EraId, (state: GameState) => string | null>> =
   'web2-2005': (state) => (knows(state, 'learn-url-rewriting') ? '/blog/2005/04/my-first-post/' : '/index.php?id=42&cat=3&sid=8f3a9c2e71b04d55'),
   'social-2011': () => SOCIAL_PATH,
   'platform-2018': findPlatformPath,
+  'ai-2024': findPlatformPath,
 };
 
 /** https once you have a certificate: bought in 2005, or renewed by a cron job from 2018. */
@@ -49,9 +50,14 @@ function describeScheme(state: GameState): string {
   return isServedSecurely(state) ? 'https' : 'http';
 }
 
+/** "www." went the way of the guestbook: by 2024 the bare domain is the address. */
+function describeHost(state: GameState): string {
+  return state.eraId === 'ai-2024' ? `${siteBrand(state)}.com` : `www.${siteBrand(state)}.com`;
+}
+
 export function buildSiteUrl(state: GameState): string {
   const path = SITE_PATHS[state.eraId](state);
-  return path === null ? fillSiteNameText(ERA_PRESENTATION[state.eraId].siteUrl, state) : `${describeScheme(state)}://www.${siteBrand(state)}.com${path}`;
+  return path === null ? fillSiteNameText(ERA_PRESENTATION[state.eraId].siteUrl, state) : `${describeScheme(state)}://${describeHost(state)}${path}`;
 }
 
 /** What the address bar says about the connection. The CSS draws the padlock, the warning or "Not secure". */
@@ -263,12 +269,17 @@ export function rateLighthouse(score: number): LighthouseRating {
 
 /** The status bar's colour for the score: only 2018 has a score. */
 export function describeLighthouseRating(state: GameState, economy: EconomySnapshot): string {
-  return state.eraId === 'platform-2018' ? rateLighthouse(scoreLighthouse(measureWebVitals(state, economy))) : '';
+  return isEraUnlocked(state, 'platform-2018') ? rateLighthouse(scoreLighthouse(measureWebVitals(state, economy))) : '';
+}
+
+/** In March 2024 the speed test swapped first input delay for interaction to next paint. */
+function describeInputMetric(state: GameState): string {
+  return state.eraId === 'ai-2024' ? 'INP' : 'FID';
 }
 
 function renderLighthouse(state: GameState, economy: EconomySnapshot): string {
   const vitals = measureWebVitals(state, economy);
-  return `${scoreLighthouse(vitals)} · LCP ${formatSeconds(vitals.largestPaintSeconds)} · FID ${Math.round(vitals.inputDelayMs)} ms · CLS ${vitals.layoutShift.toFixed(BYTES_DECIMALS)}`;
+  return `${scoreLighthouse(vitals)} · LCP ${formatSeconds(vitals.largestPaintSeconds)} · ${describeInputMetric(state)} ${Math.round(vitals.inputDelayMs)} ms · CLS ${vitals.layoutShift.toFixed(BYTES_DECIMALS)}`;
 }
 
 function renderHostingReadout(state: GameState, economy: EconomySnapshot): string {
@@ -282,6 +293,8 @@ const PERFORMANCE_READOUTS: Readonly<Record<EraId, (state: GameState, economy: E
   'social-2011': (state, economy, weight) =>
     `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.phoneLoadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
   'platform-2018': (state, economy) => `${renderLighthouse(state, economy)} · ${renderHostingReadout(state, economy)}`,
+  // 2024 adds what AI answers keep: searchers who read you in a summary and never come.
+  'ai-2024': (state, economy) => `${renderLighthouse(state, economy)} · AI answers −${formatPercent(calculateAiAnswerShare(state))} · ${renderHostingReadout(state, economy)}`,
 };
 
 export function buildPerformanceReadout(state: GameState, economy: EconomySnapshot): string {
@@ -317,6 +330,7 @@ function describeSvnRevision(state: GameState, fileName: string): string {
 const EDITOR_TITLE_EXTRAS: Readonly<Partial<Record<EraId, (state: GameState, fileName: string) => string>>> = {
   'web2-2005': describeSvnRevision,
   'platform-2018': (state, fileName) => `${fileName} · node_modules ${formatMegabytes(measureNodeModulesMb(state))}`,
+  'ai-2024': (_state, fileName) => `${fileName} · ✨ AI autocomplete on`,
 };
 
 function describeEditorExtras(state: GameState, fileName: string): string {

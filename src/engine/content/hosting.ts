@@ -204,7 +204,23 @@ const POD_TIERS = buildLadder({
   laterDescription: 'More replicas. Kubernetes finds them somewhere to run, eventually.',
 });
 
-export const HOSTING_TIERS: readonly HostingTierDefinition[] = [...NAMED_TIERS, ...EXTRA_RACK_TIERS, ...CLOUD_TIERS, ...POD_TIERS];
+/** 2024: whatever thinks runs on rented GPUs, the rest is "serverless". It starts with eight GPUs. */
+const GPU_TIERS = buildLadder({
+  eraId: 'ai-2024',
+  year: 2024,
+  firstUnits: 8,
+  steps: 60,
+  capacityPerUnit: 200_000_000_000,
+  unitGrowth: 1.25,
+  secondStepCost: 2_500_000_000_000,
+  stepCostGrowth: 1.4,
+  createId: (gpus) => `gpus-${gpus}`,
+  createName: (gpus) => `GPU cluster: ${gpus} GPUs`,
+  firstDescription: 'The relaunch moved everything that thinks onto GPUs, rented by the second. The rest is “serverless”: servers you can’t see.',
+  laterDescription: 'More GPUs, if anyone has any to rent this week.',
+});
+
+export const HOSTING_TIERS: readonly HostingTierDefinition[] = [...NAMED_TIERS, ...EXTRA_RACK_TIERS, ...CLOUD_TIERS, ...POD_TIERS, ...GPU_TIERS];
 
 /** Each era has its own ladder: your 2005 racks don't come along to the cloud. */
 export function getEraHostingTiers(eraId: EraId): readonly HostingTierDefinition[] {

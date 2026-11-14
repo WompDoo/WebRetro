@@ -1,38 +1,38 @@
 /* ---------- 2018: platforms. A dark code editor, a flat browser, a speed score, a phone with a notch ---------- */
-[data-era="2018"] .editor-window { background: #1E1E1E; color: #D4D4D4; font-family: var(--font-code); }
-[data-era="2018"] .editor-titlebar { background: #323233; color: #CCCCCC; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-weight: 400; }
-[data-era="2018"] .window-buttons i { border-radius: 50%; width: 12px; height: 12px; background: #FF5F57; }
-[data-era="2018"] .window-buttons i:nth-child(2) { background: #FEBC2E; }
-[data-era="2018"] .window-buttons i:nth-child(3) { background: #28C840; }
-[data-era="2018"] .editor-tabs { background: #252526; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-[data-era="2018"] .editor-tab { padding: 5px 12px; border: 0; border-right: 1px solid #1E1E1E; border-radius: 0; background: #2D2D2D; color: #969696; }
-[data-era="2018"] .editor-tab.is-active { background: #1E1E1E; color: #FFFFFF; box-shadow: inset 0 1px 0 #0E70C0; }
-[data-era="2018"] .editor-tab:not(.is-active):not(.is-more):hover { background: #333333; color: #FFFFFF; }
-[data-era="2018"] .editor-tab.is-more { background: transparent; font-style: italic; cursor: default; }
-[data-era="2018"] .editor-code { padding-left: 0; font-size: 12px; }
-[data-era="2018"] .code-line { padding-left: 46px; position: relative; }
-[data-era="2018"] .code-line::before { content: attr(data-line); position: absolute; left: 0; width: 36px; text-align: right; color: #858585; }
-[data-era="2018"] .editor-statusbar { background: #007ACC; border-top: 0; color: #FFFFFF; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-[data-era="2018"] .tok-comment { color: #6A9955; }
-[data-era="2018"] .tok-string { color: #CE9178; }
-[data-era="2018"] .tok-tag { color: #569CD6; }
-[data-era="2018"] .tok-variable { color: #9CDCFE; }
-[data-era="2018"] .tok-keyword { color: #C586C0; }
-[data-era="2018"] .floater--clean-line { color: #4EC9B0; }
-[data-era="2018"] .floater--bugged-line { color: #F48771; }
-[data-era="2018"] .floater--fixed-bug { color: #9CDCFE; }
+:is([data-era="2018"], [data-era="2024"]) .editor-window { background: #1E1E1E; color: #D4D4D4; font-family: var(--font-code); }
+:is([data-era="2018"], [data-era="2024"]) .editor-titlebar { background: #323233; color: #CCCCCC; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-weight: 400; }
+:is([data-era="2018"], [data-era="2024"]) .window-buttons i { border-radius: 50%; width: 12px; height: 12px; background: #FF5F57; }
+:is([data-era="2018"], [data-era="2024"]) .window-buttons i:nth-child(2) { background: #FEBC2E; }
+:is([data-era="2018"], [data-era="2024"]) .window-buttons i:nth-child(3) { background: #28C840; }
+:is([data-era="2018"], [data-era="2024"]) .editor-tabs { background: #252526; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+:is([data-era="2018"], [data-era="2024"]) .editor-tab { padding: 5px 12px; border: 0; border-right: 1px solid #1E1E1E; border-radius: 0; background: #2D2D2D; color: #969696; }
+:is([data-era="2018"], [data-era="2024"]) .editor-tab.is-active { background: #1E1E1E; color: #FFFFFF; box-shadow: inset 0 1px 0 #0E70C0; }
+:is([data-era="2018"], [data-era="2024"]) .editor-tab:not(.is-active):not(.is-more):hover { background: #333333; color: #FFFFFF; }
+:is([data-era="2018"], [data-era="2024"]) .editor-tab.is-more { background: transparent; font-style: italic; cursor: default; }
+:is([data-era="2018"], [data-era="2024"]) .editor-code { padding-left: 0; font-size: 12px; }
+:is([data-era="2018"], [data-era="2024"]) .code-line { padding-left: 46px; position: relative; }
+:is([data-era="2018"], [data-era="2024"]) .code-line::before { content: attr(data-line); position: absolute; left: 0; width: 36px; text-align: right; color: #858585; }
+:is([data-era="2018"], [data-era="2024"]) .editor-statusbar { background: #007ACC; border-top: 0; color: #FFFFFF; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+:is([data-era="2018"], [data-era="2024"]) .tok-comment { color: #6A9955; }
+:is([data-era="2018"], [data-era="2024"]) .tok-string { color: #CE9178; }
+:is([data-era="2018"], [data-era="2024"]) .tok-tag { color: #569CD6; }
+:is([data-era="2018"], [data-era="2024"]) .tok-variable { color: #9CDCFE; }
+:is([data-era="2018"], [data-era="2024"]) .tok-keyword { color: #C586C0; }
+:is([data-era="2018"], [data-era="2024"]) .floater--clean-line { color: #4EC9B0; }
+:is([data-era="2018"], [data-era="2024"]) .floater--bugged-line { color: #F48771; }
+:is([data-era="2018"], [data-era="2024"]) .floater--fixed-bug { color: #9CDCFE; }
 
-[data-era="2018"] .browser { background: #FFFFFF; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #202124; }
-[data-era="2018"] .browser-titlebar { background: #DEE1E6; color: #3C4043; font-weight: 500; }
-[data-era="2018"] .browser-toolbar { background: #FFFFFF; border-bottom: 1px solid #DADCE0; }
-[data-era="2018"] .browser-button { border: 0; border-radius: 50%; background: transparent; color: #5F6368; }
-[data-era="2018"] .browser-button.is-optional { display: none; }
-[data-era="2018"] .browser-address-label { display: none; }
+:is([data-era="2018"], [data-era="2024"]) .browser { background: #FFFFFF; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #202124; }
+:is([data-era="2018"], [data-era="2024"]) .browser-titlebar { background: #DEE1E6; color: #3C4043; font-weight: 500; }
+:is([data-era="2018"], [data-era="2024"]) .browser-toolbar { background: #FFFFFF; border-bottom: 1px solid #DADCE0; }
+:is([data-era="2018"], [data-era="2024"]) .browser-button { border: 0; border-radius: 50%; background: transparent; color: #5F6368; }
+:is([data-era="2018"], [data-era="2024"]) .browser-button.is-optional { display: none; }
+:is([data-era="2018"], [data-era="2024"]) .browser-address-label { display: none; }
 /* The padlock: every 2018 site is on https, and the browser says "Not secure" about the ones that aren't. */
-[data-era="2018"] .browser-url { background: #F1F3F4; border: 0; border-radius: 16px; }
-[data-era="2018"] .browser-url[data-security="secure"]::before { filter: grayscale(1); }
-[data-era="2018"] .browser-url[data-security="expired"]::before { content: "⚠ Not secure"; }
-[data-era="2018"] .browser-statusbar { background: #FFFFFF; border-top: 1px solid #DADCE0; }
+:is([data-era="2018"], [data-era="2024"]) .browser-url { background: #F1F3F4; border: 0; border-radius: 16px; }
+:is([data-era="2018"], [data-era="2024"]) .browser-url[data-security="secure"]::before { filter: grayscale(1); }
+:is([data-era="2018"], [data-era="2024"]) .browser-url[data-security="expired"]::before { content: "⚠ Not secure"; }
+:is([data-era="2018"], [data-era="2024"]) .browser-statusbar { background: #FFFFFF; border-top: 1px solid #DADCE0; }
 /* The speed score's circle, coloured like the speed test colours it. */
 .browser-perf[data-lighthouse="good"], .browser-perf[data-lighthouse="average"], .browser-perf[data-lighthouse="poor"] { --lighthouse: #0CCE6B; }
 .browser-perf[data-lighthouse="average"] { --lighthouse: #FFA400; }
@@ -44,15 +44,15 @@
 .browser-statusbar[data-boot="blank"] .browser-status-text::after { content: " · running the JavaScript…"; }
 .browser-statusbar[data-boot="hydrating"] .browser-status-text::after { content: " · hydrating…"; }
 
-[data-era="2018"] .popup { background: #FFFFFF; border: 0; border-radius: 8px; box-shadow: 0 12px 32px rgba(32, 33, 36, 0.28); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-[data-era="2018"] .popup-titlebar { background: #FFFFFF; color: #5F6368; border-bottom: 0; padding-block: 8px; font-weight: 500; }
-[data-era="2018"] .popup-close { border: 0; background: transparent; color: #5F6368; font-size: 16px; }
-[data-era="2018"] .popup-headline { color: #202124; font-size: 17px; font-weight: 600; }
-[data-era="2018"] .popup-button { padding: 7px 16px; border: 1px solid #DADCE0; border-radius: 4px; background: #FFFFFF; color: #1A73E8; font-weight: 500; }
-[data-era="2018"] .popup-button.is-primary, [data-era="2018"] .popup-button.is-cta { border-color: #1A73E8; background: #1A73E8; color: #FFFFFF; }
-[data-era="2018"] .popup-button.is-link { border: 0; background: transparent; color: #80868B; text-decoration: underline; }
-[data-era="2018"] .popup--messenger .popup-titlebar { background: #5B4CDB; color: #FFFFFF; border-radius: 8px 8px 0 0; }
-[data-era="2018"] .popup--messenger .popup-close { color: #FFFFFF; }
+:is([data-era="2018"], [data-era="2024"]) .popup { background: #FFFFFF; border: 0; border-radius: 8px; box-shadow: 0 12px 32px rgba(32, 33, 36, 0.28); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+:is([data-era="2018"], [data-era="2024"]) .popup-titlebar { background: #FFFFFF; color: #5F6368; border-bottom: 0; padding-block: 8px; font-weight: 500; }
+:is([data-era="2018"], [data-era="2024"]) .popup-close { border: 0; background: transparent; color: #5F6368; font-size: 16px; }
+:is([data-era="2018"], [data-era="2024"]) .popup-headline { color: #202124; font-size: 17px; font-weight: 600; }
+:is([data-era="2018"], [data-era="2024"]) .popup-button { padding: 7px 16px; border: 1px solid #DADCE0; border-radius: 4px; background: #FFFFFF; color: #1A73E8; font-weight: 500; }
+:is([data-era="2018"], [data-era="2024"]) .popup-button.is-primary, :is([data-era="2018"], [data-era="2024"]) .popup-button.is-cta { border-color: #1A73E8; background: #1A73E8; color: #FFFFFF; }
+:is([data-era="2018"], [data-era="2024"]) .popup-button.is-link { border: 0; background: transparent; color: #80868B; text-decoration: underline; }
+:is([data-era="2018"], [data-era="2024"]) .popup--messenger .popup-titlebar { background: #5B4CDB; color: #FFFFFF; border-radius: 8px 8px 0 0; }
+:is([data-era="2018"], [data-era="2024"]) .popup--messenger .popup-close { color: #FFFFFF; }
 
 /* 2018's issue tracker: a board of tickets, all assigned to you. */
 .issue--ticket { border-left: 3px solid #0052CC; }
@@ -64,33 +64,33 @@
 
 /* The 2018 phone: edge to edge glass, a notch for the camera, and no home button: you swipe up instead. */
 @media (min-width: 781px) {
-  [data-era="2018"] .browser-viewport[data-device="phone"] { background: radial-gradient(circle at 30% 20%, #F8F9FA, #D7DBE0); }
+  :is([data-era="2018"], [data-era="2024"]) .browser-viewport[data-device="phone"] { background: radial-gradient(circle at 30% 20%, #F8F9FA, #D7DBE0); }
   /* Taller and edge to edge, so it zooms down a step to fit the same stage. */
-  [data-era="2018"] [data-device="phone"] .device-frame {
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-frame {
     position: relative; padding: 14px; background: #111111; border-radius: 54px; zoom: calc(var(--phone-zoom) * 0.82);
     box-shadow: 0 0 0 3px #3C3C3E, 0 0 0 5px #1C1C1E, 0 18px 40px rgba(0, 0, 0, 0.35);
   }
   /* The notch: the earpiece and the camera, cut into the top of the screen. */
-  [data-era="2018"] [data-device="phone"] .device-earpiece {
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-earpiece {
     position: absolute; top: 14px; left: 50%; z-index: 4; width: 40%; height: 26px; margin: 0; transform: translateX(-50%);
     border-radius: 0 0 16px 16px; background: #111111; box-shadow: none;
   }
   /* Either side of the notch, the status bar: the page starts under it. */
-  [data-era="2018"] [data-device="phone"] .device-screen { --screen-height: 600; --status-bar: 30px; padding-top: var(--status-bar); border-radius: 40px; }
-  [data-era="2018"] [data-device="phone"] .device-screen .site { top: var(--status-bar); height: calc(100% - var(--status-bar)); }
-  [data-era="2018"] [data-device="phone"][data-fits-phone="false"] .device-screen .site {
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-screen { --screen-height: 600; --status-bar: 30px; padding-top: var(--status-bar); border-radius: 40px; }
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-screen .site { top: var(--status-bar); height: calc(100% - var(--status-bar)); }
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"][data-fits-phone="false"] .device-screen .site {
     height: calc((var(--screen-height) * 1px - var(--status-bar)) * var(--desktop-width) / var(--screen-width));
   }
-  [data-era="2018"] [data-device="phone"] .device-screen::before, [data-era="2018"] [data-device="phone"] .device-screen::after {
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-screen::before, :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-screen::after {
     position: absolute; top: 8px; z-index: 3; color: #000000; font: 600 13px/1 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
-  [data-era="2018"] [data-device="phone"] .device-screen::before { content: "9:41"; left: 30px; }
-  [data-era="2018"] [data-device="phone"] .device-screen::after { content: "▂▄▆ ▮"; right: 26px; letter-spacing: 1px; font-size: 11px; }
-  [data-era="2018"] [data-device="phone"] .device-home { display: none; }
-  [data-era="2018"] .device-caption { color: #202124; }
-  [data-era="2018"] [data-fits-phone="false"] .device-caption-title { color: #D93025; }
-  [data-era="2018"] [data-fits-phone="true"] .device-caption-title { color: #188038; }
-  [data-era="2018"] .device-button[aria-pressed="true"] { background: #FFFFFF; color: #1A73E8; }
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-screen::before { content: "9:41"; left: 30px; }
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-screen::after { content: "▂▄▆ ▮"; right: 26px; letter-spacing: 1px; font-size: 11px; }
+  :is([data-era="2018"], [data-era="2024"]) [data-device="phone"] .device-home { display: none; }
+  :is([data-era="2018"], [data-era="2024"]) .device-caption { color: #202124; }
+  :is([data-era="2018"], [data-era="2024"]) [data-fits-phone="false"] .device-caption-title { color: #D93025; }
+  :is([data-era="2018"], [data-era="2024"]) [data-fits-phone="true"] .device-caption-title { color: #188038; }
+  :is([data-era="2018"], [data-era="2024"]) .device-button[aria-pressed="true"] { background: #FFFFFF; color: #1A73E8; }
 }
 
 /*
@@ -102,8 +102,8 @@
 .spa-boot { display: none; }
 .site[data-boot="blank"] .spa-boot { display: block; position: sticky; top: 0; z-index: 20; height: 0; }
 .spa-boot-screen { height: var(--site-viewport-height, 100%); padding: 8px; background: #FFFFFF; color: #000000; font: 16px/1.4 'Times New Roman', Times, serif; word-break: break-word; }
-.site[data-boot="blank"] .site-2018 > :not(.spa-boot) { visibility: hidden; }
-.site[data-boot="hydrating"] .site-2018 { pointer-events: none; cursor: progress; }
+.site[data-boot="blank"] :is(.site-2018, .site-2024) > :not(.spa-boot) { visibility: hidden; }
+.site[data-boot="hydrating"] :is(.site-2018, .site-2024) { pointer-events: none; cursor: progress; }
 
 /* The ingress's own 503 page: centred, a rule, and the name of the web server under it. */
 .site-down.is-ingress { text-align: center; font-family: 'Times New Roman', Times, serif; }
@@ -132,7 +132,7 @@
  * class is in the selector so it outranks both layouts' general .feature-block rules (relative, overflow hidden),
  * whichever file they come from.
  */
-.site .feature-block[data-feature="live-chat"] { position: static; width: max-content; max-width: 100%; min-height: 0; margin: 0 0 0 auto; padding: 0; border: 0; box-shadow: none; overflow: visible; }
+.site .feature-block:is([data-feature="live-chat"], [data-feature="ai-chatbot"]) { position: static; width: max-content; max-width: 100%; min-height: 0; margin: 0 0 0 auto; padding: 0; border: 0; box-shadow: none; overflow: visible; }
 .chat-bubble { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); color: #202124; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 13px; }
 .chat-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #6C5CE7; color: #FFFFFF; font-weight: 700; }
 .chat-text { display: grid; line-height: 17px; }
@@ -309,16 +309,16 @@
 @keyframes interstitial-hide { to { visibility: hidden; } }
 /* Hidden through the delay (fill: backwards), then fades in. With animations off it is simply there. */
 @keyframes interstitial-reveal { from { visibility: hidden; opacity: 0; } }
-[data-era="2018"] .popup.popup--interstitial {
+:is([data-era="2018"], [data-era="2024"]) .popup.popup--interstitial {
   inset: 0; width: auto; display: flex; flex-direction: column; border-radius: 0; background: #111318; color: #E8EAED; box-shadow: none;
 }
-[data-era="2018"] .popup--interstitial .popup-titlebar { background: transparent; color: #9AA0A6; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+:is([data-era="2018"], [data-era="2024"]) .popup--interstitial .popup-titlebar { background: transparent; color: #9AA0A6; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
 /* The × is small and faint on purpose, and only there from --close-after on. */
-[data-era="2018"] .popup--interstitial .popup-close { color: #9AA0A6; font-size: 13px; opacity: 0.55; animation: interstitial-reveal 300ms ease-out var(--close-after) backwards; }
+:is([data-era="2018"], [data-era="2024"]) .popup--interstitial .popup-close { color: #9AA0A6; font-size: 13px; opacity: 0.55; animation: interstitial-reveal 300ms ease-out var(--close-after) backwards; }
 .popup--interstitial .popup-body { position: relative; flex: 1; align-content: center; justify-items: center; gap: 12px; padding-bottom: 56px; }
 .interstitial-art { width: min(240px, 72%); aspect-ratio: 16 / 9; border-radius: 10px; background: radial-gradient(circle at 30% 35%, #FFD43B 0 14%, transparent 15%), linear-gradient(135deg, #FF6B6B, #845EF7 60%, #339AF0); }
-[data-era="2018"] .popup--interstitial .popup-headline { color: #FFFFFF; font-size: 22px; }
-[data-era="2018"] .popup--interstitial .popup-text { color: #BDC1C6; }
+:is([data-era="2018"], [data-era="2024"]) .popup--interstitial .popup-headline { color: #FFFFFF; font-size: 22px; }
+:is([data-era="2018"], [data-era="2024"]) .popup--interstitial .popup-text { color: #BDC1C6; }
 .interstitial-skip-area { position: absolute; right: 12px; bottom: 12px; display: grid; }
 .interstitial-skip-area > * { grid-area: 1 / 1; }
 .interstitial-countdown, .interstitial-skip { padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.45); background: rgba(0, 0, 0, 0.65); color: #FFFFFF; font: 13px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }

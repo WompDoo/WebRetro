@@ -7,7 +7,7 @@ const NO_PENALTY = 1;
 const NO_UPKEEP = 0;
 
 /** In shop order: an upgrade comes right after what it upgrades. */
-export const DEFENSE_IDS: readonly DefenseId[] = ['antivirus', 'premium-ad-network', 'no-popups', 'captcha', 'ddos-protection'];
+export const DEFENSE_IDS: readonly DefenseId[] = ['antivirus', 'premium-ad-network', 'no-popups', 'captcha', 'ddos-protection', 'bot-shield', 'guardrails'];
 
 export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
   antivirus: {
@@ -92,6 +92,38 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     adValueFactor: 0.8,
     revenueUpkeepShare: NO_UPKEEP,
     upgradesFrom: 'premium-ad-network',
+  },
+  'bot-shield': {
+    id: 'bot-shield',
+    eraId: 'ai-2024',
+    name: 'Bot shield',
+    description: 'A wall in front of your site that asks every visitor whether they’re human, and turns away the crawlers. Some real people on VPNs get stuck at it too.',
+    cost: 5_000_000_000_000,
+    countersHazard: 'scraper-swarm',
+    counterMode: 'prevents-spawn',
+    spawnRateFactor: 1,
+    autoCleanDelayMs: NO_DELAY_MS,
+    trafficFactor: 0.95,
+    penalizedFeatureId: null,
+    adValueFactor: NO_PENALTY,
+    revenueUpkeepShare: NO_UPKEEP,
+    upgradesFrom: null,
+  },
+  guardrails: {
+    id: 'guardrails',
+    eraId: 'ai-2024',
+    name: 'Chatbot guardrails',
+    description: 'A second model checks every answer before your assistant says it. No more invented refund policies, and every answer costs twice.',
+    cost: 10_000_000_000_000,
+    countersHazard: 'hallucination',
+    counterMode: 'prevents-spawn',
+    spawnRateFactor: 1,
+    autoCleanDelayMs: NO_DELAY_MS,
+    trafficFactor: NO_PENALTY,
+    penalizedFeatureId: null,
+    adValueFactor: NO_PENALTY,
+    revenueUpkeepShare: 0.03,
+    upgradesFrom: null,
   },
 };
 

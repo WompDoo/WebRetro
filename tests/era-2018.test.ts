@@ -40,9 +40,9 @@ const in2018 = (skills: readonly UpgradeId[] = []): GameState => ({
 });
 
 describe('2018: the era itself', () => {
-  it('follows 2011 and is the last era of the prototype for now', () => {
+  it('follows 2011 and leads into 2024', () => {
     assert.equal(ERAS_BY_ID['social-2011'].nextEraId, 'platform-2018');
-    assert.equal(ERAS_BY_ID['platform-2018'].nextEraId, null);
+    assert.equal(ERAS_BY_ID['platform-2018'].nextEraId, 'ai-2024');
   });
 
   it('retires share counters, the forum and the one-pager, and stops the "Get our app!" banner', () => {

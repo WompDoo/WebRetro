@@ -38,7 +38,7 @@ const TESTIMONIALS: readonly Testimonial[] = [
 ];
 
 /** What a visitor sees while the bundle loads: an empty page, "Loading...", or the template before Vue compiles it. */
-function renderBootScreen(framework: FrameworkId): string {
+export function renderBootScreen(framework: FrameworkId): string {
   return `<div class="spa-boot" aria-hidden="true"><div class="spa-boot-screen">${escapeHtml(FRAMEWORK_PRESENTATION[framework].bootScreen)}</div></div>`;
 }
 
@@ -77,7 +77,7 @@ const LEGAL_LINKS: readonly string[] = [
   'Acceptable Use Policy', 'Data Processing Addendum', 'Subprocessors', 'Security', 'Trust Center', 'Transparency Report', 'Modern Slavery Statement',
 ];
 
-function renderLegalWall(context: SiteContext): string {
+export function renderLegalWall(context: SiteContext): string {
   if (!context.state.purchasedUpgradeIds.includes('legal-pages')) return '';
   return `<nav class="lp-legal">${LEGAL_LINKS.map((link) => `<span>${link}</span>`).join('')}<p>Last updated May 25, 2018. By scrolling this page you agree to all of the above.</p></nav>`;
 }

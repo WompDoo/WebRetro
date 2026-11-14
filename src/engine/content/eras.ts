@@ -44,6 +44,7 @@ const HOMEPAGE_MIGRATION_COST = 6_500_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
 const SOCIAL_MIGRATION_COST = 550_000_000_000;
 const PLATFORM_MIGRATION_COST = 120_000_000_000_000;
+const AI_MIGRATION_COST = 35_000_000_000_000_000;
 
 export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
   'homepage-1997': {
@@ -74,6 +75,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     hasServerLoad: false,
     hasPageWeight: false,
     mobileShare: 0,
+    aiAnswerShare: 0,
     adValuePerVisitor: 0.15,
     adAnnoyancePerAd: 0.18,
     maxAds: 6,
@@ -108,6 +110,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     hasServerLoad: true,
     hasPageWeight: true,
     mobileShare: 0,
+    aiAnswerShare: 0,
     adValuePerVisitor: 0.09,
     adAnnoyancePerAd: 0.18,
     maxAds: 10,
@@ -143,6 +146,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     hasServerLoad: true,
     hasPageWeight: true,
     mobileShare: 0.4,
+    aiAnswerShare: 0,
     adValuePerVisitor: 0.07,
     adAnnoyancePerAd: 0.15,
     maxAds: 12,
@@ -154,10 +158,10 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     id: 'platform-2018',
     year: 2018,
     name: 'Platforms',
-    nextEraId: null,
-    nextEraName: 'AI',
+    nextEraId: 'ai-2024',
+    nextEraName: 'AI everywhere',
     nextEraYear: 2024,
-    migrationLabel: 'Finish the prototype',
+    migrationLabel: 'Relaunch with AI',
     migrationCost: PLATFORM_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('platform-2018', 2018),
@@ -180,11 +184,49 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     hasServerLoad: true,
     hasPageWeight: true,
     mobileShare: 0.6,
+    aiAnswerShare: 0,
     adValuePerVisitor: 0.05,
     adAnnoyancePerAd: 0.13,
     maxAds: 14,
     keystrokeValueMultiplier: 266_000,
     revenuePace: 4.2,
     typingPace: 4.2,
+  },
+  'ai-2024': {
+    id: 'ai-2024',
+    year: 2024,
+    name: 'AI everywhere',
+    nextEraId: null,
+    nextEraName: 'The end',
+    nextEraYear: 2025,
+    migrationLabel: 'Finish the game',
+    migrationCost: AI_MIGRATION_COST,
+    gateRequirements: [
+      requireEveryFeatureOf('ai-2024', 2024),
+      requireFeatureLevel('ai-chatbot', 15),
+      requireVisitorsPerSecond(15_000_000_000_000),
+      requireMigrationBudget(AI_MIGRATION_COST),
+    ],
+    adLabel: 'Sponsored result',
+    adSkillId: null,
+    connectionLabel: 'Fiber',
+    connectionKbPerSecond: 12_000,
+    mobileConnectionLabel: '5G',
+    mobileConnectionKbPerSecond: 600,
+    // Two and a half seconds, and the AI answer above your link already said what your page says.
+    patienceSeconds: 2.5,
+    // The median page passed 2 MB: fonts, a video hero, three analytics scripts and a chat widget.
+    basePageWeightKb: 400,
+    adPageWeightKb: 200,
+    hasServerLoad: true,
+    hasPageWeight: true,
+    mobileShare: 0.65,
+    aiAnswerShare: 0.3,
+    adValuePerVisitor: 0.04,
+    adAnnoyancePerAd: 0.12,
+    maxAds: 16,
+    keystrokeValueMultiplier: 9_000_000,
+    revenuePace: 4.4,
+    typingPace: 4.4,
   },
 };

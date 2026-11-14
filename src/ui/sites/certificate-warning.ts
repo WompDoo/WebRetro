@@ -46,6 +46,12 @@ const CERTIFICATE_WARNINGS: Readonly<Record<EraId, CertificateWarningCopy>> = {
     detail: 'NET::ERR_CERT_DATE_INVALID',
     button: 'Back to safety',
   },
+  'ai-2024': {
+    title: 'Your connection is not private',
+    lines: [`Attackers might be trying to steal your information from ${HOST_TOKEN} (for example, passwords, messages, or credit cards).`],
+    detail: 'NET::ERR_CERT_DATE_INVALID',
+    button: 'Back to safety',
+  },
 };
 
 const ERA_CLASSES: Readonly<Record<EraId, string>> = {
@@ -53,6 +59,7 @@ const ERA_CLASSES: Readonly<Record<EraId, string>> = {
   'web2-2005': 'is-2005',
   'social-2011': 'is-2011',
   'platform-2018': 'is-2018',
+  'ai-2024': 'is-2018',
 };
 
 function fillHost(text: string, host: string): string {

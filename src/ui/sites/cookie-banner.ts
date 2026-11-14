@@ -24,6 +24,6 @@ export function renderCookieBanner(state: GameState): string {
  * screen the bubble moves up above the banner instead of covering it.
  */
 export function renderCornerDock(context: SiteContext): string {
-  const widgets = `${renderCookieBanner(context.state)}${renderFeatureBlocks(context, ['live-chat']).join('')}`;
+  const widgets = `${renderCookieBanner(context.state)}${renderFeatureBlocks(context, ['live-chat', 'ai-chatbot']).join('')}`;
   return widgets === '' ? '' : `<div class="corner-dock"><div class="corner-dock-inner">${widgets}</div></div>`;
 }

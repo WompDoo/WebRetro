@@ -371,6 +371,16 @@ const PRICING_PLANS: readonly PricingPlan[] = [
   { name: 'Pro', price: '$12/mo', perks: ['Unlimited projects', 'Priority support', 'Dark mode'], isHighlighted: true },
   { name: 'Enterprise', price: 'Contact us', perks: ['Single sign-on', 'A person who answers', 'An invoice'], isHighlighted: false },
 ];
+/** 2024: everything is priced in AI credits, and the free plan is mostly a watermark. */
+const AI_PRICING_PLANS: readonly PricingPlan[] = [
+  { name: 'Free', price: '$0', perks: ['10 AI credits a day', 'Watermarked images', 'The slow model'], isHighlighted: false },
+  { name: 'Pro', price: '$20/mo', perks: ['500 AI credits', 'The fast model', 'Priority GPUs'], isHighlighted: true },
+  { name: 'Enterprise', price: 'Contact us', perks: ['Your own model', 'A person who answers', 'An invoice'], isHighlighted: false },
+];
+
+function findPricingPlans(context: SiteContext): readonly PricingPlan[] {
+  return context.eraId === 'ai-2024' ? AI_PRICING_PLANS : PRICING_PLANS;
+}
 const TEAMS_PER_LEVEL = 340;
 
 function renderPricingPlan(plan: PricingPlan): string {
@@ -381,7 +391,7 @@ function renderPricingPlan(plan: PricingPlan): string {
 
 /** Free, Pro, Enterprise. The middle one is highlighted: it's the one they want you to pick. */
 const renderPricingTable: FeatureRenderer = (context) =>
-  `${heading(context, 'pricing-table', 'Pricing')}<div class="pricing">${PRICING_PLANS.map(renderPricingPlan).join('')}</div><p class="post-meta">${formatCompactNumber(levelOf(context, 'pricing-table') * TEAMS_PER_LEVEL)} teams started a trial this week</p>`;
+  `${heading(context, 'pricing-table', 'Pricing')}<div class="pricing">${findPricingPlans(context).map(renderPricingPlan).join('')}</div><p class="post-meta">${formatCompactNumber(levelOf(context, 'pricing-table') * TEAMS_PER_LEVEL)} teams started a trial this week</p>`;
 
 /** The bubble in the corner. Its count of unread messages only goes up. */
 const renderLiveChat: FeatureRenderer = (context) =>
@@ -410,6 +420,72 @@ const READERS_PER_LEVEL = 1_200;
 const renderNewsletter: FeatureRenderer = (context) =>
   `${heading(context, 'newsletter', 'Get the weekly newsletter')}<p>The best of ${escapeHtml(siteBrand(context.state))}, every Tuesday. No spam. Mostly.</p><div class="newsletter-form"><span class="newsletter-input">you@example.com</span><span class="newsletter-button">Subscribe</span></div><p class="post-meta">Join ${formatCompactNumber(levelOf(context, 'newsletter') * READERS_PER_LEVEL)} readers · <small>unsubscribe any time</small></p>`;
 
+// ---------- 2024: AI everywhere ----------
+
+/** The assistant in the corner, where Sam used to be. Its unread count only goes up too. */
+const renderAiChatbot: FeatureRenderer = (context) =>
+  `<span class="chat-bubble is-ai"><span class="chat-avatar" aria-hidden="true">✨</span><span class="chat-text"><b>${escapeHtml(siteBrand(context.state))} AI</b>Ask me anything!</span><span class="chat-unread">${levelOf(context, 'ai-chatbot')}</span></span>`;
+
+const ARTICLE_TITLES: readonly string[] = [
+  'The Ultimate Guide to Productivity in 2024',
+  '10 Ways AI Will Change Your Morning Routine',
+  'What Is a Bento Grid? Everything You Need to Know',
+  'The Ultimate Guide to Ultimate Guides',
+  'How to Write Like a Human (Written by an AI)',
+  '7 Prompts Every Founder Should Know',
+];
+const VISIBLE_ARTICLES = 4;
+const ARTICLES_PER_LEVEL = 340;
+
+function renderArticle(title: string): string {
+  return `<li class="ai-article"><span class="ai-article-title">${escapeHtml(title)}</span><span class="post-meta">✨ AI-generated · 2 min read</span></li>`;
+}
+
+/** A thousand guides a day, all of them ultimate. The newest few are on show; the rest is a number. */
+const renderAiArticles: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'ai-articles');
+  const titles = Array.from({ length: VISIBLE_ARTICLES }, (_, index) => pickCyclic(ARTICLE_TITLES, level + index, ''));
+  return `${heading(context, 'ai-articles', 'Guides')}<ul class="ai-articles">${titles.map(renderArticle).join('')}</ul><p class="post-meta">${formatCompactNumber(level * ARTICLES_PER_LEVEL)} articles this month</p>`;
+};
+
+/** The search box that answers in sentences, with its sources underneath: more of them per level. */
+const BASE_SOURCES = 2;
+
+const renderAiSearch: FeatureRenderer = (context) => {
+  const brand = escapeHtml(siteBrand(context.state));
+  return `<div class="ask-box"><span class="ask-spark" aria-hidden="true">✨</span><span class="ask-placeholder">Ask ${brand} anything…</span><span class="ask-key">⌘K</span></div><div class="ask-answer"><b>AI answer</b><p>Yes: Pro includes unlimited projects and 500 AI credits a month, and you can cancel any time.</p><span class="post-meta">Sources: ${levelOf(context, 'ai-search') + BASE_SOURCES} pages on ${brand}.com</span></div>`;
+};
+
+const IMAGE_PROMPTS: readonly string[] = ['a cat astronaut, studio lighting', 'our team as an oil painting', 'a cozy reading nook, 8k', 'a handshake (count the fingers)'];
+const AI_IMAGE_HUE_STEP = 70;
+const IMAGES_PER_LEVEL = 1_200;
+
+function renderGeneratedImage(prompt: string, index: number): string {
+  return `<figure class="ai-image"><span class="ai-image-picture" style="--ai-hue:${index * AI_IMAGE_HUE_STEP}" aria-hidden="true"></span><figcaption>${escapeHtml(prompt)}</figcaption></figure>`;
+}
+
+/** Prompt in, picture out: the four latest, and how many were made today. */
+const renderAiImages: FeatureRenderer = (context) =>
+  `${heading(context, 'ai-images', 'Imagine anything')}<div class="ai-images">${IMAGE_PROMPTS.map(renderGeneratedImage).join('')}</div><p class="post-meta">${formatCompactNumber(levelOf(context, 'ai-images') * IMAGES_PER_LEVEL)} images made today</p>`;
+
+const FEED_ITEMS: readonly string[] = [
+  'Someone you don’t follow has a hot take',
+  'An AI summary of a video you didn’t watch',
+  'That guide you read yesterday, again',
+  'A cat clip that is also an ad',
+  'Your friend liked something in 2019',
+  'Thirty seconds of someone making pasta',
+];
+const BASE_FOR_YOU_ITEMS = 2;
+const HOURS_PER_LEVEL = 9_000;
+
+/** The endless feed: one more item on show per level, picked by a model, with the hours it eats. */
+const renderForYouFeed: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'for-you-feed');
+  const items = FEED_ITEMS.slice(0, Math.min(FEED_ITEMS.length, BASE_FOR_YOU_ITEMS + level)).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  return `${heading(context, 'for-you-feed', 'For you')}<div class="feed-tabs"><span class="is-current">For you</span><span>Following</span></div><ul class="feed-list">${items}</ul><p class="post-meta">Picked by a model · ${formatCompactNumber(level * HOURS_PER_LEVEL)} hours watched today</p>`;
+};
+
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'hit-counter': renderHitCounter,
@@ -434,6 +510,11 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'live-chat': renderLiveChat,
   'language-switcher': renderLanguageSwitcher,
   newsletter: renderNewsletter,
+  'ai-chatbot': renderAiChatbot,
+  'ai-articles': renderAiArticles,
+  'ai-search': renderAiSearch,
+  'ai-images': renderAiImages,
+  'for-you-feed': renderForYouFeed,
 };
 
 interface DeadFeatureCopy {

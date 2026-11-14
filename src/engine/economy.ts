@@ -124,6 +124,7 @@ interface EffectSummary {
   readonly quickFixWindowFactor: number;
   readonly overloadTolerance: number;
   readonly privacyFineFactor: number;
+  readonly aiAnswerFactor: number;
   /** How long until each kind of infection clears up by itself, where something does that. */
   readonly autoCleanAfterMs: Readonly<Partial<Record<InfectionKind, number>>>;
   readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
@@ -168,7 +169,10 @@ function multiplyTypingFactors(effects: readonly UpgradeEffect[]): number {
   return multiplyAll(effects.flatMap((effect) => (effect.kind === 'keystroke-value-multiplier' ? [effect.factor] : [])));
 }
 
-function multiplyEffectFactors(effects: readonly UpgradeEffect[], kind: 'quick-fix-window-multiplier' | 'overload-tolerance-multiplier' | 'privacy-fine-multiplier'): number {
+function multiplyEffectFactors(
+  effects: readonly UpgradeEffect[],
+  kind: 'quick-fix-window-multiplier' | 'overload-tolerance-multiplier' | 'privacy-fine-multiplier' | 'ai-answer-share-multiplier',
+): number {
   return multiplyAll(effects.flatMap((effect) => (effect.kind === kind ? [effect.factor] : [])));
 }
 
@@ -199,6 +203,7 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     quickFixWindowFactor: multiplyEffectFactors(effects, 'quick-fix-window-multiplier'),
     overloadTolerance: multiplyEffectFactors(effects, 'overload-tolerance-multiplier'),
     privacyFineFactor: multiplyEffectFactors(effects, 'privacy-fine-multiplier'),
+    aiAnswerFactor: multiplyEffectFactors(effects, 'ai-answer-share-multiplier'),
     autoCleanAfterMs: collectAutoCleans(effects),
     kinds: new Set(effects.map((effect) => effect.kind)),
   };
@@ -500,7 +505,8 @@ export const calculateDemandVisitorsPerSecond = memoizeByState((state: GameState
     calculateQuickFixFactor(state) *
     calculateMobileTrafficFactor(state) *
     calculateRenderingTrafficFactor(state) *
-    calculateSecurityTrafficFactor(state)
+    calculateSecurityTrafficFactor(state) *
+    (NEUTRAL_FACTOR - calculateAiAnswerShare(state))
   );
 });
 
@@ -638,6 +644,14 @@ export function calculateRevenuePerVisitor(state: GameState): number {
 /** What defenses and the ops you run cost, as a share of revenue. */
 export function calculateUpkeepShare(state: GameState): number {
   return sumAll(getEnabledDefenses(state).map((defense) => defense.revenueUpkeepShare)) + getEffectSummary(state).upkeepShare;
+}
+
+/**
+ * 2024: the share of would-be visitors an AI answer keeps. They read your content in a summary above your link and
+ * never come. Writing for AI answers gets you quoted with a link, and half of them through.
+ */
+export function calculateAiAnswerShare(state: GameState): number {
+  return ERAS_BY_ID[state.eraId].aiAnswerShare * getEffectSummary(state).aiAnswerFactor;
 }
 
 /** Lawyers make the GDPR's fines smaller; retargeting everyone makes them bigger. */
