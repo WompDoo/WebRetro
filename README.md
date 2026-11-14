@@ -6,7 +6,15 @@ framework wars: React, Angular or Vue) and 2024 (AI everywhere). Each era takes 
 You write code to earn freelance money, learn HTML tag by tag, build features that bring
 in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
 with short minigames. The Ops tab is where you run the site: your own domain, nightly backups, https
-and the certificate that keeps running out, monitoring, blue-green deploys. Each era ends with a relaunch.
+and the certificate that keeps running out, monitoring, blue-green deploys. Each era ends with a relaunch,
+and the last one with the ending: your site in a web archive, year by year, and an offer to sell it.
+
+## Design docs
+
+- `docs/era-ideas.md`: every era, what's built and what isn't, and the rules all eras follow.
+- `docs/ending.md`: the five endings considered, and why the archive and a choice won.
+- `docs/player-types.md`: the game played by nine kinds of player, what broke, and the fixes.
+- `docs/future.md`: prestige, replayability, a longer game, and what to build next.
 
 ## Run it
 
