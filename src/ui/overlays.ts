@@ -1,11 +1,12 @@
-import { calculateRetirementPayout, ERAS_BY_ID, formatMoney, formatWholeNumber } from '../engine';
+import { calculateRetirementPayout, ERAS_BY_ID } from '../engine';
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { elements } from './elements';
+import { renderEndingAct } from './ending';
+import type { EndingAct } from './ending';
 import { ERA_PRESENTATION } from './presentation';
 import { describeRetiring, describeTradeIn } from './retirement';
 
-const MS_PER_MINUTE = 60_000;
 
 /** Overlays are modal: the first button gets focus, so Enter and Space act on it. */
 export function showOverlay(overlay: HTMLElement): void {
@@ -39,8 +40,16 @@ export function renderStory(state: GameState): boolean {
   return true;
 }
 
-export function showEndCard(state: GameState): void {
-  const minutes = Math.round(state.playTimeMs / MS_PER_MINUTE);
-  elements.endStats.innerHTML = `<li><b>${minutes} min</b> played</li><li><b>${formatWholeNumber(state.lifetimeVisitors)}</b> visitors</li><li><b>${formatMoney(state.lifetimeEarnings)}</b> earned</li><li><b>${formatWholeNumber(state.keystrokes)}</b> keystrokes</li>`;
+/** An act of the ending, from its top. */
+export function showEnding(state: GameState, act: EndingAct): void {
+  elements.endCard.innerHTML = renderEndingAct(state, act, null);
+  elements.endCard.dataset['act'] = act;
+  elements.endOverlay.scrollTop = 0;
   showOverlay(elements.endOverlay);
+}
+
+/** Another year in the archive: the page changes, the year picked keeps the focus. */
+export function showArchiveYear(state: GameState, eraId: EraId): void {
+  elements.endCard.innerHTML = renderEndingAct(state, 'archive', eraId);
+  elements.endCard.querySelector<HTMLElement>(`[data-action="ending-year"][data-id="${eraId}"]`)?.focus();
 }

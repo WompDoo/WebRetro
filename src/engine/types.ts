@@ -419,7 +419,26 @@ export interface GameState {
   /** What the player named the site, as typed (cleaned). Addresses and logos use forms made from it. */
   readonly siteName: string;
   readonly reachedMilestoneIds: readonly MilestoneId[];
-  readonly prototypeComplete: boolean;
+  /** One for every era the site has left, the last era included once the game is finished. */
+  readonly eraRecords: readonly EraRecord[];
+  /** The last era's checklist was finished and the ending played. Play can go on afterwards. */
+  readonly isGameFinished: boolean;
+}
+
+/** The parts of the game that decide how the page looks: enough to show an old page again. */
+export type SiteSnapshot = Pick<
+  GameState,
+  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors'
+>;
+
+/** The site the day it left an era. */
+export interface EraRecord {
+  readonly eraId: EraId;
+  readonly endedAtPlayTimeMs: number;
+  readonly visitorsPerSecond: number;
+  readonly revenuePerSecond: number;
+  readonly lifetimeEarnings: number;
+  readonly site: SiteSnapshot;
 }
 
 export interface GameEvent {

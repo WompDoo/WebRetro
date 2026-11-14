@@ -23,6 +23,7 @@ import {
   isUpgradeAvailable,
 } from './economy';
 import { isEraGateComplete } from './era-gate';
+import { recordEra } from './era-records';
 import { findInfection } from './hazards';
 import { drawRandoms } from './random';
 import type {
@@ -284,9 +285,13 @@ function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): Ga
   return earn(enterEra(spend(state, migrationCost), nextEraId), payout);
 }
 
-/** Moving to the next era is always the player's choice. It never happens on its own, even offline. */
+/**
+ * Moving to the next era is always the player's choice. It never happens on its own, even offline. The era is
+ * recorded first, as the site was; in the last era, finishing the checklist finishes the game.
+ */
 export function advanceEra(state: GameState): GameState {
   if (!isEraGateComplete(state)) return state;
   const era = ERAS_BY_ID[state.eraId];
-  return era.nextEraId === null ? { ...state, prototypeComplete: true } : relaunch(state, era.migrationCost, era.nextEraId);
+  const recorded = recordEra(state);
+  return era.nextEraId === null ? { ...recorded, isGameFinished: true } : relaunch(recorded, era.migrationCost, era.nextEraId);
 }

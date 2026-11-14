@@ -20,7 +20,7 @@ import {
 import type { CodeEditor } from './code-editor';
 import { escapeHtml, setHtmlIfChanged, setTextIfChanged } from './dom';
 import { elements } from './elements';
-import { showEndCard } from './overlays';
+import { showEnding } from './overlays';
 import { calculateBootMs, resolveTyping } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
@@ -272,7 +272,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   const signatures: Record<SignatureKey, string> = { site: '', popups: '', shop: '', goal: '', news: '', skills: '', issues: '' };
   let renderedEraId = '';
   let hasRenderedSite = false;
-  let endCardShown = store.game.prototypeComplete;
+  let endCardShown = store.game.isGameFinished;
   let lastSlowRenderAt = 0;
 
   /** Runs render only when the signature moved since last time. */
@@ -312,9 +312,9 @@ export function createRenderer(editor: CodeEditor): Renderer {
   };
 
   const showEndCardOnce = (): void => {
-    if (!store.game.prototypeComplete || endCardShown) return;
+    if (!store.game.isGameFinished || endCardShown) return;
     endCardShown = true;
-    showEndCard(store.game);
+    showEnding(store.game, 'archive');
   };
 
   const renderStructure = (): void => {

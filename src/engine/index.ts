@@ -10,6 +10,7 @@ export * from './content/frameworks';
 export * from './content/consent-banners';
 export * from './economy';
 export * from './era-gate';
+export * from './era-records';
 export * from './actions';
 export * from './hazards';
 export * from './milestones';
