@@ -327,6 +327,24 @@ live chat was; AI articles, AI search, AI images and a "For you" feed; AI answer
 **Not yet:** prompt injection in the guestbook, server components, "Summarize with AI", passkeys, the cloud
 bill as its own readout, and the AI-hallucinated typing tool beyond its labels.
 
+## Web history: one trick an era (built)
+
+Each era sells the trick every site of the time used, with a visible change and a small edge, and each goes out of
+fashion at the next relaunch, so they never compound:
+
+| Era | Boost | On the page | Retires in |
+|---|---|---|---|
+| 1997 | Design for 800×600 (spacer GIFs) | a centred 760-pixel page and a "Best viewed at 800×600" badge | 2005: liquid layouts |
+| 2005 | CSS sprites | nav icons cut from one strip by background-position | 2018: HTTP/2 |
+| 2005 | Cufón headings | headings in a "real" italic face, unselectable | 2011: @font-face |
+| 2011 | Vendor prefixes | rounded corners, gradients and shadows on everything | 2018: Autoprefixer |
+| 2018 | Load every font weight (200 KB) | black headings, light body text | 2024: variable fonts |
+| 2018 | Reviews on the blockchain | "⛓ minted · gas $43" on every review | 2024: the NFT crash |
+| 2018 | A status page (ops) | "● All systems operational" in the footer; on the 503 page, "it's down too" | — |
+
+The first version let their traffic multipliers carry into every later era: they compounded to about 1.7× by 2024 and
+cut 2024 from 45 to 28 minutes. Retiring each one at the next relaunch, which is also what happened, fixed it.
+
 ## Small things players asked for (built)
 
 - **Editor tabs are real files.** From 2005 each skill puts its code where it belongs: CSS in `style.css`,

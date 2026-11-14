@@ -38,3 +38,5 @@
 .infection-error { font-size: 12.5px; line-height: 1.35; }
 .infection-sql { font-family: 'Courier New', monospace; font-size: 12px; color: #B91C1C; }
 .infection[data-kind="sql-injection"] .infection-hint { font-family: Verdana, sans-serif; font-weight: 700; }
+/* The status page lives on the same servers: it's down with everything else. */
+.site-down-status { font-style: italic; }

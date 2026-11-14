@@ -51,6 +51,7 @@ function readHomepageSkills(state: GameState): HomepageSkills {
 const BOOST_CLASSES: Readonly<Partial<Record<UpgradeId, string>>> = {
   'animated-banners': 'has-animated-banners',
   'animated-gif-pack': 'has-gif-pack',
+  'fixed-width-800': 'is-800-wide',
 };
 
 /** Only boosts still in fashion: a retired one leaves the page with its effect. */
@@ -103,6 +104,7 @@ const FOOTER_BADGES: readonly (readonly [UpgradeId, string])[] = [
   ['html-validator', '<span class="badge97 is-valid">✓ HTML 3.2 checked!</span>'],
   ['web-directories', '<span class="badge97 is-listed">★ Listed in Webcrawlr ★</span>'],
   ['banner-exchange', '<span class="badge97 is-swap">BannerSwap: your banner here!</span>'],
+  ['fixed-width-800', '<span class="badge97 is-800">Best viewed at 800×600</span>'],
 ];
 
 function renderBadges(state: GameState): string {

@@ -126,4 +126,11 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   paywall: `${WIKIPEDIA}/Paywall`,
   observability: `${WIKIPEDIA}/Observability_(software)`,
   'spot-gpus': `${WIKIPEDIA}/Graphics_processing_unit`,
+  'fixed-width-800': `${WIKIPEDIA}/Spacer_GIF`,
+  'css-sprites': `${MDN}/Web/CSS/CSS_images/Implementing_image_sprites_in_CSS`,
+  cufon: `${WIKIPEDIA}/Web_typography`,
+  'vendor-prefixes': `${MDN}/Glossary/Vendor_Prefix`,
+  'every-font-weight': `${MDN}/Web/CSS/font-weight`,
+  'blockchain-guestbook': `${WIKIPEDIA}/Non-fungible_token`,
+  'status-page': `${WIKIPEDIA}/Status_page`,
 };

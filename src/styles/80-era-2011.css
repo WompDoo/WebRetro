@@ -294,3 +294,7 @@
 @keyframes feed-live-pulse { 50% { opacity: 0.25; } }
 .feed-list.is-live .feed-item:first-child { animation: feed-arrive 4s ease-out infinite; }
 @keyframes feed-arrive { 0% { opacity: 0; transform: translateY(-6px); background: #FFF8C4; } 15% { opacity: 1; transform: none; } 60% { background: transparent; } }
+
+/* Vendor prefixes: CSS3, written four times. Rounded corners, a gradient and a shadow on everything. */
+.site-2011.has-css3 :is(.feature-block, .bs-hero) { border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); }
+.site-2011.has-css3 .feature-block { background-image: linear-gradient(#FFFFFF, #F4F4F4); }

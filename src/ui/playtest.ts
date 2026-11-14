@@ -1,4 +1,4 @@
-import { canCertificateExpire, ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
+import { canCertificateExpire, ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, getEraIndex, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { MINIGAME_NAMES } from './minigame-names';
@@ -41,8 +41,9 @@ function button(action: string, id: string, label: string, extra = ''): string {
 }
 
 /** An era whose skills include the framework wars: its end comes in one flavour per framework. */
+/** From the framework wars on, the site the preset ends with was built in one of them: let the playtester pick. */
 function hasFrameworkChoice(eraId: EraId): boolean {
-  return FRAMEWORK_IDS.some((frameworkId) => UPGRADES_BY_ID[FRAMEWORKS_BY_ID[frameworkId].skillId].eraId === eraId);
+  return FRAMEWORK_IDS.some((frameworkId) => getEraIndex(UPGRADES_BY_ID[FRAMEWORKS_BY_ID[frameworkId].skillId].eraId) <= getEraIndex(eraId));
 }
 
 function renderEndJumps(eraId: EraId): string {

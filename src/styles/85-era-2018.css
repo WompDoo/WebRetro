@@ -336,3 +336,10 @@
 /* Growth hacking: the main button's colour is an A/B test, a different variant on every reload. */
 .lp-button.is-primary.is-ab-1 { background: #FF5A4F; color: #FFFFFF; }
 .lp-button.is-primary.is-ab-2 { background: #12B886; color: #FFFFFF; }
+
+/* Every font weight: headings in black (900), body text in light (300). Eighteen files for two weights. */
+.site-2018.has-every-weight :is(h1, h2, .feature-heading) { font-weight: 900; letter-spacing: -0.02em; }
+.site-2018.has-every-weight p { font-weight: 300; }
+/* Reviews on the blockchain: each one minted, with its gas fee. */
+.nft-tag { margin-left: 6px; padding: 1px 6px; border-radius: 999px; background: #111111; color: #7CFFB2; font: 10px/1.4 'SFMono-Regular', Menlo, Consolas, monospace; white-space: nowrap; }
+.lp-status { color: #16A34A; }
