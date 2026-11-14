@@ -85,6 +85,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     isCertificateExpired: false,
     siteName: DEFAULT_SITE_NAME,
     reachedMilestoneIds: [],
-    prototypeComplete: false,
+    eraRecords: [],
+    isGameFinished: false,
   };
 }

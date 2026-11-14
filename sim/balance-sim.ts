@@ -332,7 +332,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
   const seenAt = new Map<number, number>();
   const firstPurchases = new Map<string, number>();
 
-  while (now < MAX_SIMULATED_MS && !state.prototypeComplete) {
+  while (now < MAX_SIMULATED_MS && !state.isGameFinished) {
     typingDebt += (profile.keystrokesPerSecond * TICK_MS) / 1000;
     const keystrokes = Math.floor(typingDebt);
     typingDebt -= keystrokes;

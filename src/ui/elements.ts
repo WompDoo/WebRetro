@@ -35,7 +35,7 @@ export const elements = {
   storyCard: requireElement<HTMLElement>('#story-card'),
   resetOverlay: requireElement<HTMLElement>('#reset-overlay'),
   endOverlay: requireElement<HTMLElement>('#end-overlay'),
-  endStats: requireElement<HTMLElement>('#end-stats'),
+  endCard: requireElement<HTMLElement>('#end-card'),
   playtestButton: requireElement<HTMLElement>('#playtest-button'),
   playtestOverlay: requireElement<HTMLElement>('#playtest-overlay'),
   playtestBody: requireElement<HTMLElement>('#playtest-body'),

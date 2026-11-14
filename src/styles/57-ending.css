@@ -1,0 +1,57 @@
+/* ---------- The ending: the Web Attic, the offer, how it ends, the credits ---------- */
+/* min-width: 0 lets the card shrink to a phone: the overlay is a grid, and the archive's address never wraps. */
+.ending-card { max-width: 920px; min-width: 0; }
+/* Start over from the credits opens on top of the ending. */
+#reset-overlay { z-index: 51; }
+.ending-epilogue { color: var(--ink-soft); font-style: italic; }
+
+/* The archive: a bar per era, as tall as its visitors on a log scale, then that year's page. */
+.attic-timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; height: 96px; margin: 12px 0; padding: 0; list-style: none; }
+.attic-timeline li { display: flex; }
+.attic-year { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 4px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink-soft); font-family: var(--font-numbers); font-size: 14px; font-weight: 600; }
+.attic-bar { display: block; border-radius: 4px 4px 0 0; background: var(--line-soft); transition: background-color 150ms; }
+.attic-year:hover .attic-bar { background: var(--ink-soft); }
+.attic-year.is-current { color: var(--link); }
+.attic-year.is-current .attic-bar { background: var(--link); }
+.attic-snapshot { margin: 0; }
+.attic-frame { overflow: hidden; border: 2px solid var(--line); border-radius: 6px; background: #FFFFFF; }
+.attic-address { overflow: hidden; padding: 5px 10px; border-bottom: 2px solid var(--line); background: var(--panel-sunken); color: var(--ink-soft); font: 12px/1.4 var(--font-code); white-space: nowrap; text-overflow: ellipsis; }
+/* The old page scrolls, but nothing on it answers: it's a copy. */
+.site.attic-site { height: min(52vh, 460px); }
+.attic-site * { pointer-events: none; }
+.attic-snapshot figcaption { margin-top: 8px; color: var(--ink-soft); font-size: 13px; }
+
+/* The offer: an email, and the choice. */
+.offer-mail { margin: 0 0 6px; padding: 14px 16px; border: 2px solid var(--line-soft); border-radius: 6px; background: var(--paper); }
+.offer-mail-head { padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); color: var(--ink-soft); font-size: 13px; }
+.offer-mail-sign { color: var(--ink-soft); font-size: 13px; }
+
+/* Selling: the blog post every acquired startup wrote. */
+.journey-post { margin: 0 0 12px; padding: 4px 0 4px 16px; border-left: 4px solid var(--line-soft); font: 17px/1.6 Georgia, 'Times New Roman', serif; }
+
+/* Keeping it: Notepad again, typing the first line, then the page it makes. */
+.ending-notepad { margin: 0 0 12px; border: 2px solid #000000; background: #FFFFFF; color: #000000; }
+.ending-notepad-title { padding: 3px 8px; background: linear-gradient(90deg, #000080, #1084D0); color: #FFFFFF; font: 700 13px/1.4 Tahoma, 'MS Sans Serif', sans-serif; }
+.ending-notepad-text { margin: 0; padding: 10px 12px; font: 15px/1.4 'Courier New', Courier, monospace; }
+.ending-typed { display: inline-block; max-width: 100%; overflow: hidden; vertical-align: bottom; white-space: nowrap; border-right: 2px solid #000000; animation: ending-type 2400ms steps(var(--chars)) 400ms both, ending-caret 900ms step-end infinite; }
+@keyframes ending-type { from { width: 0; } to { width: calc(var(--chars) * 1ch + 2px); } }
+@keyframes ending-caret { 50% { border-color: transparent; } }
+.ending-small-web { overflow: hidden; margin: 0 0 12px; border: 2px solid var(--line); border-radius: 6px; }
+.ending-small-web .site.attic-site { height: 260px; }
+
+/* The credits. */
+.credits-table { width: 100%; margin: 6px 0 4px; border-collapse: collapse; font-size: 13px; }
+.credits-table :is(th, td) { padding: 6px 8px; border-bottom: 1px solid var(--line-soft); text-align: right; }
+.credits-table :is(thead th, tbody th) { text-align: left; }
+.credits-table thead th { color: var(--ink-soft); font-weight: 600; }
+.credits-table td { font-family: var(--font-numbers); white-space: nowrap; }
+.credits-table thead th:not(:first-child) { text-align: right; }
+
+@container (max-width: 640px) {
+  .attic-timeline { height: 72px; }
+}
+@media (max-width: 640px) {
+  .credits-table { font-size: 12px; }
+  .credits-table :is(th, td) { padding: 5px 4px; }
+  .journey-post { font-size: 15px; }
+}

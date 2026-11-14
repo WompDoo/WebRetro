@@ -8,6 +8,7 @@ import {
   dismissCookieBanner,
   CONSENT_BANNER_IDS,
   DEFENSE_IDS,
+  ERA_IDS,
   ERAS_BY_ID,
   fallForPopupScam,
   FEATURE_IDS,
@@ -23,13 +24,14 @@ import {
   writeCode,
   findChosenFramework,
 } from '../engine';
-import type { ConsentBanner, DefenseId, FeatureId, FrameworkId, UpgradeId } from '../engine';
+import type { ConsentBanner, DefenseId, EraId, FeatureId, FrameworkId, UpgradeId } from '../engine';
 import { DEVICE_VIEWS } from './browser-chrome';
 import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
 import { elements } from './elements';
 import { FRAMEWORK_PRESENTATION } from './framework-presentation';
-import { hideOverlay, renderStory, showOverlay } from './overlays';
+import { isEndingAct } from './ending';
+import { hideOverlay, renderStory, showArchiveYear, showEnding, showOverlay } from './overlays';
 import { clearSave, writePreferences } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
@@ -76,6 +78,10 @@ function isUpgradeId(value: string): value is UpgradeId {
 
 function isDefenseId(value: string): value is DefenseId {
   return (DEFENSE_IDS as readonly string[]).includes(value);
+}
+
+function isEraId(value: string): value is EraId {
+  return (ERA_IDS as readonly string[]).includes(value);
 }
 
 function isShopTab(value: string): value is ShopTab {
@@ -222,6 +228,8 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),
     'keep-playing': () => hideOverlay(elements.endOverlay),
+    'ending-act': withId(isEndingAct, (act) => showEnding(store.game, act)),
+    'ending-year': withId(isEraId, (eraId) => showArchiveYear(store.game, eraId)),
     ...createPlaytestHandlers(renderer, minigame),
   };
 }

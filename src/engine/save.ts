@@ -2,7 +2,7 @@ import { SAVE_VERSION } from './constants';
 import { UPGRADE_IDS } from './content/upgrades';
 import { INFECTION_MINIGAMES } from './hazards';
 import { createInitialGameState } from './state';
-import type { GameState, Infection, MinigameId, UpgradeId } from './types';
+import type { EraRecord, FeatureId, GameState, Infection, MinigameId, UpgradeId } from './types';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -32,6 +32,12 @@ function isKnownUpgrade(upgradeId: UpgradeId): boolean {
   return UPGRADE_IDS.includes(upgradeId);
 }
 
+/** A record made before a feature or upgrade existed still shows its page: the new feature at 0, the old upgrade gone. */
+function withKnownContent(record: EraRecord, emptyLevels: Readonly<Record<FeatureId, number>>): EraRecord {
+  const site = { ...record.site, featureLevels: { ...emptyLevels, ...record.site.featureLevels }, purchasedUpgradeIds: record.site.purchasedUpgradeIds.filter(isKnownUpgrade) };
+  return { ...record, site };
+}
+
 export function restoreGameState(value: unknown, fallbackSeed: number): GameState | null {
   if (!isRecord(value) || !hasCompatibleShape(value)) return null;
   const restored: GameState = { ...createInitialGameState(fallbackSeed), ...(value as Partial<GameState>) };
@@ -45,6 +51,7 @@ export function restoreGameState(value: unknown, fallbackSeed: number): GameStat
     hazardCountdownsMs: { ...initial.hazardCountdownsMs, ...restored.hazardCountdownsMs },
     infections: restored.infections.map(withMinigame),
     purchasedUpgradeIds: restored.purchasedUpgradeIds.filter(isKnownUpgrade),
+    eraRecords: restored.eraRecords.map((record) => withKnownContent(record, initial.featureLevels)),
   };
 }
 

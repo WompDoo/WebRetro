@@ -14,6 +14,7 @@ import {
   getEraIndex,
 } from './economy';
 import { calculateGateChecks } from './era-gate';
+import { createEraRecord } from './era-records';
 import { createInitialGameState } from './state';
 import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, UpgradeId } from './types';
 
@@ -38,6 +39,8 @@ const LIFETIME_EARNINGS_FACTOR = 3;
 const KEYSTROKES_PER_ERA = 4_000;
 const VISITORS_PER_EARNED_DOLLAR = 20;
 const QUIET_FIRST_HAZARDS_MS = 60_000;
+/** Each earlier era took about this long, for the play time and the records. */
+const PLAYTEST_ERA_MS = 50 * 60_000;
 
 function isBefore(eraId: EraId, other: EraId): boolean {
   return getEraIndex(eraId) < getEraIndex(other);
@@ -124,9 +127,11 @@ function meetVisitorsTarget(state: GameState, round = 0): GameState {
   return isMet || round >= MAX_LEVEL_ROUNDS ? hosted : meetVisitorsTarget(raiseEraFeatures(hosted), round + 1);
 }
 
+/** Ready to relaunch, with the budget saved up: earned, so it counts toward lifetime earnings too. */
 function finishEra(state: GameState): GameState {
   const ready = meetVisitorsTarget(meetFeatureLevels(state));
-  return { ...ready, money: ERAS_BY_ID[ready.eraId].migrationCost };
+  const budget = ERAS_BY_ID[ready.eraId].migrationCost;
+  return { ...ready, money: budget, lifetimeEarnings: ready.lifetimeEarnings + budget };
 }
 
 function startEra(state: GameState): GameState {
@@ -134,8 +139,13 @@ function startEra(state: GameState): GameState {
   return { ...hosted, money: Math.max(0, calculateNetRevenuePerSecond(hosted)) * START_MONEY_SECONDS };
 }
 
-/** The framework only matters from 2018's end on: it's the one the preset's site picked. */
-export function createPlaytestState(eraId: EraId, stage: PlaytestStage, seed: number, framework: FrameworkId): GameState {
+/** Whole eras played so far: the ones before this, and this one too at its end. */
+function playTimeFor(eraId: EraId, stage: PlaytestStage): number {
+  const erasPlayed = getEraIndex(eraId) + (stage === 'end' ? 1 : 0);
+  return erasPlayed * PLAYTEST_ERA_MS;
+}
+
+function buildPreset(eraId: EraId, stage: PlaytestStage, seed: number, framework: FrameworkId): GameState {
   const fresh = createInitialGameState(seed);
   if (eraId === 'homepage-1997' && stage === 'start') return fresh;
   const lifetimeEarnings = Math.max(1, earlierBudgets(eraId) * LIFETIME_EARNINGS_FACTOR);
@@ -151,9 +161,16 @@ export function createPlaytestState(eraId: EraId, stage: PlaytestStage, seed: nu
     lifetimeVisitors: lifetimeEarnings * VISITORS_PER_EARNED_DOLLAR,
     keystrokes: (getEraIndex(eraId) + 1) * KEYSTROKES_PER_ERA,
     reachedMilestoneIds: ['first-visitor', 'first-revenue', 'quit-day-job'],
+    playTimeMs: playTimeFor(eraId, stage),
     hazardCountdownsMs: Object.fromEntries(Object.keys(fresh.hazardCountdownsMs).map((kind) => [kind, QUIET_FIRST_HAZARDS_MS])) as GameState['hazardCountdownsMs'],
   };
   return stage === 'end' ? finishEra(base) : startEra(base);
+}
+
+/** The framework only matters from 2018's end on: it's the one the preset's site picked. Earlier eras are on record. */
+export function createPlaytestState(eraId: EraId, stage: PlaytestStage, seed: number, framework: FrameworkId): GameState {
+  const earlier = ERA_IDS.filter((other) => isBefore(other, eraId)).map((other) => createEraRecord(buildPreset(other, 'end', seed, framework)));
+  return { ...buildPreset(eraId, stage, seed, framework), eraRecords: earlier };
 }
 
 /** Skip ahead: the money this many seconds of income would bring. */

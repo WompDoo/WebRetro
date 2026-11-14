@@ -151,10 +151,10 @@ const HINT_RULES: readonly HintRule[] = [
   },
 ];
 
-/** The last era of the prototype has no relaunch to point at. */
+/** The last era has no relaunch to point at. */
 function describeGoal(state: GameState): string {
   const era = ERAS_BY_ID[state.eraId];
-  return era.nextEraId === null ? 'Finish the checklist to finish the prototype.' : `Finish the checklist to relaunch your site as ${era.nextEraName}.`;
+  return era.nextEraId === null ? 'Finish the checklist to finish the game.' : `Finish the checklist to relaunch your site as ${era.nextEraName}.`;
 }
 
 function findHint(state: GameState): string {
@@ -202,15 +202,21 @@ function renderGoalToggle(checks: readonly GateCheck[]): string {
   return `<button type="button" class="goal-toggle" data-action="toggle-goal">${met} of ${checks.length} done<span class="goal-toggle-arrow" aria-hidden="true">▾</span></button>`;
 }
 
+const REPLAY_ENDING_BUTTON = '<button type="button" class="migrate-button" data-action="ending-act" data-id="archive">Watch the ending again</button>';
+
 /** While locked: the requirement chips. Once everything is met, the chips make way for the Launch button. */
+function renderGoalBody(state: GameState): string {
+  const checks = calculateGateChecks(state);
+  return isEraGateComplete(state)
+    ? `<button type="button" class="migrate-button" data-action="migrate">${escapeHtml(ERAS_BY_ID[state.eraId].migrationLabel)}</button>`
+    : `${renderGoalToggle(checks)}<ul class="gate-list">${checks.map((check, index) => renderGateRow(state, check, index)).join('')}</ul>`;
+}
+
+/** After the last era, the button plays the ending again: finishing twice would do nothing. */
 export function renderGoal(state: GameState): string {
   const era = ERAS_BY_ID[state.eraId];
-  const checks = calculateGateChecks(state);
   const target = `<div class="goal-era"><span class="goal-eyebrow">Next era</span><span class="goal-target"><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span></span></div>`;
-  const body = isEraGateComplete(state)
-    ? `<button type="button" class="migrate-button" data-action="migrate">${escapeHtml(era.migrationLabel)}</button>`
-    : `${renderGoalToggle(checks)}<ul class="gate-list">${checks.map((check, index) => renderGateRow(state, check, index)).join('')}</ul>`;
-  return `${target}${body}`;
+  return `${target}${state.isGameFinished ? REPLAY_ENDING_BUTTON : renderGoalBody(state)}`;
 }
 
 export function renderTip(state: GameState): string {
@@ -229,5 +235,5 @@ export function updateGoalProgress(container: HTMLElement, state: GameState): vo
 
 export function calculateGoalSignature(state: GameState): string {
   const met = calculateGateChecks(state).map((check) => (check.isMet ? '1' : '0')).join('');
-  return `${state.eraId}|${met}`;
+  return `${state.eraId}|${met}|${state.isGameFinished}`;
 }

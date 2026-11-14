@@ -1,6 +1,6 @@
 # Era ideas
 
-Each era is a snapshot year standing for a span of web history. Built so far: 1997, 2005, 2011 and the core of 2018, plus the performance indicator.
+Each era is a snapshot year standing for a span of web history. All five are built, plus the performance indicator and the ending (`ending.md`).
 Everything on the page is site dressing: fake content and simple loops, never a working app.
 
 | Era | Covers | Status |
@@ -8,8 +8,8 @@ Everything on the page is site dressing: fake content and simple loops, never a 
 | 1997 Personal homepage | mid-90s to the 2000 crash | built |
 | 2005 Web 2.0 | 2001–2009 | built, including the expansion below |
 | 2011 Social & mobile | 2010–2015 | built |
-| 2018 Platform | 2016–2022 | core built (see below); hazards, looks and backend to come |
-| 2024 AI | 2023–now | ideas |
+| 2018 Platform | 2016–2022 | built |
+| 2024 AI | 2023–now | built: see the section below for what made it in |
 
 ## Rules for every era
 
@@ -318,7 +318,14 @@ shows up in it.
 
 **Performance indicator:** the score circle plus the cloud bill.
 
-**Ending:** acquisition offers from parody tech giants, based on what you built, plus a "refuse to sell" ending.
+**Ending:** built as the Web Attic, then an offer to sell or keep the site, then the credits. See `ending.md`.
+
+**Built:** the bento-grid landing page with the "Ask AI" box in the hero and the assistant in the corner where the
+live chat was; AI articles, AI search, AI images and a "For you" feed; AI answers keeping 30% of visitors away
+(llms.txt halves it); AI crawlers on the busiest page (bot shield) and an assistant that promises refunds
+(guardrails); GPU-cluster hosting; dark mode, a paywall, "add AI to everything"; INP in place of FID.
+**Not yet:** prompt injection in the guestbook, server components, "Summarize with AI", passkeys, the cloud
+bill as its own readout, and the AI-hallucinated typing tool beyond its labels.
 
 ## Small things players asked for (built)
 
