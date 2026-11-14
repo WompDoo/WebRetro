@@ -1,4 +1,7 @@
 import {
+  FEATURE_IDS,
+  FEATURES_BY_ID,
+  getFeatureFirstRun,
   calculateBacklinkSources,
   calculateBacklinksEarned,
   calculatePerkCost,
@@ -200,12 +203,21 @@ function renderPerkRow(legacy: LegacyState, perkId: PerkId): string {
   return `<li class="perk"><div class="perk-info"><h3 class="perk-name">${escapeHtml(perk.name)} <span class="perk-level">level ${legacy.perkLevels[perkId]}</span></h3><p>${escapeHtml(perk.description)}</p></div><button type="button" class="buy-button" data-action="buy-perk" data-id="${perkId}"${disabled}>${pluralizeBacklinks(cost)}</button></li>`;
 }
 
+/** What the next site gets that this one didn't: the reason to start it. Empty once every run's content is open. */
+function renderNextRunUnlocks(legacy: LegacyState): string {
+  const nextRun = legacy.finishedRuns + 1;
+  const unlocked = FEATURE_IDS.filter((featureId) => getFeatureFirstRun(featureId) === nextRun);
+  const items = unlocked.map((featureId) => `<li><b>${escapeHtml(FEATURES_BY_ID[featureId].name)}</b> in ${eraYear(FEATURES_BY_ID[featureId].eraId)}</li>`).join('');
+  return unlocked.length === 0 ? '' : `<h3 class="story-subheading">New on your next site</h3><ul class="next-run-unlocks">${items}</ul>`;
+}
+
 /** Prestige: what the run earned, the perks it buys, and the new site. */
 function renderLegacy(state: GameState, legacy: LegacyState): string {
   const sources = calculateBacklinkSources(state);
   return `<p class="story-year">Site number ${legacy.finishedRuns + 1}</p>
     <h2 id="end-heading">Your old site links to the new one</h2>
     <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in under 45 minutes. You have <b>${pluralizeBacklinks(legacy.backlinks)}</b> to spend on perks every new site starts with.</p>
+    ${renderNextRunUnlocks(legacy)}
     <ul class="perk-list">${PERK_IDS.map((perkId) => renderPerkRow(legacy, perkId)).join('')}</ul>
     <p class="ending-epilogue">The new site starts in 1997 with a new name, and you start with everything above.</p>
     <div class="overlay-actions">

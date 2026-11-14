@@ -30,7 +30,12 @@ export type FeatureId =
   | 'ai-articles'
   | 'ai-search'
   | 'ai-images'
-  | 'for-you-feed';
+  | 'for-you-feed'
+  | 'webcam'
+  | 'wiki'
+  | 'deal-of-the-day'
+  | 'community-chat'
+  | 'agent-store';
 
 export type UpgradeId =
   | 'img-tag'

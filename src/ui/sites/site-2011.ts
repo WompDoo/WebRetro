@@ -11,10 +11,10 @@ import { render2005Site } from './site-2005';
  * Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no
  * place here. In 2018, before a framework rewrites the site, the new features squeeze in here too.
  */
-const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'video-player', 'blog', 'pricing-table', 'comments', 'photo-gallery', 'forum'];
+const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'video-player', 'blog', 'pricing-table', 'comments', 'photo-gallery', 'forum', 'community-chat'];
 /** The span4 sidebar: small widgets, each in a well. */
 /** Sign in with… isn't listed: its buttons go in the sign-in box. Maps were sidebar widgets. */
-const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['share-buttons', 'activity-feed', 'newsletter', 'guestbook', 'map-mashup', 'midi-player'];
+const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['deal-of-the-day', 'share-buttons', 'activity-feed', 'newsletter', 'guestbook', 'map-mashup', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Home', 'Blog', 'Photos', 'About'];
 /** The three supporting columns under the hero, before you've built anything to put there. */
 const PLACEHOLDER_COLUMNS: readonly string[] = ['Heading', 'Heading', 'Heading'];

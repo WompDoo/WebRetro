@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createPlaytestState, FEATURE_IDS, findFrameworkPickedBy, findFrameworkRenderedBy, isFeatureOnPage } from '../src/engine';
+import { createPlaytestState, FEATURE_IDS, FEATURES_BY_ID, findFrameworkPickedBy, findFrameworkRenderedBy, getFeatureFirstRun, isEraUnlocked, isFeatureOnPage } from '../src/engine';
 import type { EraId, FrameworkId, GameState, UpgradeId } from '../src/engine';
 import { renderSite } from '../src/ui/sites';
 
@@ -55,6 +55,22 @@ describe('every built feature has a place on every page you can have', () => {
       const state = buildState(layout);
       const html = renderSite(state, NOW);
       const missing = FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId)).filter((featureId) => !html.includes(`data-feature="${featureId}"`));
+      assert.deepEqual(missing, []);
+    });
+  });
+});
+
+/** A second run has more to build: the same pages must find a place for it. */
+describe('a second run’s features have a place on every page too', () => {
+  LAYOUTS.forEach((layout) => {
+    it(`${layout.eraId}, ${layout.name} page, run 2`, () => {
+      const first = buildState(layout);
+      // Only what the run could have built by now: a 2024 feature's crowd in 2005 would just take the server down.
+      const runTwo = FEATURE_IDS.filter((featureId) => getFeatureFirstRun(featureId) === 2 && isEraUnlocked(first, FEATURES_BY_ID[featureId].eraId));
+      const levels = { ...first.featureLevels, ...Object.fromEntries(runTwo.map((featureId) => [featureId, 3])) };
+      const state: GameState = { ...first, runNumber: 2, featureLevels: levels };
+      const html = renderSite(state, NOW);
+      const missing = runTwo.filter((featureId) => isFeatureOnPage(state, featureId)).filter((featureId) => !html.includes(`data-feature="${featureId}"`));
       assert.deepEqual(missing, []);
     });
   });

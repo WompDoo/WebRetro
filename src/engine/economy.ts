@@ -15,7 +15,7 @@ import {
 import { CONSENT_BANNERS_BY_ID } from './content/consent-banners';
 import { DEFENSE_IDS, DEFENSE_SUNSETS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
-import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
+import { FEATURE_IDS, FEATURES_BY_ID, getFeatureDisplayName, getFeatureFirstRun } from './content/features';
 import { findFrameworkPickedBy, findFrameworkRenderedBy, FRAMEWORK_IDS, FRAMEWORKS_BY_ID } from './content/frameworks';
 import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
@@ -780,9 +780,18 @@ export function isSkillLearned(state: GameState, skillId: UpgradeId | null): boo
 }
 
 /** The feature's era has arrived and you've learned the skill it needs. */
+/** A later run's feature doesn't exist yet in the run before it. */
+export function isFeatureInThisRun(state: GameState, featureId: FeatureId): boolean {
+  return state.runNumber >= getFeatureFirstRun(featureId);
+}
+
+function isFeatureOfThisTime(state: GameState, featureId: FeatureId): boolean {
+  return isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId) && isFeatureInThisRun(state, featureId);
+}
+
 export function isFeatureBuildable(state: GameState, featureId: FeatureId): boolean {
   const definition = FEATURES_BY_ID[featureId];
-  return isEraUnlocked(state, definition.eraId) && isSkillLearned(state, definition.requiredSkillId) && !isFeatureRetired(state, featureId);
+  return isFeatureOfThisTime(state, featureId) && isSkillLearned(state, definition.requiredSkillId) && !isFeatureRetired(state, featureId);
 }
 
 export function canUseAds(state: GameState): boolean {
@@ -796,7 +805,7 @@ export function getAvailableSkillIds(state: GameState): readonly UpgradeId[] {
 
 /** Visible features: their era has arrived, whether or not you know the skill yet. */
 export function getUnlockedFeatureIds(state: GameState): readonly FeatureId[] {
-  return FEATURE_IDS.filter((featureId) => isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId) && !isFeatureRetired(state, featureId));
+  return FEATURE_IDS.filter((featureId) => isFeatureOfThisTime(state, featureId) && !isFeatureRetired(state, featureId));
 }
 
 function isRequiredFeatureOwned(state: GameState, upgradeId: UpgradeId): boolean {

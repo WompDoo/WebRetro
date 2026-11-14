@@ -30,6 +30,11 @@ export const FEATURE_IDS: readonly FeatureId[] = [
   'ai-search',
   'ai-images',
   'for-you-feed',
+  'webcam',
+  'wiki',
+  'deal-of-the-day',
+  'community-chat',
+  'agent-store',
 ];
 
 export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
@@ -475,12 +480,115 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pluginDiesIn: null,
     sunsetIn: null,
   },
+  // ---------- From the second run on: what the web had that a first-time builder never found ----------
+  webcam: {
+    id: 'webcam',
+    eraId: 'homepage-1997',
+    name: 'Live webcam',
+    laterEraNames: {},
+    description: 'A camera pointed at your desk, a new picture every minute. Nothing ever happens. People check anyway, all day.',
+    baseCost: 8_000,
+    visitorsPerSecondPerLevel: 250,
+    synergy: null,
+    pageWeightKb: 25,
+    pageWeightKbPerLevel: 1,
+    requiredSkillId: 'cgi-forms',
+    isSwitchable: false,
+    pluginDiesIn: null,
+    sunsetIn: 'web2-2005',
+  },
+  wiki: {
+    id: 'wiki',
+    eraId: 'web2-2005',
+    name: 'Wiki',
+    laterEraNames: {},
+    description: 'Pages anyone can edit. Your forum regulars write half of it; the other half is vandalism and its reverts.',
+    baseCost: 1_000_000,
+    visitorsPerSecondPerLevel: 9_000,
+    synergy: { sourceFeatureId: 'forum', bonusPerSourceLevel: 0.02 },
+    pageWeightKb: 50,
+    pageWeightKbPerLevel: 2,
+    requiredSkillId: 'learn-php',
+    isSwitchable: false,
+    pluginDiesIn: null,
+    sunsetIn: 'social-2011',
+  },
+  'deal-of-the-day': {
+    id: 'deal-of-the-day',
+    eraId: 'social-2011',
+    name: 'Deal of the day',
+    laterEraNames: {},
+    description: 'One deal, one day, a countdown, and it only unlocks if enough people buy. Every share brings the friends it needs.',
+    baseCost: 15_000_000_000,
+    visitorsPerSecondPerLevel: 4_000_000,
+    synergy: { sourceFeatureId: 'share-buttons', bonusPerSourceLevel: 0.02 },
+    pageWeightKb: 70,
+    pageWeightKbPerLevel: 1,
+    requiredSkillId: 'social-plugins',
+    isSwitchable: false,
+    pluginDiesIn: null,
+    sunsetIn: 'platform-2018',
+  },
+  'community-chat': {
+    id: 'community-chat',
+    eraId: 'platform-2018',
+    name: 'Community chat',
+    laterEraNames: {},
+    description: 'A chat server for your regulars: #general, #help and #off-topic, where most of it happens. Busier with every newsletter.',
+    baseCost: 900_000_000_000,
+    visitorsPerSecondPerLevel: 350_000_000,
+    synergy: { sourceFeatureId: 'newsletter', bonusPerSourceLevel: 0.02 },
+    pageWeightKb: 150,
+    pageWeightKbPerLevel: 2,
+    requiredSkillId: 'learn-websockets',
+    isSwitchable: false,
+    pluginDiesIn: null,
+    sunsetIn: null,
+  },
+  'agent-store': {
+    id: 'agent-store',
+    eraId: 'ai-2024',
+    name: 'Agent store',
+    laterEraNames: {},
+    description: 'Little AI agents people install on your site: one sorts email, one books meetings, one hires other agents. Busier with every answer your assistant gives.',
+    baseCost: 120_000_000_000_000,
+    visitorsPerSecondPerLevel: 20_000_000_000,
+    synergy: { sourceFeatureId: 'ai-chatbot', bonusPerSourceLevel: 0.02 },
+    pageWeightKb: 100,
+    pageWeightKbPerLevel: 2,
+    requiredSkillId: 'learn-llm-api',
+    isSwitchable: false,
+    pluginDiesIn: null,
+    sunsetIn: null,
+  },
 };
+
+/**
+ * Features that only a later run has: a second site finds what the first never did. They're extras, not chores:
+ * no era's checklist asks for them.
+ */
+export const FEATURE_FIRST_RUNS: Readonly<Partial<Record<FeatureId, number>>> = {
+  webcam: 2,
+  wiki: 2,
+  'deal-of-the-day': 2,
+  'community-chat': 2,
+  'agent-store': 2,
+};
+const FIRST_RUN = 1;
+
+export function getFeatureFirstRun(featureId: FeatureId): number {
+  return FEATURE_FIRST_RUNS[featureId] ?? FIRST_RUN;
+}
 
 export const FEATURES: readonly FeatureDefinition[] = FEATURE_IDS.map((id) => FEATURES_BY_ID[id]);
 
 export function getFeatureIdsOfEra(eraId: EraId): readonly FeatureId[] {
   return FEATURE_IDS.filter((id) => FEATURES_BY_ID[id].eraId === eraId);
+}
+
+/** The era's features every run has: what its checklist asks you to build. */
+export function getCoreFeatureIdsOfEra(eraId: EraId): readonly FeatureId[] {
+  return getFeatureIdsOfEra(eraId).filter((id) => getFeatureFirstRun(id) === FIRST_RUN);
 }
 
 /** The newest name the feature got in this era or an earlier one: a 2011 rename carries into 2018. Null if none. */

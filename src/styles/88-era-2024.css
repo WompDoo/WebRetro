@@ -124,3 +124,17 @@
   .ai-result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ai-images { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---------- Features from the second run on (shared by every era's page) ---------- */
+.webcam-frame { position: relative; display: block; aspect-ratio: 4 / 3; max-width: 240px; margin-bottom: 6px; background: linear-gradient(#8A8F99, #4A4E57); border: 2px solid #222222; filter: grayscale(0.6) contrast(1.1); }
+.webcam-desk { position: absolute; inset: 55% 10% 12% 10%; background: #6B5136; box-shadow: 30px -38px 0 -16px #2B2F38; }
+.webcam-stamp { position: absolute; left: 6px; top: 4px; color: #FF3B3B; font: 700 11px/1 'Courier New', monospace; }
+.wiki-pages, .chat-channels, .agent-list { margin: 0 0 6px; padding-left: 18px; }
+.deal-title { margin: 0 0 4px; font-weight: 700; font-size: 16px; }
+.deal-meta { margin: 0 0 8px; font-size: 13px; }
+.deal-button, .agent-install { display: inline-block; padding: 4px 12px; border-radius: 4px; background: #4CAF50; color: #FFFFFF; font-weight: 700; font-size: 13px; }
+.chat-channels { list-style: none; padding: 0; font-family: 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 13px; }
+.chat-online { color: #23A55A; }
+.agent-list { display: grid; gap: 6px; padding: 0; list-style: none; }
+.agent-card { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid rgba(127, 127, 127, 0.3); border-radius: 10px; font-size: 14px; }
+.agent-install { padding: 2px 10px; border-radius: 999px; background: #111111; font-size: 12px; }

@@ -82,6 +82,21 @@ Short of the −30% the plan aimed for, and kept that way on purpose: the reason
 (PR 2), which adds play, so the perks only need to pay for it. A run earns 5–9 Backlinks: about one level of each
 perk per run.
 
+**Built (PR 2):** the five run-two features, one per era: a 1997 live webcam, a 2005 wiki (forum regulars write
+it), a 2011 deal of the day (shares tip it), a 2018 community chat (newsletter readers fill it) and a 2024 agent store
+(the assistant sells it). `FEATURE_FIRST_RUNS` marks them; they're in the shop only from run two, never on a
+checklist (`getCoreFeatureIdsOfEra`), and the webcam, wiki and deal retire at the next relaunch as they faded. The
+legacy screen names them under "New on your next site". Every page layout of every era places them
+(`tests/layouts.test.ts`, run 2). The playtest panel can turn the game in hand into a second run.
+
+| Player | Run 1 | Run 2, perks only | Run 2, perks and new features |
+|---|---|---|---|
+| optimizer | 283 min | 228 min | 221 min |
+| casual | 421 min | 387 min | 366 min |
+
+The new features are extras with their own synergies, so they add choices and a little income rather than time.
+Not built yet: their own trouble (the wiki vandalised, the webcam's server melting under a big link).
+
 **Recommendation (decided):** build it in three PRs:
 1. The legacy (`LegacyState`, its own versioned save), Backlinks, the credits button, Muscle memory and Regulars, the
    projected count. A second sim bot starts with perks so run two's pacing is measured, not guessed.
