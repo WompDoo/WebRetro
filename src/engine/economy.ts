@@ -20,6 +20,7 @@ import { findFrameworkPickedBy, findFrameworkRenderedBy, FRAMEWORK_IDS, FRAMEWOR
 import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
+import { listPerkEffects, PERK_IDS } from './content/perks';
 import type {
   DefenseDefinition,
   DefenseId,
@@ -213,30 +214,37 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
  * The summary only changes when something is bought or the era moves on (what has retired), and purchasedUpgradeIds
  * is always replaced, never changed in place, so the array keys a cache, per era.
  */
-const EFFECT_SUMMARIES = new WeakMap<readonly UpgradeId[], Map<EraId, EffectSummary>>();
+const EFFECT_SUMMARIES = new WeakMap<readonly UpgradeId[], Map<string, EffectSummary>>();
 
-function findSummariesByEra(upgradeIds: readonly UpgradeId[]): Map<EraId, EffectSummary> {
+function findSummariesByEra(upgradeIds: readonly UpgradeId[]): Map<string, EffectSummary> {
   const existing = EFFECT_SUMMARIES.get(upgradeIds);
   if (existing !== undefined) return existing;
-  const created = new Map<EraId, EffectSummary>();
+  const created = new Map<string, EffectSummary>();
   EFFECT_SUMMARIES.set(upgradeIds, created);
   return created;
 }
 
-function summarizePurchases(state: GameState, byEra: Map<EraId, EffectSummary>): EffectSummary {
+/** Perks count everywhere, typing included: they come with the developer, not with an era's tools. */
+function summarizePurchases(state: GameState, byEra: Map<string, EffectSummary>): EffectSummary {
   const active = getActiveUpgradeIds(state);
   const thisEra = active.filter((id) => UPGRADES_BY_ID[id].eraId === state.eraId);
+  const perks = listPerkEffects(state.legacyPerkLevels);
   const summary = summarizeEffects(
-    active.flatMap((id) => UPGRADES_BY_ID[id].effects.filter((effect) => countsInEra(id, effect, state.eraId))),
-    thisEra.flatMap((id) => UPGRADES_BY_ID[id].effects),
+    [...active.flatMap((id) => UPGRADES_BY_ID[id].effects.filter((effect) => countsInEra(id, effect, state.eraId))), ...perks],
+    [...thisEra.flatMap((id) => UPGRADES_BY_ID[id].effects), ...perks],
   );
-  byEra.set(state.eraId, summary);
+  byEra.set(summaryKey(state), summary);
   return summary;
+}
+
+/** The era and the perks: two runs can share a purchases array (a test, a preset) but not their perks. */
+function summaryKey(state: GameState): string {
+  return `${state.eraId}|${PERK_IDS.map((perkId) => state.legacyPerkLevels[perkId]).join(',')}`;
 }
 
 function getEffectSummary(state: GameState): EffectSummary {
   const byEra = findSummariesByEra(state.purchasedUpgradeIds);
-  const cached = byEra.get(state.eraId);
+  const cached = byEra.get(summaryKey(state));
   return cached === undefined ? summarizePurchases(state, byEra) : cached;
 }
 

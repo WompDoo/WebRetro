@@ -1,5 +1,6 @@
 import { SAVE_VERSION } from './constants';
 import { DEFAULT_SITE_NAME } from './site-name';
+import { NO_PERKS } from './content/perks';
 import type { FeatureId, GameState, HazardKind } from './types';
 
 const FIRST_ENTITY_ID = 1;
@@ -87,5 +88,8 @@ export function createInitialGameState(randomSeed: number): GameState {
     reachedMilestoneIds: [],
     eraRecords: [],
     isGameFinished: false,
+    runNumber: 1,
+    legacyPerkLevels: NO_PERKS,
+    areBacklinksBanked: false,
   };
 }

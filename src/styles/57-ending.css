@@ -55,3 +55,15 @@
   .credits-table :is(th, td) { padding: 5px 4px; }
   .journey-post { font-size: 15px; }
 }
+
+/* The legacy: what the run earned, and the perks it buys. */
+.perk-list { display: grid; gap: 10px; margin: 14px 0; padding: 0; list-style: none; }
+.perk { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 2px solid var(--line-soft); border-radius: 6px; background: var(--paper); }
+.perk-info { flex: 1; min-width: 0; }
+.perk-info p { margin: 4px 0 0 !important; color: var(--ink-soft); font-size: 14px; }
+.perk-name { margin: 0; font-family: var(--font-display); font-size: 17px; }
+.perk-level { margin-left: 6px; color: var(--link); font-family: var(--font-numbers); font-size: 13px; font-weight: 600; }
+.perk .buy-button { flex: none; white-space: nowrap; }
+@media (max-width: 640px) {
+  .perk { flex-direction: column; align-items: stretch; }
+}

@@ -117,10 +117,10 @@ describe('the ending: the offer, and how it ends', () => {
     assert.match(html, /data-feature="under-construction"/);
   });
 
-  it('rolls the credits: a row for every era, and the way back, out or on', () => {
+  it('rolls the credits: a row for every era, and the way back, on, or to a new site', () => {
     const html = renderEndingAct(finished(), 'credits', null);
     assert.equal(html.split('<tr><th scope="row">').length - 1, ERA_IDS.length);
-    ['data-id="archive"', 'data-action="open-reset"', 'data-action="keep-playing"'].forEach((button) => assert.ok(html.includes(button), button));
+    ['data-id="archive"', 'data-action="keep-playing"', 'data-action="open-legacy"'].forEach((button) => assert.ok(html.includes(button), button));
   });
 
   it('knows its acts by name', () => {

@@ -52,6 +52,7 @@ export function restoreGameState(value: unknown, fallbackSeed: number): GameStat
     infections: restored.infections.map(withMinigame),
     purchasedUpgradeIds: restored.purchasedUpgradeIds.filter(isKnownUpgrade),
     eraRecords: restored.eraRecords.map((record) => withKnownContent(record, initial.featureLevels)),
+    legacyPerkLevels: { ...initial.legacyPerkLevels, ...restored.legacyPerkLevels },
   };
 }
 

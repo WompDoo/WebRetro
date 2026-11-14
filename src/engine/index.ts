@@ -11,6 +11,8 @@ export * from './content/consent-banners';
 export * from './economy';
 export * from './era-gate';
 export * from './era-records';
+export * from './legacy';
+export * from './content/perks';
 export * from './actions';
 export * from './hazards';
 export * from './milestones';

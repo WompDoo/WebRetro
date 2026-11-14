@@ -68,6 +68,20 @@ run never shows it, so it stays about the site.
   clears the game, never the legacy. The era records already in `GameState` become the legacy's museum: every
   finished run's Web Attic, side by side.
 
+**Built (PR 1):** the legacy (its own save key, so Start over never clears it), Backlinks, the credits' "Start a new
+site (+N Backlinks)", a legacy screen to spend them, Muscle memory and Regulars, and the projected count in the header
+after a first finish. Start over from the side panel pays a finished run in first, so finishing always counts.
+Measured with `npm run players` (a second run starts with what a first run's Backlinks buy):
+
+| Player | Run 1 | Run 2 | Change |
+|---|---|---|---|
+| optimizer | 283 min, earns 8 Backlinks | 228 min | −19% |
+| casual | 421 min, earns 7 Backlinks | 387 min | −8% |
+
+Short of the −30% the plan aimed for, and kept that way on purpose: the reason to play run two is its new content
+(PR 2), which adds play, so the perks only need to pay for it. A run earns 5–9 Backlinks: about one level of each
+perk per run.
+
 **Recommendation (decided):** build it in three PRs:
 1. The legacy (`LegacyState`, its own versioned save), Backlinks, the credits button, Muscle memory and Regulars, the
    projected count. A second sim bot starts with perks so run two's pacing is measured, not guessed.

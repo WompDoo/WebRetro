@@ -7,7 +7,8 @@ You write code to earn freelance money, learn HTML tag by tag, build features th
 in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
 with short minigames. The Ops tab is where you run the site: your own domain, nightly backups, https
 and the certificate that keeps running out, monitoring, blue-green deploys. Each era ends with a relaunch,
-and the last one with the ending: your site in a web archive, year by year, and an offer to sell it.
+and the last one with the ending: your site in a web archive, year by year, and an offer to sell it. Then start
+a new site with Backlinks: perks that every later site starts with.
 
 ## Design docs
 
