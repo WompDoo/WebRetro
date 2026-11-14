@@ -8,76 +8,31 @@ import {
   advanceEra,
   MS_PER_SECOND,
   chooseConsentBanner,
-  calculateUpgradeCost,
   advanceSimulation,
-  buyDefense,
-  buyFeature,
-  buyUpgrade,
   calculateBugChance,
   calculateKeystrokeValue,
   calculateNetRevenuePerSecond,
-  calculateNextAdCost,
-  calculateNextFeatureCost,
   calculateRetirementPayout,
   calculateVisitorsPerSecond,
-  canBuyDefense,
-  canBuyFeature,
-  canBuyUpgrade,
-  canPlaceAd,
-  closePopup,
   createInitialGameState,
-  DEFENSES_BY_ID,
   ERA_IDS,
   ERAS_BY_ID,
   formatCompactNumber,
   formatMoney,
-  getFeatureIdsOfEra,
-  getAvailableSkillIds,
-  getNextHostingTier,
-  upgradeHosting,
   UPGRADES_BY_ID,
-  toggleFeature,
-  canUpgradeHosting,
   calculateLoadTimeSeconds,
   calculatePhoneLoadTimeSeconds,
   calculatePerformanceTrafficFactor,
   calculateServerLoad,
-  getRevealedBoostIds,
-  getAvailableOpsIds,
-  renewCertificate,
-  canUseAds,
-  isFeatureBuildable,
-  isEraUnlocked,
-  FEATURE_IDS,
-  FEATURES_BY_ID,
-  getUnlockedDefenseIds,
-  getUnlockedFeatureIds,
   isEraGateComplete,
-  isOnlySavingForMigration,
-  placeAd,
-  calculateInfectionDifficulty,
-  cleanInfection,
-  writeCode,
-  findFrameworkPickedBy,
   FRAMEWORK_IDS,
   type EraId,
   type FrameworkId,
   type GameState,
-  type Infection,
-  type UpgradeId,
-  type ConsentBanner,
 } from '../src/engine';
+import { decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
+import type { PlayerProfile } from './bot';
 
-interface PlayerProfile {
-  readonly name: string;
-  readonly keystrokesPerSecond: number;
-  readonly reactionMs: number;
-  readonly buysDefenses: boolean;
-  /** 2018's framework wars: the bot would always pick the best payback, so each run is told which one. */
-  readonly framework: FrameworkId;
-  /** 2018's cookie banner, chosen on arrival: the hurried player takes the dark pattern, the careful one asks honestly. */
-  readonly consentBanner: ConsentBanner;
-}
 
 /** Where a run is when it relaunches into an era: the other frameworks' runs start from here. */
 interface EraEntry {
@@ -93,16 +48,6 @@ interface RunResult {
   readonly entry2018: EraEntry | null;
 }
 
-interface PurchaseOption {
-  readonly label: string;
-  readonly cost: number;
-  readonly isRequiredForGate: boolean;
-  readonly apply: (state: GameState) => GameState;
-  readonly canApply: (state: GameState) => boolean;
-  /** What the purchase is worth: for a skill, learning it plus building the first thing it unlocks. */
-  readonly valueCost: number;
-  readonly valueApply: (state: GameState) => GameState;
-}
 
 interface EraReport {
   readonly eraId: EraId;
@@ -115,27 +60,20 @@ interface EraReport {
   readonly certificateRenewals: number;
 }
 
-interface HazardReaction {
-  readonly state: GameState;
-  readonly minigameMs: number;
-}
 
 const TICK_MS = 100;
 const DECISION_INTERVAL_MS = 1_000;
 /** Four eras of up to an hour each, for the slowest player, with room to spare. */
 const MAX_SIMULATED_MS = 8 * 60 * 60 * 1000;
 const MS_PER_MINUTE = 60_000;
-const REQUIRED_PURCHASE_PRIORITY = 0.25;
-/** Rough time a player needs per difficulty level in any minigame (about 5, 10 or 15 seconds). */
-const MINIGAME_MS_PER_DIFFICULTY = 5_000;
 /** SIM_SEED reruns everything from another start: one seed is one sample, and a run can be unlucky. */
 const SEED = Number(process.env['SIM_SEED'] ?? 1997);
 /** Early on, income is tiny and doubles easily; growth only counts once it's real. */
 const MIN_REVENUE_FOR_GROWTH = 100;
 
 const PROFILES: readonly PlayerProfile[] = [
-  { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false, framework: 'react', consentBanner: 'dark-pattern' },
-  { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true, framework: 'angular', consentBanner: 'honest' },
+  { name: 'active', keystrokesPerSecond: 6, reactionMs: 3_000, buysDefenses: false, framework: 'react', consentBanner: 'dark-pattern', policy: 'neutral' },
+  { name: 'relaxed', keystrokesPerSecond: 3, reactionMs: 12_000, buysDefenses: true, framework: 'angular', consentBanner: 'honest', policy: 'neutral' },
 ];
 const FRAMEWORK_ERA: EraId = 'platform-2018';
 /**
@@ -152,170 +90,6 @@ const SEEDS_PER_FRAMEWORK = 3;
 /** Far enough apart that the seeded rolls share nothing. */
 const SEED_STRIDE = 7_919;
 
-/** Only the profile's framework is on its shopping list. */
-function isOtherFramework(skillId: UpgradeId, profile: PlayerProfile): boolean {
-  const framework = findFrameworkPickedBy(skillId);
-  return framework !== null && framework !== profile.framework;
-}
-
-/**
- * Income without the passing hazards (infections, pop-ups, traffic spikes, the quick-fix bonus). Growth is
- * measured on this, so cleaning an infection doesn't read as a snowball.
- */
-function underlyingIncome(state: GameState, profile: PlayerProfile): number {
-  return effectiveIncome({ ...state, infections: [], popups: [], trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 }, profile);
-}
-
-function effectiveIncome(state: GameState, profile: PlayerProfile): number {
-  const typingIncome =
-    (calculateKeystrokeValue(state) * profile.keystrokesPerSecond) / (1 + calculateBugChance(state));
-  return calculateNetRevenuePerSecond(state) + typingIncome;
-}
-
-function isGateFeature(state: GameState, featureId: string): boolean {
-  const era = ERAS_BY_ID[state.eraId];
-  const isEraFeature = getFeatureIdsOfEra(state.eraId).some((id) => id === featureId);
-  const levelRequirement = era.gateRequirements.find((requirement) => requirement.featureId === featureId);
-  const levelMissing =
-    levelRequirement !== undefined &&
-    state.featureLevels[levelRequirement.featureId ?? 'hit-counter'] < levelRequirement.target;
-  const notBuiltYet = isEraFeature && state.featureLevels[featureId as keyof GameState['featureLevels']] === 0;
-  return notBuiltYet || levelMissing;
-}
-
-function listOptions(state: GameState, profile: PlayerProfile): readonly PurchaseOption[] {
-  const features = getUnlockedFeatureIds(state)
-    .filter((featureId) => isFeatureBuildable(state, featureId))
-    .map<PurchaseOption>((featureId) => {
-      const apply = (current: GameState): GameState => buyFeature(current, featureId);
-      const cost = calculateNextFeatureCost(state, featureId);
-      // A first feature earns nothing without an ad, and an ad earns nothing without visitors: value them together.
-      const needsFirstAd = state.adCount === 0 && canUseAds(state);
-      const adCost = needsFirstAd ? calculateNextAdCost(state) : 0;
-      const valueApply = (current: GameState): GameState => {
-        const built = apply(current);
-        return needsFirstAd ? placeAd({ ...built, money: built.money + adCost }) : built;
-      };
-      return { label: `feature:${featureId}`, cost, isRequiredForGate: isGateFeature(state, featureId), apply, canApply: (current) => canBuyFeature(current, featureId), valueCost: cost + adCost, valueApply };
-    });
-  const skills = getAvailableSkillIds(state).filter((skillId) => !isOtherFramework(skillId, profile)).map<PurchaseOption>((skillId) => {
-    const learn = (current: GameState): GameState => buyUpgrade(current, skillId);
-    const unlocked = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].requiredSkillId === skillId && isEraUnlocked(state, FEATURES_BY_ID[featureId].eraId));
-    const firstFeature = unlocked[0];
-    const cost = calculateUpgradeCost(state, skillId);
-    const featureCost = firstFeature === undefined ? 0 : calculateNextFeatureCost(state, firstFeature);
-    const valueApply = (current: GameState): GameState => {
-      const learned = learn(current);
-      return firstFeature === undefined ? learned : buyFeature({ ...learned, money: learned.money + featureCost }, firstFeature);
-    };
-    const unlocksGateFeature = unlocked.some((featureId) => isGateFeature(state, featureId));
-    return { label: `skill:${skillId}`, cost, isRequiredForGate: unlocksGateFeature, apply: learn, canApply: (current) => canBuyUpgrade(current, skillId), valueCost: cost + featureCost, valueApply };
-  });
-  const boosts = getRevealedBoostIds(state).map<PurchaseOption>((upgradeId) => {
-    const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
-    const cost = calculateUpgradeCost(state, upgradeId);
-    return { label: `boost:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };
-  });
-  const ops = getAvailableOpsIds(state).map<PurchaseOption>((upgradeId) => {
-    const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
-    const cost = calculateUpgradeCost(state, upgradeId);
-    return { label: `ops:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };
-  });
-  const adCost = calculateNextAdCost(state);
-  const ads: PurchaseOption[] =
-    canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds
-      ? [{ label: 'ad', cost: adCost, isRequiredForGate: false, apply: placeAd, canApply: canPlaceAd, valueCost: adCost, valueApply: placeAd }]
-      : [];
-  const defenses = profile.buysDefenses
-    ? getUnlockedDefenseIds(state)
-        .filter((defenseId) => !state.ownedDefenseIds.includes(defenseId))
-        .map<PurchaseOption>((defenseId) => {
-          const apply = (current: GameState): GameState => buyDefense(current, defenseId);
-          const cost = DEFENSES_BY_ID[defenseId].cost;
-          return { label: `defense:${defenseId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyDefense(current, defenseId), valueCost: cost, valueApply: apply };
-        })
-    : [];
-  const nextTier = getNextHostingTier(state);
-  const hosting: PurchaseOption[] = nextTier === null
-    ? []
-    : [{ label: `hosting:${nextTier.id}`, cost: nextTier.cost, isRequiredForGate: false, apply: upgradeHosting, canApply: canUpgradeHosting, valueCost: nextTier.cost, valueApply: upgradeHosting }];
-  const switches = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0).map<PurchaseOption>((featureId) => {
-    const apply = (current: GameState): GameState => toggleFeature(current, featureId);
-    return { label: `switch:${featureId}`, cost: 0, isRequiredForGate: false, apply, canApply: () => true, valueCost: 0, valueApply: apply };
-  });
-  return [...features, ...skills, ...boosts, ...ops, ...ads, ...defenses, ...hosting, ...switches];
-}
-
-function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
-  const income = effectiveIncome(state, profile);
-  const gain = effectiveIncome(option.valueApply({ ...state, money: option.valueCost }), profile) - income;
-  const waitSeconds = Math.max(0, option.cost - state.money) / Math.max(income, Number.EPSILON);
-  // Like a human reading the checklist, the bot buys what the gate requires even when it adds no income.
-  const paybackSeconds = gain > 0 ? option.valueCost / gain : option.isRequiredForGate ? 0 : Number.POSITIVE_INFINITY;
-  // A free switch is worth flipping only when it actually helps.
-  if (option.cost === 0) return gain > 0 ? 0 : Number.POSITIVE_INFINITY;
-  const priority = option.isRequiredForGate ? REQUIRED_PURCHASE_PRIORITY : 1;
-  const defenseBonus = option.label.startsWith('defense:') ? REQUIRED_PURCHASE_PRIORITY : 1;
-  return (waitSeconds + paybackSeconds) * priority * defenseBonus;
-}
-
-function improvesTimeToBudget(state: GameState, option: PurchaseOption, profile: PlayerProfile): boolean {
-  const budget = ERAS_BY_ID[state.eraId].migrationCost;
-  const income = effectiveIncome(state, profile);
-  const after = option.apply(state);
-  const remaining = budget - state.money;
-  return (remaining + option.cost) / effectiveIncome(after, profile) < remaining / income;
-}
-
-function decide(state: GameState, profile: PlayerProfile): GameState {
-  const savingOnly = isOnlySavingForMigration(state);
-  const options = listOptions(state, profile).filter(
-    (option) => !savingOnly || (option.canApply(state) && improvesTimeToBudget(state, option, profile)),
-  );
-  const ranked = [...options].sort((a, b) => scoreOption(state, a, profile) - scoreOption(state, b, profile));
-  const best = ranked[0];
-  if (best === undefined) return state;
-  if (best.canApply(state)) return best.apply(state);
-  // Saving up for the best option: meanwhile buy anything that pays for itself before that is affordable.
-  const waitSeconds = Math.max(0, best.cost - state.money) / Math.max(effectiveIncome(state, profile), Number.EPSILON);
-  const filler = ranked.find((option) => option.canApply(state) && option.cost > 0 && scoreOption(state, option, profile) < waitSeconds);
-  return filler === undefined ? state : filler.apply(state);
-}
-
-function minigameDurationMs(infection: Infection): number {
-  return calculateInfectionDifficulty(infection) * MINIGAME_MS_PER_DIFFICULTY;
-}
-
-/** Closes pop-ups after the reaction time, and plays each infection's minigame once noticed. */
-function reactToHazards(state: GameState, seenAt: Map<number, number>, now: number, profile: PlayerProfile): HazardReaction {
-  const ids = [...state.popups.map((popup) => popup.id), ...state.infections.map((infection) => infection.id)];
-  ids.forEach((id) => (seenAt.has(id) ? undefined : seenAt.set(id, now)));
-  const waitedMs = (id: number): number => now - (seenAt.get(id) ?? now);
-  const withoutPopups = state.popups.filter((popup) => waitedMs(popup.id) >= profile.reactionMs).reduce((current, popup) => closePopup(current, popup.id), state);
-  const finished = withoutPopups.infections.filter((infection) => waitedMs(infection.id) >= profile.reactionMs + minigameDurationMs(infection));
-  return {
-    state: finished.reduce<GameState>((current, infection) => cleanInfection(current, infection.id).state, withoutPopups),
-    minigameMs: finished.reduce((total, infection) => total + minigameDurationMs(infection), 0),
-  };
-}
-
-/** The expired certificate's id in seenAt: hazards count up from 1. */
-const CERTIFICATE_SEEN_ID = -1;
-
-/** Renews an expired certificate once the player has noticed it, like closing a pop-up. */
-function renewWhenNoticed(state: GameState, seenAt: Map<number, number>, now: number, profile: PlayerProfile): GameState {
-  if (!state.isCertificateExpired) {
-    seenAt.delete(CERTIFICATE_SEEN_ID);
-    return state;
-  }
-  const noticedAt = seenAt.get(CERTIFICATE_SEEN_ID) ?? now;
-  seenAt.set(CERTIFICATE_SEEN_ID, noticedAt);
-  return now - noticedAt >= profile.reactionMs ? renewCertificate(state) : state;
-}
-
-function typeKeystrokes(state: GameState, count: number): GameState {
-  return Array.from({ length: count }).reduce<GameState>((current) => writeCode(current).state, state);
-}
 
 function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResult {
   let state = start.state;

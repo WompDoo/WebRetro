@@ -20,6 +20,7 @@ import {
   isEraUnlocked,
   isMarkedNotSecure,
   getAvailableOpsIds,
+  isVisitorsGoalBlockedByAds,
 } from '../engine';
 import type { GameState, GateCheck, GateRequirementKind } from '../engine';
 import { escapeHtml } from './dom';
@@ -76,6 +77,10 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => state.infections.length > 0,
     text: 'Something broke one of your features. Click it to fix it in a minigame. Fix it fast for a traffic bonus.',
+  },
+  {
+    applies: isVisitorsGoalBlockedByAds,
+    text: 'Your ads drive away just enough visitors to miss the goal: with one fewer, you’d reach it. Remove one under Ops.',
   },
   {
     applies: (state) => state.isCertificateExpired,
