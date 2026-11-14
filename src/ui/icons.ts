@@ -43,6 +43,11 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'ai-images': svg('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/>'),
   // A feed of lines, and a dot where it picks for you.
   'for-you-feed': svg('<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/>'),
+  webcam: svg('<circle cx="12" cy="10" r="6"/><circle cx="12" cy="10" r="2"/><path d="M8 20h8M12 16v4"/>'),
+  wiki: svg('<path d="M4 5h16v14H4Z"/><path d="m7 9 1.5 6L10 11l1.5 4L13 9M15 9h2M15 12h2"/>'),
+  'deal-of-the-day': svg('<path d="M3 12 12 3h8v8l-9 9Z"/><circle cx="16" cy="7" r="1.5"/>'),
+  'community-chat': svg('<path d="M3 5h12v8H8l-4 3v-3H3Z"/><path d="M9 13v2h7l4 3v-3h1V7h-4"/>'),
+  'agent-store': svg('<path d="M4 8h16l-1 12H5Z"/><path d="M9 8a3 3 0 0 1 6 0"/><path d="m12 12 .6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6Z"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {

@@ -15,7 +15,7 @@ import { renderBootScreen, renderLegalWall } from './site-2018';
  */
 
 /** The grid: 2024's AI tiles first, then what the old site still has, a tile each. */
-const BENTO_TILES: readonly FeatureId[] = ['ai-images', 'for-you-feed', 'ai-articles', 'video-player', 'blog', 'photo-gallery', 'activity-feed', 'map-mashup', 'guestbook', 'midi-player'];
+const BENTO_TILES: readonly FeatureId[] = ['ai-images', 'for-you-feed', 'ai-articles', 'agent-store', 'video-player', 'blog', 'photo-gallery', 'activity-feed', 'community-chat', 'map-mashup', 'guestbook', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Product', 'Pricing', 'Changelog', 'Docs'];
 const TRUSTED_BY: readonly string[] = ['Brightloop', 'Quantly', 'Stackwise', 'Paperkite', 'Blinko', 'Promptly'];
 

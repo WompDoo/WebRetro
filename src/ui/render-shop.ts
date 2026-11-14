@@ -621,6 +621,8 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
     view.buyAmount,
     view.isScrollJackingOn,
     state.eraId,
+    // A later run lists features the first doesn't have.
+    state.runNumber,
     Object.values(state.featureLevels).join(','),
     state.adCount,
     state.purchasedUpgradeIds.join(','),

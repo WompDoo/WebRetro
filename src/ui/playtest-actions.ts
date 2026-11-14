@@ -118,6 +118,7 @@ export function createPlaytestHandlers(renderer: Renderer, minigame: MinigameMod
     'playtest-popup': () => updateGame((state) => addPlaytestPopup(state, Math.random())),
     'playtest-spike': () => updateGame(startPlaytestTrafficSpike),
     'playtest-certificate': () => updateGame(expirePlaytestCertificate),
+    'playtest-run-two': () => updateGame((state) => ({ ...state, runNumber: 2 })),
     'playtest-speed': (target) => {
       store.playtestSpeed = findSpeed(readId(target)) ?? store.playtestSpeed;
       openPlaytestPanel();

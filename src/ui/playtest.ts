@@ -82,11 +82,17 @@ function renderHazards(state: GameState): string {
   return `<h3 class="playtest-heading">Hazards</h3><p class="playtest-buttons">${button('playtest-popup', 'popup', 'Pop-up')}${button('playtest-spike', 'spike', 'Traffic spike', noServer)}${button('playtest-certificate', 'certificate', 'Expire the certificate', noCertificate)}</p>`;
 }
 
+/** Prestige content shows only from a second run on: this turns the game in hand into one, perks aside. */
+function renderRuns(state: GameState): string {
+  const isSecond = state.runNumber > 1 ? ' disabled title="Already a later run"' : '';
+  return `<h3 class="playtest-heading">Runs</h3><p class="playtest-buttons">${button('playtest-run-two', 'run-two', `Make this a second run (now run ${state.runNumber})`, isSecond)}</p>`;
+}
+
 function renderSpeed(view: PlaytestView): string {
   const buttons = PLAYTEST_SPEEDS.map((speed) => button('playtest-speed', String(speed), `${speed}×`, speed === view.speed ? ' aria-pressed="true"' : ' aria-pressed="false"')).join('');
   return `<h3 class="playtest-heading">Game speed</h3><p class="playtest-buttons">${buttons}</p>`;
 }
 
 export function renderPlaytestPanel(state: GameState, view: PlaytestView): string {
-  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderSpeed(view)].join('');
+  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderRuns(state), renderSpeed(view)].join('');
 }

@@ -67,3 +67,4 @@
 @media (max-width: 640px) {
   .perk { flex-direction: column; align-items: stretch; }
 }
+.next-run-unlocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 4px 16px; margin: 0 0 4px; padding-left: 20px; }

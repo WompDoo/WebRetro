@@ -473,6 +473,64 @@ const renderForYouFeed: FeatureRenderer = (context) => {
   return `${heading(context, 'for-you-feed', 'For you')}<div class="feed-tabs"><span class="is-current">For you</span><span>Following</span></div><ul class="feed-list">${items}</ul><p class="post-meta">Picked by a model · ${formatCompactNumber(level * HOURS_PER_LEVEL)} hours watched today</p>`;
 };
 
+// ---------- From the second run on ----------
+const SECONDS_PER_FRAME = 60;
+const WATCHERS_PER_LEVEL = 3;
+/** The webcam: one frame a minute, a clock counting to the next, and who's watching nothing happen. */
+const renderWebcam: FeatureRenderer = (context) => {
+  const secondsLeft = SECONDS_PER_FRAME - (toWholeSeconds(context.nowMs) % SECONDS_PER_FRAME);
+  return `${heading(context, 'webcam', 'Live webcam!!')}<div class="webcam-frame"><span class="webcam-desk" aria-hidden="true"></span><span class="webcam-stamp">LIVE · my desk</span></div><p class="post-meta">Next picture in ${secondsLeft} s · ${formatCompactNumber(levelOf(context, 'webcam') * WATCHERS_PER_LEVEL)} people watching</p>`;
+};
+
+const WIKI_PAGES: readonly string[] = ['Main Page', 'How to make text blink', 'List of webrings', 'Our forum rules', 'Talk:Main Page', 'Pizza (disputed)', 'Recent changes'];
+const BASE_WIKI_PAGES = 2;
+const MAX_WIKI_PAGES = 6;
+const EDITS_PER_LEVEL = 40;
+/** The wiki: a page list that grows, an edit count, and the citation it always needs. */
+const renderWiki: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'wiki');
+  const pages = WIKI_PAGES.slice(0, Math.min(BASE_WIKI_PAGES + level, MAX_WIKI_PAGES)).map((page) => `<li><span class="fake-link">${escapeHtml(page)}</span></li>`).join('');
+  return `${heading(context, 'wiki', 'Wiki')}<ul class="wiki-pages">${pages}</ul><p class="post-meta">${formatCompactNumber(level * EDITS_PER_LEVEL)} edits · anyone can edit · <sup>[citation needed]</sup></p>`;
+};
+
+const DEALS: readonly string[] = ['70% off a hot-air balloon ride', 'Half-price cupcakes, a dozen', 'Teeth whitening for $49', 'Two-for-one zip line', 'A year of yoga, 80% off'];
+const BUYERS_PER_LEVEL = 140;
+const SECONDS_PER_DAY = 86_400;
+const SECONDS_PER_HOUR = 3_600;
+
+/** A countdown to midnight reads "23:59:12", hours first. */
+function formatHoursMinutesSeconds(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR);
+  return `${hours}:${formatMinutesAndSeconds(totalSeconds % SECONDS_PER_HOUR).padStart(5, '0')}`;
+}
+/** The deal of the day: one deal, a countdown to midnight, and the "tipped" line once enough have bought. */
+const renderDealOfTheDay: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'deal-of-the-day');
+  const left = SECONDS_PER_DAY - (toWholeSeconds(context.nowMs) % SECONDS_PER_DAY);
+  return `${heading(context, 'deal-of-the-day', 'Deal of the day')}<p class="deal-title">${escapeHtml(pickCyclic(DEALS, level, 'A deal'))}</p><p class="deal-meta"><b>${formatCompactNumber(level * BUYERS_PER_LEVEL)} bought</b> · the deal is on! · ends in ${formatHoursMinutesSeconds(left)}</p><span class="deal-button">Buy now</span>`;
+};
+
+const CHANNELS: readonly string[] = ['# general', '# help', '# off-topic', '# show-your-site', '# memes'];
+const BASE_CHANNELS = 2;
+const MEMBERS_ONLINE_PER_LEVEL = 25;
+/** The community chat: channels, who's online, and a button to join. */
+const renderCommunityChat: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'community-chat');
+  const channels = CHANNELS.slice(0, Math.min(BASE_CHANNELS + level, CHANNELS.length)).map((channel) => `<li>${escapeHtml(channel)}</li>`).join('');
+  return `${heading(context, 'community-chat', 'Community')}<ul class="chat-channels">${channels}</ul><p class="post-meta"><span class="chat-online">●</span> ${formatCompactNumber(level * MEMBERS_ONLINE_PER_LEVEL)} online · <span class="fake-link">Join the server</span></p>`;
+};
+
+const AGENTS: readonly string[] = ['Inbox Zero Agent', 'Meeting Booker', 'Refund Wrangler', 'Agent That Hires Agents', 'Pitch Deck Writer', 'Grocery Reorderer'];
+const BASE_AGENTS = 2;
+const MAX_AGENTS = 4;
+const INSTALLS_PER_LEVEL = 9_000;
+/** The agent store: a few agents for sale, installs counting up. */
+const renderAgentStore: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'agent-store');
+  const agents = AGENTS.slice(0, Math.min(BASE_AGENTS + level, MAX_AGENTS)).map((agent) => `<li class="agent-card">✨ ${escapeHtml(agent)}<span class="agent-install">Install</span></li>`).join('');
+  return `${heading(context, 'agent-store', 'Agent store')}<ul class="agent-list">${agents}</ul><p class="post-meta">${formatCompactNumber(level * INSTALLS_PER_LEVEL)} installs this week</p>`;
+};
+
 /** One renderer per feature. Each era's layout decides where the blocks go; the blocks themselves are shared. */
 const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'hit-counter': renderHitCounter,
@@ -502,6 +560,11 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'ai-search': renderAiSearch,
   'ai-images': renderAiImages,
   'for-you-feed': renderForYouFeed,
+  webcam: renderWebcam,
+  wiki: renderWiki,
+  'deal-of-the-day': renderDealOfTheDay,
+  'community-chat': renderCommunityChat,
+  'agent-store': renderAgentStore,
 };
 
 interface DeadFeatureCopy {

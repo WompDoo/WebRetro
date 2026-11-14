@@ -10,7 +10,7 @@ import type { SiteContext } from './site-context';
 import { render2011Site } from './site-2011';
 
 /** Under the hero: what the old site still has, as sections of the landing page. */
-const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'activity-feed', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
+const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'activity-feed', 'community-chat', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Product', 'Pricing', 'Blog', 'Careers'];
 /** "Trusted by": made-up companies, as every landing page's were to everyone outside them. */
 const TRUSTED_BY: readonly string[] = ['Brightloop', 'Quantly', 'Stackwise', 'Paperkite', 'Blinko'];

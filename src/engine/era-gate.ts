@@ -1,5 +1,5 @@
 import { ERAS_BY_ID } from './content/eras';
-import { getFeatureIdsOfEra } from './content/features';
+import { getCoreFeatureIdsOfEra } from './content/features';
 import { calculateUsualVisitorsPerSecond } from './economy';
 import type { EraGateRequirement, GameState, GateCheck, GateRequirementKind } from './types';
 
@@ -8,7 +8,7 @@ type RequirementMeasure = (state: GameState, requirement: EraGateRequirement) =>
 const NOT_STARTED = 0;
 
 function countBuiltFeaturesOfCurrentEra(state: GameState): number {
-  return getFeatureIdsOfEra(state.eraId).filter((featureId) => state.featureLevels[featureId] > 0).length;
+  return getCoreFeatureIdsOfEra(state.eraId).filter((featureId) => state.featureLevels[featureId] > 0).length;
 }
 
 function measureFeatureLevel(state: GameState, requirement: EraGateRequirement): number {

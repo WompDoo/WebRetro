@@ -53,6 +53,11 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   'ai-search': 0,
   'ai-images': 0,
   'for-you-feed': 0,
+  'webcam': 0,
+  'wiki': 0,
+  'deal-of-the-day': 0,
+  'community-chat': 0,
+  'agent-store': 0,
 };
 
 export function createInitialGameState(randomSeed: number): GameState {

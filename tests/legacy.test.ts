@@ -5,6 +5,11 @@ import {
   bankBacklinks,
   buyPerk,
   calculateBacklinkSources,
+  calculateGateChecks,
+  FEATURES_BY_ID,
+  getCoreFeatureIdsOfEra,
+  getUnlockedFeatureIds,
+  isFeatureBuildable,
   calculateBacklinksEarned,
   calculateDemandVisitorsPerSecond,
   calculateKeystrokeValue,
@@ -20,7 +25,7 @@ import {
   shouldProjectBacklinks,
   startNextRun,
 } from '../src/engine';
-import type { EraRecord, GameState, LegacyState } from '../src/engine';
+import type { EraRecord, FeatureId, GameState, LegacyState } from '../src/engine';
 import { renderEndingAct } from '../src/ui/ending';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
@@ -137,5 +142,36 @@ describe('the ending: a new site from the credits', () => {
     assert.match(html, /data-id="regulars">1 Backlink</);
     assert.match(html, /data-id="muscle-memory" disabled>2 Backlinks</);
     assert.match(html, /data-action="start-new-run"/);
+  });
+});
+
+describe('the second run: features the first never had', () => {
+  const RUN_TWO: readonly FeatureId[] = ['webcam', 'wiki', 'deal-of-the-day', 'community-chat', 'agent-store'];
+  const end2005 = (runNumber: number): GameState => ({ ...createPlaytestState('web2-2005', 'end', SEED, 'react'), runNumber });
+
+  it('keeps them out of the first run: not in the shop, not buildable', () => {
+    assert.ok(!getUnlockedFeatureIds(end2005(1)).includes('wiki'));
+    assert.ok(!isFeatureBuildable(end2005(1), 'wiki'));
+    assert.ok(getUnlockedFeatureIds(end2005(2)).includes('wiki'));
+    assert.ok(isFeatureBuildable(end2005(2), 'wiki'));
+  });
+
+  it('never adds them to a checklist: they’re extras, and building one doesn’t stand in for a core feature', () => {
+    RUN_TWO.forEach((featureId) => assert.ok(!getCoreFeatureIdsOfEra(FEATURES_BY_ID[featureId].eraId).includes(featureId), featureId));
+    const withoutBlog = { ...end2005(2), featureLevels: { ...end2005(2).featureLevels, blog: 0, wiki: 5 } };
+    const featuresCheck = calculateGateChecks(withoutBlog).find((check) => check.requirement.kind === 'era-features-built');
+    assert.ok(featuresCheck !== undefined && !featuresCheck.isMet);
+  });
+
+  it('retires the 1997 webcam, the 2005 wiki and the 2011 deal at the next relaunch, as they faded', () => {
+    assert.deepEqual(RUN_TWO.map((featureId) => FEATURES_BY_ID[featureId].sunsetIn), ['web2-2005', 'social-2011', 'platform-2018', null, null]);
+  });
+
+  it('says on the legacy screen what the next site gets', () => {
+    const banked = bankBacklinks(EMPTY_LEGACY, finished());
+    const html = renderEndingAct(banked.state, 'legacy', null, banked.legacy);
+    assert.match(html, /New on your next site/);
+    RUN_TWO.forEach((featureId) => assert.ok(html.includes(FEATURES_BY_ID[featureId].name), featureId));
+    assert.doesNotMatch(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 2 }), /New on your next site/);
   });
 });

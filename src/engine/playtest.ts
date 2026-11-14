@@ -1,7 +1,7 @@
 import { TRAFFIC_SPIKE_DURATION_MS } from './constants';
 import { DEFENSE_IDS, DEFENSES_BY_ID } from './content/defenses';
 import { ERA_IDS, ERAS_BY_ID } from './content/eras';
-import { FEATURE_IDS, FEATURES_BY_ID, getFeatureIdsOfEra } from './content/features';
+import { FEATURE_IDS, FEATURES_BY_ID, getCoreFeatureIdsOfEra, getFeatureFirstRun } from './content/features';
 import { findFrameworkPickedBy, findFrameworkRenderedBy } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
@@ -72,13 +72,15 @@ function defensesFor(eraId: EraId): GameState['ownedDefenseIds'] {
   return earlier.filter((defenseId) => !earlier.some((other) => DEFENSES_BY_ID[other].upgradesFrom === defenseId));
 }
 
+/** A preset is a first run's site: later runs' features stay unbuilt. */
 function levelsFor(eraId: EraId, stage: PlaytestStage): GameState['featureLevels'] {
   const levelOf = (featureId: FeatureId): number => {
     const featureEra = FEATURES_BY_ID[featureId].eraId;
     if (isBefore(featureEra, eraId)) return EARLIER_ERA_FEATURE_LEVEL;
     return featureEra === eraId && stage === 'end' ? STARTING_CURRENT_ERA_LEVEL : 0;
   };
-  return Object.fromEntries(FEATURE_IDS.map((featureId) => [featureId, levelOf(featureId)])) as GameState['featureLevels'];
+  const isFirstRunFeature = (featureId: FeatureId): boolean => getFeatureFirstRun(featureId) === 1;
+  return Object.fromEntries(FEATURE_IDS.map((featureId) => [featureId, isFirstRunFeature(featureId) ? levelOf(featureId) : 0])) as GameState['featureLevels'];
 }
 
 function earlierBudgets(eraId: EraId): number {
@@ -114,7 +116,7 @@ function visitorsTarget(state: GameState): number {
 
 function raiseEraFeatures(state: GameState): GameState {
   const levels = { ...state.featureLevels };
-  getFeatureIdsOfEra(state.eraId).forEach((featureId) => {
+  getCoreFeatureIdsOfEra(state.eraId).forEach((featureId) => {
     levels[featureId] += LEVEL_STEP;
   });
   return withHosting({ ...state, featureLevels: levels });

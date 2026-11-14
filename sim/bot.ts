@@ -29,7 +29,7 @@ import {
   findFrameworkRenderedBy,
   getAvailableOpsIds,
   getAvailableSkillIds,
-  getFeatureIdsOfEra,
+  getCoreFeatureIdsOfEra,
   getNextHostingTier,
   getRevealedBoostIds,
   getUnlockedDefenseIds,
@@ -150,7 +150,7 @@ export function effectiveIncome(state: GameState, profile: PlayerProfile): numbe
 
 export function isGateFeature(state: GameState, featureId: string): boolean {
   const era = ERAS_BY_ID[state.eraId];
-  const isEraFeature = getFeatureIdsOfEra(state.eraId).some((id) => id === featureId);
+  const isEraFeature = getCoreFeatureIdsOfEra(state.eraId).some((id) => id === featureId);
   const levelRequirement = era.gateRequirements.find((requirement) => requirement.featureId === featureId);
   const levelMissing =
     levelRequirement !== undefined &&
