@@ -5,7 +5,7 @@
 const INTRO_TEXTS: readonly string[] = [
   'CONNECT 28800',
   'It’s 1997, and everyone is getting on the Internet.',
-  'You’re getting a homepage. Build it, keep it running, and take it through thirty years of the web.',
+  'You’re getting a homepage. Build it, keep it running, and take it through almost thirty years of the web.',
 ];
 const MS_PER_CHARACTER = 22;
 const PAUSE_BETWEEN_LINES_MS = 350;

@@ -30,6 +30,7 @@ const LOOK_CLASSES: readonly (readonly [UpgradeId, string])[] = [
   ['learn-masonry', 'has-masonry'],
   ['parallax-scrolling', 'has-parallax'],
   ['retina-images', 'has-retina'],
+  ['vendor-prefixes', 'has-css3'],
 ];
 
 function renderLookClasses(context: SiteContext): string {

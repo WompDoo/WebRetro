@@ -27,13 +27,18 @@ function renderApacheUnavailable(state: GameState): string {
 }
 
 /** 2018: the load balancer in front of Kubernetes answers, and the pods behind it don't. */
-function renderIngressUnavailable(): string {
-  return '<div class="site-down is-ingress"><h1>503 Service Temporarily Unavailable</h1><p>upstream connect error or disconnect/reset before headers. reset reason: overflow</p><hr><center>nginx/1.15.2</center></div>';
+/** The status page runs on the same servers as the site, so it says what the site says. */
+function renderStatusPageNote(state: GameState): string {
+  return state.purchasedUpgradeIds.includes('status-page') ? `<p class="site-down-status">Check status.${escapeHtml(siteBrand(state))}.com for updates. (It’s on the same servers. It’s down too.)</p>` : '';
+}
+
+function renderIngressUnavailable(state: GameState): string {
+  return `<div class="site-down is-ingress"><h1>503 Service Temporarily Unavailable</h1><p>upstream connect error or disconnect/reset before headers. reset reason: overflow</p>${renderStatusPageNote(state)}<hr><center>nginx/1.15.2</center></div>`;
 }
 
 /** Whoever answers when your servers can't: Apache until 2011, the load balancer in front of the cluster after. */
 function renderServiceUnavailable(state: GameState): string {
-  return isEraUnlocked(state, 'platform-2018') ? renderIngressUnavailable() : renderApacheUnavailable(state);
+  return isEraUnlocked(state, 'platform-2018') ? renderIngressUnavailable(state) : renderApacheUnavailable(state);
 }
 
 function renderReachableSite(state: GameState, nowMs: number): string {

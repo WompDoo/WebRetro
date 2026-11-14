@@ -48,12 +48,19 @@ function renderSmiley(state: GameState, index: number): string {
   return state.purchasedUpgradeIds.includes('guestbook-smileys') ? ` ${pickCyclic(SMILEYS, index, '')}` : '';
 }
 
+/** What each review cost to put on the blockchain. Paid by whoever wrote it. */
+const GAS_FEES: readonly string[] = ['$43', '$112', '$7', '$280', '$19'];
+
+function renderMintedTag(state: GameState, index: number): string {
+  return getActiveUpgradeIds(state).includes('blockchain-guestbook') ? ` <span class="nft-tag">⛓ minted · gas ${pickCyclic(GAS_FEES, index, '$43')}</span>` : '';
+}
+
 export function renderGuestbookEntries(state: GameState, nowMs: number): string {
   const pool = ERA_PRESENTATION[state.eraId].guestbook;
   const offset = Math.floor(nowMs / GUESTBOOK_ROTATION_MS);
   const count = Math.min(state.featureLevels.guestbook + 1, MAX_GUESTBOOK_ENTRIES);
   return Array.from({ length: count }, (_, index) => pickCyclic(pool, offset + index, FALLBACK_MESSAGE))
-    .map((entry, index) => `<li class="guestbook-entry"><b>${escapeHtml(entry.author)}</b> ${escapeHtml(entry.text)}${renderSmiley(state, index)}</li>`)
+    .map((entry, index) => `<li class="guestbook-entry"><b>${escapeHtml(entry.author)}</b> ${escapeHtml(entry.text)}${renderSmiley(state, index)}${renderMintedTag(state, index)}</li>`)
     .join('');
 }
 

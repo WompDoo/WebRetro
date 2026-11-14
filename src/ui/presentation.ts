@@ -281,6 +281,12 @@ export const SPONSORED_POSTS: readonly DisplayAdCopy[] = [
   { advertiser: 'EmpireBuilder', headline: 'Build your empire tonight', text: 'The most addictive game of 2011.' },
   { advertiser: 'PhotoBook', headline: 'Turn your albums into a book', text: 'Free shipping this week only.' },
   { advertiser: 'CollegeNow', headline: 'Get your degree online', text: 'From your phone. In your pajamas.' },
+  { advertiser: 'PetVille', headline: 'Your puppy misses you', text: 'Feed him before your friends see.' },
+  { advertiser: 'SnapFilter', headline: 'Make every photo look like 1977', text: 'Square. Faded. Vintage. Free.' },
+  { advertiser: 'GroupGift', headline: 'Chip in for Sarah’s birthday', text: '14 friends already did. You know Sarah.' },
+  { advertiser: 'Sponsored', headline: 'Like us for a chance to win a tablet', text: 'Share with 5 friends to enter.' },
+  { advertiser: 'MemeMaker', headline: 'Make your own rage comic', text: 'FFFFFFUUUUUU in 3 clicks.' },
+  { advertiser: 'Sponsored', headline: 'Is your password strong enough?', text: 'Find out. Just type it here.' },
 ];
 
 /** 2024: every ad is for an AI product, or written by one. */
@@ -292,6 +298,15 @@ export const AI_ERA_ADS: readonly DisplayAdCopy[] = [
   { advertiser: 'SoloLaunch', headline: 'Launch a startup this weekend', text: 'No code, no co-founder, no customers.' },
   { advertiser: 'Sponsored', headline: 'Doctors are stunned by this AI app', text: 'Number 7 is a chatbot.' },
   { advertiser: 'MeetNotes', headline: 'Never take notes again', text: 'An AI joins your calls. All of them.' },
+  { advertiser: 'HeadshotAI', headline: 'Professional headshots in 5 minutes', text: 'From 12 selfies. Your ears may vary.' },
+  { advertiser: 'Sponsored', headline: 'I replaced my whole team with agents', text: 'Thread 🧵 1/47' },
+  { advertiser: 'ChatCRM', headline: 'Your CRM now talks back', text: 'It has opinions about your pipeline.' },
+  { advertiser: 'VibeCode', headline: 'Ship an app without reading code', text: 'Debugging sold separately.' },
+  { advertiser: 'DeckGenie', headline: 'A pitch deck from one sentence', text: 'Investors can’t tell. Investors also use it.' },
+  { advertiser: 'Sponsored', headline: 'The prompt that writes prompts', text: 'Prompt engineering is dead. Long live prompts.' },
+  { advertiser: 'TutorBot', headline: 'Homework help, instantly', text: 'Teachers have an AI too.' },
+  { advertiser: 'GPUStock', headline: 'Fractional GPU shares from $5', text: 'Own 0.0001 of the future.' },
+  { advertiser: 'FriendAI', headline: 'A friend who’s always online', text: 'Premium friendship: $19.99 a month.' },
 ];
 
 /** With retargeting cookies: ads for the very things your visitors looked at somewhere else this week. */
@@ -302,6 +317,16 @@ export const RETARGETED_ADS: readonly DisplayAdCopy[] = [
   { advertiser: 'BoxChef', headline: 'You left 3 meals in your box', text: 'Come back for 50% off. Just this once. Again.' },
   { advertiser: 'SleepWell', headline: 'You already bought a mattress', text: 'So here is another mattress.' },
   { advertiser: 'TaskPilot', headline: 'Still deciding on a to-do app?', text: 'You visited our pricing page at 2:14am.' },
+  { advertiser: 'GuitarHub', headline: 'That guitar you looked at', text: 'Strings not included. Ads included.' },
+  { advertiser: 'FlyCheap', headline: 'Flights to Lisbon, again', text: 'You booked last week. We know. Book again?' },
+  { advertiser: 'LampLand', headline: 'The lamp from Tuesday is back in stock', text: 'You closed the tab. We didn’t.' },
+  { advertiser: 'CoatCo', headline: 'Still cold?', text: 'You searched “warm coat” in July.' },
+  { advertiser: 'BabyBox', headline: 'Congratulations!', text: 'You looked at one stroller for a friend.' },
+  { advertiser: 'GymFit', headline: 'Your free trial is waiting', text: 'You signed up in January. It’s November.' },
+  { advertiser: 'CarDeals', headline: 'The car you priced is $200 cheaper', text: 'In a town 400 miles away.' },
+  { advertiser: 'PlantPal', headline: 'Your fiddle-leaf fig misses you', text: 'You never bought it. It misses you anyway.' },
+  { advertiser: 'BookNook', headline: 'Readers who viewed this also viewed it', text: 'Here it is a seventh time.' },
+  { advertiser: 'SofaStory', headline: 'The sofa is the same price as yesterday', text: 'We just wanted to remind you.' },
 ];
 
 /** 2018: programmatic ads, sold in an auction while the page loads, that follow you around the web. */
@@ -314,6 +339,12 @@ export const PROGRAMMATIC_ADS: readonly DisplayAdCopy[] = [
   { advertiser: 'Sponsored', headline: 'Doctors are stunned by this one fruit', text: 'Number 7 will surprise you' },
   { advertiser: 'TaskPilot', headline: 'Get more done in 2018', text: 'Join 10 million productive people.' },
   { advertiser: 'Sponsored', headline: 'This is the car of the year (and it’s not even close)', text: 'Read more' },
+  { advertiser: 'Sponsored', headline: '23 photos taken at exactly the right moment', text: 'Number 14 is a cat.' },
+  { advertiser: 'CodeCamp', headline: 'Become a developer in 12 weeks', text: 'Learn React, Angular and Vue. Pick one later.' },
+  { advertiser: 'CryptoCoinz', headline: 'Is it too late to buy?', text: 'Asking for everyone in December.' },
+  { advertiser: 'Sponsored', headline: 'Locals are furious about this one weird bill trick', text: 'Sponsored by your bank.' },
+  { advertiser: 'StreamBox', headline: 'Cut the cord', text: 'Then subscribe to nine streaming services.' },
+  { advertiser: 'FitBand', headline: 'Your steps, your sleep, your data', text: 'Mostly our data.' },
 ];
 
 export const BLOG_POSTS: readonly BlogPostCopy[] = [
@@ -349,6 +380,11 @@ export const CONTEXTUAL_TEXT_ADS: readonly TextAdCopy[] = [
   { title: 'Web 2.0 logo generator', url: 'www.logo20.example', text: 'Reflection and beta badge included.' },
   { title: 'Tag your photos', url: 'www.taggr.example', text: 'Folksonomy for your holiday snaps.' },
   { title: 'PHP hosting with MySQL', url: 'www.lamphost.example', text: 'Your database, our servers.' },
+  { title: 'Rounded corners in 5 images', url: 'www.cornerkit.example', text: 'Four GIFs and a table. CSS3 is years away.' },
+  { title: 'Get your RSS on every portal', url: 'www.feedblast.example', text: 'Syndicate to 400 start pages.' },
+  { title: 'Wiki software, free', url: 'www.wikiwiki.example', text: 'Anyone can edit. Everyone will.' },
+  { title: 'Make money blogging', url: 'www.blogcash.example', text: 'Put text ads on your blog. Like this one.' },
+  { title: 'Mashup your maps', url: 'www.mappr.example', text: 'Pins on a map, from your own data.' },
 ];
 
 /** What readers tag your posts with once they can: nobody can spell the word. */

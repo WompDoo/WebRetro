@@ -1,5 +1,5 @@
 import { ERAS_BY_ID, findChosenFramework, isMobileFriendly } from '../../engine';
-import type { FeatureId, FrameworkId } from '../../engine';
+import type { FeatureId, FrameworkId, GameState } from '../../engine';
 import { escapeHtml } from '../dom';
 import { describeBuiltWith, FRAMEWORK_PRESENTATION } from '../framework-presentation';
 import { listAds, renderAdPicture, renderAdText } from './ads';
@@ -113,12 +113,18 @@ function renderAccountBand(context: SiteContext): string {
   return block === '' ? '' : `<div class="lp-account">${block}</div>`;
 }
 
+/** The status page, linked from the footer: always green, since it can't tell when it's down with the rest. */
+function renderStatusLink(state: GameState): string {
+  return state.purchasedUpgradeIds.includes('status-page') ? ' · <span class="lp-status">● All systems operational</span>' : '';
+}
+
 function renderLookClasses(context: SiteContext, framework: FrameworkId): string {
   const looks: readonly (readonly [boolean, string])[] = [
     [isMobileFriendly(context.state), 'is-responsive'],
     [ownedFeatures(context, ['stories']).length > 0, 'has-stories'],
     // Animate on scroll: each section fades and slides in as it comes into view.
     [context.state.purchasedUpgradeIds.includes('scroll-animations'), 'has-scroll-reveal'],
+    [context.state.purchasedUpgradeIds.includes('every-font-weight'), 'has-every-weight'],
   ];
   return [` fw-${framework}`, ...looks.filter(([applies]) => applies).map(([, name]) => ` ${name}`)].join('');
 }
@@ -140,7 +146,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     ${renderFeatureBlocks(context, ['newsletter']).join('')}
     ${renderAccountBand(context)}
     ${renderAroundTheWeb(context)}
-    <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms</footer>
+    <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms${renderStatusLink(context.state)}</footer>
     ${renderLegalWall(context)}
     ${renderCornerDock(context)}
   </div>`;

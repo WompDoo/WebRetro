@@ -39,6 +39,8 @@ function web2Classes(state: GameState): string {
     getActiveUpgradeIds(state).includes('glitter-text') ? 'has-glitter' : '',
     knows('learn-jquery') ? 'has-jquery' : '',
     knows('optimize-gifs') ? 'has-16-colors' : '',
+    getActiveUpgradeIds(state).includes('css-sprites') ? 'has-sprites' : '',
+    getActiveUpgradeIds(state).includes('cufon') ? 'has-cufon' : '',
   ].filter((name) => name !== '').join(' ');
 }
 

@@ -151,3 +151,7 @@
 .badge97.is-valid { background: #FFFFFF; color: #0000AA; }
 .badge97.is-listed { background: #000080; color: #FFFF00; }
 .badge97.is-swap { background: linear-gradient(#FF66FF, #990099); color: #FFFFFF; animation: blink 1s steps(1) infinite; }
+
+/* Designed for 800×600: one 760-pixel table, centred, spacer GIFs keeping the gaps. */
+.site-1997.is-800-wide { max-width: 760px; margin-inline: auto; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15); }
+.badge97.is-800 { background: #C0C0C0; color: #000000; border-style: outset; font-size: 9px; }

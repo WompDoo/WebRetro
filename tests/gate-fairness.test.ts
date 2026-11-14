@@ -7,10 +7,12 @@ import {
   calculateVisitorsPerSecond,
   createInitialGameState,
   createPlaytestState,
+  ERAS_BY_ID,
   isEraGateComplete,
   isVisitorsGoalBlockedByAds,
 } from '../src/engine';
 import type { GameState, Popup } from '../src/engine';
+import { AI_ERA_ADS, BANNER_ADS, CONTEXTUAL_TEXT_ADS, PROGRAMMATIC_ADS, RETARGETED_ADS, SPONSORED_POSTS, TEXT_ADS } from '../src/ui/presentation';
 import { renderTip } from '../src/ui/render-goal';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
@@ -71,5 +73,21 @@ describe('the first banner', () => {
     const fresh = createInitialGameState(SEED);
     assert.equal(calculateNextAdCost(fresh), 0);
     assert.ok(calculateNextAdCost({ ...fresh, adCount: 1 }) > 0);
+  });
+});
+
+describe('every ad slot has its own ad', () => {
+  /** Found by the browser sweep: a full 2005 sidebar ran the same AJAX book twice. */
+  it('has as many ad lines as the era that uses them has slots', () => {
+    const lists: readonly (readonly [string, readonly unknown[], number])[] = [
+      ['1997 banners', BANNER_ADS, ERAS_BY_ID['homepage-1997'].maxAds],
+      ['2005 text ads', TEXT_ADS, ERAS_BY_ID['web2-2005'].maxAds],
+      ['2005 contextual ads', CONTEXTUAL_TEXT_ADS, ERAS_BY_ID['web2-2005'].maxAds],
+      ['2011 sponsored posts', SPONSORED_POSTS, ERAS_BY_ID['social-2011'].maxAds],
+      ['2018 programmatic ads', PROGRAMMATIC_ADS, ERAS_BY_ID['platform-2018'].maxAds],
+      ['retargeted ads, 2018 and 2024', RETARGETED_ADS, ERAS_BY_ID['ai-2024'].maxAds],
+      ['2024 ads', AI_ERA_ADS, ERAS_BY_ID['ai-2024'].maxAds],
+    ];
+    lists.forEach(([name, ads, slots]) => assert.ok(ads.length >= slots, `${name}: ${ads.length} lines for ${slots} slots`));
   });
 });

@@ -192,3 +192,15 @@
 .tag.is-reader-tag { color: #CC3366; font-style: italic; }
 /* AJAX everything: spinners that never finish. */
 .endless-loading { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; color: #888888; font-size: 12px; }
+
+/* CSS sprites: one strip of four icons, each nav item shows its own slice by background-position. */
+.site-2005.has-sprites .w2-nav span::before {
+  content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border-radius: 2px;
+  background: linear-gradient(90deg, #FF9933 0 25%, #66CCFF 25% 50%, #99CC33 50% 75%, #CC66CC 75%); background-size: 48px 12px;
+}
+.site-2005.has-sprites .w2-nav span:nth-child(2)::before { background-position: -12px 0; }
+.site-2005.has-sprites .w2-nav span:nth-child(3)::before { background-position: -24px 0; }
+.site-2005.has-sprites .w2-nav span:nth-child(4)::before { background-position: -36px 0; }
+/* Cufón: headings in a "real" typeface, drawn onto canvas, so they can't be selected. */
+.site-2005.has-cufon :is(.w2-logo, .feature-heading) { font-family: 'Trebuchet MS', 'Lucida Grande', sans-serif; font-style: italic; letter-spacing: -0.04em; user-select: none; }
+.site-2005.has-cufon .feature-heading { font-size: 15px; }

@@ -138,7 +138,14 @@ export type UpgradeId =
   | 'dark-mode'
   | 'paywall'
   | 'observability'
-  | 'spot-gpus';
+  | 'spot-gpus'
+  | 'fixed-width-800'
+  | 'css-sprites'
+  | 'cufon'
+  | 'vendor-prefixes'
+  | 'every-font-weight'
+  | 'blockchain-guestbook'
+  | 'status-page';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 /** Skills are learned, boosts are bought, ops are how you run the site: they live in the Ops tab. */
