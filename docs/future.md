@@ -3,6 +3,15 @@
 The first full game is built: five eras, an ending, and nine kinds of player who can (or deliberately can't) finish it.
 This is the design thinking for what comes after, written to be argued with. Each section ends with a recommendation.
 
+## Decided
+
+| Question | Decision |
+|---|---|
+| What to build next | **Prestige**, as in section 1, without the ending carry |
+| Slower players (a casual game is about 7 hours) | **Keep as is**: slow is allowed; no catch-up bonus, no global shortening |
+| CI's framework-spread check on one seed | **Keep one seed**: an occasional red run from luck is accepted over a slower CI |
+| Should Sell / Keep matter after the ending | **No, it stays flavor**: a story beat, no gameplay difference |
+
 Numbers it builds on (`player-types.md`): the balance bot finishes in about 3.5 hours, the relaxed bot in about 4.5,
 a casual player in about 7. Any plan that only adds time makes the casual player's game too long already.
 
@@ -16,12 +25,8 @@ move one level up: **the ending is the relaunch, and 1997 is the next era.**
 scale, so the second run can't earn ten times the first by playing ten times longer. The name fits: backlinks are
 what an old site leaves to a new one.
 
-**The ending's choice matters here** (`ending.md` left it open):
-
-| Ending | Carries into the next run |
-|---|---|
-| Sold | Exit money: start 1997 with a budget (the sale buys the next site its first skills) |
-| Kept | Your domain: start with the 1997 domain ops item owned and the archive as a page on the new site |
+The ending's choice was considered as a carry-over (sold: exit money; kept: your domain) and **decided against**:
+Sell / Keep stays a story beat. Every finished run earns Backlinks the same way.
 
 **What Backlinks buy** (permanent, small, and each one removes friction rather than adding power):
 
@@ -43,8 +48,8 @@ what an old site leaves to a new one.
   clears the game, never the legacy. The era records already in `GameState` become the legacy's museum: every
   finished run's Web Attic, side by side.
 
-**Recommendation:** build it, starting with Backlinks, the two ending carries and three perks (Known tags,
-Muscle memory, Early warning). The balance sim needs a second bot that starts with them, so pacing for run two is
+**Recommendation (decided):** build it, starting with Backlinks and three perks (Known tags, Muscle memory, Early
+warning). The balance sim needs a second bot that starts with them, so pacing for run two is
 measured, not guessed.
 
 ## 2. Replayability: different games, not the same game faster
