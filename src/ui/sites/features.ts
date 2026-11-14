@@ -1,7 +1,8 @@
 import { FEATURES_BY_ID, formatCompactNumber, getActiveUpgradeIds, isFeatureOnPage, isFeaturePluginDead, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
-import { BLOG_POSTS, BLOGROLL, COMMENTS, ERA_PRESENTATION, READER_TAGS, TAGS } from '../presentation';
+import { BLOGROLL, ERA_PRESENTATION, READER_TAGS, TAGS } from '../presentation';
+import { SITE_CONTENT } from '../site-content';
 import type { MessageCopy } from '../presentation';
 import { renderInfectionOverlay } from './infections';
 import { formatMinutesAndSeconds, heading, is1997, levelOf, siteBrand, toWholeSeconds } from './site-context';
@@ -145,7 +146,7 @@ function renderEndlessSpinner(context: SiteContext, text: string): string {
 }
 
 const renderBlog: FeatureRenderer = (context) => {
-  const posts = BLOG_POSTS.slice(0, Math.min(levelOf(context, 'blog'), MAX_BLOG_POSTS))
+  const posts = SITE_CONTENT[context.eraId].blogPosts.slice(0, Math.min(levelOf(context, 'blog'), MAX_BLOG_POSTS))
     .map((post, index) => `<article class="blog-post"><h3>${escapeHtml(post.title)}</h3><p class="post-meta">${post.date} · ${renderPostLink(context, index)} · ${levelOf(context, 'comments')} comments</p><p>${escapeHtml(post.excerpt)}</p></article>`)
     .join('');
   return `${heading(context, 'blog', 'Latest posts')}${posts}${renderEndlessSpinner(context, 'Loading more posts…')}`;
@@ -167,7 +168,7 @@ function isReply(context: SiteContext, index: number): boolean {
 
 const renderComments: FeatureRenderer = (context) => {
   const count = Math.min(levelOf(context, 'comments') + 1, MAX_COMMENTS);
-  const items = COMMENTS.slice(0, count)
+  const items = SITE_CONTENT[context.eraId].comments.slice(0, count)
     .map((comment, index) => {
       const color = pickCyclic(AVATAR_COLORS, index, '#5C9E2E');
       return `<li class="comment${isReply(context, index) ? ' is-reply' : ''}"><span class="avatar" style="background:${color}">${escapeHtml(comment.author.charAt(0).toUpperCase())}</span><span><b>${escapeHtml(comment.author)}</b> ${escapeHtml(comment.text)}</span></li>`;
@@ -189,16 +190,6 @@ const renderTagCloud: FeatureRenderer = (context) => {
   return `${heading(context, 'tag-cloud', 'Tags')}<p class="tag-cloud">${tags}${renderReaderTags(context)}</p>${renderEndlessSpinner(context, 'Refreshing tags…')}`;
 };
 
-const FORUM_THREADS: readonly string[] = [
-  '[STICKY] Read this before posting!!',
-  'Re: Re: Re: help!!',
-  'Post your desktop screenshots',
-  'Is AJAX a fad? (poll)',
-  'Which PHP framework should I use? (3 pages)',
-  'My site got hacked :(',
-  'Introduce yourself here',
-  'Signature test, please ignore',
-];
 const MAX_FORUM_THREADS = 6;
 const BASE_FORUM_THREADS = 2;
 const FORUM_REPLY_STEP = 7;
@@ -212,7 +203,6 @@ const BASE_THUMBNAILS = 4;
 const MAX_THUMBNAILS = 8;
 const THUMBNAIL_STYLES = 6;
 const PHOTOS_PER_LEVEL = 12;
-const PHOTO_NAMES: readonly string[] = ['beach.jpg', 'garden.jpg', 'office.jpg', 'cat.jpg', 'party.jpg', 'flag.jpg'];
 const LIGHTBOX_CYCLE_MS = 9_000;
 const LIGHTBOX_OPEN_MS = 3_000;
 const BASE_MAP_PINS = 3;
@@ -226,7 +216,7 @@ const MAP_PLACES: readonly string[] = ['Best pizza in town ★★★★☆', 'Fr
 const renderForum: FeatureRenderer = (context) => {
   const level = levelOf(context, 'forum');
   const count = Math.min(level + BASE_FORUM_THREADS, MAX_FORUM_THREADS);
-  const rows = FORUM_THREADS.slice(0, count)
+  const rows = SITE_CONTENT[context.eraId].forumThreads.slice(0, count)
     .map((thread, index) => {
       const replies = (index * FORUM_REPLY_STEP + FORUM_REPLY_BASE) * level;
       return `<tr><td><span class="fake-link">${escapeHtml(thread)}</span></td><td>${replies}</td><td>${replies * FORUM_VIEWS_PER_REPLY}</td></tr>`;
@@ -252,16 +242,16 @@ export function renderGalleryLightbox(level: number, nowMs: number): string {
     : '';
 }
 
-function renderThumbnail(index: number): string {
+function renderThumbnail(names: readonly string[], index: number): string {
   const style = index % THUMBNAIL_STYLES;
-  return `<figure class="photo"><span class="thumb thumb--${style}"></span><figcaption class="photo-name">${pickCyclic(PHOTO_NAMES, style, 'photo.jpg')}</figcaption></figure>`;
+  return `<figure class="photo"><span class="thumb thumb--${style}"></span><figcaption class="photo-name">${pickCyclic(names, index, 'photo.jpg')}</figcaption></figure>`;
 }
 
 const renderPhotoGallery: FeatureRenderer = (context) => {
   const level = levelOf(context, 'photo-gallery');
   const count = countVisibleThumbnails(level);
   const albumSize = BASE_THUMBNAILS + level * PHOTOS_PER_LEVEL;
-  const thumbs = Array.from({ length: count }, (_, index) => renderThumbnail(index)).join('');
+  const thumbs = Array.from({ length: count }, (_, index) => renderThumbnail(SITE_CONTENT[context.eraId].photoNames, index)).join('');
   return `${heading(context, 'photo-gallery', 'Photos')}<p class="gallery-meta">${count} of ${albumSize} photos · <span class="fake-link">View all</span> · <span class="fake-link">Slideshow ▶</span></p><div class="gallery">${thumbs}</div><div data-live="gallery-lightbox">${renderGalleryLightbox(level, context.nowMs)}</div>`;
 };
 
@@ -283,16 +273,6 @@ const SHARE_SPREAD = 0.55;
 const MAX_FEED_ITEMS = 7;
 const BASE_FEED_ITEMS = 3;
 const VIEWS_PER_VIDEO_LEVEL = 380_000;
-const FEED_ACTIONS: readonly string[] = [
-  'Sam liked “My first post”',
-  'Ana shared a photo from your album',
-  'Jo checked in at your Check-in map',
-  'Theo commented: “is this on the app?”',
-  'mel_b is now following you',
-  'Rik shared the cat video (again)',
-  'Grandma Rose liked everything',
-];
-const VIDEOS: readonly string[] = ['cat_vs_printer.mp4', 'unboxing_my_new_phone.mp4', 'double_rainbow_reaction.mp4'];
 
 const renderShareButtons: FeatureRenderer = (context) => {
   const level = levelOf(context, 'share-buttons');
@@ -306,7 +286,7 @@ const renderShareButtons: FeatureRenderer = (context) => {
 /** HTML5 video: no plugin, a native-looking player, and a view count that only goes up. */
 const renderVideoPlayer: FeatureRenderer = (context) => {
   const level = levelOf(context, 'video-player');
-  const title = pickCyclic(VIDEOS, level, 'video.mp4');
+  const title = pickCyclic(SITE_CONTENT[context.eraId].videos, level, 'video.mp4');
   return `${heading(context, 'video-player', 'Video')}<div class="video-player"><span class="video-play" aria-hidden="true">▶</span><span class="video-bar"><span></span></span></div><p class="video-note">${escapeHtml(title)} · ${formatCompactNumber(level * VIEWS_PER_VIDEO_LEVEL)} views · no plugin needed</p>`;
 };
 
@@ -317,7 +297,7 @@ function knows(context: SiteContext, upgradeId: UpgradeId): boolean {
 
 const renderActivityFeed: FeatureRenderer = (context) => {
   const count = Math.min(BASE_FEED_ITEMS + levelOf(context, 'activity-feed'), MAX_FEED_ITEMS);
-  const items = FEED_ACTIONS.slice(0, count).map((action) => `<li class="feed-item">${escapeHtml(action)}</li>`).join('');
+  const items = SITE_CONTENT[context.eraId].activity.slice(0, count).map((action) => `<li class="feed-item">${escapeHtml(action)}</li>`).join('');
   const live = knows(context, 'learn-websockets') ? '<p class="feed-live"><span aria-hidden="true">●</span> Live: new posts arrive on their own</p>' : '';
   return `${heading(context, 'activity-feed', 'Live activity')}${live}<ul class="feed-list${live === '' ? '' : ' is-live'}">${items}<li class="feed-more"><span class="spinner" aria-hidden="true"></span>Loading more…</li></ul>`;
 };

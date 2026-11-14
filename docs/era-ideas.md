@@ -24,6 +24,10 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   "Hello, world!" hero (2011), the AI's "Hello! How can I help you today?" (2024).
 - **Legacy features can break.** When an era kills a technology (Flash, MIDI plugins), the old feature
   shows a "plugin not supported" puzzle piece and brings in nothing until you rebuild it the new way.
+- **Content moves with the era.** A feature keeps its place through every relaunch, but what's in it is of its
+  time: 2011's blog writes about going mobile, 2024's photo album is half generated (`src/ui/site-content.ts`).
+  `tests/era-pages.test.ts` fails if anything on a page is dated outside its era: it found 2005's posts still the
+  "latest" on the 2024 page, and 2018's legal pages "last updated" in 2018 on the 2024 page.
 - **Out of fashion retires.** Each relaunch retires what that era's web stopped doing (`sunsetIn` on a
   feature): it leaves the page and the shop, brings no visitors and adds no page weight. The relaunch story
   lists what goes, by the name the player knew it, and the Build tab keeps a "Retired" list. This keeps
