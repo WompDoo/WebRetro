@@ -25,7 +25,7 @@ function requireFeatureLevel(featureId: FeatureId, level: number): EraGateRequir
 function requireVisitorsPerSecond(amount: number): EraGateRequirement {
   return {
     kind: 'visitors-per-second',
-    label: `Reach ${formatCompactNumber(amount)} visitors/s`,
+    label: `Reach ${formatCompactNumber(amount)} visitors/s on a usual day: pop-ups and outages don’t count against it`,
     target: amount,
     featureId: null,
   };
@@ -59,7 +59,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     gateRequirements: [
       requireEveryFeatureOf('homepage-1997', 1997),
       requireFeatureLevel('guestbook', 35),
-      requireVisitorsPerSecond(70_000),
+      requireVisitorsPerSecond(65_000),
       requireMigrationBudget(HOMEPAGE_MIGRATION_COST),
     ],
     adLabel: 'Banner ad',
@@ -166,7 +166,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     gateRequirements: [
       requireEveryFeatureOf('platform-2018', 2018),
       requireFeatureLevel('stories', 15),
-      requireVisitorsPerSecond(150_000_000_000),
+      requireVisitorsPerSecond(100_000_000_000),
       requireMigrationBudget(PLATFORM_MIGRATION_COST),
     ],
     adLabel: 'Programmatic ad',
@@ -204,7 +204,7 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     gateRequirements: [
       requireEveryFeatureOf('ai-2024', 2024),
       requireFeatureLevel('ai-chatbot', 15),
-      requireVisitorsPerSecond(15_000_000_000_000),
+      requireVisitorsPerSecond(11_000_000_000_000),
       requireMigrationBudget(AI_MIGRATION_COST),
     ],
     adLabel: 'Sponsored result',

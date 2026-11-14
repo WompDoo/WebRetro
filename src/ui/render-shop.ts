@@ -453,12 +453,17 @@ function renderDefenseRow(state: GameState, defenseId: DefenseId): string {
   </article>`;
 }
 
+/** The first banner costs nothing: say so, rather than "$0". */
+function describeAdPrice(cost: number): string {
+  return cost === 0 ? '+ Free' : `+ ${formatMoney(cost)}`;
+}
+
 function renderAdControls(state: GameState): string {
   const era = ERAS_BY_ID[state.eraId];
   if (!canUseAds(state)) return `<p class="shop-effect is-requirement">Requires: ${escapeHtml(skillName(era.adSkillId))}</p>`;
   const placeButton = state.adCount >= era.maxAds
     ? '<button type="button" class="buy-button" disabled>Full</button>'
-    : buyButton('place-ad', 'ad', calculateNextAdCost(state), `+ ${formatMoney(calculateNextAdCost(state))}`);
+    : buyButton('place-ad', 'ad', calculateNextAdCost(state), describeAdPrice(calculateNextAdCost(state)));
   const removeButton = `<button type="button" class="ghost-button" data-action="remove-ad" ${state.adCount === 0 ? 'disabled' : ''}>Remove one</button>`;
   return `<p class="shop-effect">Each ad: +$${calculateAdValuePerAd(state).toFixed(3)} per visitor, −${formatPercent(calculateAdAnnoyancePerAd(state))} visitors</p>
       <p class="shop-effect is-muted">Now: $${calculateRevenuePerVisitor(state).toFixed(3)} per visitor · ads cost you ${formatPercent(NEUTRAL_FACTOR - calculateAdTrafficFactor(state))} of visitors</p>

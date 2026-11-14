@@ -21,11 +21,12 @@ if (testsOnly) {
 }
 
 await build({
-  entryPoints: ['sim/balance-sim.ts'],
+  entryPoints: { 'balance-sim': 'sim/balance-sim.ts', 'player-types': 'sim/player-types.ts' },
   bundle: true,
   platform: 'node',
   format: 'cjs',
-  outfile: 'dist/balance-sim.cjs',
+  outdir: 'dist',
+  outExtension: { '.js': '.cjs' },
   logLevel: 'warning',
 });
 

@@ -37,6 +37,7 @@ which also works inside the claude.ai preview and on phones. A 🧪 Playtest but
 npm run typecheck  # strict TypeScript, no emit
 npm test           # unit tests (node:test)
 npm run sim        # headless balance simulation: how long each era takes
+npm run players    # the whole game as nine kinds of player: who gets stuck, and where (docs/player-types.md)
 ```
 
 `SIM_TIMELINE=active npm run sim` prints a minute-by-minute log for the scripted player. `SIM_SEED=42 npm run sim`

@@ -630,6 +630,16 @@ export const calculateVisitorsPerSecond = memoizeByState((state: GameState): num
   return Math.min(calculateDemandVisitorsPerSecond(state) * calculatePerformanceTrafficFactor(state), calculateServedLimit(state));
 });
 
+/**
+ * Visitors on a usual day: without the trouble of the moment (pop-ups, infections, an expired certificate) and without
+ * the luck (a traffic spike, the quick-fix bonus). The era checklist counts these. It asks how big the site has grown,
+ * and a pop-up left open for a minute shouldn't untick it: trouble costs income, not the checklist. Hosting stays in:
+ * an overloaded server is the site's own size problem, not a passing one.
+ */
+export const calculateUsualVisitorsPerSecond = memoizeByState((state: GameState): number =>
+  calculateVisitorsPerSecond({ ...state, popups: [], infections: [], isCertificateExpired: false, trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 }),
+);
+
 export function calculateAdValuePerAd(state: GameState): number {
   const defenseFactors = getEnabledDefenses(state).map((defense) => defense.adValueFactor);
   const era = ERAS_BY_ID[state.eraId];
@@ -749,8 +759,12 @@ export function calculateFeatureLevelsCost(state: GameState, featureId: FeatureI
   return Array.from({ length: count }, (_, offset) => calculateFeatureLevelCost(featureId, level + offset)).reduce((total, cost) => total + cost, 0);
 }
 
+/**
+ * The first banner is free: 1997's banner exchanges ran yours on other sites in return for theirs on yours. It also
+ * means nobody is ever stuck with visitors, no ads and nothing to pay for one.
+ */
 export function calculateNextAdCost(state: GameState): number {
-  return Math.ceil(AD_BASE_COST * AD_COST_GROWTH ** state.adCount);
+  return state.adCount === 0 ? 0 : Math.ceil(AD_BASE_COST * AD_COST_GROWTH ** state.adCount);
 }
 
 export function isSkillLearned(state: GameState, skillId: UpgradeId | null): boolean {

@@ -7,6 +7,7 @@
     "typecheck": "tsc --noEmit",
     "build": "node build.mjs",
     "sim": "node build.mjs --sim-only && node dist/balance-sim.cjs",
+    "players": "node build.mjs --sim-only && node dist/player-types.cjs",
     "test": "node build.mjs --tests && node --test dist/tests/*.test.cjs"
   },
   "devDependencies": {
