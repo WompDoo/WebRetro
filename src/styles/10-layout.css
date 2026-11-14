@@ -17,6 +17,9 @@
 .stat dt { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
 .stat dd { margin: 0; font-family: var(--font-numbers); font-weight: 600; letter-spacing: -0.02em; font-size: 20px; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stat-money dd { color: var(--money); }
+/* .stat sets display, which would beat the hidden attribute: the projected Backlinks hide until a run is finished. */
+.stat[hidden] { display: none; }
+.stat-backlinks dd { color: var(--link); }
 .ghost-button {
   padding: 5px 10px; border: 2px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink);
   font-size: 13px; font-weight: 600; cursor: pointer;
@@ -52,6 +55,7 @@
   .brand-mark { width: 24px; height: 24px; }
   .brand h1 { font-size: 18px; }
   .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-left: 12px; }
+  .stats:has(.stat-backlinks:not([hidden])) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .stat dt { font-size: 10px; }
   .stat dd { font-size: 17px; }
 }

@@ -1,5 +1,5 @@
-import { createInitialGameState, ERAS_BY_ID } from '../engine';
-import type { GameEvent, GameState, GameStep } from '../engine';
+import { createInitialGameState, EMPTY_LEGACY, ERAS_BY_ID, startNextRun } from '../engine';
+import type { GameEvent, GameState, GameStep, LegacyState } from '../engine';
 import type { DeviceView } from './browser-chrome';
 import type { PlaytestSpeed } from './playtest';
 import type { BuyAmount, ShopTab } from './render-shop';
@@ -16,6 +16,8 @@ export const MOBILE_TABS: readonly MobileTab[] = ['site', 'code', 'shop', 'inbox
 
 interface UiStore {
   game: GameState;
+  /** Backlinks and perks from finished runs. Saved apart from the game. */
+  legacy: LegacyState;
   shopTab: ShopTab;
   /** Levels per click in the Build tab. */
   buyAmount: BuyAmount;
@@ -53,6 +55,7 @@ export function createSeed(): number {
  */
 export const store: UiStore = {
   game: createInitialGameState(createSeed()),
+  legacy: EMPTY_LEGACY,
   shopTab: 'learn',
   buyAmount: 1,
   editorFile: null,
@@ -100,8 +103,9 @@ export function replaceGame(game: GameState): void {
   store.mobileTab = pickStartingMobileTab(store.game);
 }
 
+/** Every new site starts in 1997 with the legacy's perks: Start over and a new run from the credits alike. */
 export function startNewGame(): void {
-  replaceGame(createInitialGameState(createSeed()));
+  replaceGame(startNextRun(store.legacy, createSeed()));
 }
 
 export function countUnreadNews(): number {

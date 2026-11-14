@@ -1,11 +1,11 @@
-import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getFeatureDisplayName, nameSite } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, introElements, minigameElements } from './elements';
 import { createIntro } from './intro';
 import { installJavaScriptEffects } from './javascript-effects';
-import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readPlaytestFlag, restoreGame, restorePreferences, writeSave } from './persistence';
+import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readLegacy, readPlaytestFlag, restoreGame, restorePreferences, writeSave } from './persistence';
 import { createTapCounter, isPlaytestRequested } from './playtest';
 import { installPhoneSwipe } from './phone-swipe';
 import { installScrollDepth } from './scroll-depth';
@@ -78,6 +78,8 @@ function saveWhenHidden(): void {
 }
 
 function start(hotData: unknown): void {
+  store.legacy = readLegacy();
+  store.game = startNextRun(store.legacy, store.game.randomSeed);
   restoreGame(hotData);
   restorePreferences();
   store.mobileTab = pickStartingMobileTab(store.game);

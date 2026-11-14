@@ -1,4 +1,4 @@
-import { calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser } from '../engine';
+import { calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks } from '../engine';
 import type { GameState } from '../engine';
 import {
   buildBrowserTitle,
@@ -124,7 +124,14 @@ function renderStats(editor: CodeEditor): void {
   setTextIfChanged(elements.statMoney, formatMoney(store.game.money));
   setTextIfChanged(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
   setTextIfChanged(elements.statRevenue, `${formatMoney(economy.netRevenuePerSecond)}/s`);
+  renderProjectedBacklinks();
   editor.updateRate(economy.keystrokeValue, economy.bugChance);
+}
+
+/** After the first finished run: what finishing this one now would earn. The first run is about the site. */
+function renderProjectedBacklinks(): void {
+  elements.statBacklinksBox.hidden = !shouldProjectBacklinks(store.game);
+  setTextIfChanged(elements.statBacklinks, `+${calculateBacklinksEarned(store.game)}`);
 }
 
 function renderBrowserStatus(editor: CodeEditor): void {
@@ -314,7 +321,7 @@ export function createRenderer(editor: CodeEditor): Renderer {
   const showEndCardOnce = (): void => {
     if (!store.game.isGameFinished || endCardShown) return;
     endCardShown = true;
-    showEnding(store.game, 'archive');
+    showEnding(store.game, store.legacy, 'archive');
   };
 
   const renderStructure = (): void => {

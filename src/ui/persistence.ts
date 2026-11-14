@@ -1,4 +1,5 @@
-import { advanceSimulation, formatMoney, restoreGameState } from '../engine';
+import { advanceSimulation, EMPTY_LEGACY, formatMoney, restoreGameState, restoreLegacy } from '../engine';
+import type { LegacyState } from '../engine';
 import { applyStep, createSeed, pushMessage, store } from './store';
 
 interface StoredSave {
@@ -35,6 +36,26 @@ export function clearSave(): void {
     window.localStorage.removeItem(SAVE_STORAGE_KEY);
   } catch {
     // Nothing to clear when storage is blocked.
+  }
+}
+
+/** The legacy lives apart from the game: clearing a save never clears it. */
+const LEGACY_STORAGE_KEY = 'under-construction:legacy';
+
+export function readLegacy(): LegacyState {
+  try {
+    const raw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    return raw === null ? EMPTY_LEGACY : restoreLegacy(JSON.parse(raw));
+  } catch {
+    return EMPTY_LEGACY;
+  }
+}
+
+export function writeLegacy(): void {
+  try {
+    window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(store.legacy));
+  } catch {
+    // Storage can be blocked: the legacy then lasts as long as the tab.
   }
 }
 

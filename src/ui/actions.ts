@@ -10,6 +10,9 @@ import {
   DEFENSE_IDS,
   ERA_IDS,
   ERAS_BY_ID,
+  bankBacklinks,
+  buyPerk,
+  PERK_IDS,
   fallForPopupScam,
   FEATURE_IDS,
   formatMoney,
@@ -24,7 +27,7 @@ import {
   writeCode,
   findChosenFramework,
 } from '../engine';
-import type { ConsentBanner, DefenseId, EraId, FeatureId, FrameworkId, UpgradeId } from '../engine';
+import type { ConsentBanner, DefenseId, EraId, FeatureId, FrameworkId, PerkId, UpgradeId } from '../engine';
 import { DEVICE_VIEWS } from './browser-chrome';
 import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
@@ -32,7 +35,7 @@ import { elements } from './elements';
 import { FRAMEWORK_PRESENTATION } from './framework-presentation';
 import { isEndingAct } from './ending';
 import { hideOverlay, renderStory, showArchiveYear, showEnding, showOverlay } from './overlays';
-import { clearSave, writePreferences } from './persistence';
+import { clearSave, writeLegacy, writePreferences, writeSave } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
@@ -82,6 +85,10 @@ function isDefenseId(value: string): value is DefenseId {
 
 function isEraId(value: string): value is EraId {
   return (ERA_IDS as readonly string[]).includes(value);
+}
+
+function isPerkId(value: string): value is PerkId {
+  return (PERK_IDS as readonly string[]).includes(value);
 }
 
 function isShopTab(value: string): value is ShopTab {
@@ -150,8 +157,30 @@ function fallForScam(popupId: number): void {
   flashMoneyLoss();
 }
 
-/** Starting over is a new site: it gets a new name. */
+/** A finished run pays its Backlinks in before anything replaces it: finishing always counts. */
+function bankFinishedRun(): void {
+  const banked = bankBacklinks(store.legacy, store.game);
+  store.legacy = banked.legacy;
+  store.game = banked.state;
+  writeLegacy();
+}
+
+/** Prestige: pay the run in, then show what the Backlinks buy. */
+function openLegacy(): void {
+  bankFinishedRun();
+  writeSave();
+  showEnding(store.game, store.legacy, 'legacy');
+}
+
+function buyPerkAndShow(perkId: PerkId): void {
+  store.legacy = buyPerk(store.legacy, perkId);
+  writeLegacy();
+  showEnding(store.game, store.legacy, 'legacy');
+}
+
+/** Starting over is a new site: it gets a new name, and every perk the legacy has. */
 function resetGame(renderer: Renderer, intro: Intro): void {
+  bankFinishedRun();
   clearSave();
   startNewGame();
   renderer.forgetRenderedState();
@@ -228,7 +257,10 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),
     'keep-playing': () => hideOverlay(elements.endOverlay),
-    'ending-act': withId(isEndingAct, (act) => showEnding(store.game, act)),
+    'ending-act': withId(isEndingAct, (act) => showEnding(store.game, store.legacy, act)),
+    'open-legacy': openLegacy,
+    'buy-perk': withId(isPerkId, buyPerkAndShow),
+    'start-new-run': () => resetGame(renderer, intro),
     'ending-year': withId(isEraId, (eraId) => showArchiveYear(store.game, eraId)),
     ...createPlaytestHandlers(renderer, minigame),
   };

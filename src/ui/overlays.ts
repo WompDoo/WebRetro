@@ -1,5 +1,5 @@
 import { calculateRetirementPayout, ERAS_BY_ID } from '../engine';
-import type { EraId, GameState } from '../engine';
+import type { EraId, GameState, LegacyState } from '../engine';
 import { escapeHtml } from './dom';
 import { elements } from './elements';
 import { renderEndingAct } from './ending';
@@ -41,8 +41,8 @@ export function renderStory(state: GameState): boolean {
 }
 
 /** An act of the ending, from its top. */
-export function showEnding(state: GameState, act: EndingAct): void {
-  elements.endCard.innerHTML = renderEndingAct(state, act, null);
+export function showEnding(state: GameState, legacy: LegacyState, act: EndingAct): void {
+  elements.endCard.innerHTML = renderEndingAct(state, act, null, legacy);
   elements.endCard.dataset['act'] = act;
   elements.endOverlay.scrollTop = 0;
   showOverlay(elements.endOverlay);

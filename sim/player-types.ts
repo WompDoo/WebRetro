@@ -6,6 +6,7 @@
  *   npm run players                         every player type, one after another
  *   SIM_PLAYERS=idle,ad-free npm run players  just these (run several in parallel from the shell)
  *   SIM_START=social-2011                   start at that era's playtest preset instead of a new game
+ *   SIM_PLAYERS=optimizer-run-2             a second run: the same player with a first run's perks
  */
 import {
   advanceEra,
@@ -27,9 +28,12 @@ import {
   canBuyDefense,
   DEFENSE_IDS,
   DEFENSES_BY_ID,
+  calculateBacklinksEarned,
+  NO_PERKS,
   type DefenseId,
   type EraId,
   type GameState,
+  type PerkId,
 } from '../src/engine';
 import { decide, reactToHazards, renewWhenNoticed, typeKeystrokes } from './bot';
 import type { PlayerProfile } from './bot';
@@ -169,15 +173,39 @@ function isEraId(value: string): value is EraId {
   return (ERA_IDS as readonly string[]).includes(value);
 }
 
-/** A new game, or the start of the era SIM_START names: each era's cliffs show up without playing the ones before. */
-function createStart(type: PlayerType): GameState {
-  const start = process.env['SIM_START'] ?? '';
-  const state = isEraId(start) ? createPlaytestState(start, 'start', SEED, type.profile.framework) : createInitialGameState(SEED);
-  return chooseConsentBanner(state, type.profile.consentBanner);
+/** A run: a player type, and the perks it starts with. A second run is the same player with a first run's legacy. */
+interface Run {
+  readonly label: string;
+  readonly type: PlayerType;
+  readonly perks: Readonly<Record<PerkId, number>>;
 }
 
-function play(type: PlayerType): PlayerReport {
-  let state = createStart(type);
+/** What a typical first run's Backlinks buy: the optimizer earns about 9, the casual player about 5. */
+const SECOND_RUN_PERKS: Readonly<Record<string, Readonly<Record<PerkId, number>>>> = {
+  optimizer: { 'muscle-memory': 2, regulars: 2 },
+  casual: { 'muscle-memory': 1, regulars: 2 },
+};
+
+function listRuns(): readonly Run[] {
+  const firstRuns = PLAYER_TYPES.map((type) => ({ label: type.profile.name, type, perks: NO_PERKS }));
+  const secondRuns = PLAYER_TYPES.flatMap((type) => {
+    const perks = SECOND_RUN_PERKS[type.profile.name];
+    return perks === undefined ? [] : [{ label: `${type.profile.name}-run-2`, type, perks }];
+  });
+  return [...firstRuns, ...secondRuns];
+}
+
+/** A new game, or the start of the era SIM_START names: each era's cliffs show up without playing the ones before. */
+function createStart(run: Run): GameState {
+  const start = process.env['SIM_START'] ?? '';
+  const state = isEraId(start) ? createPlaytestState(start, 'start', SEED, run.type.profile.framework) : createInitialGameState(SEED);
+  const isSecondRun = run.perks !== NO_PERKS;
+  return chooseConsentBanner({ ...state, legacyPerkLevels: run.perks, runNumber: isSecondRun ? 2 : 1 }, run.type.profile.consentBanner);
+}
+
+function play(run: Run): PlayerReport {
+  const type = run.type;
+  let state = createStart(run);
   let now = 0;
   let eraStartedAt = 0;
   let typingDebt = 0;
@@ -199,7 +227,7 @@ function play(type: PlayerType): PlayerReport {
     }
     now += TICK_MS;
   }
-  return { name: type.profile.name, eras, finished: state.isGameFinished, stuckIn: state.isGameFinished ? null : state.eraId, minutes: now / MS_PER_MINUTE, oddities: tracker, lastState: state };
+  return { name: run.label, eras, finished: state.isGameFinished, stuckIn: state.isGameFinished ? null : state.eraId, minutes: now / MS_PER_MINUTE, oddities: tracker, lastState: state };
 }
 
 function describeEras(eras: readonly EraOutcome[]): string {
@@ -216,16 +244,16 @@ function describeOddities(report: PlayerReport): string {
 
 function describeEnd(report: PlayerReport): string {
   const state = report.lastState;
-  const outcome = report.finished ? `finished in ${report.minutes.toFixed(0)} min` : `STUCK in ${report.stuckIn ?? '?'} after ${report.minutes.toFixed(0)} min`;
+  const outcome = report.finished ? `finished in ${report.minutes.toFixed(0)} min, earning ${calculateBacklinksEarned(state)} Backlinks` : `STUCK in ${report.stuckIn ?? '?'} after ${report.minutes.toFixed(0)} min`;
   return `${outcome} · last ${formatCompactNumber(calculateVisitorsPerSecond(state))} visitors/s, ${formatMoney(calculateNetRevenuePerSecond(state))}/s, ${formatMoney(state.money)} saved, ${state.adCount} ads, ${state.purchasedUpgradeIds.length} upgrades, defenses: ${state.ownedDefenseIds.join(', ') || 'none'}`;
 }
 
 function main(): void {
   const wanted = (process.env['SIM_PLAYERS'] ?? '').split(',').filter((name) => name !== '');
-  const types = wanted.length === 0 ? PLAYER_TYPES : PLAYER_TYPES.filter((type) => wanted.includes(type.profile.name));
-  types.forEach((type) => {
-    const report = play(type);
-    console.log(`[${report.name}] ${type.description}`);
+  const runs = wanted.length === 0 ? listRuns() : listRuns().filter((run) => wanted.includes(run.label));
+  runs.forEach((run) => {
+    const report = play(run);
+    console.log(`[${report.name}] ${run.type.description}`);
     console.log(`  ${describeEnd(report)}`);
     console.log(`  eras: ${describeEras(report.eras)}`);
     console.log(`  ${describeOddities(report)}`);

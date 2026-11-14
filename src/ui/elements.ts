@@ -9,6 +9,8 @@ export const elements = {
   statMoney: requireElement<HTMLElement>('#stat-money'),
   statVisitors: requireElement<HTMLElement>('#stat-visitors'),
   statRevenue: requireElement<HTMLElement>('#stat-revenue'),
+  statBacklinksBox: requireElement<HTMLElement>('#stat-backlinks-box'),
+  statBacklinks: requireElement<HTMLElement>('#stat-backlinks'),
   browserTitle: requireElement<HTMLElement>('#browser-title'),
   browserUrl: requireElement<HTMLElement>('#browser-url'),
   browserStatus: requireElement<HTMLElement>('#browser-status'),

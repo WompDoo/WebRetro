@@ -430,6 +430,26 @@ export interface GameState {
   readonly eraRecords: readonly EraRecord[];
   /** The last era's checklist was finished and the ending played. Play can go on afterwards. */
   readonly isGameFinished: boolean;
+  /** Which site this is: 1 for the first, one more for every finished run before it. */
+  readonly runNumber: number;
+  /** The perks this run was started with, bought with Backlinks from earlier runs. */
+  readonly legacyPerkLevels: Readonly<Record<PerkId, number>>;
+  /** This run's Backlinks are in the legacy already: a finished run pays out once. */
+  readonly areBacklinksBanked: boolean;
+}
+
+/** Bought with Backlinks, kept across runs. */
+export type PerkId = 'muscle-memory' | 'regulars';
+
+/**
+ * What survives from one site to the next: unspent Backlinks, the perks bought with them, and how many runs were
+ * finished. Saved on its own, apart from the game: Start over clears a game, never the legacy.
+ */
+export interface LegacyState {
+  readonly version: number;
+  readonly backlinks: number;
+  readonly perkLevels: Readonly<Record<PerkId, number>>;
+  readonly finishedRuns: number;
 }
 
 /** The parts of the game that decide how the page looks: enough to show an old page again. */

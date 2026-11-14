@@ -1,4 +1,11 @@
 import {
+  calculateBacklinkSources,
+  calculateBacklinksEarned,
+  calculatePerkCost,
+  canBuyPerk,
+  EMPTY_LEGACY,
+  PERK_IDS,
+  PERKS_BY_ID,
   calculateEraDurationsMs,
   createEraRecord,
   createInitialGameState,
@@ -8,7 +15,7 @@ import {
   formatWholeNumber,
   listEraRecords,
 } from '../engine';
-import type { EraId, EraRecord, GameState } from '../engine';
+import type { EraId, EraRecord, GameState, LegacyState, PerkId } from '../engine';
 import { buildSiteUrl } from './browser-chrome';
 import { escapeHtml } from './dom';
 import { ERA_PRESENTATION } from './presentation';
@@ -21,9 +28,9 @@ import { siteBrand } from './sites/site-context';
  * journey"; keeping it is the full circle, one HTML file in Notepad like 1997. Both end on the credits.
  * Each act is a pure function of the game, so the tests read the same markup the player sees.
  */
-export type EndingAct = 'archive' | 'offer' | 'sold' | 'kept' | 'credits';
+export type EndingAct = 'archive' | 'offer' | 'sold' | 'kept' | 'credits' | 'legacy';
 
-export const ENDING_ACTS: readonly EndingAct[] = ['archive', 'offer', 'sold', 'kept', 'credits'];
+export const ENDING_ACTS: readonly EndingAct[] = ['archive', 'offer', 'sold', 'kept', 'credits', 'legacy'];
 
 /** The buyer pays this many times everything the site ever earned. */
 const OFFER_EARNINGS_MULTIPLE = 10;
@@ -172,22 +179,53 @@ function renderCredits(state: GameState): string {
     <p class="ending-epilogue">Written, designed, hosted, debugged and relaunched by you. Thanks for playing Under Construction.</p>
     <div class="overlay-actions">
       <button type="button" class="ghost-button" data-action="ending-act" data-id="archive">Back to the attic</button>
-      <button type="button" class="ghost-button" data-action="open-reset">Start over</button>
-      <button type="button" class="primary-button" data-action="keep-playing">Keep playing</button>
+      <button type="button" class="ghost-button" data-action="keep-playing">Keep playing</button>
+      <button type="button" class="primary-button" data-action="open-legacy">${escapeHtml(describeNewSiteButton(state))}</button>
     </div>`;
 }
 
-const ACT_RENDERERS: Readonly<Record<EndingAct, (state: GameState, eraId: EraId | null) => string>> = {
+function pluralizeBacklinks(count: number): string {
+  return `${count} ${count === 1 ? 'Backlink' : 'Backlinks'}`;
+}
+
+/** The way on: a new site, and what this one leaves it. Once paid in, the button just opens the legacy. */
+function describeNewSiteButton(state: GameState): string {
+  return state.areBacklinksBanked ? 'Your legacy' : `Start a new site (+${pluralizeBacklinks(calculateBacklinksEarned(state))})`;
+}
+
+function renderPerkRow(legacy: LegacyState, perkId: PerkId): string {
+  const perk = PERKS_BY_ID[perkId];
+  const cost = calculatePerkCost(legacy, perkId);
+  const disabled = canBuyPerk(legacy, perkId) ? '' : ' disabled';
+  return `<li class="perk"><div class="perk-info"><h3 class="perk-name">${escapeHtml(perk.name)} <span class="perk-level">level ${legacy.perkLevels[perkId]}</span></h3><p>${escapeHtml(perk.description)}</p></div><button type="button" class="buy-button" data-action="buy-perk" data-id="${perkId}"${disabled}>${pluralizeBacklinks(cost)}</button></li>`;
+}
+
+/** Prestige: what the run earned, the perks it buys, and the new site. */
+function renderLegacy(state: GameState, legacy: LegacyState): string {
+  const sources = calculateBacklinkSources(state);
+  return `<p class="story-year">Site number ${legacy.finishedRuns + 1}</p>
+    <h2 id="end-heading">Your old site links to the new one</h2>
+    <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in under 45 minutes. You have <b>${pluralizeBacklinks(legacy.backlinks)}</b> to spend on perks every new site starts with.</p>
+    <ul class="perk-list">${PERK_IDS.map((perkId) => renderPerkRow(legacy, perkId)).join('')}</ul>
+    <p class="ending-epilogue">The new site starts in 1997 with a new name, and you start with everything above.</p>
+    <div class="overlay-actions">
+      <button type="button" class="ghost-button" data-action="ending-act" data-id="credits">Back to the credits</button>
+      <button type="button" class="primary-button" data-action="start-new-run">Start the new site</button>
+    </div>`;
+}
+
+const ACT_RENDERERS: Readonly<Record<EndingAct, (state: GameState, eraId: EraId | null, legacy: LegacyState) => string>> = {
   archive: renderArchive,
   offer: renderOffer,
   sold: renderSold,
   kept: renderKept,
   credits: renderCredits,
+  legacy: (state, _eraId, legacy) => renderLegacy(state, legacy),
 };
 
 /** One act of the ending. The archive shows the era asked for, or the first one. */
-export function renderEndingAct(state: GameState, act: EndingAct, eraId: EraId | null): string {
-  return ACT_RENDERERS[act](state, eraId);
+export function renderEndingAct(state: GameState, act: EndingAct, eraId: EraId | null, legacy: LegacyState = EMPTY_LEGACY): string {
+  return ACT_RENDERERS[act](state, eraId, legacy);
 }
 
 export function isEndingAct(value: string): value is EndingAct {
