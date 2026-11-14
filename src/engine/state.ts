@@ -19,6 +19,9 @@ export const INITIAL_HAZARD_COUNTDOWNS_MS: Readonly<Record<HazardKind, number>> 
   'privacy-fine': 240_000,
   // Counts down only once you serve over HTTPS, and never once renewal is automated. Two or three times an era.
   'certificate-expiry': 900_000,
+  // 2024's: AI crawlers come for your busiest page, and the chatbot says something it shouldn't, once it exists.
+  'scraper-swarm': 150_000,
+  hallucination: 200_000,
 };
 
 const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
@@ -44,6 +47,11 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   'live-chat': 0,
   'language-switcher': 0,
   newsletter: 0,
+  'ai-chatbot': 0,
+  'ai-articles': 0,
+  'ai-search': 0,
+  'ai-images': 0,
+  'for-you-feed': 0,
 };
 
 export function createInitialGameState(randomSeed: number): GameState {

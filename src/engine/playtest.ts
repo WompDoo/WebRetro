@@ -180,6 +180,7 @@ const PREFERRED_TARGETS: Readonly<Record<InfectionKind, readonly FeatureId[]>> =
   'password-leak': ['forum', 'guestbook'],
   ddos: ['blog', 'video-player', 'share-buttons'],
   'broken-build': ['stories', 'pricing-table', 'blog'],
+  'scraper-swarm': ['ai-articles', 'ai-images', 'blog'],
 };
 
 function pickTarget(state: GameState, kind: InfectionKind): FeatureId | null {

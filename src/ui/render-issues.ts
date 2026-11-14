@@ -68,6 +68,7 @@ const TRACKER_STYLES: Readonly<Record<EraId, TrackerStyle>> = {
   'web2-2005': { panelTitle: 'Issues', emptyText: 'No open bugs. Ship it!', renderIssue: renderBug },
   'social-2011': { panelTitle: 'Mentions', emptyText: 'Nobody is complaining about you. For now.', renderIssue: renderMention },
   'platform-2018': { panelTitle: 'Board', emptyText: 'Board is clear. Time for a retro.', renderIssue: renderTicket },
+  'ai-2024': { panelTitle: 'Issues', emptyText: 'Inbox zero. The AI says it fixed everything.', renderIssue: renderTicket },
 };
 
 export function issuePanelTitle(eraId: EraId): string {

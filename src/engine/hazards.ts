@@ -81,10 +81,12 @@ export const INFECTION_MINIGAMES: Readonly<Record<InfectionKind, readonly [Minig
   'password-leak': ['reset-passwords'],
   ddos: ['reroute-traffic', 'cross-traffic'],
   'broken-build': ['fix-build'],
+  // AI crawlers: wall them off, or route real visitors past them.
+  'scraper-swarm': ['firewall', 'cross-traffic'],
 };
 
 /** Every minigame, in the order the playtest panel lists them. */
-export const MINIGAME_IDS: readonly MinigameId[] = Object.values(INFECTION_MINIGAMES).flat();
+export const MINIGAME_IDS: readonly MinigameId[] = [...new Set(Object.values(INFECTION_MINIGAMES).flat())];
 
 export function pickMinigame(kind: InfectionKind, roll: number): MinigameId {
   const [first, ...rest] = INFECTION_MINIGAMES[kind];
@@ -333,6 +335,44 @@ const PRIVACY_FINE_RULE: HazardRule = {
   },
 };
 
+/** 2024: AI crawlers take your busiest page for training data, a thousand requests a second. */
+const SCRAPER_SWARM_RULE: HazardRule = {
+  kind: 'scraper-swarm',
+  intervalRangeMs: [200_000, 320_000],
+  isActive: (state) => isEraUnlocked(state, 'ai-2024') && countInfections(state, 'scraper-swarm') === 0 && findBusiestFeature(state) !== null,
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state, rolls, entityId) => {
+    const featureId = findBusiestFeature(state) ?? 'blog';
+    const featureName = getFeatureDisplayName(featureId, state.eraId).toLowerCase();
+    return {
+      state: addInfection(state, createInfection(entityId, 'scraper-swarm', featureId, rollAt(rolls, 0))),
+      events: hazardEvent(`AI crawlers are copying your ${featureName} a thousand times a second, for someone’s training data. Real visitors can’t get through until you stop them.`),
+    };
+  },
+};
+
+/** Seconds of revenue an invented promise costs: the chatbot speaks for the company, a tribunal said in 2024. */
+const HALLUCINATION_REVENUE_SECONDS = 25;
+
+export function calculateHallucinationRefund(state: GameState): number {
+  return Math.max(0, calculateNetRevenuePerSecond(state) * HALLUCINATION_REVENUE_SECONDS);
+}
+
+/** 2024: the AI assistant makes something up, and you're held to it. */
+const HALLUCINATION_RULE: HazardRule = {
+  kind: 'hallucination',
+  intervalRangeMs: [240_000, 360_000],
+  isActive: (state) => isFeatureOnPage(state, 'ai-chatbot'),
+  countdownSpeed: () => NORMAL_SPEED,
+  spawn: (state) => {
+    const refund = calculateHallucinationRefund(state);
+    return {
+      state: { ...state, money: state.money - refund },
+      events: hazardEvent(`Your AI assistant promised a customer a refund policy you don’t have. The chatbot speaks for you, a tribunal says: refunded ${formatMoney(refund)}.`),
+    };
+  },
+};
+
 const HAZARD_RULES: readonly HazardRule[] = [
   POPUP_RULE,
   VIRUS_RULE,
@@ -344,6 +384,8 @@ const HAZARD_RULES: readonly HazardRule[] = [
   BROKEN_BUILD_RULE,
   PRIVACY_FINE_RULE,
   CERTIFICATE_EXPIRY_RULE,
+  SCRAPER_SWARM_RULE,
+  HALLUCINATION_RULE,
 ];
 
 export function isHazardPrevented(state: GameState, kind: HazardKind): boolean {

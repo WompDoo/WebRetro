@@ -113,4 +113,17 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'scroll-animations': `${MDN}/Web/API/Intersection_Observer_API`,
   'legal-pages': `${WIKIPEDIA}/Privacy_policy`,
   'retargeting-cookies': `${WIKIPEDIA}/Behavioral_retargeting`,
+  // 2024
+  'ai-pair-programmer': `${WIKIPEDIA}/Code_completion`,
+  'learn-llm-api': `${WIKIPEDIA}/Large_language_model`,
+  'prompt-engineering': `${WIKIPEDIA}/Prompt_engineering`,
+  'learn-rag': `${WIKIPEDIA}/Retrieval-augmented_generation`,
+  'diffusion-models': `${WIKIPEDIA}/Diffusion_model`,
+  'learn-recommender': `${WIKIPEDIA}/Recommender_system`,
+  'ai-everything': `${WIKIPEDIA}/AI_boom`,
+  'llms-txt': 'https://llmstxt.org/',
+  'dark-mode': `${MDN}/Web/CSS/@media/prefers-color-scheme`,
+  paywall: `${WIKIPEDIA}/Paywall`,
+  observability: `${WIKIPEDIA}/Observability_(software)`,
+  'spot-gpus': `${WIKIPEDIA}/Graphics_processing_unit`,
 };

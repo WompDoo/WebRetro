@@ -39,6 +39,9 @@ const LAYOUTS: readonly Layout[] = [
   { name: 'bootstrap', eraId: 'platform-2018', framework: 'react', without: isFrameworkSkill },
   { name: 'div layout', eraId: 'platform-2018', framework: 'react', without: either(isFrameworkSkill, is('learn-bootstrap')) },
   { name: 'hand-written', eraId: 'platform-2018', framework: 'react', without: either(isFrameworkSkill, is('learn-bootstrap'), is('learn-css')) },
+  { name: 'react', eraId: 'ai-2024', framework: 'react', without: nothing },
+  { name: 'vue', eraId: 'ai-2024', framework: 'vue', without: nothing },
+  { name: 'no framework', eraId: 'ai-2024', framework: 'react', without: isFrameworkSkill },
 ];
 
 function buildState(layout: Layout): GameState {

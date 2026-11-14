@@ -1,0 +1,126 @@
+/* ---------- 2024: AI everywhere. The app chrome is 2018's (see 85-era-2018.css); these are 2024's own touches ---------- */
+[data-era="2024"] .editor-tab.is-active { box-shadow: inset 0 1px 0 #A78BFA; }
+[data-era="2024"] .editor-statusbar { background: linear-gradient(90deg, #6D28D9, #DB2777); }
+[data-era="2024"] .browser-titlebar { background: #E8EAED; }
+/* Every 2024 browser grew an AI sidebar button. */
+[data-era="2024"] .browser-toolbar::after { content: "✨"; padding: 0 6px; font-size: 14px; }
+[data-era="2024"] .popup { border-radius: 14px; }
+[data-era="2024"] .popup-button.is-primary, [data-era="2024"] .popup-button.is-cta { border-color: #111111; background: #111111; color: #FFFFFF; border-radius: 999px; }
+
+/* ---------- The 2024 site: an AI-designed landing page, bento grid and all ---------- */
+.site-2024 {
+  --ai-bg: #FAFAFB; --ai-fg: #0A0A0F; --ai-muted: #6B6B7B; --ai-card: #FFFFFF; --ai-border: #ECECF1; --ai-soft: #F3F3F7;
+  --ai-gradient: linear-gradient(90deg, #7C3AED, #DB2777 55%, #F59E0B);
+  min-height: 100%; display: flex; flex-direction: column; background: var(--ai-bg); color: var(--ai-fg);
+  font: 15px/1.5 Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+/* Dark mode: the one feature everyone asked for. */
+.site-2024.is-dark { --ai-bg: #0A0A0F; --ai-fg: #EDEDF2; --ai-muted: #9A9AAD; --ai-card: #14141C; --ai-border: #262632; --ai-soft: #1B1B25; }
+.site-2024 .feature-block { position: relative; min-height: 0; overflow: hidden; }
+.site-2024 .feature-heading { margin: 0 0 10px; font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
+.site-2024 .post-meta { color: var(--ai-muted); font-size: 12px; }
+
+/* The nav: sticky, frosted, with a command palette pill. */
+.ai-nav {
+  position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 18px; padding: 12px 28px;
+  border-bottom: 1px solid var(--ai-border); background: color-mix(in srgb, var(--ai-bg) 80%, transparent); backdrop-filter: blur(10px);
+}
+.ai-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: -0.02em; }
+.ai-logo i { width: 20px; height: 20px; border-radius: 6px; background: var(--ai-gradient); }
+.ai-links { display: flex; gap: 18px; margin-right: auto; color: var(--ai-muted); font-size: 14px; }
+.ai-cmdk { padding: 3px 9px; border: 1px solid var(--ai-border); border-radius: 8px; color: var(--ai-muted); font-size: 12px; }
+.ai-login { color: var(--ai-muted); font-size: 14px; }
+.ai-cta, .ai-button.is-primary { padding: 7px 14px; border-radius: 999px; background: var(--ai-fg); color: var(--ai-bg); font-size: 14px; font-weight: 600; white-space: nowrap; }
+/* The language dropdown follows the page's colours, dark mode included. */
+.site-2024 .lang-current, .site-2024 .lang-options { border-color: var(--ai-border); background: var(--ai-card); color: var(--ai-fg); }
+
+/* The hero: a badge, a gradient headline, the "Ask AI" box. */
+.ai-hero { display: grid; justify-items: center; gap: 14px; padding: 56px 28px 34px; text-align: center; }
+.ai-badge { padding: 4px 12px; border: 1px solid var(--ai-border); border-radius: 999px; background: var(--ai-card); font-size: 13px; }
+.ai-hero h1 { max-width: 720px; margin: 0; font-size: 50px; line-height: 1.05; letter-spacing: -0.035em; font-weight: 750; }
+.ai-gradient { background: var(--ai-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ai-hero > p { max-width: 520px; margin: 0; color: var(--ai-muted); font-size: 17px; }
+.ai-hero-buttons { display: flex; gap: 10px; }
+.ai-button { padding: 8px 16px; border: 1px solid var(--ai-border); border-radius: 999px; background: var(--ai-card); font-size: 14px; font-weight: 600; }
+.ai-hero > [data-feature="ai-search"] { width: min(560px, 100%); text-align: left; }
+.ask-box { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 2px solid transparent; border-radius: 14px; background: linear-gradient(var(--ai-card), var(--ai-card)) padding-box, var(--ai-gradient) border-box; box-shadow: 0 8px 30px rgba(124, 58, 237, 0.15); }
+.ask-placeholder { flex: 1; color: var(--ai-muted); }
+.ask-key { padding: 1px 6px; border: 1px solid var(--ai-border); border-radius: 6px; color: var(--ai-muted); font-size: 11px; }
+.ask-answer { margin-top: 8px; padding: 12px 14px; border: 1px solid var(--ai-border); border-radius: 12px; background: var(--ai-soft); font-size: 14px; }
+.ask-answer p { margin: 4px 0; }
+
+.ai-logos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; padding: 8px 28px 20px; color: var(--ai-muted); font-size: 13px; }
+.ai-logos span { flex-basis: 100%; text-align: center; }
+.ai-logos b { font-size: 16px; letter-spacing: -0.02em; opacity: 0.75; }
+
+/* The bento grid: rounded tiles of different sizes, packed tight. */
+.ai-bento { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: dense; gap: 14px; margin: 10px 28px 0; }
+.ai-bento > .feature-block, .ai-sponsored-tile { padding: 18px; border: 1px solid var(--ai-border); border-radius: 18px; background: var(--ai-card); }
+.ai-bento > :is([data-feature="ai-images"], [data-feature="for-you-feed"], [data-feature="ai-articles"], [data-feature="video-player"], [data-feature="blog"]) { grid-column: span 2; }
+.ai-images { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+.ai-image { margin: 0; }
+.ai-image-picture {
+  display: block; aspect-ratio: 1; border-radius: 12px;
+  background: radial-gradient(circle at 30% 30%, hsl(calc(var(--ai-hue) + 40) 90% 75%), transparent 45%), conic-gradient(from calc(var(--ai-hue) * 1deg), hsl(var(--ai-hue) 70% 55%), hsl(calc(var(--ai-hue) + 120) 70% 60%), hsl(var(--ai-hue) 70% 55%));
+}
+.ai-image figcaption { margin-top: 4px; color: var(--ai-muted); font-size: 11px; }
+.ai-articles, .feed-list { display: grid; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }
+.ai-article { display: grid; padding: 8px 10px; border-radius: 10px; background: var(--ai-soft); }
+.ai-article-title { font-weight: 600; font-size: 14px; }
+.feed-tabs { display: flex; gap: 14px; margin-bottom: 8px; font-size: 13px; color: var(--ai-muted); }
+.feed-tabs .is-current { color: var(--ai-fg); font-weight: 650; border-bottom: 2px solid var(--ai-fg); }
+.feed-list li { padding: 8px 10px; border-radius: 10px; background: var(--ai-soft); font-size: 14px; }
+.ai-ad-label { display: block; margin-bottom: 6px; color: var(--ai-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.ai-sponsored-tile .ad-picture { display: block; aspect-ratio: 16 / 9; border-radius: 12px; }
+
+/* The paywall: three paragraphs, then the blur. */
+.site-2024.has-paywall [data-feature="ai-articles"]::after {
+  content: "🔒 Subscribe to keep reading"; position: absolute; inset: 45% 0 0; display: grid; place-items: center;
+  background: linear-gradient(transparent, var(--ai-card) 55%); backdrop-filter: blur(3px); font-weight: 650;
+}
+/* "Add AI to everything": a sparkle on every button. */
+.site-2024.has-sparkles :is(.ai-button, .ai-cta, .plan-button, .newsletter-button)::before { content: "✨ "; }
+
+.site-2024 > [data-feature="pricing-table"] { margin: 34px 28px 0; }
+.site-2024 .plan { border-color: var(--ai-border); border-radius: 18px; background: var(--ai-card); color: var(--ai-fg); }
+.site-2024 .plan.is-highlighted { border: 2px solid transparent; background: linear-gradient(var(--ai-card), var(--ai-card)) padding-box, var(--ai-gradient) border-box; }
+.ai-quotes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 30px 28px 0; }
+.ai-quote { margin: 0; padding: 18px; border: 1px solid var(--ai-border); border-radius: 18px; background: var(--ai-card); }
+.ai-quote blockquote { margin: 0 0 8px; font-size: 16px; font-weight: 550; letter-spacing: -0.01em; }
+.ai-quote figcaption { color: var(--ai-muted); font-size: 13px; }
+.site-2024 > [data-feature="newsletter"] { margin: 30px 28px 0; padding: 22px 24px; border-radius: 18px; background: var(--ai-soft); }
+.ai-account { margin: 30px 28px 0; }
+.ai-results { margin: 30px 28px 0; }
+.ai-results-title { margin: 0 0 10px; color: var(--ai-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.ai-result-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ai-result { padding: 10px; border: 1px solid var(--ai-border); border-radius: 14px; background: var(--ai-card); }
+.ai-result .ad-picture { display: block; aspect-ratio: 16 / 9; margin-bottom: 6px; border-radius: 10px; }
+.ai-footer { margin: auto 28px 0; padding: 28px 0 18px; border-top: 1px solid var(--ai-border); color: var(--ai-muted); font-size: 12px; }
+.site-2024 > .ai-footer { margin-top: 34px; }
+.site-2024 .lp-legal { margin-inline: 28px; }
+.chat-bubble.is-ai .chat-avatar { background: linear-gradient(135deg, #7C3AED, #DB2777); }
+
+/* Animate on scroll, which came along from 2018: the tiles fade and rise in. */
+@supports (animation-timeline: view()) {
+  .site-2024.has-scroll-reveal :is(.ai-bento > *, .ai-quote, .plan, .ai-result) { animation: lp-reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-2024.has-scroll-reveal :is(.ai-bento > *, .ai-quote, .plan, .ai-result) { animation: none; }
+}
+
+@container (max-width: 900px) {
+  .ai-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 640px) {
+  .ai-nav { gap: 10px; padding: 10px 14px; }
+  .ai-links, .ai-cmdk, .ai-login { display: none; }
+  .ai-logo { margin-right: auto; }
+  .ai-hero { padding: 34px 14px 24px; }
+  .ai-hero h1 { font-size: 32px; }
+  .ai-bento, .ai-quotes, .ai-results, .ai-account, .site-2024 > [data-feature="pricing-table"], .site-2024 > [data-feature="newsletter"], .site-2024 .lp-legal { margin-inline: 14px; }
+  .ai-footer { margin-inline: 14px; }
+  .ai-bento, .ai-quotes { grid-template-columns: minmax(0, 1fr); }
+  .ai-bento > .feature-block { grid-column: auto; grid-row: auto; }
+  .ai-result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ai-images { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

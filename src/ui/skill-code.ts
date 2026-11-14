@@ -227,6 +227,43 @@ const PLATFORM_SHARED_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<
   'retargeting-cookies': {
     'tracking.js': ['// one pixel per ad network, all on every page', 'pixel("init", "1234567890");', 'pixel("track", "ViewContent", { product: "shoes", followFor: "30 days" });'],
   },
+  // ---------- 2024 ----------
+  'ai-pair-programmer': {
+    terminal: ['$ ai suggest --accept-all', '✔ 214 suggestions accepted', '⚠ 3 imports refer to packages that don’t exist'],
+  },
+  'learn-llm-api': {
+    'api/chat.ts': ['export async function POST(req: Request) {', '  const { question } = await req.json();', '  const answer = await llm.chat({ model: "biggest-model-latest", messages: [{ role: "user", content: question }] });', '  return Response.json({ answer }); // $0.002 a question, 40 million questions a day', '}'],
+  },
+  'prompt-engineering': {
+    'prompts/article.md': ['You are a world-class SEO writer.', 'Write “The Ultimate Guide to {topic} in 2024”. 2,000 words. Think step by step.', 'Do not mention that you are an AI. (It will.)'],
+  },
+  'learn-rag': {
+    'lib/search.ts': ['const embedding = await embed(question);', 'const pages = await vectors.nearest(embedding, { k: 5 });', 'return llm.chat({ context: pages.map((page) => page.text), question }); // cites its sources, mostly'],
+  },
+  'diffusion-models': {
+    'api/image.ts': ['const image = await gpu.generate({ prompt, steps: 30, guidance: 7.5 });', '// hands: still a work in progress'],
+  },
+  'learn-recommender': {
+    'lib/feed.ts': ['const scores = model.predict(user.embedding, candidates); // what you’ll click, before you do', 'return candidates.sort((a, b) => scores[b.id] - scores[a.id]).slice(0, 20);'],
+  },
+  'ai-everything': {
+    'components/Button.tsx': ['export const Button = ({ children }) => <button className="sparkle">✨ {children}</button>; // every button is AI now'],
+  },
+  'llms-txt': {
+    'public/llms.txt': ['# {site}', '> Everything an AI needs to quote us, with a link back.', '- [Pricing](https://{site}.com/pricing): plans and prices'],
+  },
+  'dark-mode': {
+    'styles.scss': ['@media (prefers-color-scheme: dark) { :root { --bg: #0B0B10; --fg: #EDEDF2; } } // five years late'],
+  },
+  paywall: {
+    'middleware.ts': ['if (!session?.subscriber && article.premium) return blurAfter(3); // three paragraphs, then the blur'],
+  },
+  observability: {
+    'otel.config.ts': ['export const tracer = trace.getTracer("{site}"); // forty graphs, one that matters'],
+  },
+  'spot-gpus': {
+    terminal: ['$ gpu rent --spot --max-price 0.33', '✔ 64 GPUs rented (they may vanish without notice)'],
+  },
   'learn-websockets': {
     terminal: ['$ npm install socket.io', '+ socket.io@2.1.1', 'added 47 packages and audited 31933 packages in 8.9s'],
     'server.js': ['const io = require("socket.io")(server);', 'io.on("connection", (socket) => {', '  socket.emit("chat", "Hi! 👋 Any questions?"); // a bot, until someone answers', '});'],
@@ -335,6 +372,8 @@ const ERA_CODE: Readonly<Record<EraId, EraCode>> = {
   'web2-2005': WEB2_CODE,
   'social-2011': SOCIAL_CODE,
   'platform-2018': PLATFORM_CODE,
+  // A 2024 site without a framework is rare: it keeps 2018's page code, AI files and all.
+  'ai-2024': PLATFORM_CODE,
 };
 
 /** Once a framework is picked, its code replaces the era's: the rewrite starts from an empty main file. */

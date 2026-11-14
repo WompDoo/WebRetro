@@ -1,5 +1,5 @@
 import type { EraId } from '../engine';
-import { HOMEPAGE_POPUPS, PLATFORM_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
+import { AI_POPUPS, HOMEPAGE_POPUPS, PLATFORM_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
 import type { PopupCopy } from './popup-copy';
 
 export interface MessageCopy {
@@ -37,6 +37,8 @@ export interface TypingStyle {
 const TYPED_BY_HAND: TypingStyle = { pastesWholeLines: false, typoLabel: 'typo!', fixLabel: 'fixed' };
 /** 2018: every keystroke runs npm install. A typo installs a lookalike package with something nasty in it. */
 export const NPM_INSTALL_TYPING: TypingStyle = { pastesWholeLines: true, typoLabel: 'typosquat!', fixLabel: 'uninstalled' };
+/** 2024: every keystroke accepts an AI suggestion. A typo is a function the AI made up. */
+const AI_AUTOCOMPLETE_TYPING: TypingStyle = { pastesWholeLines: true, typoLabel: 'hallucinated!', fixLabel: 'rejected' };
 
 export interface EraPresentation {
   readonly year: number;
@@ -200,6 +202,46 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     },
     antivirusTitle: 'Shield Security · Quick scan',
   },
+  'ai-2024': {
+    year: 2024,
+    browserTitle: '{site} — now with AI',
+    siteUrl: 'https://{site}.com/',
+    editorTitle: 'page.tsx',
+    editorMenu: [],
+    editorTabs: ['page.tsx', 'terminal'],
+    editorHighlightsSyntax: true,
+    typing: AI_AUTOCOMPLETE_TYPING,
+    popups: AI_POPUPS,
+    guestbook: [
+      { author: 'prompt_queen', text: 'is this AI generated? asking for a friend' },
+      { author: 'dev_dan', text: 'your chatbot says my order shipped in 2019' },
+      { author: 'anna.k', text: 'finally, dark mode' },
+      { author: 'jess.codes', text: 'can I talk to a human please' },
+      { author: 'mike_t', text: 'the ✨ button is on everything now' },
+      { author: 'grandma_rose', text: 'the AI helper is very polite. it got my name wrong' },
+    ],
+    musicTracks: ['Ep. 140: Is coding dead? (No)', 'Ep. 141: Every app is a chat app now', 'Ep. 142: We asked an AI to host this episode'],
+    entryStory: {
+      yearSpan: '2019 → 2024',
+      heading: 'AI everywhere',
+      paragraphs: [
+        'A chatbot learned to write, then to code, then to draw. Within a year every product had a ✨ button, and every pitch deck said “AI”.',
+        'Search changed under your feet. An AI answer sits above the links now, made from pages like yours, and three in ten searchers read it and never click.',
+        'And the crawlers came: bots copying the whole web for training data, a thousand requests a second, from addresses that change every minute.',
+      ],
+      whatsNew: [
+        'You asked an AI to redesign the site over a weekend. It did: big type, a bento grid, a sparkle on every button.',
+        'AI answers keep three in ten of your would-be visitors. Write for AI answers to get quoted, with a link.',
+        'Call an LLM API, learn retrieval, image models and recommenders: an AI assistant, AI-written articles, “Ask AI” search, an image generator and a “For you” feed.',
+        'New trouble: AI crawlers swarm your busiest page, and your assistant sometimes promises things you never said. A bot shield and guardrails stop them.',
+        'Out with the old: stories and the human live chat retire (listed below). The assistant takes the chat’s corner.',
+        'Your Kubernetes pods don’t come along: whatever thinks runs on rented GPUs now.',
+        'Your editor finishes your lines: every keystroke accepts an AI suggestion, and some of them call functions that don’t exist.',
+      ],
+      confirmLabel: 'Relaunch with AI',
+    },
+    antivirusTitle: 'Device Security · Quick scan',
+  },
 };
 
 export const BANNER_ADS: readonly string[] = [
@@ -239,6 +281,17 @@ export const SPONSORED_POSTS: readonly DisplayAdCopy[] = [
   { advertiser: 'EmpireBuilder', headline: 'Build your empire tonight', text: 'The most addictive game of 2011.' },
   { advertiser: 'PhotoBook', headline: 'Turn your albums into a book', text: 'Free shipping this week only.' },
   { advertiser: 'CollegeNow', headline: 'Get your degree online', text: 'From your phone. In your pajamas.' },
+];
+
+/** 2024: every ad is for an AI product, or written by one. */
+export const AI_ERA_ADS: readonly DisplayAdCopy[] = [
+  { advertiser: 'PromptPro', headline: 'Write like a human. With AI.', text: 'Undetectable*. Try it free.' },
+  { advertiser: 'RentAGPU', headline: 'GPUs available today', text: 'Your waitlist position: 4,812.' },
+  { advertiser: 'Sponsored', headline: 'This AI made $10k while I slept', text: 'Here’s the exact prompt.' },
+  { advertiser: 'CoachBot', headline: 'Your AI health coach', text: 'It will never judge you. It will remind you.' },
+  { advertiser: 'SoloLaunch', headline: 'Launch a startup this weekend', text: 'No code, no co-founder, no customers.' },
+  { advertiser: 'Sponsored', headline: 'Doctors are stunned by this AI app', text: 'Number 7 is a chatbot.' },
+  { advertiser: 'MeetNotes', headline: 'Never take notes again', text: 'An AI joins your calls. All of them.' },
 ];
 
 /** With retargeting cookies: ads for the very things your visitors looked at somewhere else this week. */

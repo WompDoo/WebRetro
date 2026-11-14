@@ -1,4 +1,4 @@
-export type EraId = 'homepage-1997' | 'web2-2005' | 'social-2011' | 'platform-2018';
+export type EraId = 'homepage-1997' | 'web2-2005' | 'social-2011' | 'platform-2018' | 'ai-2024';
 
 /** 2018's framework wars: a site picks one, and it shapes everything after. */
 export type FrameworkId = 'react' | 'angular' | 'vue';
@@ -25,7 +25,12 @@ export type FeatureId =
   | 'pricing-table'
   | 'live-chat'
   | 'language-switcher'
-  | 'newsletter';
+  | 'newsletter'
+  | 'ai-chatbot'
+  | 'ai-articles'
+  | 'ai-search'
+  | 'ai-images'
+  | 'for-you-feed';
 
 export type UpgradeId =
   | 'img-tag'
@@ -121,15 +126,27 @@ export type UpgradeId =
   | 'learn-email-marketing'
   | 'scroll-animations'
   | 'legal-pages'
-  | 'retargeting-cookies';
+  | 'retargeting-cookies'
+  | 'ai-pair-programmer'
+  | 'learn-llm-api'
+  | 'prompt-engineering'
+  | 'learn-rag'
+  | 'diffusion-models'
+  | 'learn-recommender'
+  | 'ai-everything'
+  | 'llms-txt'
+  | 'dark-mode'
+  | 'paywall'
+  | 'observability'
+  | 'spot-gpus';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 /** Skills are learned, boosts are bought, ops are how you run the site: they live in the Ops tab. */
 export type UpgradeKind = 'skill' | 'boost' | 'ops';
 
-export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection' | 'no-popups';
-export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos' | 'broken-build' | 'privacy-fine' | 'certificate-expiry';
-export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos' | 'broken-build';
+export type DefenseId = 'antivirus' | 'premium-ad-network' | 'captcha' | 'ddos-protection' | 'no-popups' | 'bot-shield' | 'guardrails';
+export type HazardKind = 'popup' | 'virus' | 'spam' | 'sql-injection' | 'traffic-spike' | 'password-leak' | 'ddos' | 'broken-build' | 'privacy-fine' | 'certificate-expiry' | 'scraper-swarm' | 'hallucination';
+export type InfectionKind = 'virus' | 'spam' | 'sql-injection' | 'password-leak' | 'ddos' | 'broken-build' | 'scraper-swarm';
 /**
  * 2018's cookie banner, under the GDPR. None risks complaints and fines; an honest one asks, and many say no to
  * ad tracking; a dark pattern makes "Accept all" the easy button, and gets fined less often, but harder.
@@ -149,7 +166,8 @@ export type HostingTierId =
   | 'second-data-center'
   | `extra-racks-${number}`
   | `cloud-${number}`
-  | `pods-${number}`;
+  | `pods-${number}`
+  | `gpus-${number}`;
 /** A defense stops a hazard, cleans it up on its own, or makes it rarer. */
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans' | 'slows-spawn';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
@@ -235,7 +253,9 @@ export type UpgradeEffect =
   /** The certificate renews itself: it never expires on you. */
   | { readonly kind: 'automatic-certificate-renewal' }
   /** How big the GDPR's fines are: lawyers shrink them, tracking everyone grows them. */
-  | { readonly kind: 'privacy-fine-multiplier'; readonly factor: number };
+  | { readonly kind: 'privacy-fine-multiplier'; readonly factor: number }
+  /** How much of the AI-answers loss is left: writing for AI answers gets you quoted, with a link. */
+  | { readonly kind: 'ai-answer-share-multiplier'; readonly factor: number };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -320,6 +340,11 @@ export interface EraDefinition {
   readonly hasPageWeight: boolean;
   /** Share of visitors on phones. Until your page fits on a phone, most of them leave. */
   readonly mobileShare: number;
+  /**
+   * 2024: the share of searchers an AI answer satisfies before they'd ever click through to you. They read your
+   * content in someone else's summary and never visit. 0 before AI search.
+   */
+  readonly aiAnswerShare: number;
 }
 
 export interface HostingTierDefinition {

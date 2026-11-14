@@ -96,10 +96,15 @@ const INFECTION_COPY: Readonly<Record<InfectionKind, InfectionCopy>> = {
     title: (feature) => `Build failing: ${feature} won't load`,
     subjects: [(feature) => `your ${feature} page is just white??`, (feature) => `${feature} broke after your last deploy`],
   },
+  'scraper-swarm': {
+    severity: 'critical',
+    title: (feature) => `AI crawlers swarming ${feature}`,
+    subjects: [(feature) => `why is your ${feature} so slow today`, (feature) => `${feature} asks if I'm human every five seconds`],
+  },
 };
 
 /** The defense that would have stopped this kind of infection. */
-const PREVENTING_DEFENSES: Readonly<Partial<Record<InfectionKind, DefenseId>>> = { virus: 'antivirus', spam: 'captcha', ddos: 'ddos-protection' };
+const PREVENTING_DEFENSES: Readonly<Partial<Record<InfectionKind, DefenseId>>> = { virus: 'antivirus', spam: 'captcha', ddos: 'ddos-protection', 'scraper-swarm': 'bot-shield' };
 /** The skill that ends this kind of infection for good. */
 const PREVENTING_SKILLS: Readonly<Partial<Record<InfectionKind, UpgradeId>>> = {
   'sql-injection': 'prepared-statements',

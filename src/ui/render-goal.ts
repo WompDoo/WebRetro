@@ -16,6 +16,8 @@ import {
   isEraGateComplete,
   findChosenFramework,
   isRenderedOnlyInBrowser,
+  calculateAiAnswerShare,
+  isEraUnlocked,
   isMarkedNotSecure,
   getAvailableOpsIds,
 } from '../engine';
@@ -32,6 +34,8 @@ const POPUP_NAG_COUNT = 2;
 const SERVER_WARNING_LOAD = 0.85;
 const SLOW_PAGE_FACTOR = 0.9;
 const ERA_ONE_MAX_ADS = 6;
+/** Above this, writing for AI answers hasn't been bought yet. */
+const AI_ANSWER_NAG_SHARE = 0.2;
 
 /** Phones in the era, and a page that takes longer than the era's patience on their network. */
 function isSlowOnPhones(state: GameState): boolean {
@@ -114,8 +118,16 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'Your single-page app is blank until its JavaScript has run, and search engines index the blank page: three in ten visitors never find you. Learn your framework’s server rendering.',
   },
   {
-    applies: (state) => state.eraId === 'platform-2018' && isFinedForTracking(state),
-    text: 'It’s 2018 and the GDPR is in force: your ads track visitors who never said yes, and complaints turn into fines. Pick a cookie banner under Ops.',
+    applies: (state) => isEraUnlocked(state, 'platform-2018') && isFinedForTracking(state),
+    text: 'The GDPR is in force: your ads track visitors who never said yes, and complaints turn into fines. Pick a cookie banner under Ops.',
+  },
+  {
+    applies: (state) => state.eraId === 'ai-2024' && !state.purchasedUpgradeIds.includes('learn-llm-api'),
+    text: 'It’s 2024 and every site has an AI assistant. Learn to call an LLM API, then build yours: it takes the corner where your live chat used to be.',
+  },
+  {
+    applies: (state) => calculateAiAnswerShare(state) > AI_ANSWER_NAG_SHARE,
+    text: 'An AI answer sits above your link in search now, made from your own pages, and three in ten searchers read it and never click (the status bar counts them). Write for AI answers to get quoted, with a link.',
   },
   {
     applies: (state) => state.eraId === 'social-2011' && hasDeadFeature(state),

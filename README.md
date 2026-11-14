@@ -1,8 +1,8 @@
 # Under Construction
 
 An incremental game about building a website, from a bare `Hello World!` in 1997 to today.
-Playable now: 1997 (personal homepage), 2005 (Web 2.0), 2011 (social and mobile) and the core of 2018
-(platforms, and the framework wars: React, Angular or Vue). Each era takes 45–60 minutes: three to four hours in all.
+Five eras: 1997 (personal homepage), 2005 (Web 2.0), 2011 (social and mobile), 2018 (platforms, and the
+framework wars: React, Angular or Vue) and 2024 (AI everywhere). Each era takes 45–60 minutes: four to five hours in all.
 You write code to earn freelance money, learn HTML tag by tag, build features that bring
 in visitors, place ads that pay for it all, and fight pop-ups, viruses, spam and SQL injections
 with short minigames. The Ops tab is where you run the site: your own domain, nightly backups, https

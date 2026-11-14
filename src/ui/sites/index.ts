@@ -1,4 +1,4 @@
-import { FEATURE_IDS, calculateInfectionDifficulty, isSiteDown, UPGRADES_BY_ID } from '../../engine';
+import { FEATURE_IDS, calculateInfectionDifficulty, isEraUnlocked, isSiteDown, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, GameState } from '../../engine';
 import { renderCertificateWarning } from './certificate-warning';
 import { escapeHtml } from '../dom';
@@ -8,6 +8,7 @@ import { render1997Site } from './site-1997';
 import { render2005Site } from './site-2005';
 import { render2011Site } from './site-2011';
 import { render2018Site } from './site-2018';
+import { render2024Site } from './site-2024';
 
 export { fillSiteName, fillSiteNameText, siteBrand } from './site-context';
 export { renderLiveSlotText, updateLiveSlots } from './live-slots';
@@ -18,6 +19,7 @@ const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> 
   'web2-2005': render2005Site,
   'social-2011': render2011Site,
   'platform-2018': render2018Site,
+  'ai-2024': render2024Site,
 };
 
 function renderApacheUnavailable(state: GameState): string {
@@ -29,9 +31,9 @@ function renderIngressUnavailable(): string {
   return '<div class="site-down is-ingress"><h1>503 Service Temporarily Unavailable</h1><p>upstream connect error or disconnect/reset before headers. reset reason: overflow</p><hr><center>nginx/1.15.2</center></div>';
 }
 
-/** Whoever answers when your servers can't: Apache until 2011, the Kubernetes ingress after. */
+/** Whoever answers when your servers can't: Apache until 2011, the load balancer in front of the cluster after. */
 function renderServiceUnavailable(state: GameState): string {
-  return state.eraId === 'platform-2018' ? renderIngressUnavailable() : renderApacheUnavailable(state);
+  return isEraUnlocked(state, 'platform-2018') ? renderIngressUnavailable() : renderApacheUnavailable(state);
 }
 
 function renderReachableSite(state: GameState, nowMs: number): string {

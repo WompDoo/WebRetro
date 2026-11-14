@@ -28,6 +28,8 @@ const OVERLAY_BODIES: Readonly<Record<Infection['kind'], (infection: Infection) 
   ddos: () => '<span class="infection-error"><b>503 Service Unavailable</b><br>The server is temporarily unable to service your request. Too many connections.</span><span class="infection-title">DDoS ATTACK</span>',
   'broken-build': () =>
     '<span class="infection-error"><b>Failed to compile.</b><br>Module not found: Error: Can\'t resolve \'left-pad\' in \'/app/node_modules/string-utils\'</span><span class="infection-title">BUILD FAILED</span>',
+  'scraper-swarm': () =>
+    '<span class="infection-error"><b>429 Too Many Requests</b><br>TrainBot/1.0, CrawlerAI/2.1, DataHoover/0.9 and 214 more: 41,208 requests in the last second.</span><span class="infection-title">AI SCRAPERS</span>',
 };
 
 const OVERLAY_HINTS: Readonly<Record<Infection['kind'], string>> = {
@@ -37,6 +39,7 @@ const OVERLAY_HINTS: Readonly<Record<Infection['kind'], string>> = {
   'password-leak': 'Click to reset them',
   ddos: 'Click to shut it out',
   'broken-build': 'Click to fix the build',
+  'scraper-swarm': 'Click to block them',
 };
 
 /** Infections sit on top of the feature they took over, as a button that opens their minigame. */
