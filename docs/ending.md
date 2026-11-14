@@ -68,7 +68,7 @@ The finish button becomes **Watch the ending again**, so the attic stays reachab
 
 ## Not done yet
 
-- The choice has no consequence after the credits. It's the natural hook for New Game+ (see `future.md`):
-  selling could fund the next run, keeping could carry the domain and a legacy bonus.
+- The choice has no consequence after the credits, and that's decided: it stays a story beat, not a New Game+
+  carry-over (see `future.md`, Decided).
 - The offer comes from one buyer. The original idea was several parody giants bidding, each wanting a
   different part of what you built (your users, your posts, your domain).
