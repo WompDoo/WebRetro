@@ -8,6 +8,10 @@ This is the design thinking for what comes after, written to be argued with. Eac
 | Question | Decision |
 |---|---|
 | What to build next | **Prestige**, as in section 1, without the ending carry |
+| Where a new run starts | **From the credits**: a "Start a new site (+N Backlinks)" button beside Start over and Keep playing |
+| First perks | **Muscle memory** (typing) and **bonuses for the buildables**; Known tags, Early warning and Ops runbook wait |
+| Why prestige at all | **Each run adds content the last one didn't have**: a faster replay alone isn't a reason (see "New in run two") |
+| Backlinks during play | **Projected**: the stats show what finishing now would earn, so later runs can chase a number |
 | Slower players (a casual game is about 7 hours) | **Keep as is**: slow is allowed; no catch-up bonus, no global shortening |
 | CI's framework-spread check on one seed | **Keep one seed**: an occasional red run from luck is accepted over a slower CI |
 | Should Sell / Keep matter after the ending | **No, it stays flavor**: a story beat, no gameplay difference |
@@ -28,15 +32,31 @@ what an old site leaves to a new one.
 The ending's choice was considered as a carry-over (sold: exit money; kept: your domain) and **decided against**:
 Sell / Keep stays a story beat. Every finished run earns Backlinks the same way.
 
-**What Backlinks buy** (permanent, small, and each one removes friction rather than adding power):
+**What Backlinks buy** (permanent and small; the first version has the two the decision picked):
 
 | Perk | Effect | Why it's safe |
 |---|---|---|
-| Known tags | Start each era with its first skill learned | Skips the slowest minute of each era, not its decisions |
-| Muscle memory | Typing earns 10% more per level | Typing is a fixed share of income (14–26%); can't run away |
-| Old friends | The webring and guestbook start at level 5 | 1997 only |
-| Ops runbook | Ops items cost 20% less | Ops are era-bound already |
-| Early warning | Hazards' first spawn comes 2 minutes later in each era | Shortens the scariest moment, keeps the hazard |
+| **Muscle memory** | Typing earns 10% more per level | Typing is a fixed share of income (14–26%); can't run away |
+| **Regulars** (bonuses for the buildables) | Every feature brings 5% more visitors per level of the perk | A flat share on everything built: it shortens every era a little and makes no single build mandatory |
+| Known tags (later) | Start each era with its first skill learned | Skips the slowest minute of each era, not its decisions |
+| Early warning (later) | Hazards' first spawn comes 2 minutes later in each era | Shortens the scariest moment, keeps the hazard |
+| Ops runbook (later) | Ops items cost 20% less | Ops are era-bound already |
+
+**New in run two: the reason to prestige.** A perk only makes the same game faster. Every finished run unlocks
+something the last one didn't have, so the second playthrough is a different one:
+
+| Run | Unlocks | Why it's new play, not just more |
+|---|---|---|
+| 2 | One **legacy buildable per era**, things the web had that a first-time builder never found: a 1997 live webcam (one frame a minute), a 2005 wiki (anyone can edit, everyone will), a 2011 deal of the day, a 2018 community chat, a 2024 agent store | New features with new synergies and their own hazards (the wiki gets vandalised; the webcam's server melts on a link from a big site) |
+| 3 | **The 2000 crash**, a 25-minute half-era between 1997 and 2005: ad money collapses and the site has to survive on what it built | A defensive era, unlike any other; the run's Backlinks reward surviving it well |
+| 4 | **Site archetypes** in the intro wizard (fan site, web shop, news site) | Same eras, different feature trees and gates |
+
+Each unlock is announced in the credits ("Next run: a wiki in 2005, a live cam in 1997, …"), so the button says
+what the new site gets, not only how many Backlinks. Unlocks come from finished runs, not from Backlinks, so nobody
+has to choose between content and perks.
+
+**Projected Backlinks:** after the first finish, the stats strip shows "Backlinks if you finish now: N". The first
+run never shows it, so it stays about the site.
 
 **Target pacing:** first run 4–5 h, second ~3 h, third ~2.5 h, then flat. Diminishing perk prices
 (`cost = 2^level`) and log-scale income make the curve level off by itself.
@@ -48,9 +68,11 @@ Sell / Keep stays a story beat. Every finished run earns Backlinks the same way.
   clears the game, never the legacy. The era records already in `GameState` become the legacy's museum: every
   finished run's Web Attic, side by side.
 
-**Recommendation (decided):** build it, starting with Backlinks and three perks (Known tags, Muscle memory, Early
-warning). The balance sim needs a second bot that starts with them, so pacing for run two is
-measured, not guessed.
+**Recommendation (decided):** build it in three PRs:
+1. The legacy (`LegacyState`, its own versioned save), Backlinks, the credits button, Muscle memory and Regulars, the
+   projected count. A second sim bot starts with perks so run two's pacing is measured, not guessed.
+2. The five legacy buildables for run two, each with its page, its hazard and its place on every era's layout.
+3. The 2000 crash half-era for run three.
 
 ## 2. Replayability: different games, not the same game faster
 
