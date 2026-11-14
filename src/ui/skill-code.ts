@@ -33,7 +33,7 @@ const HOMEPAGE_CODE: EraCode = {
     'font-tags': ['<CENTER>', '<FONT FACE="Comic Sans MS" SIZE="6" COLOR="#FF00FF">Welcome to {name}!!!</FONT>', '<P><FONT COLOR="#FF0000">Hi!! I like computers, my cat, and pizza.</FONT></P>', '</CENTER>'],
     'body-background': ['<BODY BGCOLOR="#000020" TEXT="#F0F0F0" LINK="#FFFF00" VLINK="#FF00FF" BACKGROUND="stars.gif">'],
     hyperlinks: ['<A HREF="links.htm">Cool links</A> | <A HREF="mailto:webmaster@example.com">Email me!</A>', '<A HREF="http://www.webring.example/next?site=42">Next site &gt;&gt;</A>'],
-    'marquee-blink': ['<MARQUEE BEHAVIOR="alternate">*** Best viewed in 800x600 ***</MARQUEE>', '<BLINK>NEW!</BLINK> Please sign my guestbook!!'],
+    'marquee-blink': ['<MARQUEE BEHAVIOR="alternate">*** Best viewed with Web Navigator 3.0 ***</MARQUEE>', '<BLINK>NEW!</BLINK> Please sign my guestbook!!'],
     'cgi-forms': ['<FORM ACTION="/cgi-bin/guestbook.pl" METHOD="POST">', '<INPUT TYPE="text" NAME="message" SIZE="40">', '<INPUT TYPE="submit" VALUE="Sign it!">', '</FORM>', '#!/usr/bin/perl', 'print "Content-type: text/html\\n\\n";', 'open(GUESTBOOK, ">>guestbook.txt");', 'print GUESTBOOK "$name says: $message<BR>\\n";', 'close(GUESTBOOK);'],
     'table-layouts': ['<TABLE BORDER="1" CELLPADDING="4" CELLSPACING="0" WIDTH="600">', '<TR><TD WIDTH="150" BGCOLOR="#000080" VALIGN="top">', '<A HREF="index.htm">Home</A><BR><A HREF="about.htm">About me</A>', '</TD><TD VALIGN="top">', '<!-- TODO: make it look right in the other browser too -->', '</TD></TR>', '</TABLE>'],
     'embed-tag': ['<EMBED SRC="song.mid" AUTOSTART="true" LOOP="true" HIDDEN="true">', '<NOEMBED><BGSOUND SRC="song.mid" LOOP="infinite"></NOEMBED>'],

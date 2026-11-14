@@ -21,8 +21,10 @@ import {
   isMarkedNotSecure,
   getAvailableOpsIds,
   isVisitorsGoalBlockedByAds,
+  formatPercent,
+  FRAMEWORKS_BY_ID,
 } from '../engine';
-import type { GameState, GateCheck, GateRequirementKind } from '../engine';
+import type { FrameworkId, GameState, GateCheck, GateRequirementKind } from '../engine';
 import { escapeHtml } from './dom';
 
 interface HintRule {
@@ -35,6 +37,11 @@ const POPUP_NAG_COUNT = 2;
 const SERVER_WARNING_LOAD = 0.85;
 const SLOW_PAGE_FACTOR = 0.9;
 const ERA_ONE_MAX_ADS = 6;
+/** What a page blank until its JavaScript runs costs in search visitors, from the framework's own numbers. */
+function describeSearchLoss(framework: FrameworkId): string {
+  return formatPercent(FRAMEWORKS_BY_ID[framework].clientRendering.searchVisitorsLost);
+}
+
 /** Above this, writing for AI answers hasn't been bought yet. */
 const AI_ANSWER_NAG_SHARE = 0.2;
 
@@ -94,6 +101,15 @@ const HINT_RULES: readonly HintRule[] = [
     applies: (state) => calculateServerLoad(state) > SERVER_WARNING_LOAD,
     text: 'Your server is close to full. Over 100% pages slow down, and at 200% the site goes down. Upgrade your hosting under Ops.',
   },
+  // The specific cause before the general symptom: a page blank until its JavaScript runs is also the slow one.
+  {
+    applies: (state) => isRenderedOnlyInBrowser(state) && findChosenFramework(state) === 'vue',
+    text: `Your Vue app shows its raw template until the JavaScript has run, and search engines index that: ${describeSearchLoss('vue')} of visitors never find you. Learn Nuxt to render it on the server.`,
+  },
+  {
+    applies: isRenderedOnlyInBrowser,
+    text: `Your single-page app is blank until its JavaScript has run, and search engines index the blank page: ${describeSearchLoss('react')} of visitors never find you. Learn your framework’s server rendering.`,
+  },
   {
     applies: isSlowOnPhones,
     text: 'Your page is slow on phones: their mobile networks are far slower than a desktop’s line, and phone visitors give up first. Flip the browser to Phone to see the load time there. Lighter pages load faster everywhere.',
@@ -117,10 +133,6 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: (state) => isMarkedNotSecure(state) && getAvailableOpsIds(state).includes('certificate-automation'),
     text: 'Browsers now mark every plain http page “Not secure” in the address bar, and some visitors turn back. Certificates are free now: automate them under Ops.',
-  },
-  {
-    applies: isRenderedOnlyInBrowser,
-    text: 'Your single-page app is blank until its JavaScript has run, and search engines index the blank page: three in ten visitors never find you. Learn your framework’s server rendering.',
   },
   {
     applies: (state) => isEraUnlocked(state, 'platform-2018') && isFinedForTracking(state),

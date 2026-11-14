@@ -1,5 +1,5 @@
 import { ERAS_BY_ID, findChosenFramework, isMobileFriendly } from '../../engine';
-import type { FeatureId, FrameworkId, GameState } from '../../engine';
+import type { EraId, FeatureId, FrameworkId, GameState } from '../../engine';
 import { escapeHtml } from '../dom';
 import { describeBuiltWith, FRAMEWORK_PRESENTATION } from '../framework-presentation';
 import { listAds, renderAdPicture, renderAdText } from './ads';
@@ -77,9 +77,14 @@ const LEGAL_LINKS: readonly string[] = [
   'Acceptable Use Policy', 'Data Processing Addendum', 'Subprocessors', 'Security', 'Trust Center', 'Transparency Report', 'Modern Slavery Statement',
 ];
 
+/** When the legal pages were last rewritten: the GDPR's first day, then the EU's AI rules. */
+const LEGAL_UPDATED: Readonly<Partial<Record<EraId, string>>> = { 'ai-2024': 'Aug 1, 2024' };
+const FIRST_LEGAL_UPDATE = 'May 25, 2018';
+
 export function renderLegalWall(context: SiteContext): string {
   if (!context.state.purchasedUpgradeIds.includes('legal-pages')) return '';
-  return `<nav class="lp-legal">${LEGAL_LINKS.map((link) => `<span>${link}</span>`).join('')}<p>Last updated May 25, 2018. By scrolling this page you agree to all of the above.</p></nav>`;
+  const updated = LEGAL_UPDATED[context.eraId] ?? FIRST_LEGAL_UPDATE;
+  return `<nav class="lp-legal">${LEGAL_LINKS.map((link) => `<span>${link}</span>`).join('')}<p>Last updated ${updated}. By scrolling this page you agree to all of the above.</p></nav>`;
 }
 
 function renderSections(context: SiteContext): string {

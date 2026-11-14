@@ -245,7 +245,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
 };
 
 export const BANNER_ADS: readonly string[] = [
-  'You are the 1,000,000th visitor! CLICK HERE',
+  'You are the 1,000,000th visitor!',
   'Get FREE web space! 2 MB!',
   'Make $$$ from home!!!',
   'FREE screensavers! Download now',
