@@ -26,6 +26,20 @@ ones before it. It isn't a CI gate: it's a tool for finding design problems, and
 
 Every player reads the tips: a visit to the shop ends by doing what the tip says, where the tip names a button.
 
+## Shortcomings by player type, at a glance
+
+| Player | What went wrong | Status |
+|---|---|---|
+| optimizer | Money dips below zero in 2024 (a GDPR fine, a hallucination refund right after the relaunch) | By design: repays in about a minute |
+| casual | Never left 1997: one open pop-up held the visitors goal under, at 91% of the era's ceiling | **Fixed**: the checklist counts visitors on a usual day; goals retuned |
+| idle | Stalls in 2011: pop-ups and infections pile up between five-minute check-ins | Open: an "away mode" is in `future.md` |
+| ad-free | Can't leave 1997: typing alone never saves the budget | By design: an ad-free economy (tip jar, memberships) is in `future.md` |
+| ad-heavy | Finishes; the sixth 1997 banner can hold the visitors goal out of reach | **Fixed**: a tip says when one ad fewer meets the goal |
+| ignores-trouble | Stuck in 1997 with five pop-ups and two dead features | By design: keeping the site running is the game; the passive path is the next row |
+| skips-minigames | Finishes, but 1997 took 87 min without defenses; 2011 and 2024 still about twice as long | Partly fixed (defenses named on tickets); cheaper passive fixes for 2011/2024 open in `future.md` |
+| no-framework | Finishes, about 40 minutes slower in 2018–2024 | By design: a fair price for sitting out |
+| buys-everything | Stuck in 1997 at $0 a second (spent everything before an ad); later stalls in 2011 overloading its server | **Fixed** (free first banner); the 2011 loop is a bot limit, the server tip guards players |
+
 ## What we found
 
 ### 1. The casual player never left 1997 (fixed)
