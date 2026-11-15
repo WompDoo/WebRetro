@@ -25,7 +25,7 @@ export const FRAMEWORK_PRESENTATION: Readonly<Record<FrameworkId, FrameworkPrese
     mainFile: 'App.jsx',
     editorTabs: ['App.jsx', 'terminal'],
     // React leaves the router, the state and the forms to npm: every keystroke installs something.
-    typing: { pastesWholeLines: true, typoLabel: 'typosquat!', fixLabel: 'uninstalled' },
+    typing: { chunk: 'line', mistake: 'typo', typoLabel: 'typosquat!', fixLabel: 'uninstalled' },
     bootScreen: '',
     deathNotice: 'Top post on Hacker Mews today: “Why we’re leaving React for Vue.” You picked React this morning.',
   },
@@ -33,14 +33,14 @@ export const FRAMEWORK_PRESENTATION: Readonly<Record<FrameworkId, FrameworkPrese
     mainFile: 'app.component.ts',
     editorTabs: ['app.component.ts', 'app.component.html', 'app.module.ts', 'terminal'],
     // ng generate writes four files per component; strict TypeScript stops the typos before they ship.
-    typing: { pastesWholeLines: true, typoLabel: 'TS2322!', fixLabel: 'compiles' },
+    typing: { chunk: 'line', mistake: 'typo', typoLabel: 'TS2322!', fixLabel: 'compiles' },
     bootScreen: 'Loading...',
     deathNotice: 'A conference talk goes viral: “Angular is dead, long live React.” It’s the fourth this year. You picked Angular this morning.',
   },
   vue: {
     mainFile: 'App.vue',
     editorTabs: ['App.vue', 'terminal'],
-    typing: { pastesWholeLines: true, typoLabel: 'v-if + v-for!', fixLabel: 'linted' },
+    typing: { chunk: 'line', mistake: 'typo', typoLabel: 'v-if + v-for!', fixLabel: 'linted' },
     bootScreen: '{{ hero.title }} {{ hero.subtitle }} {{ story.author }} {{ plan.price }}/mo {{ post.excerpt }}',
     deathNotice: 'A blog post asks: “Is Vue just a toy? No enterprise uses it.” Several enterprises reply that they do. You picked Vue this morning.',
   },
@@ -73,9 +73,15 @@ export function resolveEditorTabs(state: GameState): readonly string[] {
   return framework === null ? ERA_PRESENTATION[state.eraId].editorTabs : framework.editorTabs;
 }
 
+/** A framework's own idea of a typo belongs to its era, 2018: in 2024 the AI types, whatever framework it types in. */
+function isFrameworkEra(state: GameState): boolean {
+  const framework = findChosenFramework(state);
+  return framework !== null && UPGRADES_BY_ID[FRAMEWORKS_BY_ID[framework].skillId].eraId === state.eraId;
+}
+
 export function resolveTyping(state: GameState): TypingStyle {
   const framework = findFrameworkPresentation(state);
-  return framework === null ? ERA_PRESENTATION[state.eraId].typing : framework.typing;
+  return framework !== null && isFrameworkEra(state) ? framework.typing : ERA_PRESENTATION[state.eraId].typing;
 }
 
 /** "Built with Angular": the one place on the page that says which side you took. */

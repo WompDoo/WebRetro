@@ -30,6 +30,11 @@ export interface TakenChunk {
 
 export const EMPTY_FILE_BUFFER: FileBuffer = { source: '', cursor: 0, committed: '', typo: null, totalLines: 1 };
 const CHARS_PER_KEYSTROKE = 4;
+/** An AI suggestion runs to the next blank line, and never past this many lines. */
+const MAX_SUGGESTION_LINES = 8;
+
+/** How much one keystroke types: a few characters by hand, a pasted line, or (2024) a whole AI suggestion. */
+export type TypingChunk = 'characters' | 'line' | 'suggestion';
 export const MAX_KEPT_LINES = 40;
 
 export function createEditorBuffers(): EditorBuffers {
@@ -42,20 +47,39 @@ function measureRestOfLine(text: string, start: number): number {
   return newline === -1 ? text.length - start : newline - start + 1;
 }
 
-function measureNextChunk(buffer: FileBuffer, pastesWholeLines: boolean): number {
-  return pastesWholeLines ? measureRestOfLine(buffer.source, buffer.cursor) : CHARS_PER_KEYSTROKE;
+/** An AI suggestion: the next lines up to a blank one, a block of code at a time, newline included. */
+function measureSuggestion(text: string, start: number): number {
+  const lines = text.slice(start).split('\n').slice(0, MAX_SUGGESTION_LINES);
+  const blank = lines.findIndex((line, index) => index > 0 && line.trim() === '');
+  const kept = blank === -1 ? lines : lines.slice(0, blank + 1);
+  return Math.min(kept.join('\n').length + 1, text.length - start);
+}
+
+const CHUNK_MEASURES: Readonly<Record<TypingChunk, (text: string, start: number) => number>> = {
+  characters: () => CHARS_PER_KEYSTROKE,
+  line: measureRestOfLine,
+  suggestion: measureSuggestion,
+};
+
+function measureNextChunk(buffer: FileBuffer, chunk: TypingChunk): number {
+  return CHUNK_MEASURES[chunk](buffer.source, buffer.cursor);
 }
 
 function countNewlines(text: string): number {
   return text.split('\n').length - 1;
 }
 
-/** The next piece of code to type: a few characters, or a whole line when code is pasted. Starts over at the end. */
-export function takeChunk(buffer: FileBuffer, pastesWholeLines: boolean): TakenChunk {
-  const end = buffer.cursor + measureNextChunk(buffer, pastesWholeLines);
-  const chunk = buffer.source.slice(buffer.cursor, end);
+/** The next piece of code to type: a few characters, a line, or a suggestion. Starts over at the end. */
+export function takeChunk(buffer: FileBuffer, chunk: TypingChunk): TakenChunk {
+  const end = buffer.cursor + measureNextChunk(buffer, chunk);
+  const taken = buffer.source.slice(buffer.cursor, end);
   const cursor = end >= buffer.source.length ? 0 : end;
-  return { chunk, buffer: { ...buffer, cursor, totalLines: buffer.totalLines + countNewlines(chunk) } };
+  return { chunk: taken, buffer: { ...buffer, cursor, totalLines: buffer.totalLines + countNewlines(taken) } };
+}
+
+/** What the next keystroke would type, without typing it: the AI's suggestion, shown greyed out ahead of time. */
+export function peekChunk(buffer: FileBuffer, chunk: TypingChunk): string {
+  return takeChunk(buffer, chunk).chunk;
 }
 
 export function commitText(buffer: FileBuffer, text: string): FileBuffer {
@@ -63,13 +87,13 @@ export function commitText(buffer: FileBuffer, text: string): FileBuffer {
   return { ...buffer, committed: lines.slice(-MAX_KEPT_LINES).join('\n') };
 }
 
-export function typeCleanChunk(buffer: FileBuffer, pastesWholeLines: boolean): FileBuffer {
-  const taken = takeChunk(buffer, pastesWholeLines);
+export function typeCleanChunk(buffer: FileBuffer, chunk: TypingChunk): FileBuffer {
+  const taken = takeChunk(buffer, chunk);
   return commitText(taken.buffer, taken.chunk);
 }
 
-export function typeBuggedChunk(buffer: FileBuffer, pastesWholeLines: boolean, garble: (chunk: string) => string): FileBuffer {
-  const taken = takeChunk(buffer, pastesWholeLines);
+export function typeBuggedChunk(buffer: FileBuffer, chunk: TypingChunk, garble: (chunk: string) => string): FileBuffer {
+  const taken = takeChunk(buffer, chunk);
   return { ...taken.buffer, typo: { correct: taken.chunk, garbled: garble(taken.chunk) } };
 }
 
@@ -82,8 +106,8 @@ function settleTypo(buffer: FileBuffer): FileBuffer {
 }
 
 /** The fix keystroke. With no typo in this tab (it was fixed on the way out of another), it types on. */
-export function fixTypo(buffer: FileBuffer, pastesWholeLines: boolean): FileBuffer {
-  return buffer.typo === null ? typeCleanChunk(buffer, pastesWholeLines) : settleTypo(buffer);
+export function fixTypo(buffer: FileBuffer, chunk: TypingChunk): FileBuffer {
+  return buffer.typo === null ? typeCleanChunk(buffer, chunk) : settleTypo(buffer);
 }
 
 /** New code for the same file (after learning a skill): what's on screen stays, typing restarts at the top of the new code. */
