@@ -327,9 +327,13 @@ shows up in it.
 **Built:** the bento-grid landing page with the "Ask AI" box in the hero and the assistant in the corner where the
 live chat was; AI articles, AI search, AI images and a "For you" feed; AI answers keeping 30% of visitors away
 (llms.txt halves it); AI crawlers on the busiest page (bot shield) and an assistant that promises refunds
-(guardrails); GPU-cluster hosting; dark mode, a paywall, "add AI to everything"; INP in place of FID.
+(guardrails); GPU-cluster hosting; dark mode, a paywall, "add AI to everything"; INP in place of FID; an AI pair
+programmer in the editor: its next block waits greyed out after the caret, every keystroke accepts a whole
+suggestion, and a mistake is a hallucination, plausible code calling things that don't exist, rejected by the next
+keystroke. (It was labelled this way from the start but typed like 2018: a chosen framework's typing won over the
+era's. Framework typing now belongs to 2018 only.)
 **Not yet:** prompt injection in the guestbook, server components, "Summarize with AI", passkeys, the cloud
-bill as its own readout, and the AI-hallucinated typing tool beyond its labels.
+bill as its own readout.
 
 ## Web history: one trick an era (built)
 

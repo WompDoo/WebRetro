@@ -1,3 +1,4 @@
+import type { TypingChunk } from './editor-buffers';
 import type { EraId } from '../engine';
 import { AI_POPUPS, HOMEPAGE_POPUPS, PLATFORM_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
 import type { PopupCopy } from './popup-copy';
@@ -27,18 +28,26 @@ export interface EraStory {
   readonly confirmLabel: string;
 }
 
-/** How code arrives in the editor: typed a few characters at a time, or pasted a line at a time. */
+/** A wrong keystroke: a letter garbled by hand, or (2024) a whole block of confident code that does nothing it says. */
+export type TypingMistake = 'typo' | 'hallucination';
+
+/** How code arrives in the editor: a few characters at a time, a line at a time, or a whole AI suggestion at a time. */
 export interface TypingStyle {
-  readonly pastesWholeLines: boolean;
+  readonly chunk: TypingChunk;
+  readonly mistake: TypingMistake;
   readonly typoLabel: string;
   readonly fixLabel: string;
 }
 
-const TYPED_BY_HAND: TypingStyle = { pastesWholeLines: false, typoLabel: 'typo!', fixLabel: 'fixed' };
+const TYPED_BY_HAND: TypingStyle = { chunk: 'characters', mistake: 'typo', typoLabel: 'typo!', fixLabel: 'fixed' };
 /** 2018: every keystroke runs npm install. A typo installs a lookalike package with something nasty in it. */
-export const NPM_INSTALL_TYPING: TypingStyle = { pastesWholeLines: true, typoLabel: 'typosquat!', fixLabel: 'uninstalled' };
-/** 2024: every keystroke accepts an AI suggestion. A typo is a function the AI made up. */
-const AI_AUTOCOMPLETE_TYPING: TypingStyle = { pastesWholeLines: true, typoLabel: 'hallucinated!', fixLabel: 'rejected' };
+export const NPM_INSTALL_TYPING: TypingStyle = { chunk: 'line', mistake: 'typo', typoLabel: 'typosquat!', fixLabel: 'uninstalled' };
+/**
+ * 2024: the AI writes the code. Its next suggestion waits greyed out after the caret, and every keystroke accepts a
+ * whole block of it. A mistake is a hallucination: plausible code calling things that don't exist, which the next
+ * keystroke rejects.
+ */
+const AI_AUTOCOMPLETE_TYPING: TypingStyle = { chunk: 'suggestion', mistake: 'hallucination', typoLabel: 'hallucinated!', fixLabel: 'rejected' };
 
 export interface EraPresentation {
   readonly year: number;
@@ -129,7 +138,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorTabs: ['index.html', 'app.js', 'style.css'],
     editorHighlightsSyntax: true,
     // Nobody types code in 2011: every keystroke pastes a whole answer from a Q&A site.
-    typing: { pastesWholeLines: true, typoLabel: 'duplicate!', fixLabel: 'accepted' },
+    typing: { chunk: 'line', mistake: 'typo', typoLabel: 'duplicate!', fixLabel: 'accepted' },
     popups: SOCIAL_POPUPS,
     guestbook: [
       { author: 'Sam K.', text: 'liked your post!' },

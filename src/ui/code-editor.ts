@@ -1,10 +1,10 @@
 import { formatMoney, formatPercent } from '../engine';
 import type { CodeInputOutcome, EraId } from '../engine';
 import { escapeHtml } from './dom';
-import { createEditorBuffers, fixTypo, showFile as showFileIn, typeBuggedChunk, typeCleanChunk } from './editor-buffers';
+import { createEditorBuffers, fixTypo, peekChunk, showFile as showFileIn, typeBuggedChunk, typeCleanChunk } from './editor-buffers';
 import type { FileBuffer } from './editor-buffers';
 import { ERA_PRESENTATION } from './presentation';
-import type { TypingStyle } from './presentation';
+import type { TypingMistake, TypingStyle } from './presentation';
 
 export interface KeystrokeFeedback {
   readonly outcome: CodeInputOutcome;
@@ -74,6 +74,86 @@ function garble(chunk: string): string {
   return chunk.slice(0, position) + replacement + chunk.slice(position + 1);
 }
 
+/**
+ * What the AI writes when it's wrong: code that reads fine and calls things that don't exist, with total confidence.
+ * Each line of the real suggestion gets one of these, at the same indentation, so the block looks right at a glance.
+ */
+const HALLUCINATED_LINES: readonly string[] = [
+  "import { useRevenue } from 'react-money'; // a package that doesn't exist",
+  'await site.makeItGoViral({ guaranteed: true });',
+  'const users = await db.users.findAllHappy();',
+  '// As an AI model I have optimized this function for you.',
+  'traffic = traffic * 1000; // fixes low traffic',
+  "fetch('/api/v9/endpoint-i-am-sure-exists');",
+  'return Promise.resolveEverything();',
+  'if (bug) { bug = false; }',
+  "document.querySelector('#profit').click();",
+  'const config = { scale: "web", mode: "magic" };',
+];
+
+function leadingWhitespace(line: string): string {
+  return /^\s*/.exec(line)?.[0] ?? '';
+}
+
+/** Every line of the suggestion swapped for a confident wrong one; blank lines stay blank, so the shape holds. */
+export function hallucinate(chunk: string): string {
+  const start = Math.floor(Math.random() * HALLUCINATED_LINES.length);
+  return chunk
+    .split('\n')
+    .map((line, index) => (line.trim() === '' ? line : `${leadingWhitespace(line)}${HALLUCINATED_LINES[(start + index) % HALLUCINATED_LINES.length] ?? ''}`))
+    .join('\n');
+}
+
+const MISTAKES: Readonly<Record<TypingMistake, (chunk: string) => string>> = {
+  typo: garble,
+  hallucination: hallucinate,
+};
+
+const CARET = '<span class="code-caret"></span>';
+/** The editor is small: a long suggestion shows its first lines, so the code just written stays in view. */
+const MAX_SUGGESTION_PREVIEW_LINES = 3;
+
+/** The suggestion as shown after the caret: its first lines, then how many more a keystroke would accept. */
+export function previewSuggestion(suggestion: string): string {
+  const lines = suggestion.replace(/\n$/, '').split('\n');
+  const hidden = lines.length - MAX_SUGGESTION_PREVIEW_LINES;
+  return hidden > 0 ? [...lines.slice(0, MAX_SUGGESTION_PREVIEW_LINES), `… ${hidden} more ${hidden === 1 ? 'line' : 'lines'}: any key accepts`].join('\n') : lines.join('\n');
+}
+
+/** More text that carries on from the end of the last line, then runs over lines of its own. */
+function continueLines(lines: readonly string[], more: readonly string[]): readonly string[] {
+  const [head, ...tail] = more;
+  return head === undefined ? lines : [...lines.slice(0, -1), `${lines[lines.length - 1] ?? ''}${head}`, ...tail];
+}
+
+function wrapEach(text: string, className: string): readonly string[] {
+  return text === '' ? [] : text.split('\n').map((part) => `<span class="${className}">${escapeHtml(part)}</span>`);
+}
+
+function renderCodeLine(html: string, lineNumber: number | null, className: string): string {
+  const number = lineNumber === null ? '' : ` data-line="${lineNumber}"`;
+  return `<span class="${className}"${number}>${html}</span>`;
+}
+
+/**
+ * The editor's lines: what's typed, then a pending mistake (which may run over several lines), the caret, and in
+ * 2024 the AI's next suggestion greyed out after it. Suggestion lines have no numbers: they aren't written yet.
+ */
+function pendingMistake(buffer: FileBuffer): string {
+  return buffer.typo === null ? '' : buffer.typo.garbled;
+}
+
+export function renderEditorLines(buffer: FileBuffer, renderLine: (line: string) => string, suggestion: string): string {
+  const written = continueLines(buffer.committed.split('\n').map(renderLine), wrapEach(pendingMistake(buffer), 'code-typo'));
+  const firstLineNumber = Math.max(1, buffer.totalLines - written.length + 1);
+  const withCaret = [...written.slice(0, -1), `${written[written.length - 1] ?? ''}${CARET}`];
+  const ghost = wrapEach(suggestion, 'code-ghost');
+  const lastWritten = continueLines(withCaret, ghost.slice(0, 1));
+  const writtenHtml = lastWritten.map((html, index) => renderCodeLine(html, firstLineNumber + index, 'code-line'));
+  const ghostHtml = ghost.slice(1).map((html) => renderCodeLine(html, null, 'code-line is-suggestion'));
+  return [...writtenHtml, ...ghostHtml].join('');
+}
+
 function isCodeKey(event: KeyboardEvent): boolean {
   const hasModifier = event.ctrlKey || event.metaKey || event.altKey;
   return !hasModifier && !event.repeat && (event.key.length === 1 || ACCEPTED_SPECIAL_KEYS.has(event.key));
@@ -105,19 +185,14 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
   let typing = ERA_PRESENTATION['homepage-1997'].typing;
   let lastAcceptedAt = Number.NEGATIVE_INFINITY;
 
+  /** In 2024 the AI's next block waits after the caret; not while it's wrong. */
+  const findSuggestion = (): string => (typing.chunk === 'suggestion' && buffers.active.typo === null ? previewSuggestion(peekChunk(buffers.active, typing.chunk)) : '');
+
   const render = (): void => {
-    const { committed, totalLines, typo } = buffers.active;
-    const lines = committed.split('\n');
-    const firstLineNumber = Math.max(1, totalLines - lines.length + 1);
+    const { committed, totalLines } = buffers.active;
     const renderLine = highlights ? highlightLine : escapeHtml;
-    const typoHtml = typo === null ? '' : `<span class="code-typo">${escapeHtml(typo.garbled)}</span>`;
-    const caret = '<span class="code-caret"></span>';
-    elements.code.innerHTML = lines
-      .map((line, index) => {
-        const isLast = index === lines.length - 1;
-        return `<span class="code-line" data-line="${firstLineNumber + index}">${renderLine(line)}${isLast ? typoHtml + caret : ''}</span>`;
-      })
-      .join('');
+    elements.code.innerHTML = renderEditorLines(buffers.active, renderLine, findSuggestion());
+    const lines = committed.split('\n');
     const column = (lines[lines.length - 1] ?? '').length + 1;
     elements.position.textContent = `Ln ${totalLines}, Col ${column}`;
   };
@@ -138,9 +213,9 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
   };
 
   const applyOutcomes: Readonly<Record<CodeInputOutcome, (buffer: FileBuffer) => FileBuffer>> = {
-    'clean-line': (buffer) => typeCleanChunk(buffer, typing.pastesWholeLines),
-    'bugged-line': (buffer) => typeBuggedChunk(buffer, typing.pastesWholeLines, garble),
-    'fixed-bug': (buffer) => fixTypo(buffer, typing.pastesWholeLines),
+    'clean-line': (buffer) => typeCleanChunk(buffer, typing.chunk),
+    'bugged-line': (buffer) => typeBuggedChunk(buffer, typing.chunk, MISTAKES[typing.mistake]),
+    'fixed-bug': (buffer) => fixTypo(buffer, typing.chunk),
   };
 
   const handleKeystroke = (): void => {
@@ -207,8 +282,11 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     revealActiveTab(elements.tabs);
   };
 
+  /** A new style can change what's waiting after the caret (2024's suggestion), so the code redraws. */
   const setTyping = (style: TypingStyle): void => {
+    if (style === typing) return;
     typing = style;
+    render();
   };
 
   const setHighlights = (isOn: boolean): void => {
