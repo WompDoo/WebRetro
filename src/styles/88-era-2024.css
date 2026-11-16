@@ -25,7 +25,8 @@
   position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 18px; padding: 12px 28px;
   border-bottom: 1px solid var(--ai-border); background: color-mix(in srgb, var(--ai-bg) 80%, transparent); backdrop-filter: blur(10px);
 }
-.ai-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: -0.02em; }
+.ai-logo { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; letter-spacing: -0.02em; }
+.ai-nav > :is(.feature-block, .ai-cmdk, .ai-login, .ai-cta) { flex-shrink: 0; }
 .ai-logo i { width: 20px; height: 20px; border-radius: 6px; background: var(--ai-gradient); }
 .ai-links { display: flex; gap: 18px; margin-right: auto; color: var(--ai-muted); font-size: 14px; }
 .ai-cmdk { padding: 3px 9px; border: 1px solid var(--ai-border); border-radius: 8px; color: var(--ai-muted); font-size: 12px; }
@@ -110,6 +111,24 @@
 
 @container (max-width: 900px) {
   .ai-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* The nav folds in steps as the window narrows: the ⌘K pill first, then Sign in, then the links. */
+@container (max-width: 980px) {
+  .ai-cmdk { display: none; }
+}
+@container (max-width: 820px) {
+  .ai-login { display: none; }
+  .ai-links { gap: 12px; }
+}
+@container (max-width: 720px) {
+  .ai-links { display: none; }
+  .ai-logo { margin-right: auto; }
+}
+/* A phone: the button gets smaller and loses its sparkle before anything gets cut off. */
+@container (max-width: 440px) {
+  .ai-nav { gap: 8px; padding: 10px 12px; }
+  .ai-cta { padding: 6px 10px; font-size: 13px; }
+  .site-2024.has-sparkles .ai-cta::before { content: none; }
 }
 @container (max-width: 640px) {
   .ai-nav { gap: 10px; padding: 10px 14px; }

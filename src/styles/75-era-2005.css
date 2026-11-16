@@ -110,7 +110,7 @@
 /* ---------- Flash intro ---------- */
 .flash-intro { display: grid; gap: 6px; }
 .flash-stage { position: relative; height: 120px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(circle at 30% 40%, #3B5BDB, #0B1340 70%); border: 1px solid #000000; }
-.flash-logo { position: relative; z-index: 1; color: #FFFFFF; font-family: 'Arial Black', Arial, sans-serif; font-size: 26px; letter-spacing: -1px; text-shadow: 0 0 12px #8FB0FF; animation: flash-logo 4s ease-in-out infinite; }
+.flash-logo { position: relative; z-index: 1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #FFFFFF; font-family: 'Arial Black', Arial, sans-serif; font-size: 26px; letter-spacing: -1px; text-shadow: 0 0 12px #8FB0FF; animation: flash-logo 4s ease-in-out infinite; }
 .flash-swoosh { position: absolute; inset: 40% -20%; height: 18px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent); transform: rotate(-12deg); animation: flash-swoosh 2.4s linear infinite; }
 @keyframes flash-logo { 0% { transform: scale(0.3) rotate(-20deg); opacity: 0; } 30% { transform: scale(1.15) rotate(4deg); opacity: 1; } 45%, 100% { transform: scale(1) rotate(0); opacity: 1; } }
 @keyframes flash-swoosh { from { transform: translateX(-70%) rotate(-12deg); } to { transform: translateX(70%) rotate(-12deg); } }

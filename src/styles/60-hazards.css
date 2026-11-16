@@ -1,11 +1,43 @@
 /* ---------- Infections ---------- */
-.infection { position: absolute; inset: 0; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px; border: 0; cursor: pointer; text-align: center; }
+/*
+ * The overlay covers its feature exactly, so its size is the block's: a whole column, a sidebar badge, a 62 px
+ * language pill. It is a size container, and what's inside steps down with it (below): details, then the hint, then
+ * the timer, until only the icon is left. Nothing may spill onto the page around it.
+ * The base look is a safe one: a hazard without a style of its own is still readable, never the browser's grey button.
+ */
+.infection {
+  position: absolute; inset: 0; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 8px; overflow: hidden; container: infection / size;
+  border: 0; appearance: none; background: rgba(24, 24, 27, 0.92); color: #FFFFFF; font: 13px/1.3 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  cursor: pointer; text-align: center;
+}
+.infection > * { max-width: 100%; }
 .infection[data-kind="virus"] { background: repeating-linear-gradient(0deg, rgba(0,0,0,0.28) 0 2px, transparent 2px 4px), rgba(165, 0, 22, 0.9); color: #FFFFFF; font-family: 'Courier New', monospace; animation: glitch 0.35s steps(2) infinite; }
 .infection[data-kind="spam"] { background: rgba(255, 246, 214, 0.96); color: #8A2C00; border: 2px dashed #E05A00; font-family: 'Comic Sans MS', 'Comic Neue', cursive; }
-.infection-title { font-weight: 700; font-size: 18px; letter-spacing: 0.08em; }
+.infection-title { font-weight: 700; font-size: 18px; letter-spacing: 0.08em; overflow-wrap: anywhere; }
 .infection-hint { font-size: 12px; }
 .infection-spam { font-size: 11px; opacity: 0.7; line-height: 1.3; }
+.infection-icon { display: none; font-size: 15px; line-height: 1; }
 @keyframes glitch { 50% { transform: translate(1px, -1px); } }
+
+/* Password leak: the paste site where they turned up, green on black. */
+.infection[data-kind="password-leak"] { background: rgba(12, 14, 12, 0.95); color: #E8FFE8; font-family: 'Courier New', monospace; }
+.infection[data-kind="password-leak"] .infection-title { color: #FF5A5A; }
+.infection-leak { color: #5CFF7A; font-size: 12px; line-height: 1.4; }
+
+/* DDoS: the server's own 503 page, plain and grey. */
+.infection[data-kind="ddos"] { background: rgba(240, 240, 240, 0.97); color: #222222; border: 2px solid #8A8A8A; font-family: 'Times New Roman', Tinos, Times, serif; }
+.infection[data-kind="ddos"] .infection-title { color: #A00000; }
+.infection[data-kind="ddos"] .infection-timer { border-color: rgba(0, 0, 0, 0.35); }
+
+/* Broken build: the dev server's error overlay, red on near-black. */
+.infection[data-kind="broken-build"] { background: rgba(20, 20, 20, 0.95); color: #E8E8E8; font-family: Menlo, Consolas, 'Courier New', monospace; text-align: left; }
+.infection[data-kind="broken-build"] .infection-title,
+.infection[data-kind="broken-build"] .infection-error b { color: #FF6B6B; }
+
+/* AI scrapers: a 429 page with the bots' names on it. */
+.infection[data-kind="scraper-swarm"] { background: rgba(30, 27, 75, 0.95); color: #E0E7FF; font-family: Menlo, Consolas, 'Courier New', monospace; }
+.infection[data-kind="scraper-swarm"] .infection-title { color: #A5B4FC; }
 
 /* ---------- Virus countdown ---------- */
 .infection-timer { margin-top: 2px; padding: 2px 8px; font-size: 11px; border: 1px solid rgba(255, 255, 255, 0.55); }
@@ -35,8 +67,32 @@
 
 /* ---------- SQL injection ---------- */
 .infection[data-kind="sql-injection"] { align-items: flex-start; justify-content: flex-start; gap: 6px; padding: 10px; background: #FFFFFF; color: #000000; border: 2px solid #B91C1C; font-family: 'Times New Roman', Tinos, Times, serif; text-align: left; }
+.infection[data-kind="sql-injection"] .infection-title { color: #B91C1C; font-size: 15px; }
 .infection-error { font-size: 12.5px; line-height: 1.35; }
 .infection-sql { font-family: 'Courier New', monospace; font-size: 12px; color: #B91C1C; }
 .infection[data-kind="sql-injection"] .infection-hint { font-family: Verdana, sans-serif; font-weight: 700; }
+.infection[data-kind="sql-injection"] .infection-timer,
+.infection[data-kind="spam"] .infection-timer { border-color: currentColor; }
+
+/* ---------- Infections that fit their block: each step drops what the one before kept ---------- */
+/* Shorter or narrower than a page section: the details go, the title, hint and timer stay. */
+@container infection (max-height: 180px) or (max-width: 260px) {
+  .infection-detail { display: none; }
+}
+/* A short strip or a narrow sidebar box: no hint either; the cursor and the colour say "click me". */
+@container infection (max-height: 96px) or (max-width: 200px) {
+  .infection-hint { display: none; }
+  .infection-title { font-size: 14px; letter-spacing: 0.04em; }
+}
+/* One line: the title alone. */
+@container infection (max-height: 58px) {
+  .infection-timer { display: none; }
+  .infection-title { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+/* Too small for a word: the language pill, a share button. Just the icon, centred over it, taking no room of its own. */
+@container infection (max-height: 34px) or (max-width: 110px) {
+  .infection-title, .infection-hint, .infection-timer, .infection-detail { display: none; }
+  .infection-icon { display: grid; position: absolute; inset: 0; place-items: center; }
+}
 /* The status page lives on the same servers: it's down with everything else. */
 .site-down-status { font-style: italic; }

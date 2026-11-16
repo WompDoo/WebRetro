@@ -132,8 +132,10 @@
  * class is in the selector so it outranks both layouts' general .feature-block rules (relative, overflow hidden),
  * whichever file they come from.
  */
-.site .feature-block:is([data-feature="live-chat"], [data-feature="ai-chatbot"]) { position: static; width: max-content; max-width: 100%; min-height: 0; margin: 0 0 0 auto; padding: 0; border: 0; box-shadow: none; overflow: visible; }
+/* Relative, not static: an infection covers the bubble, not the whole strip it sits in. */
+.site .feature-block:is([data-feature="live-chat"], [data-feature="ai-chatbot"]) { position: relative; width: max-content; max-width: 100%; min-height: 0; margin: 0 0 0 auto; padding: 0; border: 0; box-shadow: none; overflow: visible; }
 .chat-bubble { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); color: #202124; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 13px; }
+.site .feature-block:is([data-feature="live-chat"], [data-feature="ai-chatbot"]) > .infection { border-radius: 22px; }
 .chat-avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #6C5CE7; color: #FFFFFF; font-weight: 700; }
 .chat-text { display: grid; line-height: 17px; }
 .chat-text b { font-size: 11px; color: #5F6368; font-weight: 500; }
@@ -151,7 +153,13 @@
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; font-size: 15px; line-height: 1.6;
 }
 .lp-nav { display: flex; align-items: center; gap: 20px; padding: 14px 28px; }
-.lp-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 17px; color: #32325D; }
+.lp-logo { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; font-size: 17px; color: #32325D; }
+/*
+ * The site's name is the player's, and it can be long: in a narrow header it shortens with an ellipsis rather than
+ * pushing the language pill and the button off the page. 2018 and 2024 share it.
+ */
+.nav-brand { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-nav > :is(.feature-block, .lp-login, .lp-cta) { flex-shrink: 0; }
 .lp-logo i { width: 20px; height: 20px; border-radius: 6px; background: linear-gradient(135deg, #6C5CE7, #00B8D9); transform: rotate(45deg) scale(0.8); }
 .lp-links { display: flex; gap: 18px; color: #525F7F; font-size: 14px; }
 .lp-login { margin-left: auto; color: #6C5CE7; font-weight: 600; font-size: 14px; }
@@ -241,7 +249,7 @@
 @container (max-width: 640px) {
   .site-2018 .lp-links, .site-2018 .lp-login { display: none; }
   .site-2018 .lp-cta { margin-left: auto; }
-  .site-2018 .lp-nav { padding: 12px 14px; }
+  .site-2018 .lp-nav { gap: 10px; padding: 12px 14px; }
   .site-2018 .lp-hero { grid-template-columns: minmax(0, 1fr); margin: 10px 14px 0; padding: 22px; }
   .site-2018 .lp-cards, .site-2018 .lp-testimonials, .site-2018 .pricing { grid-template-columns: minmax(0, 1fr); }
   .site-2018 .lp-sections { columns: 1; }
