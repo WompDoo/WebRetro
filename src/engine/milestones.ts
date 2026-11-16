@@ -18,7 +18,7 @@ const MILESTONES: readonly MilestoneDefinition[] = [
   },
   {
     id: 'first-revenue',
-    message: 'Your site earned its first cent.',
+    message: 'Your site earned its first cent. Don’t spend it all at once.',
     isReached: (state) => calculateNetRevenuePerSecond(state) > 0,
   },
   {

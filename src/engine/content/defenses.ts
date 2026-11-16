@@ -14,7 +14,7 @@ export const DEFENSES_BY_ID: Readonly<Record<DefenseId, DefenseDefinition>> = {
     id: 'antivirus',
     eraId: 'homepage-1997',
     name: 'Antivirus subscription',
-    description: 'Scans your files and removes viruses on its own after a few seconds.',
+    description: 'Scans your files and removes viruses on its own after a few seconds. Then it asks to restart your computer.',
     cost: 2_500,
     countersHazard: 'virus',
     counterMode: 'auto-cleans',
