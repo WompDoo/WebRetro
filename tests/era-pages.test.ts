@@ -74,9 +74,9 @@ describe('content says only what can happen', () => {
   });
 
   it('tells each relaunch the truth about how code arrives', () => {
-    assert.match(ERA_PRESENTATION['ai-2024'].entryStory?.whatsNew.join(' ') ?? '', /accepts a whole block/);
+    assert.match(JSON.stringify(ERA_PRESENTATION['ai-2024'].entryStory?.highlights ?? []), /accepts a whole block/);
     assert.equal(resolveTyping(createPlaytestState('ai-2024', 'start', SEED, 'react')).chunk, 'suggestion');
-    assert.match(ERA_PRESENTATION['social-2011'].entryStory?.whatsNew.join(' ') ?? '', /pastes a line/);
+    assert.match(JSON.stringify(ERA_PRESENTATION['social-2011'].entryStory?.highlights ?? []), /pastes a line/);
     assert.equal(ERA_PRESENTATION['social-2011'].typing.chunk, 'line');
   });
 });
