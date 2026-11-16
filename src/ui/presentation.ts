@@ -20,11 +20,24 @@ export interface BlogPostCopy {
   readonly excerpt: string;
 }
 
+/** One thing a relaunch changes, as a card: an icon, a few words, one line. */
+export interface StoryHighlight {
+  readonly icon: string;
+  readonly title: string;
+  readonly text: string;
+}
+
+/**
+ * A relaunch, told as an event rather than an essay: one line of what happened, a handful of cards for what changes,
+ * and the full story folded away for whoever wants it.
+ */
 export interface EraStory {
-  readonly yearSpan: string;
   readonly heading: string;
+  /** What happened, in one sentence: the line under the heading. */
+  readonly hook: string;
+  /** The longer story, behind "Read the story". */
   readonly paragraphs: readonly string[];
-  readonly whatsNew: readonly string[];
+  readonly highlights: readonly StoryHighlight[];
   readonly confirmLabel: string;
 }
 
@@ -111,19 +124,19 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     ],
     musicTracks: ['Ep. 12: Is AJAX a fad?', 'Ep. 13: Tags vs folders', 'Ep. 14: Rounded corners explained'],
     entryStory: {
-      yearSpan: '2000 → 2005',
       heading: 'The bubble bursts',
+      hook: 'The dot-com bubble burst and took the ad money with it. Then someone coined “Web 2.0”, and sites became places where people post.',
       paragraphs: [
         'March 2000. The dot-com bubble bursts. Ad rates crash and half your webring goes offline overnight.',
         'Then somebody coins “Web 2.0”. Websites stop being pages you read and turn into places where people post.',
         'Your homepage needs a relaunch: rounded corners, glossy gradients and a beta sticker. One problem: you still build everything with tables.'
       ],
-      whatsNew: [
-        'Your site keeps its 1997 look until you learn CSS. Learn the Web 2.0 look after that to make it glossy.',
-        'Blogs, comments and tag clouds, each unlocked by a new skill.',
-        'Your old features get new names: the guestbook becomes a shoutbox, the webring a blogroll.',
-        'Ads pay less after the crash, and you have room for more of them. Contextual text ads annoy visitors less, so your best ad count changes.',
-        'Spam bots now target your comments.',
+      highlights: [
+        { icon: '🎨', title: 'Rebuild with CSS', text: 'Your 1997 look stays until you learn CSS. Then go glossy.' },
+        { icon: '📝', title: 'Blogs and comments', text: 'Blogs, comments and tag clouds, each unlocked by a skill.' },
+        { icon: '🏷️', title: 'New names', text: 'The guestbook becomes a shoutbox, the webring a blogroll.' },
+        { icon: '💸', title: 'Ads pay less', text: 'Ad rates crashed, but there’s room for more ads.' },
+        { icon: '🤖', title: 'Spam bots', text: 'Bots start spamming your comments.' },
       ],
       confirmLabel: 'Relaunch as Web 2.0',
     },
@@ -150,21 +163,20 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     ],
     musicTracks: ['Ep. 41: Is Flash dead?', 'Ep. 42: Responsive everything', 'Ep. 43: Hashbang URLs, why'],
     entryStory: {
-      yearSpan: '2006 → 2011',
       heading: 'Everyone has a phone now',
+      hook: 'A phone with a real browser came out, everyone joined a social network, and Flash started dying.',
       paragraphs: [
         'A phone with no keyboard and a real web browser comes out. By 2011, four in ten of your visitors are on a phone, and your glossy 2005 blog makes them pinch, zoom and scroll sideways.',
         'Everyone is on a social network. Visitors arrive from their friends’ shares now, not from your blogroll.',
         'And Flash is dying: phones never ran it, and desktop browsers started blocking it. Your Flash intro goes, and your podcast player shows a missing-plugin box.',
       ],
-      whatsNew: [
-        'Four in ten visitors are on phones. Most of them leave until you learn responsive design. The browser’s Phone switch shows you what they see.',
-        'Out with the old: features that went out of fashion retire (listed below). Lighter pages load faster on phones.',
-        'Your podcast player ran on Flash: rebuild it with HTML5 video and audio.',
-        'Learn Bootstrap and your site gets the look every 2011 site had.',
-        'Your racks don’t come along: you move to the cloud, and add instances as you grow.',
-        'New trouble: botnets for hire flood your busiest page, and user tables leak onto paste sites. DDoS protection and bcrypt make them stop.',
-        'Code comes from a Q&A site now: every keystroke pastes a line from someone’s answer. Some get marked as duplicate.',
+      highlights: [
+        { icon: '📱', title: 'Four in ten on phones', text: 'They leave until you learn responsive design.' },
+        { icon: '🧩', title: 'Flash is dead', text: 'Your podcast player needs HTML5 audio to come back.' },
+        { icon: '🅱️', title: 'Bootstrap', text: 'Learn it and your site looks like every 2011 site.' },
+        { icon: '☁️', title: 'The cloud', text: 'The racks stay behind. Add instances as you grow.' },
+        { icon: '🚨', title: 'New trouble', text: 'Botnets and leaked passwords. DDoS protection and bcrypt stop them.' },
+        { icon: '📋', title: 'Copy-paste coding', text: 'Every keystroke pastes a line from someone’s answer.' },
       ],
       confirmLabel: 'Relaunch for 2011',
     },
@@ -191,21 +203,20 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     ],
     musicTracks: ['Ep. 88: Is jQuery dead?', 'Ep. 89: React, Angular or Vue?', 'Ep. 90: Do you need Kubernetes? (You don’t)'],
     entryStory: {
-      yearSpan: '2012 → 2018',
       heading: 'Everything is a platform',
+      hook: 'Websites became apps that JavaScript builds in the browser, and three frameworks went to war over how.',
       paragraphs: [
         'Websites stopped being pages. They’re apps now: they load once, then JavaScript builds everything you see. Three frameworks fight over how, and every team has to pick a side.',
         'Six in ten visitors are on a phone, and they leave if your page takes longer than three seconds. The browser grades every page on its own speed test.',
         'And the social networks closed their doors. After a data scandal, Facespace switched off the API your “Sign in with…” buttons ran on.',
       ],
-      whatsNew: [
-        'The framework wars: learn React, Angular or Vue. You can only pick one. It rewrites your site as a single-page app, and the others say it’s already dead.',
-        'Single-page apps are blank until the JavaScript has loaded and run, and search engines index the blank page. Learn your framework’s server rendering to fix it.',
-        'Facespace’s login API is gone: “Sign in with…” shows an error until you build your own login.',
-        'Out with the old: features that went out of fashion retire (listed below), and so does the “Get our app!” banner.',
-        'Your cloud instances don’t come along: everything runs in containers on Kubernetes now. Add pods as you grow.',
-        'Code arrives by npm install now: every keystroke installs a package, and a typo installs the wrong one. Each framework then brings its own kind of mistake.',
-        'The status bar runs a speed test on every page: one score out of 100, and the numbers behind it.',
+      highlights: [
+        { icon: '⚔️', title: 'Pick a framework', text: 'React, Angular or Vue. Only one, and the others say it’s dead.' },
+        { icon: '⬜', title: 'The blank page', text: 'Apps are blank until JavaScript runs. Render on the server.' },
+        { icon: '🔌', title: 'Facespace shuts its API', text: '“Sign in with…” breaks until you build your own login.' },
+        { icon: '☸️', title: 'Kubernetes', text: 'Everything runs in pods now. Add pods as you grow.' },
+        { icon: '📦', title: 'npm install', text: 'Every keystroke installs a package. Typos install the wrong one.' },
+        { icon: '🟢', title: 'A speed score', text: 'Every page gets a score out of 100.' },
       ],
       confirmLabel: 'Relaunch as a platform',
     },
@@ -231,21 +242,20 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     ],
     musicTracks: ['Ep. 140: Is coding dead? (No)', 'Ep. 141: Every app is a chat app now', 'Ep. 142: We asked an AI to host this episode'],
     entryStory: {
-      yearSpan: '2019 → 2024',
       heading: 'AI everywhere',
+      hook: 'A chatbot learned to write, then to code, then to draw, and every product grew a ✨ button.',
       paragraphs: [
         'A chatbot learned to write, then to code, then to draw. Within a year every product had a ✨ button, and every pitch deck said “AI”.',
         'Search changed under your feet. An AI answer sits above the links now, made from pages like yours, and three in ten searchers read it and never click.',
         'And the crawlers came: bots copying the whole web for training data, a thousand requests a second, from addresses that change every minute.',
       ],
-      whatsNew: [
-        'You asked an AI to redesign the site over a weekend. It did: big type, a bento grid, a sparkle on every button.',
-        'AI answers keep three in ten of your would-be visitors. Write for AI answers to get quoted, with a link.',
-        'Call an LLM API, learn retrieval, image models and recommenders: an AI assistant, AI-written articles, “Ask AI” search, an image generator and a “For you” feed.',
-        'New trouble: AI crawlers swarm your busiest page, and your assistant sometimes promises things you never said. A bot shield and guardrails stop them.',
-        'Out with the old: stories and the human live chat retire (listed below). The assistant takes the chat’s corner.',
-        'Your Kubernetes pods don’t come along: whatever thinks runs on rented GPUs now.',
-        'The AI writes the code: its next block waits greyed out after the caret, every keystroke accepts a whole block, and some blocks call functions that don’t exist.',
+      highlights: [
+        { icon: '✨', title: 'An AI redesign', text: 'Big type, a bento grid, a sparkle on every button.' },
+        { icon: '🔎', title: 'AI answers', text: 'Three in ten searchers read the AI answer and never click.' },
+        { icon: '🤖', title: 'AI everything', text: 'An assistant, AI articles, “Ask AI” search, an image generator.' },
+        { icon: '🕷️', title: 'New trouble', text: 'AI crawlers swarm you, and the assistant makes things up.' },
+        { icon: '🖥️', title: 'Rented GPUs', text: 'Whatever thinks runs on GPUs now.' },
+        { icon: '⌨️', title: 'The AI writes the code', text: 'Every keystroke accepts a whole block. Some call functions that don’t exist.' },
       ],
       confirmLabel: 'Relaunch with AI',
     },
