@@ -137,7 +137,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     editorMenu: [],
     editorTabs: ['index.html', 'app.js', 'style.css'],
     editorHighlightsSyntax: true,
-    // Nobody types code in 2011: every keystroke pastes a whole answer from a Q&A site.
+    // Nobody types code in 2011: every keystroke pastes a line from someone's answer on a Q&A site.
     typing: { chunk: 'line', mistake: 'typo', typoLabel: 'duplicate!', fixLabel: 'accepted' },
     popups: SOCIAL_POPUPS,
     guestbook: [
@@ -164,7 +164,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
         'Learn Bootstrap and your site gets the look every 2011 site had.',
         'Your racks don’t come along: you move to the cloud, and add instances as you grow.',
         'New trouble: botnets for hire flood your busiest page, and user tables leak onto paste sites. DDoS protection and bcrypt make them stop.',
-        'Code comes from a Q&A site now: every keystroke pastes a whole answer. Some get marked as duplicate.',
+        'Code comes from a Q&A site now: every keystroke pastes a line from someone’s answer. Some get marked as duplicate.',
       ],
       confirmLabel: 'Relaunch for 2011',
     },
@@ -204,7 +204,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
         'Facespace’s login API is gone: “Sign in with…” shows an error until you build your own login.',
         'Out with the old: features that went out of fashion retire (listed below), and so does the “Get our app!” banner.',
         'Your cloud instances don’t come along: everything runs in containers on Kubernetes now. Add pods as you grow.',
-        'Code arrives by npm install now: every keystroke installs a package. Typos install the wrong one.',
+        'Code arrives by npm install now: every keystroke installs a package, and a typo installs the wrong one. Each framework then brings its own kind of mistake.',
         'The status bar runs a speed test on every page: one score out of 100, and the numbers behind it.',
       ],
       confirmLabel: 'Relaunch as a platform',
@@ -245,7 +245,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
         'New trouble: AI crawlers swarm your busiest page, and your assistant sometimes promises things you never said. A bot shield and guardrails stop them.',
         'Out with the old: stories and the human live chat retire (listed below). The assistant takes the chat’s corner.',
         'Your Kubernetes pods don’t come along: whatever thinks runs on rented GPUs now.',
-        'Your editor finishes your lines: every keystroke accepts an AI suggestion, and some of them call functions that don’t exist.',
+        'The AI writes the code: its next block waits greyed out after the caret, every keystroke accepts a whole block, and some blocks call functions that don’t exist.',
       ],
       confirmLabel: 'Relaunch with AI',
     },

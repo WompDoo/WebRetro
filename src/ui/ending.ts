@@ -1,4 +1,5 @@
 import {
+  ERA_IDS,
   FEATURE_IDS,
   FEATURES_BY_ID,
   getFeatureFirstRun,
@@ -128,13 +129,21 @@ function renderOffer(state: GameState): string {
     </div>`;
 }
 
+const NUMBER_WORDS: readonly string[] = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+
+/** One relaunch into every era after the first, counted from the eras, so a new era can't make it wrong. */
+function describeRelaunchCount(): string {
+  const relaunches = ERA_IDS.length - 1;
+  return NUMBER_WORDS[relaunches] ?? String(relaunches);
+}
+
 function renderSold(state: GameState): string {
   const brand = escapeHtml(siteBrand(state));
   return `<p class="story-year">${ENDING_YEAR}</p>
     <h2 id="end-heading">Our incredible journey</h2>
     <article class="journey-post">
       <p>Today we’re thrilled to announce that ${brand} has been acquired by Omnivore AI.</p>
-      <p>When we put up a starry little homepage in ${FIRST_YEAR}, we never imagined ${formatWholeNumber(state.lifetimeVisitors)} visitors, five relaunches and a GPU cluster. We couldn’t have done it without you.</p>
+      <p>When we put up a starry little homepage in ${FIRST_YEAR}, we never imagined ${formatWholeNumber(state.lifetimeVisitors)} visitors, ${describeRelaunchCount()} relaunches and a GPU cluster. We couldn’t have done it without you.</p>
       <p>${brand} will close on March 1. Everything you ever posted will live on, as training data.</p>
       <p>Thank you for being part of our incredible journey.</p>
     </article>
