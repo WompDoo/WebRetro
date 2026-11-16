@@ -241,6 +241,10 @@ export type UpgradeEffect =
   | { readonly kind: 'load-time-multiplier'; readonly factor: number }
   /** Share of each visit that still reaches your server; caches and CDNs answer the rest. */
   | { readonly kind: 'server-load-multiplier'; readonly factor: number }
+  /** Every feature level costs this much of its price (a perk: Templates). */
+  | { readonly kind: 'feature-cost-multiplier'; readonly factor: number }
+  /** Every Ops item costs this much of its price (a perk: Ops runbook). */
+  | { readonly kind: 'ops-cost-multiplier'; readonly factor: number }
   /** Traffic spikes are served from a static copy and put no load on the server. */
   | { readonly kind: 'traffic-spike-cache' }
   /** The page fits on phones, so phone visitors stop bouncing. */
@@ -444,7 +448,7 @@ export interface GameState {
 }
 
 /** Bought with Backlinks, kept across runs. */
-export type PerkId = 'muscle-memory' | 'regulars';
+export type PerkId = 'muscle-memory' | 'regulars' | 'known-tags' | 'early-warning' | 'templates' | 'ops-runbook' | 'old-savings';
 
 /**
  * What survives from one site to the next: unspent Backlinks, the perks bought with them, and how many runs were

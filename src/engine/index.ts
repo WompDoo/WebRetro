@@ -12,6 +12,7 @@ export * from './economy';
 export * from './era-gate';
 export * from './era-records';
 export * from './legacy';
+export * from './era-start';
 export * from './content/perks';
 export * from './actions';
 export * from './hazards';

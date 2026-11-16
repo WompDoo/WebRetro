@@ -24,6 +24,7 @@ import {
 } from './economy';
 import { isEraGateComplete } from './era-gate';
 import { recordEra } from './era-records';
+import { applyEraStartPerks } from './era-start';
 import { findInfection } from './hazards';
 import { drawRandoms } from './random';
 import type {
@@ -272,11 +273,11 @@ export function cleanInfection(state: GameState, infectionId: number): GameStep 
  */
 function enterEra(state: GameState, eraId: EraId): GameState {
   const entered: GameState = { ...state, eraId, hasPendingBug: false, popups: [], hostingTier: 0 };
-  return {
+  return applyEraStartPerks({
     ...entered,
     infections: entered.infections.filter((infection) => !isFeatureRetired(entered, infection.featureId)),
     switchedOffFeatureIds: entered.switchedOffFeatureIds.filter((featureId) => !isFeatureRetired(entered, featureId)),
-  };
+  });
 }
 
 /** The relaunch pays for itself, and pays back a share of what the retiring features earned. */

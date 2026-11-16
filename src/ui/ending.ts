@@ -7,6 +7,7 @@ import {
   calculateBacklinksEarned,
   calculatePerkCost,
   canBuyPerk,
+  isPerkMaxed,
   EMPTY_LEGACY,
   PERK_IDS,
   PERKS_BY_ID,
@@ -205,11 +206,21 @@ function describeNewSiteButton(state: GameState): string {
   return state.areBacklinksBanked ? 'Your legacy' : `Start a new site (+${pluralizeBacklinks(calculateBacklinksEarned(state))})`;
 }
 
+/** "level 2", or "level 2 of 3" for a perk with a cap. */
+function describePerkLevel(legacy: LegacyState, perkId: PerkId): string {
+  const maxLevel = PERKS_BY_ID[perkId].maxLevel;
+  return Number.isFinite(maxLevel) ? `level ${legacy.perkLevels[perkId]} of ${maxLevel}` : `level ${legacy.perkLevels[perkId]}`;
+}
+
+/** The price of the next level, or "Maxed" once a capped perk is full. */
+function describePerkPrice(legacy: LegacyState, perkId: PerkId): string {
+  return isPerkMaxed(legacy, perkId) ? 'Maxed' : pluralizeBacklinks(calculatePerkCost(legacy, perkId));
+}
+
 function renderPerkRow(legacy: LegacyState, perkId: PerkId): string {
   const perk = PERKS_BY_ID[perkId];
-  const cost = calculatePerkCost(legacy, perkId);
   const disabled = canBuyPerk(legacy, perkId) ? '' : ' disabled';
-  return `<li class="perk"><div class="perk-info"><h3 class="perk-name">${escapeHtml(perk.name)} <span class="perk-level">level ${legacy.perkLevels[perkId]}</span></h3><p>${escapeHtml(perk.description)}</p></div><button type="button" class="buy-button" data-action="buy-perk" data-id="${perkId}"${disabled}>${pluralizeBacklinks(cost)}</button></li>`;
+  return `<li class="perk"><div class="perk-info"><h3 class="perk-name">${escapeHtml(perk.name)} <span class="perk-level">${describePerkLevel(legacy, perkId)}</span></h3><p>${escapeHtml(perk.description)}</p></div><button type="button" class="buy-button" data-action="buy-perk" data-id="${perkId}"${disabled}>${describePerkPrice(legacy, perkId)}</button></li>`;
 }
 
 /** What the next site gets that this one didn't: the reason to start it. Empty once every run's content is open. */

@@ -1,5 +1,6 @@
-import { PERK_IDS, NO_PERKS } from './content/perks';
+import { NO_PERKS, PERK_IDS, PERKS_BY_ID } from './content/perks';
 import { calculateEraDurationsMs, listEraRecords } from './era-records';
+import { applyEraStartPerks, OLD_SAVINGS_PER_LEVEL } from './era-start';
 import { createInitialGameState } from './state';
 import type { GameState, LegacyState, PerkId } from './types';
 
@@ -47,8 +48,12 @@ export function calculatePerkCost(legacy: LegacyState, perkId: PerkId): number {
   return PERK_COST_BASE ** legacy.perkLevels[perkId];
 }
 
+export function isPerkMaxed(legacy: LegacyState, perkId: PerkId): boolean {
+  return legacy.perkLevels[perkId] >= PERKS_BY_ID[perkId].maxLevel;
+}
+
 export function canBuyPerk(legacy: LegacyState, perkId: PerkId): boolean {
-  return legacy.backlinks >= calculatePerkCost(legacy, perkId);
+  return !isPerkMaxed(legacy, perkId) && legacy.backlinks >= calculatePerkCost(legacy, perkId);
 }
 
 export function buyPerk(legacy: LegacyState, perkId: PerkId): LegacyState {
@@ -70,7 +75,8 @@ export function bankBacklinks(legacy: LegacyState, state: GameState): BankedRun 
 
 /** A new site in 1997, with every perk the legacy has. Start over and a new run from the credits both begin here. */
 export function startNextRun(legacy: LegacyState, seed: number): GameState {
-  return { ...createInitialGameState(seed), runNumber: legacy.finishedRuns + 1, legacyPerkLevels: legacy.perkLevels };
+  const fresh: GameState = { ...createInitialGameState(seed), runNumber: legacy.finishedRuns + 1, legacyPerkLevels: legacy.perkLevels };
+  return applyEraStartPerks({ ...fresh, money: legacy.perkLevels['old-savings'] * OLD_SAVINGS_PER_LEVEL });
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {

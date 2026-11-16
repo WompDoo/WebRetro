@@ -32,15 +32,30 @@ what an old site leaves to a new one.
 The ending's choice was considered as a carry-over (sold: exit money; kept: your domain) and **decided against**:
 Sell / Keep stays a story beat. Every finished run earns Backlinks the same way.
 
-**What Backlinks buy** (permanent and small; the first version has the two the decision picked):
+**What Backlinks buy** (permanent and small; seven perks, each level twice the price of the last):
 
 | Perk | Effect | Why it's safe |
 |---|---|---|
 | **Muscle memory** | Typing earns 10% more per level | Typing is a fixed share of income (14–26%); can't run away |
 | **Regulars** (bonuses for the buildables) | Every feature brings 5% more visitors per level of the perk | A flat share on everything built: it shortens every era a little and makes no single build mandatory |
-| Known tags (later) | Start each era with its first skill learned | Skips the slowest minute of each era, not its decisions |
-| Early warning (later) | Hazards' first spawn comes 2 minutes later in each era | Shortens the scariest moment, keeps the hazard |
-| Ops runbook (later) | Ops items cost 20% less | Ops are era-bound already |
+| **Templates** (bonuses for the buildables) | Every feature costs 10% less per level, compounding | Cheaper building, same choices |
+| **Ops runbook** | Ops items cost 20% less per level, compounding | Ops are era-bound already |
+| **Known tags** (up to 3) | Each era starts with its cheapest skill learned, one more per level; never a framework | Skips the slowest minutes of each era, not its decisions; the framework stays a choice |
+| **Early warning** (up to 3) | Each era's trouble arrives 2 minutes later per level | Shortens the scariest moment, keeps the hazard |
+| **Old savings** | A new site starts with $1,000 per level | Only the first minutes of 1997 |
+
+The five added later work two ways. Templates and the runbook are effects like the first two (two new effect kinds,
+`feature-cost-multiplier` and `ops-cost-multiplier`). Known tags, Early warning and Old savings act once, when a site
+or an era starts (`src/engine/era-start.ts`, called at every relaunch and from `startNextRun`). With seven perks and
+5–9 Backlinks a run, every run is a choice.
+
+| Second run, with a first run's Backlinks | optimizer | casual |
+|---|---|---|
+| First run | 283 min | 421 min |
+| Muscle memory 2, Regulars 2 | 221 min | 366 min |
+| Spread over the seven perks (one level of most, two of Regulars) | 226 min | 333 min |
+
+Spreading helps the casual player most: Early warning, Known tags and Templates ease what slows a slower player.
 
 **New in run two: the reason to prestige.** A perk only makes the same game faster. Every finished run unlocks
 something the last one didn't have, so the second playthrough is a different one:
