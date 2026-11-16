@@ -704,11 +704,12 @@ export function calculateRevenuePerVisitor(state: GameState): number {
  * The last banner costs more in visitors than it pays, on a usual day. Rare while ads are the only income; in the
  * 2000 crash, once donations and affiliate links pay per visitor, every banner can be one. A usual day, so a pop-up
  * or a traffic spike can't make the tip come and go: a player who follows it would buy the banner back at full price.
+ * Remembered per state: the tips read it twice a frame, and it prices the whole site twice.
  */
-export function isAdLosingMoney(state: GameState): boolean {
+export const isAdLosingMoney = memoizeByState((state: GameState): boolean => {
   const usual = toUsualDay(state);
   return state.adCount > 0 && calculateNetRevenuePerSecond({ ...usual, adCount: state.adCount - 1 }) > calculateNetRevenuePerSecond(usual);
-}
+});
 
 /** What defenses and the ops you run cost, as a share of revenue. */
 export function calculateUpkeepShare(state: GameState): number {
