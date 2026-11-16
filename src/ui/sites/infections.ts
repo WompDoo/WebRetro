@@ -14,22 +14,50 @@ export function renderInfectionTimer(infection: Infection): string {
   return msUntilHarder === null ? 'At its worst' : `Gets harder in ${formatMinutesAndSeconds(Math.ceil(msUntilHarder / MS_PER_SECOND))}`;
 }
 
+/**
+ * The overlay is sized by the block it covers, from a full page down to a language pill, so it sheds what doesn't fit
+ * (the CSS reads its size): the details first, then the hint, then the timer, until only the icon is left. The title
+ * attribute keeps the whole message for the smallest ones.
+ */
 function renderButton(infection: Infection, body: string, hint: string): string {
   const level = calculateInfectionDifficulty(infection);
-  return `<button type="button" class="infection" data-action="open-minigame" data-id="${infection.id}" data-kind="${infection.kind}">${body}<span class="infection-hint">${escapeHtml(hint)} · ${escapeHtml(MINIGAME_NAMES[infection.minigameId])}, level ${level}</span><span class="infection-timer" data-live="infection-timer" data-id="${infection.id}">${renderInfectionTimer(infection)}</span></button>`;
+  const fullHint = `${hint} · ${MINIGAME_NAMES[infection.minigameId]}, level ${level}`;
+  return `<button type="button" class="infection" data-action="open-minigame" data-id="${infection.id}" data-kind="${infection.kind}" title="${escapeHtml(`${OVERLAY_TITLES[infection.kind]}: ${fullHint}`)}"><span class="infection-icon" aria-hidden="true">${OVERLAY_ICONS[infection.kind]}</span>${body}<span class="infection-hint">${escapeHtml(fullHint)}</span><span class="infection-timer" data-live="infection-timer" data-id="${infection.id}">${renderInfectionTimer(infection)}</span></button>`;
 }
+
+/** What each hazard is called, for the tooltip. The overlay shows its own title in its own era's voice. */
+const OVERLAY_TITLES: Readonly<Record<Infection['kind'], string>> = {
+  virus: 'Virus',
+  spam: 'Spam flood',
+  'sql-injection': 'SQL injection',
+  'password-leak': 'Passwords leaked',
+  ddos: 'DDoS attack',
+  'broken-build': 'Build failed',
+  'scraper-swarm': 'AI scrapers',
+};
+
+/** All that's left on a block too small for words: the language pill, a sidebar badge. */
+const OVERLAY_ICONS: Readonly<Record<Infection['kind'], string>> = {
+  virus: '☣',
+  spam: '✉',
+  'sql-injection': '⚠',
+  'password-leak': '🔑',
+  ddos: '⛔',
+  'broken-build': '✖',
+  'scraper-swarm': '🤖',
+};
 
 const OVERLAY_BODIES: Readonly<Record<Infection['kind'], (infection: Infection) => string>> = {
   virus: () => '<span class="infection-title">☣ VIRUS DETECTED</span>',
-  spam: () => `<span class="infection-spam">${SPAM_LINES.map(escapeHtml).join('<br>')}</span><span class="infection-title">SPAM FLOOD</span>`,
+  spam: () => `<span class="infection-detail infection-spam">${SPAM_LINES.map(escapeHtml).join('<br>')}</span><span class="infection-title">SPAM FLOOD</span>`,
   'sql-injection': (infection) =>
-    `<span class="infection-error"><b>Warning</b>: mysql_fetch_array(): supplied argument is not a valid MySQL result resource in <b>/home/you/public_html/${infection.featureId}.php</b> on line <b>42</b></span><span class="infection-sql">Latest comment: '; DROP TABLE ${infection.featureId};--</span>`,
-  'password-leak': () => `<span class="infection-leak">${LEAKED_ROWS.map(escapeHtml).join('<br>')}</span><span class="infection-title">PASSWORDS LEAKED</span>`,
-  ddos: () => '<span class="infection-error"><b>503 Service Unavailable</b><br>The server is temporarily unable to service your request. Too many connections.</span><span class="infection-title">DDoS ATTACK</span>',
+    `<span class="infection-title">SQL INJECTION</span><span class="infection-detail infection-error"><b>Warning</b>: mysql_fetch_array(): supplied argument is not a valid MySQL result resource in <b>/home/you/public_html/${infection.featureId}.php</b> on line <b>42</b></span><span class="infection-detail infection-sql">Latest comment: '; DROP TABLE ${infection.featureId};--</span>`,
+  'password-leak': () => `<span class="infection-detail infection-leak">${LEAKED_ROWS.map(escapeHtml).join('<br>')}</span><span class="infection-title">PASSWORDS LEAKED</span>`,
+  ddos: () => '<span class="infection-detail infection-error"><b>503 Service Unavailable</b><br>The server is temporarily unable to service your request. Too many connections.</span><span class="infection-title">DDoS ATTACK</span>',
   'broken-build': () =>
-    '<span class="infection-error"><b>Failed to compile.</b><br>Module not found: Error: Can\'t resolve \'left-pad\' in \'/app/node_modules/string-utils\'</span><span class="infection-title">BUILD FAILED</span>',
+    '<span class="infection-detail infection-error"><b>Failed to compile.</b><br>Module not found: Error: Can\'t resolve \'left-pad\' in \'/app/node_modules/string-utils\'</span><span class="infection-title">BUILD FAILED</span>',
   'scraper-swarm': () =>
-    '<span class="infection-error"><b>429 Too Many Requests</b><br>TrainBot/1.0, CrawlerAI/2.1, DataHoover/0.9 and 214 more: 41,208 requests in the last second.</span><span class="infection-title">AI SCRAPERS</span>',
+    '<span class="infection-detail infection-error"><b>429 Too Many Requests</b><br>TrainBot/1.0, CrawlerAI/2.1, DataHoover/0.9 and 214 more: 41,208 requests in the last second.</span><span class="infection-title">AI SCRAPERS</span>',
 };
 
 const OVERLAY_HINTS: Readonly<Record<Infection['kind'], string>> = {

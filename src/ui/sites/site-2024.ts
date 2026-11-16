@@ -43,7 +43,7 @@ function renderLookClasses(state: GameState): string {
 
 function renderNav(context: SiteContext): string {
   const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
-  return `<header class="ai-nav"><span class="ai-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="ai-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="ai-cmdk">⌘K</span><span class="ai-login">Sign in</span><span class="ai-cta">Get started</span></header>`;
+  return `<header class="ai-nav"><span class="ai-logo"><i aria-hidden="true"></i><span class="nav-brand">${escapeHtml(siteBrand(context.state))}</span></span><nav class="ai-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="ai-cmdk">⌘K</span><span class="ai-login">Sign in</span><span class="ai-cta">Get started</span></header>`;
 }
 
 /** The hero: a sparkle badge, a gradient headline, and the "Ask AI" box once you've built it. */

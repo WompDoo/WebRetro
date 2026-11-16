@@ -68,7 +68,7 @@ function renderHero(context: SiteContext): string {
 
 function renderNav(context: SiteContext): string {
   const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
-  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i>${escapeHtml(siteBrand(context.state))}</span><nav class="lp-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
+  return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i><span class="nav-brand">${escapeHtml(siteBrand(context.state))}</span></span><nav class="lp-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
 }
 
 /** What a lawyer adds to the footer: every page anyone could ask for, all updated the day the GDPR applied. */

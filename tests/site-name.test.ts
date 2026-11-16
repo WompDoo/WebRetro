@@ -97,7 +97,7 @@ describe('naming the site: everywhere it shows', () => {
   it('becomes the domain later on, in the address, the logo and the pop-ups', () => {
     const state: GameState = { ...createPlaytestState('platform-2018', 'end', SEED, 'react'), siteName: 'Planet Pixel' };
     assert.equal(buildSiteUrl(state), 'https://www.plntpxl.com/');
-    assert.match(renderSite(state, NOW), /<span class="lp-logo"><i aria-hidden="true"><\/i>plntpxl<\/span>/);
+    assert.match(renderSite(state, NOW), /<span class="lp-logo"><i aria-hidden="true"><\/i><span class="nav-brand">plntpxl<\/span><\/span>/);
     const roll = Array.from({ length: VARIANT_SLOTS }, (_, slot) => slot / VARIANT_SLOTS).find((candidate) =>
       findPopupCopy({ ...state, popups: [{ id: 1, variantRoll: candidate, anchorX: 0, anchorY: 0 }] }, 1)?.headline.includes('notifications'),
     );
