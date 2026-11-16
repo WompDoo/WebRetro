@@ -5,12 +5,12 @@ import {
   calculateEraDurationsMs,
   createInitialGameState,
   createPlaytestState,
-  ERA_IDS,
   findEraRecord,
   formatMoney,
   listEraRecords,
   restoreGameState,
   SAVE_VERSION,
+  getErasOfRun,
 } from '../src/engine';
 import type { EraId, EraRecord, GameState } from '../src/engine';
 import { calculateOfferAmount, ENDING_ACTS, isEndingAct, renderEndingAct } from '../src/ui/ending';
@@ -18,6 +18,8 @@ import { renderGoal } from '../src/ui/render-goal';
 
 const SEED = 2025;
 const MS_PER_MINUTE = 60_000;
+/** The presets are first runs: no 2000 crash. */
+const FIRST_RUN_ERAS = getErasOfRun(1);
 
 /** The moment the last checklist is done: every earlier era on record, 2024 not yet. */
 const end2024 = (): GameState => createPlaytestState('ai-2024', 'end', SEED, 'vue');
@@ -26,6 +28,7 @@ const finished = (): GameState => advanceEra(end2024());
 /** What each era's page has that no other era's does. */
 const PAGE_MARKERS: Readonly<Record<EraId, RegExp>> = {
   'homepage-1997': /class="site-title"/,
+  'crash-2000': /class="crash-ticker"/,
   'web2-2005': /class="w2-header"/,
   'social-2011': /class="site-2011/,
   'platform-2018': /class="site-2018/,
@@ -46,8 +49,8 @@ describe('the ending: every era is on record', () => {
   it('finishes the game with the last era recorded too, and finishing again counts once', () => {
     const done = finished();
     assert.ok(done.isGameFinished);
-    assert.deepEqual(listEraRecords(done).map((record) => record.eraId), ERA_IDS);
-    assert.equal(advanceEra(done).eraRecords.length, ERA_IDS.length);
+    assert.deepEqual(listEraRecords(done).map((record) => record.eraId), FIRST_RUN_ERAS);
+    assert.equal(advanceEra(done).eraRecords.length, FIRST_RUN_ERAS.length);
   });
 
   it('gives a playtest preset believable records for the eras before it', () => {
@@ -76,16 +79,16 @@ describe('the ending: every era is on record', () => {
 describe('the ending: the Web Attic', () => {
   it('has a year for every era, and opens on 1997’s page at its 1997 address', () => {
     const html = renderEndingAct(finished(), 'archive', null);
-    assert.equal(html.split('data-action="ending-year"').length - 1, ERA_IDS.length);
+    assert.equal(html.split('data-action="ending-year"').length - 1, FIRST_RUN_ERAS.length);
     assert.match(html, PAGE_MARKERS['homepage-1997']);
     assert.match(html, /webattic\.org\/1997\/http:\/\/[^<]+<\/div>/);
   });
 
   it('shows each era’s own page, not today’s page in old clothes', () => {
-    ERA_IDS.forEach((eraId) => {
+    FIRST_RUN_ERAS.forEach((eraId) => {
       const html = renderEndingAct(finished(), 'archive', eraId);
       assert.match(html, PAGE_MARKERS[eraId], eraId);
-      ERA_IDS.filter((other) => other !== eraId).forEach((other) => assert.doesNotMatch(html, PAGE_MARKERS[other], `${eraId} shows ${other}`));
+      FIRST_RUN_ERAS.filter((other) => other !== eraId).forEach((other) => assert.doesNotMatch(html, PAGE_MARKERS[other], `${eraId} shows ${other}`));
     });
   });
 
@@ -119,7 +122,7 @@ describe('the ending: the offer, and how it ends', () => {
 
   it('rolls the credits: a row for every era, and the way back, on, or to a new site', () => {
     const html = renderEndingAct(finished(), 'credits', null);
-    assert.equal(html.split('<tr><th scope="row">').length - 1, ERA_IDS.length);
+    assert.equal(html.split('<tr><th scope="row">').length - 1, FIRST_RUN_ERAS.length);
     ['data-id="archive"', 'data-action="keep-playing"', 'data-action="open-legacy"'].forEach((button) => assert.ok(html.includes(button), button));
   });
 

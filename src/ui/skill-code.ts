@@ -369,6 +369,8 @@ const VUE_CODE: EraCode = {
 
 const ERA_CODE: Readonly<Record<EraId, EraCode>> = {
   'homepage-1997': HOMEPAGE_CODE,
+  // The crash is typed in 1997's editor: same file, same tags.
+  'crash-2000': HOMEPAGE_CODE,
   'web2-2005': WEB2_CODE,
   'social-2011': SOCIAL_CODE,
   'platform-2018': PLATFORM_CODE,

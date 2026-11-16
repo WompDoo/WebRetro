@@ -13,6 +13,7 @@ import {
   canCertificateExpire,
   getEraIndex,
 } from './economy';
+import { getErasOfRun, isEraInRun } from './era-chain';
 import { calculateGateChecks } from './era-gate';
 import { createEraRecord } from './era-records';
 import { createInitialGameState } from './state';
@@ -42,12 +43,23 @@ const QUIET_FIRST_HAZARDS_MS = 60_000;
 /** Each earlier era took about this long, for the play time and the records. */
 const PLAYTEST_ERA_MS = 50 * 60_000;
 
+/** A preset is the first run that has its era: 2005's a first run's, 2000's a third run's, crash and all. */
+function findPresetRun(eraId: EraId): number {
+  return ERAS_BY_ID[eraId].fromRun;
+}
+
+/** Earlier in the preset's run: a first run's 2005 never went through the 2000 crash. */
 function isBefore(eraId: EraId, other: EraId): boolean {
-  return getEraIndex(eraId) < getEraIndex(other);
+  return isEraInRun(eraId, findPresetRun(other)) && getEraIndex(eraId) < getEraIndex(other);
 }
 
 function isUpTo(eraId: EraId, other: EraId): boolean {
-  return getEraIndex(eraId) <= getEraIndex(other);
+  return isBefore(eraId, other) || eraId === other;
+}
+
+/** How many eras of its run come before this one. */
+function countErasBefore(eraId: EraId): number {
+  return getErasOfRun(findPresetRun(eraId)).indexOf(eraId);
 }
 
 function findFrameworkOf(upgradeId: UpgradeId): FrameworkId | null {
@@ -143,7 +155,7 @@ function startEra(state: GameState): GameState {
 
 /** Whole eras played so far: the ones before this, and this one too at its end. */
 function playTimeFor(eraId: EraId, stage: PlaytestStage): number {
-  const erasPlayed = getEraIndex(eraId) + (stage === 'end' ? 1 : 0);
+  const erasPlayed = countErasBefore(eraId) + (stage === 'end' ? 1 : 0);
   return erasPlayed * PLAYTEST_ERA_MS;
 }
 
@@ -154,6 +166,7 @@ function buildPreset(eraId: EraId, stage: PlaytestStage, seed: number, framework
   const base: GameState = {
     ...fresh,
     eraId,
+    runNumber: findPresetRun(eraId),
     purchasedUpgradeIds: learnedFor(eraId, stage, framework),
     ownedDefenseIds: defensesFor(eraId),
     enabledDefenseIds: defensesFor(eraId),
@@ -161,7 +174,7 @@ function buildPreset(eraId: EraId, stage: PlaytestStage, seed: number, framework
     adCount: Math.min(ERAS_BY_ID[eraId].maxAds, EARLIER_ERA_ADS),
     lifetimeEarnings,
     lifetimeVisitors: lifetimeEarnings * VISITORS_PER_EARNED_DOLLAR,
-    keystrokes: (getEraIndex(eraId) + 1) * KEYSTROKES_PER_ERA,
+    keystrokes: (countErasBefore(eraId) + 1) * KEYSTROKES_PER_ERA,
     reachedMilestoneIds: ['first-visitor', 'first-revenue', 'quit-day-job'],
     playTimeMs: playTimeFor(eraId, stage),
     hazardCountdownsMs: Object.fromEntries(Object.keys(fresh.hazardCountdownsMs).map((kind) => [kind, QUIET_FIRST_HAZARDS_MS])) as GameState['hazardCountdownsMs'],

@@ -31,6 +31,8 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   guestbook: 0,
   'midi-player': 0,
   webring: 0,
+  'e-cards': 0,
+  'free-email': 0,
   blog: 0,
   comments: 0,
   'tag-cloud': 0,

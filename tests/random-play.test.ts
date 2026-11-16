@@ -39,6 +39,7 @@ import {
   toggleFeature,
   upgradeHosting,
   writeCode,
+  findNextEraId,
 } from '../src/engine';
 import type { DefenseId, EraId, FrameworkId, GameState } from '../src/engine';
 import { buildEditorTabs, buildPerformanceReadout, buildSiteUrl, buildStatusText } from '../src/ui/browser-chrome';
@@ -160,7 +161,7 @@ const MOVES: readonly Move[] = [
   },
   // A windfall now and then, so random play reaches the expensive end of an era.
   (state) => ({ ...state, money: state.money * 3 + 1_000 }),
-  (state) => (isEraGateComplete(state) && ERAS_BY_ID[state.eraId].nextEraId !== null ? advanceEra(state) : state),
+  (state) => (isEraGateComplete(state) && findNextEraId(state) !== null ? advanceEra(state) : state),
   (state, random) => advanceSimulation(state, Math.floor(random() * MAX_AWAY_MS), 'offline').state,
   // Save and reload: what comes back is the same game.
   (state) => restoreGameState(JSON.parse(JSON.stringify(state)), 1) ?? state,

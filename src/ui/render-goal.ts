@@ -9,7 +9,11 @@ import {
   canUseAds,
   getAvailableSkillIds,
   calculateUpgradeCost,
+  calculateDirectRevenuePerVisitor,
+  describeNextEra,
   ERAS_BY_ID,
+  findNextEraId,
+  isAdLosingMoney,
   formatCompactNumber,
   formatMoney,
   getFeatureDisplayName,
@@ -74,7 +78,7 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'You know the <IMG> tag now. Build a hit counter in the Build tab.',
   },
   {
-    applies: (state) => state.adCount === 0 && canUseAds(state),
+    applies: (state) => state.adCount === 0 && canUseAds(state) && calculateDirectRevenuePerVisitor(state) === 0,
     text: 'You have visitors, but visitors don’t pay the bills. Place a banner ad under Ops.',
   },
   {
@@ -88,6 +92,10 @@ const HINT_RULES: readonly HintRule[] = [
   {
     applies: isVisitorsGoalBlockedByAds,
     text: 'Your ads drive away just enough visitors to miss the goal: with one fewer, you’d reach it. Remove one under Ops.',
+  },
+  {
+    applies: isAdLosingMoney,
+    text: 'Your last banner drives away more money in visitors than it pays. Remove one under Ops: you’ll earn more and get more visitors.',
   },
   {
     applies: (state) => state.isCertificateExpired,
@@ -163,6 +171,10 @@ const HINT_RULES: readonly HintRule[] = [
     text: 'It’s 2005: ads pay less, but you have room for more. With contextual text ads, your 1997 ad count is no longer the best.',
   },
   {
+    applies: (state) => state.eraId === 'crash-2000' && calculateDirectRevenuePerVisitor(state) === 0,
+    text: 'It’s 2000 and the advertisers are gone: a banner pays a fifth of what it did. A donate button and affiliate links pay per visitor, ads or not. Look for them under Upgrades.',
+  },
+  {
     applies: (state) => getAvailableSkillIds(state).some((skillId) => state.money >= calculateUpgradeCost(state, skillId)),
     text: 'You can afford a new skill. Every tag you learn changes your page and unlocks new things to build.',
   },
@@ -170,8 +182,8 @@ const HINT_RULES: readonly HintRule[] = [
 
 /** The last era has no relaunch to point at. */
 function describeGoal(state: GameState): string {
-  const era = ERAS_BY_ID[state.eraId];
-  return era.nextEraId === null ? 'Finish the checklist to finish the game.' : `Finish the checklist to relaunch your site as ${era.nextEraName}.`;
+  const next = describeNextEra(state);
+  return findNextEraId(state) === null ? 'Finish the checklist to finish the game.' : `Finish the checklist to relaunch your site for ${next.year}: ${next.name}.`;
 }
 
 function findHint(state: GameState): string {
@@ -225,14 +237,14 @@ const REPLAY_ENDING_BUTTON = '<button type="button" class="migrate-button" data-
 function renderGoalBody(state: GameState): string {
   const checks = calculateGateChecks(state);
   return isEraGateComplete(state)
-    ? `<button type="button" class="migrate-button" data-action="migrate">${escapeHtml(ERAS_BY_ID[state.eraId].migrationLabel)}</button>`
+    ? `<button type="button" class="migrate-button" data-action="migrate">${escapeHtml(describeNextEra(state).label)}</button>`
     : `${renderGoalToggle(checks)}<ul class="gate-list">${checks.map((check, index) => renderGateRow(state, check, index)).join('')}</ul>`;
 }
 
 /** After the last era, the button plays the ending again: finishing twice would do nothing. */
 export function renderGoal(state: GameState): string {
-  const era = ERAS_BY_ID[state.eraId];
-  const target = `<div class="goal-era"><span class="goal-eyebrow">Next era</span><span class="goal-target"><span class="goal-year">${era.nextEraYear}</span><span class="goal-name">${escapeHtml(era.nextEraName)}</span></span></div>`;
+  const next = describeNextEra(state);
+  const target = `<div class="goal-era"><span class="goal-eyebrow">Next era</span><span class="goal-target"><span class="goal-year">${next.year}</span><span class="goal-name">${escapeHtml(next.name)}</span></span></div>`;
   return `${target}${state.isGameFinished ? REPLAY_ENDING_BUTTON : renderGoalBody(state)}`;
 }
 
@@ -252,5 +264,6 @@ export function updateGoalProgress(container: HTMLElement, state: GameState): vo
 
 export function calculateGoalSignature(state: GameState): string {
   const met = calculateGateChecks(state).map((check) => (check.isMet ? '1' : '0')).join('');
-  return `${state.eraId}|${met}|${state.isGameFinished}`;
+  // The run decides what comes next: a third run's 1997 leads into the 2000 crash, not 2005.
+  return `${state.eraId}|${state.runNumber}|${met}|${state.isGameFinished}`;
 }

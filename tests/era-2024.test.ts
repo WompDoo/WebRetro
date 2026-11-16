@@ -8,16 +8,20 @@ import {
   calculateEconomySnapshot,
   calculateHallucinationRefund,
   createPlaytestState,
-  ERAS_BY_ID,
   getEraHostingTiers,
   getFeaturesRetiringIn,
   getUnlockedDefenseIds,
   isEraGateComplete,
+  createInitialGameState,
+  findNextEraId,
 } from '../src/engine';
-import type { GameState, UpgradeId } from '../src/engine';
+import type { GameState, UpgradeId, EraId } from '../src/engine';
 import { buildPerformanceReadout, buildSiteUrl } from '../src/ui/browser-chrome';
 import { renderSite } from '../src/ui/sites';
 import { QUIET_HAZARDS } from './quiet-hazards';
+
+/** What comes after this era in a run: the first run skips the 2000 crash. */
+const nextOf = (eraId: EraId, runNumber = 1): EraId | null => findNextEraId({ ...createInitialGameState(1), eraId, runNumber });
 
 const SEED = 24;
 const NOW = 0;
@@ -34,8 +38,8 @@ function end2024(extra: readonly UpgradeId[] = []): GameState {
 
 describe('2024: the era itself', () => {
   it('follows 2018 and is the last era', () => {
-    assert.equal(ERAS_BY_ID['platform-2018'].nextEraId, 'ai-2024');
-    assert.equal(ERAS_BY_ID['ai-2024'].nextEraId, null);
+    assert.equal(nextOf('platform-2018'), 'ai-2024');
+    assert.equal(nextOf('ai-2024'), null);
   });
 
   it('retires stories and the human live chat at the relaunch, and pays some of what they earned back', () => {

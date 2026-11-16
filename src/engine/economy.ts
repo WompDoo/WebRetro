@@ -21,6 +21,7 @@ import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
 import { listPerkEffects, PERK_IDS } from './content/perks';
+import { isEraInRun } from './era-chain';
 import type {
   DefenseDefinition,
   DefenseId,
@@ -130,6 +131,8 @@ interface EffectSummary {
   readonly overloadTolerance: number;
   readonly privacyFineFactor: number;
   readonly aiAnswerFactor: number;
+  /** Donations and affiliate cuts: money per visitor that needs no ad. */
+  readonly directRevenuePerVisitor: number;
   /** How long until each kind of infection clears up by itself, where something does that. */
   readonly autoCleanAfterMs: Readonly<Partial<Record<InfectionKind, number>>>;
   readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
@@ -148,8 +151,13 @@ export function isEraBoundEffect(upgradeId: UpgradeId, effect: UpgradeEffect): b
   return UPGRADES_BY_ID[upgradeId].kind === 'ops' && isFactorEffect(effect);
 }
 
+/** Bought for this era's big era: in the 2000 crash, 1997's editor, typing skills and ops still count. */
+function isOfBaseEra(upgradeId: UpgradeId, eraId: EraId): boolean {
+  return ERAS_BY_ID[UPGRADES_BY_ID[upgradeId].eraId].baseEraId === ERAS_BY_ID[eraId].baseEraId;
+}
+
 function countsInEra(upgradeId: UpgradeId, effect: UpgradeEffect, eraId: EraId): boolean {
-  return !isEraBoundEffect(upgradeId, effect) || UPGRADES_BY_ID[upgradeId].eraId === eraId;
+  return !isEraBoundEffect(upgradeId, effect) || isOfBaseEra(upgradeId, eraId);
 }
 
 function isFactorOfKind(effect: UpgradeEffect, kind: FactorKind): effect is FactorEffect {
@@ -209,6 +217,7 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     overloadTolerance: multiplyEffectFactors(effects, 'overload-tolerance-multiplier'),
     privacyFineFactor: multiplyEffectFactors(effects, 'privacy-fine-multiplier'),
     aiAnswerFactor: multiplyEffectFactors(effects, 'ai-answer-share-multiplier'),
+    directRevenuePerVisitor: sumAll(effects.flatMap((effect) => (effect.kind === 'direct-revenue-per-visitor' ? [effect.amount] : []))),
     autoCleanAfterMs: collectAutoCleans(effects),
     kinds: new Set(effects.map((effect) => effect.kind)),
   };
@@ -231,7 +240,7 @@ function findSummariesByEra(upgradeIds: readonly UpgradeId[]): Map<string, Effec
 /** Perks count everywhere, typing included: they come with the developer, not with an era's tools. */
 function summarizePurchases(state: GameState, byEra: Map<string, EffectSummary>): EffectSummary {
   const active = getActiveUpgradeIds(state);
-  const thisEra = active.filter((id) => UPGRADES_BY_ID[id].eraId === state.eraId);
+  const thisEra = active.filter((id) => isOfBaseEra(id, state.eraId));
   const perks = listPerkEffects(state.legacyPerkLevels);
   const summary = summarizeEffects(
     [...active.flatMap((id) => UPGRADES_BY_ID[id].effects.filter((effect) => countsInEra(id, effect, state.eraId))), ...perks],
@@ -270,8 +279,9 @@ export function getEraIndex(eraId: EraId): number {
   return ERA_IDS.indexOf(eraId);
 }
 
+/** The era has arrived in this run: a half-era the run skips never unlocks, so nothing of it shows up later. */
 export function isEraUnlocked(state: GameState, eraId: EraId): boolean {
-  return getEraIndex(eraId) <= getEraIndex(state.eraId);
+  return isEraInRun(eraId, state.runNumber) && getEraIndex(eraId) <= getEraIndex(state.eraId);
 }
 
 function calculateKeystrokeRevenueShare(state: GameState): number {
@@ -367,7 +377,16 @@ export const RETIREMENT_PAYOUT_SHARE = 0.5;
 
 /** The trade-in for these features. */
 export function calculateTradeIn(state: GameState, featureIds: readonly FeatureId[]): number {
-  return sumAll(featureIds.map((featureId) => state.featureEarnings[featureId])) * RETIREMENT_PAYOUT_SHARE;
+  return sumAll(featureIds.filter(paysTradeIn).map((featureId) => state.featureEarnings[featureId])) * RETIREMENT_PAYOUT_SHARE;
+}
+
+/**
+ * A half-era's features are stopgaps: the crash's e-cards live one short era and retire without a trade-in. Paying one
+ * would hand 2005 the crash's whole income as a head start, and skip half of it.
+ */
+export function paysTradeIn(featureId: FeatureId): boolean {
+  const eraId = FEATURES_BY_ID[featureId].eraId;
+  return ERAS_BY_ID[eraId].baseEraId === eraId;
 }
 
 /** What a relaunch into this era pays back for the features it retires. */
@@ -389,9 +408,14 @@ export function creditFeatureEarnings(state: GameState, earned: number): Readonl
  * A feature that never retires keeps the name from its own era.
  */
 export function getRetiredFeatureName(featureId: FeatureId): string {
-  const feature = FEATURES_BY_ID[featureId];
-  const lastEraOnPage = ERA_IDS.find((eraId) => feature.sunsetIn !== null && ERAS_BY_ID[eraId].nextEraId === feature.sunsetIn) ?? feature.eraId;
+  const sunsetIn = FEATURES_BY_ID[featureId].sunsetIn;
+  const lastEraOnPage = sunsetIn === null ? FEATURES_BY_ID[featureId].eraId : findEraBefore(sunsetIn);
   return getFeatureDisplayName(featureId, lastEraOnPage);
+}
+
+/** The era just before, in any run: a half-era renames nothing, so it gives the same name as the big era before it. */
+function findEraBefore(eraId: EraId): EraId {
+  return ERA_IDS[Math.max(0, getEraIndex(eraId) - 1)] ?? eraId;
 }
 
 export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
@@ -653,9 +677,12 @@ export const calculateVisitorsPerSecond = memoizeByState((state: GameState): num
  * and a pop-up left open for a minute shouldn't untick it: trouble costs income, not the checklist. Hosting stays in:
  * an overloaded server is the site's own size problem, not a passing one.
  */
-export const calculateUsualVisitorsPerSecond = memoizeByState((state: GameState): number =>
-  calculateVisitorsPerSecond({ ...state, popups: [], infections: [], isCertificateExpired: false, trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 }),
-);
+export const calculateUsualVisitorsPerSecond = memoizeByState((state: GameState): number => calculateVisitorsPerSecond(toUsualDay(state)));
+
+/** The site without the trouble or the luck of the moment: what the checklist and the ad tip judge. */
+function toUsualDay(state: GameState): GameState {
+  return { ...state, popups: [], infections: [], isCertificateExpired: false, trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 };
+}
 
 export function calculateAdValuePerAd(state: GameState): number {
   const defenseFactors = getEnabledDefenses(state).map((defense) => defense.adValueFactor);
@@ -664,8 +691,23 @@ export function calculateAdValuePerAd(state: GameState): number {
   return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors) * consentFactor) / era.revenuePace;
 }
 
+/** Money a visitor brings without an ad: the 2000 crash's donate button and affiliate links. At the era's pace. */
+export function calculateDirectRevenuePerVisitor(state: GameState): number {
+  return getEffectSummary(state).directRevenuePerVisitor / ERAS_BY_ID[state.eraId].revenuePace;
+}
+
 export function calculateRevenuePerVisitor(state: GameState): number {
-  return state.adCount * calculateAdValuePerAd(state);
+  return state.adCount * calculateAdValuePerAd(state) + calculateDirectRevenuePerVisitor(state);
+}
+
+/**
+ * The last banner costs more in visitors than it pays, on a usual day. Rare while ads are the only income; in the
+ * 2000 crash, once donations and affiliate links pay per visitor, every banner can be one. A usual day, so a pop-up
+ * or a traffic spike can't make the tip come and go: a player who follows it would buy the banner back at full price.
+ */
+export function isAdLosingMoney(state: GameState): boolean {
+  const usual = toUsualDay(state);
+  return state.adCount > 0 && calculateNetRevenuePerSecond({ ...usual, adCount: state.adCount - 1 }) > calculateNetRevenuePerSecond(usual);
 }
 
 /** What defenses and the ops you run cost, as a share of revenue. */

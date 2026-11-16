@@ -1,7 +1,9 @@
 import { NO_PERKS, PERK_IDS, PERKS_BY_ID } from './content/perks';
-import { calculateEraDurationsMs, listEraRecords } from './era-records';
+import { listEraDurations, listEraRecords } from './era-records';
+import type { EraDuration } from './era-records';
 import { applyEraStartPerks, OLD_SAVINGS_PER_LEVEL } from './era-start';
 import { createInitialGameState } from './state';
+import { ERAS_BY_ID } from './content/eras';
 import type { GameState, LegacyState, PerkId } from './types';
 
 /**
@@ -14,22 +16,26 @@ export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0
 
 /** Visitors below this many orders of magnitude earn nothing: one Backlink for each one past it. */
 const VISITOR_MAGNITUDE_THRESHOLD = 10;
-/** An era finished faster than this earns a Backlink of its own. */
-const FAST_ERA_MS = 45 * 60_000;
+const MS_PER_MINUTE = 60_000;
 const PERK_COST_BASE = 2;
 
 /**
  * What a run is worth: one Backlink for every order of magnitude of lifetime visitors past ten billion, so a run
- * twice as long earns about the same, and one for every era finished in under 45 minutes.
+ * twice as long earns about the same, and one for every era finished fast: under 45 minutes, or 20 for a half-era.
  */
 export interface BacklinkSources {
   readonly fromVisitors: number;
   readonly fromFastEras: number;
 }
 
+/** Under the era's own mark: 45 minutes for a big era, 20 for a half-era. */
+function isFastFinish(duration: EraDuration): boolean {
+  return duration.durationMs < ERAS_BY_ID[duration.eraId].fastFinishMinutes * MS_PER_MINUTE;
+}
+
 export function calculateBacklinkSources(state: GameState): BacklinkSources {
   const magnitude = Math.floor(Math.log10(Math.max(1, state.lifetimeVisitors))) - VISITOR_MAGNITUDE_THRESHOLD;
-  const fastEras = calculateEraDurationsMs(listEraRecords(state)).filter((durationMs) => durationMs < FAST_ERA_MS).length;
+  const fastEras = listEraDurations(listEraRecords(state)).filter(isFastFinish).length;
   return { fromVisitors: Math.max(0, magnitude), fromFastEras: fastEras };
 }
 

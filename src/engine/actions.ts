@@ -23,6 +23,7 @@ import {
   isUpgradeAvailable,
 } from './economy';
 import { isEraGateComplete } from './era-gate';
+import { findNextEraId } from './era-chain';
 import { recordEra } from './era-records';
 import { applyEraStartPerks } from './era-start';
 import { findInfection } from './hazards';
@@ -292,7 +293,7 @@ function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): Ga
  */
 export function advanceEra(state: GameState): GameState {
   if (!isEraGateComplete(state)) return state;
-  const era = ERAS_BY_ID[state.eraId];
+  const nextEraId = findNextEraId(state);
   const recorded = recordEra(state);
-  return era.nextEraId === null ? { ...recorded, isGameFinished: true } : relaunch(recorded, era.migrationCost, era.nextEraId);
+  return nextEraId === null ? { ...recorded, isGameFinished: true } : relaunch(recorded, ERAS_BY_ID[state.eraId].migrationCost, nextEraId);
 }

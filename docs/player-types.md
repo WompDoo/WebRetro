@@ -161,6 +161,20 @@ Seed 1997, on the rules above. Minutes per era; "stalls" means more than three h
 ¹ From runs before the last retune (1997 at 70K, 2018 and 2024 at the old goals). The ones that finished would
 finish a little faster now; the ones that stall do so for reasons the retune doesn't touch.
 
+Later runs, same seed, with perks spread the way a player would spend them (`SECOND_RUN_PERKS`,
+`THIRD_RUN_PERKS` in the harness). A third run plays the 2000 crash between 1997 and 2005:
+
+| Player | 1997 | 2000 | 2005 | 2011 | 2018 | 2024 | Total |
+|---|---|---|---|---|---|---|---|
+| optimizer, run 2 | 20 | | 48 | 46 | 61 | 51 | 226 |
+| optimizer, run 3 | 17 | 21 | 44 | 40 | 57 | 49 | 228 |
+| casual, run 3 | 33 | 32 | 65 | 73 | 73 | 77 | 353 |
+
+Every player type reads the tips: it takes a banner down when one too many holds visitors under the goal, or (new
+with the crash) when the last banner loses money on a usual day; the ad-heavy player ignores the second, since that's
+the type. Across three seeds the second tip moves a run by about two minutes either way, inside the ±17 minutes
+seeds vary by.
+
 What it says about the game: every player who answers trouble one way or another finishes. A casual player's full
 game is about seven hours, which is long; the casual eras run 60–100 minutes against a 45–60 target. That's the
 next pacing question: whether the target should be a range per kind of player rather than per bot.

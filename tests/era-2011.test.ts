@@ -20,14 +20,18 @@ import {
   isFeatureBuildable,
   isFeaturePluginDead,
   isFeatureRetired,
+  findNextEraId,
 } from '../src/engine';
-import type { GameState, UpgradeId } from '../src/engine';
+import type { GameState, UpgradeId, EraId } from '../src/engine';
 import { listIssues } from '../src/ui/issues';
 import { MAX_PHONE_NOTIFICATIONS, renderPhoneNotifications } from '../src/ui/render-notifications';
 import { describeRetirement } from '../src/ui/retirement';
 import { buildEditorSource } from '../src/ui/skill-code';
 import { buildPhoneCaption, calculateMobileScore, gradePageSpeed, isPhoneViewOffered, resolveDeviceView } from '../src/ui/browser-chrome';
 import { QUIET_HAZARDS } from './quiet-hazards';
+
+/** What comes after this era in a run: the first run skips the 2000 crash. */
+const nextOf = (eraId: EraId, runNumber = 1): EraId | null => findNextEraId({ ...createInitialGameState(1), eraId, runNumber });
 
 const base = createInitialGameState(1);
 const in2011 = (skills: readonly UpgradeId[] = []): GameState => ({
@@ -201,8 +205,8 @@ describe('2011: a trade-in for what retires', () => {
 
 describe('2011: the era itself', () => {
   it('follows 2005 and relaunches into 2018', () => {
-    assert.equal(ERAS_BY_ID['web2-2005'].nextEraId, 'social-2011');
-    assert.equal(ERAS_BY_ID['social-2011'].nextEraId, 'platform-2018');
+    assert.equal(nextOf('web2-2005'), 'social-2011');
+    assert.equal(nextOf('social-2011'), 'platform-2018');
   });
 
   it('types an HTML5 page that turns into Bootstrap, with media queries in style.css', () => {

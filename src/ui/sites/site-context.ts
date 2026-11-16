@@ -1,4 +1,4 @@
-import { dropVowels, FEATURES_BY_ID, findLaterEraName, MS_PER_SECOND, toSiteSlug } from '../../engine';
+import { dropVowels, FEATURES_BY_ID, findLaterEraName, getBaseEraId, MS_PER_SECOND, toSiteSlug } from '../../engine';
 import type { EraId, FeatureId, GameState } from '../../engine';
 import { escapeHtml } from '../dom';
 
@@ -13,7 +13,8 @@ export type FeatureRenderer = (context: SiteContext) => string;
 
 const SECONDS_PER_MINUTE = 60;
 
-export const is1997 = (context: SiteContext): boolean => context.eraId === 'homepage-1997';
+/** 1997's page, and the 2000 crash's, which is still the same hand-written homepage. */
+export const is1997 = (context: SiteContext): boolean => getBaseEraId(context.eraId) === 'homepage-1997';
 export const levelOf = (context: SiteContext, featureId: FeatureId): number => context.state.featureLevels[featureId];
 function describeBlock(featureId: FeatureId, override: string | undefined): string {
   return override ?? FEATURES_BY_ID[featureId].name;

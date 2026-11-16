@@ -1,7 +1,7 @@
 import { ERAS_BY_ID, FEATURE_IDS, getActiveUpgradeIds } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
-import { BANNER_ADS } from '../presentation';
+import { BANNER_ADS, CRASH_BANNER_ADS } from '../presentation';
 import { renderFeatureBlocks } from './features';
 import type { SiteContext } from './site-context';
 
@@ -9,7 +9,7 @@ const BANNER_STYLES = 4;
 const MARQUEE_TEXT = '*** Best viewed with Web Navigator 3.0 *** Sign my guestbook!!! *** You are LIVE on the World Wide Web ***';
 /** With tables, the music player sits right under the navigation, where every 1997 sidebar kept it. */
 const TABLE_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'webring'];
-const TABLE_MAIN_FEATURES: readonly FeatureId[] = ['webcam', 'under-construction', 'guestbook'];
+const TABLE_MAIN_FEATURES: readonly FeatureId[] = ['webcam', 'e-cards', 'free-email', 'under-construction', 'guestbook'];
 // Stacked 1997 pages list the sidebar features first, the way they were built.
 const STACKED_1997_ORDER: readonly FeatureId[] = FEATURE_IDS;
 const NAV_LINKS: readonly string[] = ['Home', 'About me', 'My cat', 'Cool links', 'Guestbook', 'Email me'];
@@ -29,6 +29,9 @@ export interface HomepageSkills {
 /** Which features go where. 1997 and the pre-CSS 2005 page share the layout and differ in content. */
 export interface HomepageContent {
   readonly title: string;
+  /** A strip under the title, as HTML: the crash's news. Empty on an ordinary day. */
+  readonly notice: string;
+  readonly bannerAds: readonly string[];
   readonly sidebarFeatures: readonly FeatureId[];
   readonly mainFeatures: readonly FeatureId[];
 }
@@ -75,9 +78,21 @@ function homepageClasses(skills: HomepageSkills, state: GameState): string {
 
 function homepage1997Content(skills: HomepageSkills, state: GameState): HomepageContent {
   const title = skills.font ? `Welcome to ${state.siteName}!!!` : 'Hello World!';
-  return skills.tables
-    ? { title, sidebarFeatures: TABLE_SIDEBAR_FEATURES, mainFeatures: TABLE_MAIN_FEATURES }
-    : { title, sidebarFeatures: [], mainFeatures: STACKED_1997_ORDER };
+  return { title, notice: '', bannerAds: BANNER_ADS, ...arrangeHomepage(skills) };
+}
+
+type HomepageArrangement = Pick<HomepageContent, 'sidebarFeatures' | 'mainFeatures'>;
+
+function arrangeHomepage(skills: HomepageSkills): HomepageArrangement {
+  return skills.tables ? { sidebarFeatures: TABLE_SIDEBAR_FEATURES, mainFeatures: TABLE_MAIN_FEATURES } : { sidebarFeatures: [], mainFeatures: STACKED_1997_ORDER };
+}
+
+const CRASH_TICKER = '<p class="crash-ticker"><span>📉 The bubble burst</span><span>Banner ads pay a fifth of what they did</span><span>This site runs on your support!</span></p>';
+
+/** 2000: the same homepage, proud to still be here, with the crash's news under the title and its last banners. */
+function homepage2000Content(skills: HomepageSkills, state: GameState): HomepageContent {
+  const title = skills.font ? `${state.siteName} is still here!!!` : 'Hello World!';
+  return { title, notice: CRASH_TICKER, bannerAds: CRASH_BANNER_ADS, ...arrangeHomepage(skills) };
 }
 
 /** document.write(new Date()), the way every 1997 homepage did it. The year stays in the era's year. */
@@ -87,10 +102,10 @@ export function renderJavaScriptClock(nowMs: number, year: number): string {
   return `Today is ${pickCyclic(WEEKDAYS, now.getDay(), 'Monday')}, ${pickCyclic(MONTHS, now.getMonth(), 'January')} ${now.getDate()}, ${year} · ${time}`;
 }
 
-function renderHomepageTitle(context: SiteContext, skills: HomepageSkills, title: string): string {
+function renderHomepageTitle(context: SiteContext, skills: HomepageSkills, content: HomepageContent): string {
   const marquee = skills.marquee ? `<div class="site-marquee"><span>${MARQUEE_TEXT}</span></div>` : '';
   const clock = skills.javascript ? `<p class="js-clock" data-live="js-clock">${renderJavaScriptClock(context.nowMs, ERAS_BY_ID[context.eraId].year)}</p>` : '';
-  return `<h1 class="site-title">${escapeHtml(title)}</h1>${marquee}${clock}`;
+  return `<h1 class="site-title">${escapeHtml(content.title)}</h1>${content.notice}${marquee}${clock}`;
 }
 
 function renderHomepageIntro(skills: HomepageSkills): string {
@@ -105,10 +120,14 @@ const FOOTER_BADGES: readonly (readonly [UpgradeId, string])[] = [
   ['web-directories', '<span class="badge97 is-listed">★ Listed in Webcrawlr ★</span>'],
   ['banner-exchange', '<span class="badge97 is-swap">BannerSwap: your banner here!</span>'],
   ['fixed-width-800', '<span class="badge97 is-800">Best viewed at 800×600</span>'],
+  ['donate-button', '<span class="badge97 is-donate">☕ Keep this site alive! Donate</span>'],
+  ['affiliate-links', '<span class="badge97 is-affiliate">📚 Buy my favorite books here!</span>'],
 ];
 
+/** Only what's still in fashion: the 800×600 badge and the donate button leave with their boosts in 2005. */
 function renderBadges(state: GameState): string {
-  const badges = FOOTER_BADGES.filter(([upgradeId]) => state.purchasedUpgradeIds.includes(upgradeId)).map(([, badge]) => badge);
+  const active = getActiveUpgradeIds(state);
+  const badges = FOOTER_BADGES.filter(([upgradeId]) => active.includes(upgradeId)).map(([, badge]) => badge);
   return badges.length === 0 ? '' : `<p class="site-badges">${badges.join('')}</p>`;
 }
 
@@ -123,14 +142,18 @@ function renderNavLinks(skills: HomepageSkills): string {
   return NAV_LINKS.map((link) => `<li><span class="${linkClass}">${link}</span></li>`).join('');
 }
 
-function renderBanner(index: number): string {
-  const headline = pickCyclic(BANNER_ADS, index, 'CLICK HERE');
+function renderBanner(ads: readonly string[], index: number): string {
+  const headline = pickCyclic(ads, index, 'CLICK HERE');
   return `<div class="banner-ad banner-ad--${index % BANNER_STYLES}"><span class="banner-headline">${escapeHtml(headline)}</span><span class="banner-cta">CLICK HERE</span></div>`;
 }
 
 /** A banner after every second block, the rest at the bottom, all separated by rainbow rules. */
-function interleaveBanners(blocks: readonly string[], adCount: number): string {
-  const banners = Array.from({ length: adCount }, (_, index) => renderBanner(index));
+function renderBanners(context: SiteContext, content: HomepageContent): readonly string[] {
+  return Array.from({ length: context.state.adCount }, (_, index) => renderBanner(content.bannerAds, index));
+}
+
+function interleaveBanners(blocks: readonly string[], banners: readonly string[]): string {
+  const adCount = banners.length;
   const merged = blocks.flatMap((block, index) => (index % 2 === 0 && banners.length > index / 2 ? [block, banners[index / 2] ?? ''] : [block]));
   const placedBanners = Math.min(Math.ceil(blocks.length / 2), adCount);
   return [...merged, ...banners.slice(placedBanners)].join('<hr class="rainbow">');
@@ -156,9 +179,9 @@ function render1997TableSite(context: SiteContext, skills: HomepageSkills, conte
   const intro = renderHomepageIntro(skills);
   const about = intro === '' ? [] : [`<section class="feature-block t97-about"><h2 class="feature-heading">About me</h2>${intro}</section>`];
   const blocks = [...about, ...mainBlocks];
-  const banners = Array.from({ length: context.state.adCount }, (_, index) => renderBanner(index));
+  const banners = renderBanners(context, content);
   return `<div class="${homepageClasses(skills, context.state)}">
-    <div class="t97-header">${renderHomepageTitle(context, skills, content.title)}</div>
+    <div class="t97-header">${renderHomepageTitle(context, skills, content)}</div>
     <div class="t97-table">
       <nav class="t97-nav"><div class="t97-menu"><p class="t97-nav-title">~ Navigation ~</p><ul class="t97-links">${renderNavLinks(skills)}</ul></div>${sidebar}${banners.slice(mainColumnBanners(blocks)).join('')}</nav>
       <div class="t97-main">${bannerAfterEveryBlock(blocks, banners)}</div>
@@ -170,8 +193,8 @@ function render1997TableSite(context: SiteContext, skills: HomepageSkills, conte
 /** Before tables: everything stacks under the previous thing, which is exactly how it was. */
 function render1997StackedSite(context: SiteContext, skills: HomepageSkills, content: HomepageContent): string {
   const blocks = renderFeatureBlocks(context, [...content.mainFeatures, ...content.sidebarFeatures]);
-  const body = blocks.length === 0 && context.state.adCount === 0 ? '' : interleaveBanners(blocks, context.state.adCount);
-  return `<div class="${homepageClasses(skills, context.state)}">${renderHomepageTitle(context, skills, content.title)}${renderHomepageIntro(skills)}${body}${renderHomepageFooter(skills, context.state)}</div>`;
+  const body = blocks.length === 0 && context.state.adCount === 0 ? '' : interleaveBanners(blocks, renderBanners(context, content));
+  return `<div class="${homepageClasses(skills, context.state)}">${renderHomepageTitle(context, skills, content)}${renderHomepageIntro(skills)}${body}${renderHomepageFooter(skills, context.state)}</div>`;
 }
 
 /** The hand-written page: stacked until you learn tables. 2005 keeps using it until you learn CSS. */
@@ -183,4 +206,8 @@ export function renderOldSchoolPage(context: SiteContext, content: HomepageConte
 
 export function render1997Site(context: SiteContext): string {
   return renderOldSchoolPage(context, homepage1997Content);
+}
+
+export function render2000Site(context: SiteContext): string {
+  return renderOldSchoolPage(context, homepage2000Content);
 }

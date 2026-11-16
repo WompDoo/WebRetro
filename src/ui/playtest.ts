@@ -1,4 +1,4 @@
-import { canCertificateExpire, ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, getEraIndex, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
+import { canCertificateExpire, CRASH_FIRST_RUN, ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, getEraIndex, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { MINIGAME_NAMES } from './minigame-names';
@@ -82,10 +82,16 @@ function renderHazards(state: GameState): string {
   return `<h3 class="playtest-heading">Hazards</h3><p class="playtest-buttons">${button('playtest-popup', 'popup', 'Pop-up')}${button('playtest-spike', 'spike', 'Traffic spike', noServer)}${button('playtest-certificate', 'certificate', 'Expire the certificate', noCertificate)}</p>`;
 }
 
-/** Prestige content shows only from a second run on: this turns the game in hand into one, perks aside. */
+/** The 2000 crash comes with the third run: after it, a new run opens nothing new. */
+const LAST_RUN_WITH_NEW_CONTENT = CRASH_FIRST_RUN;
+
+/**
+ * Each run opens new content (the second its legacy buildables, the third the 2000 crash): this turns the game in
+ * hand into the next run, perks aside, up to the last run that opens anything.
+ */
 function renderRuns(state: GameState): string {
-  const isSecond = state.runNumber > 1 ? ' disabled title="Already a later run"' : '';
-  return `<h3 class="playtest-heading">Runs</h3><p class="playtest-buttons">${button('playtest-run-two', 'run-two', `Make this a second run (now run ${state.runNumber})`, isSecond)}</p>`;
+  const isLast = state.runNumber >= LAST_RUN_WITH_NEW_CONTENT ? ' disabled title="Every run’s content is open"' : '';
+  return `<h3 class="playtest-heading">Runs</h3><p class="playtest-buttons">${button('playtest-next-run', 'next-run', `Make this run ${state.runNumber + 1} (now run ${state.runNumber})`, isLast)}</p>`;
 }
 
 function renderSpeed(view: PlaytestView): string {

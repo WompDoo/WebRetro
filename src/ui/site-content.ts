@@ -127,6 +127,7 @@ const AI_CONTENT: SiteContent = {
 
 export const SITE_CONTENT: Readonly<Record<EraId, SiteContent>> = {
   'homepage-1997': WEB2_CONTENT,
+  'crash-2000': WEB2_CONTENT,
   'web2-2005': WEB2_CONTENT,
   'social-2011': SOCIAL_CONTENT,
   'platform-2018': PLATFORM_CONTENT,

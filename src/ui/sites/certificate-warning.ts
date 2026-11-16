@@ -13,14 +13,17 @@ interface CertificateWarningCopy {
 
 const HOST_TOKEN = '{host}';
 
+// Never shown: nothing in 1997 or 2000 is served over https. Here so every era has an answer.
+const OLD_BROWSER_WARNING: CertificateWarningCopy = {
+  title: 'Certificate Expired',
+  lines: [`${HOST_TOKEN} is a site that uses encryption to protect transmitted information. However, the certificate it uses has expired.`],
+  detail: 'Do you want to continue anyway?',
+  button: 'Cancel',
+};
+
 const CERTIFICATE_WARNINGS: Readonly<Record<EraId, CertificateWarningCopy>> = {
-  // Never shown: nothing in 1997 is served over https. Here so every era has an answer.
-  'homepage-1997': {
-    title: 'Certificate Expired',
-    lines: [`${HOST_TOKEN} is a site that uses encryption to protect transmitted information. However, the certificate it uses has expired.`],
-    detail: 'Do you want to continue anyway?',
-    button: 'Cancel',
-  },
+  'homepage-1997': OLD_BROWSER_WARNING,
+  'crash-2000': OLD_BROWSER_WARNING,
   'web2-2005': {
     title: 'There is a problem with this website’s security certificate.',
     lines: [
@@ -56,6 +59,7 @@ const CERTIFICATE_WARNINGS: Readonly<Record<EraId, CertificateWarningCopy>> = {
 
 const ERA_CLASSES: Readonly<Record<EraId, string>> = {
   'homepage-1997': 'is-1997',
+  'crash-2000': 'is-1997',
   'web2-2005': 'is-2005',
   'social-2011': 'is-2011',
   'platform-2018': 'is-2018',

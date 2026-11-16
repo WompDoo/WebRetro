@@ -25,7 +25,8 @@ The game is already about relaunching: every era is a fresh start that keeps wha
 move one level up: **the ending is the relaunch, and 1997 is the next era.**
 
 **Currency: Backlinks.** Earned at the ending: one per order of magnitude of lifetime visitors past a threshold
-(`floor(log10(visitors)) − 10`, so a typical first run earns 4–6), plus one per era finished under 45 minutes. Log
+(`floor(log10(visitors)) − 10`, so a typical first run earns 4–6), plus one per era finished under 45 minutes (20
+for a half-era: surviving the crash well). Log
 scale, so the second run can't earn ten times the first by playing ten times longer. The name fits: backlinks are
 what an old site leaves to a new one.
 
@@ -116,7 +117,43 @@ Not built yet: their own trouble (the wiki vandalised, the webcam's server melti
 1. The legacy (`LegacyState`, its own versioned save), Backlinks, the credits button, Muscle memory and Regulars, the
    projected count. A second sim bot starts with perks so run two's pacing is measured, not guessed.
 2. The five legacy buildables for run two, each with its page, its hazard and its place on every era's layout.
-3. The 2000 crash half-era for run three.
+3. The 2000 crash half-era for run three (built, below).
+
+**Built (PR 3): the 2000 crash.** A half-era between 1997 and 2005 that only a third run plays. Y2K came and went;
+in March the bubble burst, and a banner pays a fifth of what it did (0.03 a visitor against 1997's 0.15) while it
+annoys visitors as much as ever. The site is still the 1997 homepage, typed in the same editor with the same skills,
+with the crash's news under its title and the dot-coms' closing-down banners. What's new is money that doesn't come
+from ads:
+
+| New in 2000 | What it does |
+|---|---|
+| Learn to send mail from a script (skill) | Unlocks the two features |
+| Free e-cards (feature, gate: level 25) | Every card sent is a link back to you |
+| Free email (feature) | you@yoursite.com; grows with the e-cards |
+| Donate button, affiliate links (boosts) | Pay per visitor, ads or not: the first income in the game that isn't ads |
+| Dancing hamsters (boost) | Doubles the e-cards |
+
+It plays differently: once donations and affiliate links pay, a banner can cost more in visitors than it earns, and
+the best crash site often runs fewer banners than its 1997 self. A tip says so when it's true, judged on a usual day
+so a passing pop-up can't flip it. All of it retires in 2005. **Decided here: the crash's features retire without a
+trade-in.** They're stopgaps that live one short era, and they bring most of the crash's visitors, so a trade-in
+handed 2005 a $15–25M head start (2005 usually starts near zero) and cut it from 48 to 29 minutes. Without it, 2005
+takes as long as it would have without the crash (40 minutes either way on the same perks).
+
+How the chain works: an era has a `fromRun`, and the run's eras (`getErasOfRun`) decide what comes next;
+`isEraUnlocked` checks the run too, so nothing of the crash shows up in a run that skips it. A half-era has a
+`baseEraId` (1997 for the crash): it types with that era's editor and skills, and keeps its ops. The goal bar, the
+relaunch button and the relaunch story read the next era from the run, and 2005 has a second story for players who
+come to it through the crash. The playtest panel steps a game through runs one to three.
+
+| Player (seed 1997) | 1997 | 2000 | 2005 | 2011 | 2018 | 2024 | Total |
+|---|---|---|---|---|---|---|---|
+| optimizer, run 3 (two runs of perks) | 17 | 21 | 44 | 40 | 57 | 49 | 228 min |
+| casual, run 3 | 33 | 32 | 65 | 73 | 73 | 77 | 353 min |
+
+The crash adds 21 minutes for the optimizer and 32 for the casual player: the half-era length it was meant to be.
+The optimizer just misses the 20-minute mark; a player who drops the banners early and buys the affiliate links first
+makes it. Runs vary by about ±17 minutes between seeds, so compare runs on the same seed.
 
 ## 2. Replayability: different games, not the same game faster
 

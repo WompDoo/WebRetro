@@ -1,4 +1,4 @@
-import { calculateAiAnswerShare, calculateMobileStayShare, ERAS_BY_ID, isEraUnlocked, findChosenFramework, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMarkedNotSecure, isMobileFriendly, isServedSecurely, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
+import { calculateAiAnswerShare, calculateMobileStayShare, ERAS_BY_ID, isEraUnlocked, findChosenFramework, getBaseEraId, FRAMEWORKS_BY_ID, formatPercent, getHostingTier, isMarkedNotSecure, isMobileFriendly, isServedSecurely, isTrafficSpikeCached, UPGRADES_BY_ID } from '../engine';
 import type { EconomySnapshot, EraId, FrameworkId, GameState, UpgradeId } from '../engine';
 import { resolveEditorTabs, resolveEditorTitle } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
@@ -39,6 +39,7 @@ function findPlatformPath(state: GameState): string {
 const SITE_PATHS: Readonly<Record<EraId, (state: GameState) => string | null>> = {
   // Free web space lives at someone else's address until you register your own.
   'homepage-1997': (state) => (knows(state, 'own-domain') ? '/index.htm' : null),
+  'crash-2000': (state) => (knows(state, 'own-domain') ? '/index.htm' : null),
   'web2-2005': (state) => (knows(state, 'learn-url-rewriting') ? '/blog/2005/04/my-first-post/' : '/index.php?id=42&cat=3&sid=8f3a9c2e71b04d55'),
   'social-2011': () => SOCIAL_PATH,
   'platform-2018': findPlatformPath,
@@ -96,9 +97,14 @@ export function classifyPerformance(state: GameState, economy: EconomySnapshot, 
   return classifySpeed(state, pickLoadTime(economy, device));
 }
 
+/** The hand-written homepage (1997, and 2000's) once it knows JavaScript: it writes to the status bar. */
+function isJavaScriptHomepage(state: GameState): boolean {
+  return getBaseEraId(state.eraId) === 'homepage-1997' && knows(state, 'learn-javascript');
+}
+
 /** window.status = "Welcome!!!": the status bar scrolls once you know JavaScript in 1997. */
 export function isStatusScrolling(state: GameState, economy: EconomySnapshot): boolean {
-  return !economy.isSiteDown && state.eraId === 'homepage-1997' && knows(state, 'learn-javascript');
+  return !economy.isSiteDown && isJavaScriptHomepage(state);
 }
 
 /**
@@ -122,7 +128,7 @@ function describeCache(state: GameState): string {
 
 export function buildStatusText(state: GameState, economy: EconomySnapshot, device: DeviceView): string {
   if (economy.isSiteDown) return '503 Service Unavailable';
-  if (state.eraId === 'homepage-1997' && knows(state, 'learn-javascript')) return JAVASCRIPT_STATUS_TEXT;
+  if (isJavaScriptHomepage(state)) return JAVASCRIPT_STATUS_TEXT;
   return `${describeDone(state, economy, device)}${describeCache(state)}`;
 }
 
@@ -289,6 +295,7 @@ function renderHostingReadout(state: GameState, economy: EconomySnapshot): strin
 const PERFORMANCE_READOUTS: Readonly<Record<EraId, (state: GameState, economy: EconomySnapshot, weight: string) => string>> = {
   // 1997 has no page weight and no server: only the modem, for the look of it.
   'homepage-1997': (state) => ERAS_BY_ID[state.eraId].connectionLabel,
+  'crash-2000': (state) => ERAS_BY_ID[state.eraId].connectionLabel,
   'web2-2005': (state, economy, weight) => `${weight} · ${renderHostingReadout(state, economy)}`,
   'social-2011': (state, economy, weight) =>
     `Grade ${gradePageSpeed(economy.loadTimeSeconds)} · Mobile ${calculateMobileScore(state, economy.phoneLoadTimeSeconds)}/100 · ${weight} · ${renderHostingReadout(state, economy)}`,
