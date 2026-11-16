@@ -20,7 +20,7 @@ import { findFrameworkPickedBy, findFrameworkRenderedBy, FRAMEWORK_IDS, FRAMEWOR
 import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
-import { listPerkEffects, PERK_IDS } from './content/perks';
+import { listPerkEffects } from './content/perks';
 import { isEraInRun } from './era-chain';
 import type {
   DefenseDefinition,
@@ -223,18 +223,27 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
   };
 }
 
-/**
- * The summary only changes when something is bought or the era moves on (what has retired), and purchasedUpgradeIds
- * is always replaced, never changed in place, so the array keys a cache, per era.
- */
-const EFFECT_SUMMARIES = new WeakMap<readonly UpgradeId[], Map<string, EffectSummary>>();
+type PerkLevels = GameState['legacyPerkLevels'];
 
-function findSummariesByEra(upgradeIds: readonly UpgradeId[]): Map<string, EffectSummary> {
-  const existing = EFFECT_SUMMARIES.get(upgradeIds);
+/**
+ * The summary only changes when something is bought, the perks change, or the era moves on (what has retired).
+ * purchasedUpgradeIds and legacyPerkLevels are always replaced, never changed in place, so the objects themselves key
+ * the cache, and only the era and the run need a key of their own. It used to join the perk levels into a string on
+ * every read: a quarter of the balance sim's time.
+ */
+const EFFECT_SUMMARIES = new WeakMap<readonly UpgradeId[], WeakMap<PerkLevels, Map<string, EffectSummary>>>();
+
+function findOrCreate<K extends object, V>(cache: WeakMap<K, V>, key: K, create: () => V): V {
+  const existing = cache.get(key);
   if (existing !== undefined) return existing;
-  const created = new Map<string, EffectSummary>();
-  EFFECT_SUMMARIES.set(upgradeIds, created);
+  const created = create();
+  cache.set(key, created);
   return created;
+}
+
+function findSummariesOf(state: GameState): Map<string, EffectSummary> {
+  const byPerks = findOrCreate(EFFECT_SUMMARIES, state.purchasedUpgradeIds, () => new WeakMap<PerkLevels, Map<string, EffectSummary>>());
+  return findOrCreate(byPerks, state.legacyPerkLevels, () => new Map<string, EffectSummary>());
 }
 
 /** Perks count everywhere, typing included: they come with the developer, not with an era's tools. */
@@ -250,13 +259,13 @@ function summarizePurchases(state: GameState, byEra: Map<string, EffectSummary>)
   return summary;
 }
 
-/** The era and the perks: two runs can share a purchases array (a test, a preset) but not their perks. */
+/** The era and the run: what has retired depends on both, since a run that skips the crash never unlocks it. */
 function summaryKey(state: GameState): string {
-  return `${state.eraId}|${PERK_IDS.map((perkId) => state.legacyPerkLevels[perkId]).join(',')}`;
+  return `${state.eraId}|${state.runNumber}`;
 }
 
 function getEffectSummary(state: GameState): EffectSummary {
-  const byEra = findSummariesByEra(state.purchasedUpgradeIds);
+  const byEra = findSummariesOf(state);
   const cached = byEra.get(summaryKey(state));
   return cached === undefined ? summarizePurchases(state, byEra) : cached;
 }
