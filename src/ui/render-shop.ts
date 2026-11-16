@@ -244,6 +244,8 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'ad-annoyance-multiplier': (effect) => `Ads annoy visitors ${formatFactor(effect.factor)}`,
   'page-weight-multiplier': (effect) => `Page weight ${formatFactor(effect.factor)}`,
   'load-time-multiplier': (effect) => `Load time ${formatFactor(effect.factor)}`,
+  'feature-cost-multiplier': (effect) => `Features cost ${formatFactor(effect.factor)}`,
+  'ops-cost-multiplier': (effect) => `Ops items cost ${formatFactor(effect.factor)}`,
   'server-load-multiplier': (effect) => `Server load per visitor ${formatFactor(effect.factor)}`,
   'traffic-spike-cache': () => 'Traffic spikes put no load on the server',
   'mobile-friendly': () => 'Phone visitors stop leaving',

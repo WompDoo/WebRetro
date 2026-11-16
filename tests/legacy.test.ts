@@ -14,6 +14,11 @@ import {
   calculateDemandVisitorsPerSecond,
   calculateKeystrokeValue,
   calculatePerkCost,
+  calculateNextFeatureCost,
+  calculateUpgradeCost,
+  findFrameworkPickedBy,
+  findFrameworkRenderedBy,
+  isPerkMaxed,
   canBuyPerk,
   createInitialGameState,
   createPlaytestState,
@@ -25,7 +30,7 @@ import {
   shouldProjectBacklinks,
   startNextRun,
 } from '../src/engine';
-import type { EraRecord, FeatureId, GameState, LegacyState } from '../src/engine';
+import type { EraRecord, FeatureId, GameState, LegacyState, PerkId } from '../src/engine';
 import { renderEndingAct } from '../src/ui/ending';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
@@ -81,7 +86,7 @@ describe('the legacy: banking a run, buying perks, starting the next site', () =
   });
 
   it('starts the next site in 1997 with every perk, numbered after the runs before it', () => {
-    const legacy: LegacyState = { ...EMPTY_LEGACY, finishedRuns: 2, perkLevels: { 'muscle-memory': 1, regulars: 3 } };
+    const legacy: LegacyState = { ...EMPTY_LEGACY, finishedRuns: 2, perkLevels: { ...NO_PERKS, 'muscle-memory': 1, regulars: 3 } };
     const next = startNextRun(legacy, SEED);
     assert.equal(next.eraId, 'homepage-1997');
     assert.equal(next.runNumber, 3);
@@ -121,7 +126,7 @@ describe('saves: the legacy can’t break the game', () => {
     const restored = restoreLegacy({ version: 1, backlinks: -4, finishedRuns: 2.7, perkLevels: { regulars: 2, unknown: 9 } });
     assert.equal(restored.backlinks, 0);
     assert.equal(restored.finishedRuns, 2);
-    assert.deepEqual(restored.perkLevels, { 'muscle-memory': 0, regulars: 2 });
+    assert.deepEqual(restored.perkLevels, { ...NO_PERKS, regulars: 2 });
   });
 
   it('gives a game saved before perks existed none', () => {
@@ -138,7 +143,7 @@ describe('the ending: a new site from the credits', () => {
 
   it('lists every perk with its price, greys out what it can’t afford, and starts the new site', () => {
     const banked = bankBacklinks(EMPTY_LEGACY, finished());
-    const html = renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, backlinks: 1, perkLevels: { 'muscle-memory': 1, regulars: 0 } });
+    const html = renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, backlinks: 1, perkLevels: { ...NO_PERKS, 'muscle-memory': 1 } });
     assert.match(html, /data-id="regulars">1 Backlink</);
     assert.match(html, /data-id="muscle-memory" disabled>2 Backlinks</);
     assert.match(html, /data-action="start-new-run"/);
@@ -173,5 +178,51 @@ describe('the second run: features the first never had', () => {
     assert.match(html, /New on your next site/);
     RUN_TWO.forEach((featureId) => assert.ok(html.includes(FEATURES_BY_ID[featureId].name), featureId));
     assert.doesNotMatch(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 2 }), /New on your next site/);
+  });
+});
+
+describe('more perks: what each one does', () => {
+  const withPerks = (levels: Partial<Record<PerkId, number>>): LegacyState => ({ ...EMPTY_LEGACY, perkLevels: { ...NO_PERKS, ...levels } });
+  const end2011 = (levels: Partial<Record<PerkId, number>>): GameState => ({ ...createPlaytestState('social-2011', 'end', SEED, 'react'), legacyPerkLevels: { ...NO_PERKS, ...levels } });
+
+  it('makes every feature 10% cheaper for each level of Templates, compounding', () => {
+    const plain = calculateNextFeatureCost(end2011({}), 'video-player');
+    const templated = calculateNextFeatureCost(end2011({ templates: 2 }), 'video-player');
+    assert.ok(Math.abs(templated / plain - 0.81) < 1e-3);
+  });
+
+  it('makes Ops items, and only Ops items, 20% cheaper for each level of the runbook', () => {
+    const state = end2011({ 'ops-runbook': 1 });
+    assert.ok(Math.abs(calculateUpgradeCost(state, 'staging-environment') / calculateUpgradeCost(end2011({}), 'staging-environment') - 0.8) < 1e-3);
+    assert.equal(calculateUpgradeCost(state, 'learn-sass'), calculateUpgradeCost(end2011({}), 'learn-sass'));
+  });
+
+  it('starts a new site with $1,000 for each level of Old savings', () => {
+    assert.equal(startNextRun(withPerks({ 'old-savings': 3 }), SEED).money, 3_000);
+  });
+
+  it('starts every era with its cheapest skills known, one per level of Known tags, never a framework', () => {
+    const run = startNextRun(withPerks({ 'known-tags': 2 }), SEED);
+    assert.equal(run.purchasedUpgradeIds.length, 2);
+    const end2011State = { ...createPlaytestState('social-2011', 'end', SEED, 'react'), legacyPerkLevels: { ...NO_PERKS, 'known-tags': 3 } };
+    const in2018 = advanceEra(end2011State);
+    const learnedAtRelaunch = in2018.purchasedUpgradeIds.filter((upgradeId) => !end2011State.purchasedUpgradeIds.includes(upgradeId));
+    assert.equal(learnedAtRelaunch.length, 3);
+    assert.ok(learnedAtRelaunch.every((upgradeId) => findFrameworkPickedBy(upgradeId) === null && findFrameworkRenderedBy(upgradeId) === null));
+  });
+
+  it('holds every era’s first trouble back 2 minutes for each level of Early warning', () => {
+    const plain = startNextRun(EMPTY_LEGACY, SEED);
+    const warned = startNextRun(withPerks({ 'early-warning': 2 }), SEED);
+    assert.equal(warned.hazardCountdownsMs.virus - plain.hazardCountdownsMs.virus, 4 * 60_000);
+  });
+
+  it('stops Known tags and Early warning at three levels, and says so', () => {
+    const full = withPerks({ 'known-tags': 3 });
+    assert.ok(isPerkMaxed(full, 'known-tags'));
+    assert.ok(!canBuyPerk({ ...full, backlinks: 100 }, 'known-tags'));
+    const html = renderEndingAct(bankBacklinks(EMPTY_LEGACY, finished()).state, 'legacy', null, { ...full, backlinks: 100 });
+    assert.match(html, /level 3 of 3/);
+    assert.match(html, /data-id="known-tags" disabled>Maxed</);
   });
 });

@@ -180,10 +180,13 @@ interface Run {
   readonly perks: Readonly<Record<PerkId, number>>;
 }
 
-/** What a typical first run's Backlinks buy: the optimizer earns about 9, the casual player about 5. */
+/**
+ * What a typical first run's Backlinks buy, spread the way a player would: the optimizer earns about 8 (one level of
+ * nearly everything, two of Regulars), the casual player about 7.
+ */
 const SECOND_RUN_PERKS: Readonly<Record<string, Readonly<Record<PerkId, number>>>> = {
-  optimizer: { 'muscle-memory': 2, regulars: 2 },
-  casual: { 'muscle-memory': 1, regulars: 2 },
+  optimizer: { ...NO_PERKS, 'muscle-memory': 1, regulars: 2, templates: 1, 'known-tags': 1, 'early-warning': 1, 'old-savings': 1 },
+  casual: { ...NO_PERKS, 'muscle-memory': 1, regulars: 2, templates: 1, 'known-tags': 1, 'early-warning': 1 },
 };
 
 function listRuns(): readonly Run[] {

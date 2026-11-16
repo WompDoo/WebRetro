@@ -94,7 +94,9 @@ type FactorKind =
   | 'ad-annoyance-multiplier'
   | 'page-weight-multiplier'
   | 'load-time-multiplier'
-  | 'server-load-multiplier';
+  | 'server-load-multiplier'
+  | 'feature-cost-multiplier'
+  | 'ops-cost-multiplier';
 type FactorEffect = Extract<UpgradeEffect, { readonly kind: FactorKind }>;
 type FeatureTrafficEffect = Extract<UpgradeEffect, { readonly kind: 'feature-traffic-multiplier' }>;
 
@@ -105,6 +107,8 @@ const FACTOR_KINDS: readonly FactorKind[] = [
   'page-weight-multiplier',
   'load-time-multiplier',
   'server-load-multiplier',
+  'feature-cost-multiplier',
+  'ops-cost-multiplier',
 ];
 
 /**
@@ -473,9 +477,14 @@ export function findPriceBreak(state: GameState, upgradeId: UpgradeId): PriceBre
 }
 
 /** What an upgrade costs you: its price, less what your framework takes off. Everything that sells or prices one reads this. */
+/** The Ops runbook perk: you've set all this up before. Only Ops items. */
+function findOpsDiscount(state: GameState, upgradeId: UpgradeId): number {
+  return UPGRADES_BY_ID[upgradeId].kind === 'ops' ? readFactor(state, 'ops-cost-multiplier') : NEUTRAL_FACTOR;
+}
+
 export function calculateUpgradeCost(state: GameState, upgradeId: UpgradeId): number {
   const priceBreak = findPriceBreak(state, upgradeId);
-  return Math.ceil(UPGRADES_BY_ID[upgradeId].cost * (priceBreak === null ? NEUTRAL_FACTOR : priceBreak.factor));
+  return Math.ceil(UPGRADES_BY_ID[upgradeId].cost * (priceBreak === null ? NEUTRAL_FACTOR : priceBreak.factor) * findOpsDiscount(state, upgradeId));
 }
 
 export function isMobileFriendly(state: GameState): boolean {
@@ -754,17 +763,18 @@ export const calculateEconomySnapshot = memoizeByState((state: GameState): Econo
 });
 
 export function calculateNextFeatureCost(state: GameState, featureId: FeatureId): number {
-  return calculateFeatureLevelCost(featureId, state.featureLevels[featureId]);
+  return calculateFeatureLevelCost(state, featureId, state.featureLevels[featureId]);
 }
 
-function calculateFeatureLevelCost(featureId: FeatureId, level: number): number {
-  return Math.ceil(FEATURES_BY_ID[featureId].baseCost * FEATURE_COST_GROWTH ** level);
+/** A level's price, less the Templates perk: you've built one of these before. */
+function calculateFeatureLevelCost(state: GameState, featureId: FeatureId, level: number): number {
+  return Math.ceil(FEATURES_BY_ID[featureId].baseCost * FEATURE_COST_GROWTH ** level * readFactor(state, 'feature-cost-multiplier'));
 }
 
 /** The next `count` levels bought together: each costs what it would cost bought one at a time. */
 export function calculateFeatureLevelsCost(state: GameState, featureId: FeatureId, count: number): number {
   const level = state.featureLevels[featureId];
-  return Array.from({ length: count }, (_, offset) => calculateFeatureLevelCost(featureId, level + offset)).reduce((total, cost) => total + cost, 0);
+  return Array.from({ length: count }, (_, offset) => calculateFeatureLevelCost(state, featureId, level + offset)).reduce((total, cost) => total + cost, 0);
 }
 
 /**
