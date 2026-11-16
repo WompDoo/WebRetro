@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createPlaytestState, ERA_IDS, ERAS_BY_ID, getEraIndex } from '../src/engine';
+import { createPlaytestState, ERA_IDS, ERAS_BY_ID, FEATURE_IDS, FEATURES_BY_ID, getEraIndex } from '../src/engine';
 import type { EraId, GameState } from '../src/engine';
 import { escapeHtml } from '../src/ui/dom';
+import { resolveTyping } from '../src/ui/framework-presentation';
+import { ERA_PRESENTATION } from '../src/ui/presentation';
 import { renderTip } from '../src/ui/render-goal';
 import { renderSite } from '../src/ui/sites';
 import { SITE_CONTENT } from '../src/ui/site-content';
@@ -57,5 +59,24 @@ describe('tips quote the game’s own numbers', () => {
     };
     assert.match(renderTip(blank('vue')), /15% of visitors/);
     assert.match(renderTip(blank('react')), /30% of visitors/);
+  });
+});
+
+describe('content says only what can happen', () => {
+  /** The audit found five features renamed for 2011, the era they retire in: names no player could ever see. */
+  it('never names a feature for an era it has already retired in', () => {
+    const deadNames = FEATURE_IDS.flatMap((featureId) => {
+      const { sunsetIn, laterEraNames } = FEATURES_BY_ID[featureId];
+      const named = Object.keys(laterEraNames) as EraId[];
+      return sunsetIn === null ? [] : named.filter((eraId) => getEraIndex(eraId) >= getEraIndex(sunsetIn)).map((eraId) => `${featureId} in ${eraId}`);
+    });
+    assert.deepEqual(deadNames, []);
+  });
+
+  it('tells each relaunch the truth about how code arrives', () => {
+    assert.match(ERA_PRESENTATION['ai-2024'].entryStory?.whatsNew.join(' ') ?? '', /accepts a whole block/);
+    assert.equal(resolveTyping(createPlaytestState('ai-2024', 'start', SEED, 'react')).chunk, 'suggestion');
+    assert.match(ERA_PRESENTATION['social-2011'].entryStory?.whatsNew.join(' ') ?? '', /pastes a line/);
+    assert.equal(ERA_PRESENTATION['social-2011'].typing.chunk, 'line');
   });
 });

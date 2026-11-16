@@ -141,3 +141,9 @@ describe('the ending: after it', () => {
     assert.ok(!createInitialGameState(SEED).isGameFinished);
   });
 });
+
+describe('the ending counts right', () => {
+  it('says four relaunches for five eras: one into every era after the first', () => {
+    assert.match(renderEndingAct(finished(), 'sold', null), /four relaunches/);
+  });
+});

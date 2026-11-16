@@ -97,7 +97,7 @@ Done (4.2 s) · 182 KB · Server ▮▮▮▮▮▮▯▯ 74%
 | 2005 | Status bar time, page weight and a server meter |
 | 2011 | A YSlow-style letter grade (A to F) plus a mobile score |
 | 2018 | A Lighthouse-style score (a green, orange or red circle) with Core Web Vitals: LCP, FID, CLS (built) |
-| 2024 | The score circle plus a cloud bill, mostly your chatbot's |
+| 2024 | The score circle with INP in place of FID, and "AI answers −30%" (built; a cloud bill isn't) |
 
 ## 2005 Web 2.0: expansion (built)
 
@@ -117,7 +117,7 @@ memcached, a CDN and a static page cache as server boosts.
 | Valid XHTML badge, bookmark buttons | boosts | a row of tiny 80×15 badges in the footer |
 | Glitter text | boost | sparkly MySpace-style headings |
 | Drop the vowels | boost | the logo changes from "myhomepage" to **"myhmpg"** |
-| SVN | boost (backend) | editor title `blog.php (rev 142)`, the occasional "Committed revision 143" |
+| SVN | boost (backend) | editor title `blog.php (rev 142)`, the revision counting up as you type |
 | Rails | skill or boost (backend) | the editor switches to Ruby and gains a `config/routes.rb` tab |
 | J2EE | joke boost (backend) | the editor's tabs explode into 14 XML files to print Hello World |
 | Hosting ladder | Ops tab (backend) | ten dated steps from shared hosting (2001) to a second data center (2008), then extra racks; see below |
@@ -127,8 +127,8 @@ memcached, a CDN and a static page cache as server boosts.
 ## 2011 Social & mobile
 
 **Built (the core):**
-- The relaunch story ("Everyone has a phone now"), the checklist (every 2011 feature, Like and share buttons
-  level 15, 1B visitors/s, $550B) and the new ending: 2011 is the last era of the prototype for now.
+- The relaunch story ("Everyone has a phone now") and the checklist (every 2011 feature, Like and share buttons
+  level 15, 1B visitors/s, $550B).
 - **Phones:** four in ten visitors are on a phone, and three in four of them leave until you learn responsive
   design. The browser's Phone switch shows them the page: shrunk from desktop width, then fitting.
 - **Retired at the relaunch:** the hit counter, the beta sticker, the blogroll, the tag cloud and the Flash intro.
@@ -164,13 +164,13 @@ memcached, a CDN and a static page cache as server boosts.
     desktops never notice). All traffic ×1.05 for 300 KB more.
   - *"Get our app!" banner* (a boost): ad value ×1.2, all traffic ×0.97.
 - **Backend:**
-  - *Learn REST and JSON APIs* (skill): `/api/posts.json` in server.js; the feed ×1.3, keystrokes ×1.3, and it
+  - *Learn REST and JSON APIs* (skill): `/api/posts.json` in server.js; the feed ×1.3, keystrokes ×1.2, and it
     unlocks *Sign in with…*, a 2011 feature (Facespace and Chirper buttons, busier with every live activity;
     the navbar offers it too).
   - *Learn Sass* (skill): a style.scss tab compiled by Grunt on save; fewer typos, keystrokes ×1.2.
   - Boosts: *Switch to MongoDB* ("web scale"; server load ×0.8), *Deploy with git push* (keystrokes ×1.25,
     fewer typos), *Turn on autoscaling* (server load ×0.7).
-- **Ads:** a "Sponsored" well in the sidebar, one Facebook-style post per ad placed (FarmTown, "1 weird trick").
+- **Ads:** a "Sponsored" well in the sidebar, one social-network-style post per ad placed (FarmTown, "1 weird trick").
   The pop-up defense is called an ad blocker from 2011 (`getDefenseCopy`): the same trade-off, ads pay less.
 - **Performance:** "Grade B · Mobile 69/100" in the status bar. Pop-ups: like-gates, app banners, the first cookie
   notices, phishing through a friend's chat. The issue tracker becomes Mentions: complaints posted at you.
@@ -180,8 +180,8 @@ memcached, a CDN and a static page cache as server boosts.
 ## 2018 Platform
 
 **Built (the core):**
-- The relaunch story ("Everything is a platform"), the checklist (every 2018 feature, Stories level 15, 150B
-  visitors/s, $50T) and the new ending: 2018 is the last era of the prototype for now.
+- The relaunch story ("Everything is a platform") and the checklist (every 2018 feature, Stories level 15, 100B
+  visitors/s on a usual day, $120T).
 - **The framework wars.** Learn React, Angular or Vue: you can only pick one, and the shop hides the others
   once you have. Each rewrites the site as a single-page app, and each is a real trade-off, as it was in 2018:
   - *React*: medium price and bundle (420 KB), the biggest keystroke boost (the npm ecosystem), and
@@ -200,7 +200,8 @@ memcached, a CDN and a static page cache as server boosts.
   and it draws a little more traffic (×1.65); the heaviest bundle and the longest "Loading...". *Vue*, progressive:
   before server rendering it loses 15% of search visitors instead of 30% and pages slow by ×1.25 instead of ×1.5;
   the smallest bundle and the cheapest skill, but the least typing pay. The shop shows the price break where you pay
-  it ("React: npm has a package for it: −20%"). The sim's framework spread: 5.3% (active), 5.1% (relaxed).
+  it ("React: npm has a package for it: −20%"). The sim's framework spread stays under its 15% limit; it moves a few
+points with the seed (see `player-types.md`).
 - **The blank page shows.** It used to last as long as the status bar's reload, 0.3 s after a change and never on
   load, so nobody saw it. Now a single-page app boots on every load and every change for as long as its bundle takes
   to run on a 2018 phone: React's empty page 2.2 s, Angular's "Loading..." 3 s, Vue's raw template 1.6 s. Server
