@@ -289,10 +289,40 @@ function renderVisitedItem(state: GameState, upgradeId: UpgradeId): string {
     : `<a class="visited-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" title="${effect} · Learn it for real (opens a new tab)">${name}</a>`;
 }
 
-function renderVisitedList(state: GameState, upgradeIds: readonly UpgradeId[], title: string): string {
+/** The three lists of things you already have. Every name in them is a link to the real thing. */
+type VisitedList = 'learned' | 'bought' | 'running';
+
+interface VisitedListCopy {
+  readonly title: string;
+  /** Behind the little i: that these are real links, and you can actually learn this. */
+  readonly info: string;
+}
+
+const VISITED_LISTS: Readonly<Record<VisitedList, VisitedListCopy>> = {
+  learned: {
+    title: 'Learned (visited links)',
+    info: 'These are real links: each opens the real documentation for what you learned (MDN, the official docs, or Wikipedia for the history), so you can learn it for real. They’re purple because, as in 1997, purple means you’ve been there.',
+  },
+  bought: {
+    title: 'Bought (visited links)',
+    info: 'Real links too: what each of these really was, in the web’s actual history. Some of them were even good ideas.',
+  },
+  running: {
+    title: 'Running',
+    info: 'Real links: how each of these works in real life. Same 3am pager, fewer minigames.',
+  },
+};
+
+/** A small i beside a heading: hover it, or tap it on a phone, for the note. Anchored to the heading so the panel's edge can't cut it off. */
+function renderInfoTip(text: string): string {
+  return `<span class="info-tip" tabindex="0" aria-label="${escapeHtml(text)}">i<span class="info-tip-text" role="tooltip">${escapeHtml(text)}</span></span>`;
+}
+
+function renderVisitedList(state: GameState, upgradeIds: readonly UpgradeId[], list: VisitedList): string {
   if (upgradeIds.length === 0) return '';
   const items = upgradeIds.map((upgradeId) => renderVisitedItem(state, upgradeId)).join('');
-  return `<h3 class="shop-group-title">${escapeHtml(title)}</h3><p class="visited-list">${items}</p>`;
+  const copy = VISITED_LISTS[list];
+  return `<h3 class="shop-group-title has-info">${escapeHtml(copy.title)}${renderInfoTip(copy.info)}</h3><p class="visited-list">${items}</p>`;
 }
 
 // ---------- Learn ----------
@@ -340,7 +370,7 @@ function renderLearnTab(state: GameState): string {
   const rows = available.length === 0
     ? '<p class="shop-empty">You know everything this era has to teach. Time to relaunch.</p>'
     : available.map((skillId) => renderSkillRow(state, skillId)).join('');
-  return `<h3 class="shop-group-title">Curriculum</h3>${rows}${renderVisitedList(state, learnedSkills(state), 'Learned (visited links)')}`;
+  return `<h3 class="shop-group-title">Curriculum</h3>${rows}${renderVisitedList(state, learnedSkills(state), 'learned')}`;
 }
 
 // ---------- Upgrades (boosts) ----------
@@ -386,7 +416,7 @@ function renderUpgradesTab(state: GameState): string {
   const rows = revealed.length === 0
     ? '<p class="shop-empty">No upgrades yet. Keep earning and new ones will show up here.</p>'
     : revealed.map((upgradeId) => renderBoostRow(state, upgradeId)).join('');
-  return `<h3 class="shop-group-title">Available</h3>${rows}${renderVisitedList(state, boughtBoosts(state), 'Bought (visited links)')}`;
+  return `<h3 class="shop-group-title">Available</h3>${rows}${renderVisitedList(state, boughtBoosts(state), 'bought')}`;
 }
 
 // ---------- Ads & security ----------
@@ -564,7 +594,7 @@ function renderOpsGroup(state: GameState): string {
   const rows = available.length === 0
     ? '<p class="shop-empty">Everything this era can run is running.</p>'
     : available.map((upgradeId) => renderUpgradeRow(state, upgradeId, OPS_ICON)).join('');
-  return `<h3 class="shop-group-title">DevOps</h3>${rows}${renderVisitedList(state, boughtOps(state), 'Running')}`;
+  return `<h3 class="shop-group-title">DevOps</h3>${rows}${renderVisitedList(state, boughtOps(state), 'running')}`;
 }
 
 function renderSecurityTab(state: GameState): string {
