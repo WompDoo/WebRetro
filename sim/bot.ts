@@ -34,6 +34,7 @@ import {
   getRevealedBoostIds,
   getUnlockedDefenseIds,
   getUnlockedFeatureIds,
+  isAdLosingMoney,
   isEraUnlocked,
   isFeatureBuildable,
   isOnlySavingForMigration,
@@ -199,7 +200,7 @@ export function listOptions(state: GameState, profile: PlayerProfile): readonly 
   });
   const adCost = calculateNextAdCost(state);
   const ads: PurchaseOption[] =
-    canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds
+    canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && !isAdLosingMoney({ ...state, adCount: state.adCount + 1 })
       ? [{ label: 'ad', cost: adCost, isRequiredForGate: false, apply: placeAd, canApply: canPlaceAd, valueCost: adCost, valueApply: placeAd }]
       : [];
   const defenses = profile.buysDefenses

@@ -41,20 +41,29 @@ function requireMigrationBudget(amount: number): EraGateRequirement {
 }
 
 const HOMEPAGE_MIGRATION_COST = 6_500_000;
+const CRASH_MIGRATION_COST = 40_000_000;
 const WEB2_MIGRATION_COST = 1_000_000_000;
 const SOCIAL_MIGRATION_COST = 550_000_000_000;
 const PLATFORM_MIGRATION_COST = 120_000_000_000_000;
 const AI_MIGRATION_COST = 35_000_000_000_000_000;
+
+/** The big eras are in every run. */
+const EVERY_RUN = 1;
+/** The 2000 crash: the third run's new era. */
+export const CRASH_FIRST_RUN = 3;
+const BIG_ERA_FAST_FINISH_MINUTES = 45;
+/** A half-era is about 25 minutes: under 20 is surviving it well. */
+const HALF_ERA_FAST_FINISH_MINUTES = 20;
 
 export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
   'homepage-1997': {
     id: 'homepage-1997',
     year: 1997,
     name: 'Personal homepage',
-    nextEraId: 'web2-2005',
-    nextEraName: 'Web 2.0',
-    nextEraYear: 2005,
-    migrationLabel: 'Launch Web 2.0',
+    fromRun: EVERY_RUN,
+    baseEraId: 'homepage-1997',
+    relaunchLabel: 'Start a new site',
+    fastFinishMinutes: BIG_ERA_FAST_FINISH_MINUTES,
     migrationCost: HOMEPAGE_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('homepage-1997', 1997),
@@ -83,14 +92,51 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     revenuePace: 2,
     typingPace: 1,
   },
+  'crash-2000': {
+    id: 'crash-2000',
+    year: 2000,
+    name: 'The dot-com crash',
+    fromRun: CRASH_FIRST_RUN,
+    baseEraId: 'homepage-1997',
+    relaunchLabel: 'Relaunch for 2000',
+    migrationCost: CRASH_MIGRATION_COST,
+    fastFinishMinutes: HALF_ERA_FAST_FINISH_MINUTES,
+    gateRequirements: [
+      requireEveryFeatureOf('crash-2000', 2000),
+      requireFeatureLevel('e-cards', 25),
+      requireVisitorsPerSecond(250_000),
+      requireMigrationBudget(CRASH_MIGRATION_COST),
+    ],
+    adLabel: 'Banner ad',
+    adSkillId: 'img-tag',
+    connectionLabel: '56k modem',
+    connectionKbPerSecond: 7,
+    // No phones on the web yet: these never apply.
+    mobileConnectionLabel: '56k modem',
+    mobileConnectionKbPerSecond: 7,
+    patienceSeconds: 20,
+    basePageWeightKb: 2,
+    adPageWeightKb: 12,
+    hasServerLoad: false,
+    hasPageWeight: false,
+    mobileShare: 0,
+    aiAnswerShare: 0,
+    // The advertisers were dot-coms too, and most of them are gone: a banner pays a fifth of what it did.
+    adValuePerVisitor: 0.03,
+    adAnnoyancePerAd: 0.18,
+    maxAds: 6,
+    keystrokeValueMultiplier: 1,
+    revenuePace: 2,
+    typingPace: 1,
+  },
   'web2-2005': {
     id: 'web2-2005',
     year: 2005,
     name: 'Web 2.0',
-    nextEraId: 'social-2011',
-    nextEraName: 'Social & mobile',
-    nextEraYear: 2011,
-    migrationLabel: 'Relaunch for 2011',
+    fromRun: EVERY_RUN,
+    baseEraId: 'web2-2005',
+    relaunchLabel: 'Launch Web 2.0',
+    fastFinishMinutes: BIG_ERA_FAST_FINISH_MINUTES,
     migrationCost: WEB2_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('web2-2005', 2005),
@@ -122,10 +168,10 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     id: 'social-2011',
     year: 2011,
     name: 'Social & mobile',
-    nextEraId: 'platform-2018',
-    nextEraName: 'Platforms',
-    nextEraYear: 2018,
-    migrationLabel: 'Relaunch as a platform',
+    fromRun: EVERY_RUN,
+    baseEraId: 'social-2011',
+    relaunchLabel: 'Relaunch for 2011',
+    fastFinishMinutes: BIG_ERA_FAST_FINISH_MINUTES,
     migrationCost: SOCIAL_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('social-2011', 2011),
@@ -158,10 +204,10 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     id: 'platform-2018',
     year: 2018,
     name: 'Platforms',
-    nextEraId: 'ai-2024',
-    nextEraName: 'AI everywhere',
-    nextEraYear: 2024,
-    migrationLabel: 'Relaunch with AI',
+    fromRun: EVERY_RUN,
+    baseEraId: 'platform-2018',
+    relaunchLabel: 'Relaunch as a platform',
+    fastFinishMinutes: BIG_ERA_FAST_FINISH_MINUTES,
     migrationCost: PLATFORM_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('platform-2018', 2018),
@@ -196,10 +242,10 @@ export const ERAS_BY_ID: Readonly<Record<EraId, EraDefinition>> = {
     id: 'ai-2024',
     year: 2024,
     name: 'AI everywhere',
-    nextEraId: null,
-    nextEraName: 'The end',
-    nextEraYear: 2025,
-    migrationLabel: 'Finish the game',
+    fromRun: EVERY_RUN,
+    baseEraId: 'ai-2024',
+    relaunchLabel: 'Relaunch with AI',
+    fastFinishMinutes: BIG_ERA_FAST_FINISH_MINUTES,
     migrationCost: AI_MIGRATION_COST,
     gateRequirements: [
       requireEveryFeatureOf('ai-2024', 2024),

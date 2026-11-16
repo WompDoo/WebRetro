@@ -1,5 +1,7 @@
 import {
-  ERA_IDS,
+  getBaseEraId,
+  getErasOfRun,
+  listErasNewInRun,
   FEATURE_IDS,
   FEATURES_BY_ID,
   getFeatureFirstRun,
@@ -132,9 +134,9 @@ function renderOffer(state: GameState): string {
 
 const NUMBER_WORDS: readonly string[] = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
 
-/** One relaunch into every era after the first, counted from the eras, so a new era can't make it wrong. */
-function describeRelaunchCount(): string {
-  const relaunches = ERA_IDS.length - 1;
+/** One relaunch into every era of the run after the first, counted from the run's eras, so a new era can't make it wrong. */
+function describeRelaunchCount(state: GameState): string {
+  const relaunches = getErasOfRun(state.runNumber).length - 1;
   return NUMBER_WORDS[relaunches] ?? String(relaunches);
 }
 
@@ -144,7 +146,7 @@ function renderSold(state: GameState): string {
     <h2 id="end-heading">Our incredible journey</h2>
     <article class="journey-post">
       <p>Today we’re thrilled to announce that ${brand} has been acquired by Omnivore AI.</p>
-      <p>When we put up a starry little homepage in ${FIRST_YEAR}, we never imagined ${formatWholeNumber(state.lifetimeVisitors)} visitors, ${describeRelaunchCount()} relaunches and a GPU cluster. We couldn’t have done it without you.</p>
+      <p>When we put up a starry little homepage in ${FIRST_YEAR}, we never imagined ${formatWholeNumber(state.lifetimeVisitors)} visitors, ${describeRelaunchCount(state)} relaunches and a GPU cluster. We couldn’t have done it without you.</p>
       <p>${brand} will close on March 1. Everything you ever posted will live on, as training data.</p>
       <p>Thank you for being part of our incredible journey.</p>
     </article>
@@ -226,9 +228,18 @@ function renderPerkRow(legacy: LegacyState, perkId: PerkId): string {
 /** What the next site gets that this one didn't: the reason to start it. Empty once every run's content is open. */
 function renderNextRunUnlocks(legacy: LegacyState): string {
   const nextRun = legacy.finishedRuns + 1;
-  const unlocked = FEATURE_IDS.filter((featureId) => getFeatureFirstRun(featureId) === nextRun);
-  const items = unlocked.map((featureId) => `<li><b>${escapeHtml(FEATURES_BY_ID[featureId].name)}</b> in ${eraYear(FEATURES_BY_ID[featureId].eraId)}</li>`).join('');
-  return unlocked.length === 0 ? '' : `<h3 class="story-subheading">New on your next site</h3><ul class="next-run-unlocks">${items}</ul>`;
+  const eras = listErasNewInRun(nextRun).map((eraId) => `<li><b>${escapeHtml(ERAS_BY_ID[eraId].name)}</b>, a new era in ${eraYear(eraId)}</li>`);
+  const features = FEATURE_IDS.filter((featureId) => getFeatureFirstRun(featureId) === nextRun).map(
+    (featureId) => `<li><b>${escapeHtml(FEATURES_BY_ID[featureId].name)}</b> in ${eraYear(FEATURES_BY_ID[featureId].eraId)}</li>`,
+  );
+  const items = [...eras, ...features];
+  return items.length === 0 ? '' : `<h3 class="story-subheading">New on your next site</h3><ul class="next-run-unlocks">${items.join('')}</ul>`;
+}
+
+/** The fast-era mark the run was held to: a run with a half-era says what its own mark was. */
+function describeFastEraMark(state: GameState): string {
+  const hasHalfEra = getErasOfRun(state.runNumber).some((eraId) => getBaseEraId(eraId) !== eraId);
+  return hasHalfEra ? 'under 45 minutes, or 20 for the crash' : 'under 45 minutes';
 }
 
 /** Prestige: what the run earned, the perks it buys, and the new site. */
@@ -236,7 +247,7 @@ function renderLegacy(state: GameState, legacy: LegacyState): string {
   const sources = calculateBacklinkSources(state);
   return `<p class="story-year">Site number ${legacy.finishedRuns + 1}</p>
     <h2 id="end-heading">Your old site links to the new one</h2>
-    <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in under 45 minutes. You have <b>${pluralizeBacklinks(legacy.backlinks)}</b> to spend on perks every new site starts with.</p>
+    <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in ${describeFastEraMark(state)}. You have <b>${pluralizeBacklinks(legacy.backlinks)}</b> to spend on perks every new site starts with.</p>
     ${renderNextRunUnlocks(legacy)}
     <ul class="perk-list">${PERK_IDS.map((perkId) => renderPerkRow(legacy, perkId)).join('')}</ul>
     <p class="ending-epilogue">The new site starts in 1997 with a new name, and you start with everything above.</p>

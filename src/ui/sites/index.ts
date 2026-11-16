@@ -4,7 +4,7 @@ import { renderCertificateWarning } from './certificate-warning';
 import { escapeHtml } from '../dom';
 import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
-import { render1997Site } from './site-1997';
+import { render1997Site, render2000Site } from './site-1997';
 import { render2005Site } from './site-2005';
 import { render2011Site } from './site-2011';
 import { render2018Site } from './site-2018';
@@ -16,6 +16,7 @@ export type { LiveSlotName } from './live-slots';
 
 const SITE_RENDERERS: Readonly<Record<EraId, (context: SiteContext) => string>> = {
   'homepage-1997': render1997Site,
+  'crash-2000': render2000Site,
   'web2-2005': render2005Site,
   'social-2011': render2011Site,
   'platform-2018': render2018Site,

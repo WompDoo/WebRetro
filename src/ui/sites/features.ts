@@ -473,6 +473,42 @@ const renderForYouFeed: FeatureRenderer = (context) => {
   return `${heading(context, 'for-you-feed', 'For you')}<div class="feed-tabs"><span class="is-current">For you</span><span>Following</span></div><ul class="feed-list">${items}</ul><p class="post-meta">Picked by a model · ${formatCompactNumber(level * HOURS_PER_LEVEL)} hours watched today</p>`;
 };
 
+// ---------- 2000, the dot-com crash ----------
+interface ECardDesign {
+  readonly icon: string;
+  readonly label: string;
+  readonly className: string;
+}
+
+const E_CARDS: readonly ECardDesign[] = [
+  { icon: '🎂', label: 'Happy birthday!', className: 'ecard' },
+  { icon: '💌', label: 'Thinking of you', className: 'ecard' },
+  { icon: '🐶', label: 'Get well soon', className: 'ecard' },
+  { icon: '🎆', label: 'Happy new millennium!', className: 'ecard' },
+  { icon: '🌻', label: 'Just because', className: 'ecard' },
+];
+const HAMSTER_CARD: ECardDesign = { icon: '🐹', label: 'DANCING HAMSTERS!!!', className: 'ecard is-dancing' };
+const BASE_E_CARDS = 2;
+const CARDS_SENT_PER_LEVEL = 340;
+
+function listECards(context: SiteContext): readonly ECardDesign[] {
+  const cards = E_CARDS.slice(0, Math.min(E_CARDS.length, BASE_E_CARDS + levelOf(context, 'e-cards')));
+  return getActiveUpgradeIds(context.state).includes('dancing-hamsters') ? [HAMSTER_CARD, ...cards] : cards;
+}
+
+/** E-cards: pick a card, send it to a friend. With the hamsters, every card dances. */
+const renderECards: FeatureRenderer = (context) => {
+  const cards = listECards(context).map((card) => `<li class="${card.className}"><span class="ecard-art" aria-hidden="true">${card.icon}</span><span class="fake-link">${escapeHtml(card.label)}</span></li>`).join('');
+  return `${heading(context, 'e-cards', 'Send a FREE e-card!')}<ul class="ecard-grid">${cards}</ul><p class="post-meta">${formatCompactNumber(levelOf(context, 'e-cards') * CARDS_SENT_PER_LEVEL)} cards sent today</p>`;
+};
+
+const MAILBOXES_PER_LEVEL = 1_200;
+/** Free email: a sign-in box with your domain after the @, four megabytes, and the count of who signed up. */
+const renderFreeEmail: FeatureRenderer = (context) => {
+  const domain = `${siteBrand(context.state)}.com`;
+  return `${heading(context, 'free-email', 'Get your FREE email!')}<div class="webmail-box"><span class="webmail-field">username</span><b>@${escapeHtml(domain)}</b><span class="webmail-field">password</span><span class="webmail-button">Sign in</span></div><p class="post-meta">4 MB of storage! · ${formatCompactNumber(levelOf(context, 'free-email') * MAILBOXES_PER_LEVEL)} mailboxes</p>`;
+};
+
 // ---------- From the second run on ----------
 const SECONDS_PER_FRAME = 60;
 const WATCHERS_PER_LEVEL = 3;
@@ -538,6 +574,8 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   guestbook: renderGuestbook,
   'midi-player': renderMusicPlayer,
   webring: renderWebring,
+  'e-cards': renderECards,
+  'free-email': renderFreeEmail,
   blog: renderBlog,
   comments: renderComments,
   'tag-cloud': renderTagCloud,

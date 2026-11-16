@@ -1,6 +1,6 @@
 import type { TypingChunk } from './editor-buffers';
 import type { EraId } from '../engine';
-import { AI_POPUPS, HOMEPAGE_POPUPS, PLATFORM_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
+import { AI_POPUPS, CRASH_POPUPS, HOMEPAGE_POPUPS, PLATFORM_POPUPS, SOCIAL_POPUPS, WEB2_POPUPS } from './popup-copy';
 import type { PopupCopy } from './popup-copy';
 
 export interface MessageCopy {
@@ -78,31 +78,69 @@ export interface EraPresentation {
   readonly antivirusTitle: string;
 }
 
-export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
-  'homepage-1997': {
-    year: 1997,
-    browserTitle: '{name} - Web Navigator',
-    siteUrl: 'http://members.freewebspace.net/~{site}/index.htm',
-    editorTitle: 'INDEX.HTM - Text Editor',
-    editorMenu: ['File', 'Edit', 'Search', 'Help'],
-    editorTabs: [],
-    editorHighlightsSyntax: false,
-    typing: TYPED_BY_HAND,
-    popups: HOMEPAGE_POPUPS,
-    guestbook: [
-      { author: 'xX_SkaterBoi_Xx', text: 'cool site!!! check out mine 2' },
-      { author: 'Webmistress Jen', text: 'Love the background. Linked you from my page :)' },
-      { author: 'Anonymous', text: 'how do u make the text blink??' },
-      { author: 'CyberDude2000', text: 'First!!! oh wait' },
-      { author: 'grandma_dot', text: 'Very nice page dear. Is this the email?' },
-      { author: 'MIDI_Mike', text: 'what song is that playing. AWESOME' },
-      { author: 'NetSurfer98', text: 'Your page took 3 minutes to load. Worth it.' },
-      { author: 'darkangel', text: 'add me to ur webring plz' },
+const HOMEPAGE_PRESENTATION: EraPresentation = {
+  year: 1997,
+  browserTitle: '{name} - Web Navigator',
+  siteUrl: 'http://members.freewebspace.net/~{site}/index.htm',
+  editorTitle: 'INDEX.HTM - Text Editor',
+  editorMenu: ['File', 'Edit', 'Search', 'Help'],
+  editorTabs: [],
+  editorHighlightsSyntax: false,
+  typing: TYPED_BY_HAND,
+  popups: HOMEPAGE_POPUPS,
+  guestbook: [
+    { author: 'xX_SkaterBoi_Xx', text: 'cool site!!! check out mine 2' },
+    { author: 'Webmistress Jen', text: 'Love the background. Linked you from my page :)' },
+    { author: 'Anonymous', text: 'how do u make the text blink??' },
+    { author: 'CyberDude2000', text: 'First!!! oh wait' },
+    { author: 'grandma_dot', text: 'Very nice page dear. Is this the email?' },
+    { author: 'MIDI_Mike', text: 'what song is that playing. AWESOME' },
+    { author: 'NetSurfer98', text: 'Your page took 3 minutes to load. Worth it.' },
+    { author: 'darkangel', text: 'add me to ur webring plz' },
+  ],
+  musicTracks: ['song.mid', 'theme_from_game.mid', 'ballad_remix.mid', 'track03.mid'],
+  entryStory: null,
+  antivirusTitle: 'ANTIVIRUS.EXE',
+};
+
+/** 2000 is still 1997's homepage, in the same editor, with the crash all around it. */
+const CRASH_PRESENTATION: EraPresentation = {
+  ...HOMEPAGE_PRESENTATION,
+  year: 2000,
+  popups: CRASH_POPUPS,
+  guestbook: [
+    { author: 'xX_SkaterBoi_Xx', text: 'ur site is still here!!! mine got deleted' },
+    { author: 'DotComDave', text: 'my startup went bust. we had a foosball table. now I have time to sign guestbooks' },
+    { author: 'Webmistress Jen', text: 'Sent you an e-card :) the hamster one' },
+    { author: 'grandma_dot', text: 'Happy new millennium dear. Is this the email?' },
+    { author: 'CyberDude2000', text: 'Y2K was a scam. I still have 300 cans of beans' },
+    { author: 'Anonymous', text: 'anyone hiring? I know HTML AND JavaScript' },
+    { author: 'NetSurfer98', text: 'donated $5. keep the lights on!!' },
+    { author: 'darkangel', text: 'half the webring is 404 now :(' },
+  ],
+  musicTracks: ['millennium.mid', 'dancing_hamsters.mid', 'theme_from_game.mid', 'track03.mid'],
+  entryStory: {
+    heading: 'The bubble bursts',
+    hook: 'Y2K came and went. Then in March the dot-com bubble burst, and took the ad money with it.',
+    paragraphs: [
+      'January 2000. The clocks roll over and nothing breaks. For ten more weeks, everyone with a web site is going to be rich.',
+      'March. The bubble bursts. The advertisers were dot-coms too, and most of them are gone: a banner pays a fifth of what it did.',
+      'Your homepage is still here. Now it has to pay its own way until things recover: ask visitors for help, take a cut of what they buy, and give them reasons to come back.',
     ],
-    musicTracks: ['song.mid', 'theme_from_game.mid', 'ballad_remix.mid', 'track03.mid'],
-    entryStory: null,
-    antivirusTitle: 'ANTIVIRUS.EXE',
+    highlights: [
+      { icon: '📉', title: 'Ads pay a fifth', text: 'Banners annoy visitors as much as ever. Think about taking some down.' },
+      { icon: '☕', title: 'Money without ads', text: 'A donate button and affiliate links pay per visitor, ads or not.' },
+      { icon: '💌', title: 'Free e-cards', text: 'Every card sent is a link back to you. Hamsters help.' },
+      { icon: '📧', title: 'Free email', text: 'you@yoursite.com: a reason to come back every day.' },
+      { icon: '⏱️', title: 'A short era', text: 'Hold on until 2005. It all retires then, with no trade-in.' },
+    ],
+    confirmLabel: 'Relaunch for 2000',
   },
+};
+
+export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
+  'homepage-1997': HOMEPAGE_PRESENTATION,
+  'crash-2000': CRASH_PRESENTATION,
   'web2-2005': {
     year: 2005,
     browserTitle: '{site} | blog',
@@ -263,12 +301,60 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
   },
 };
 
+/**
+ * 2005 after living through the crash: the bubble already burst on your watch, so the story starts after it, and ads
+ * pay more than they did in 2000, not less.
+ */
+const WEB2_AFTER_CRASH_STORY: EraStory = {
+  heading: 'Web 2.0',
+  hook: 'You made it through the crash. Now someone coined “Web 2.0”, and sites became places where people post.',
+  paragraphs: [
+    'The crash is over, and your site is still standing. The e-cards, the free email and the donate button were stopgaps: they retire with it, and pay nothing back.',
+    'Somebody coins “Web 2.0”. Websites stop being pages you read and turn into places where people post.',
+    'Your homepage needs a relaunch: rounded corners, glossy gradients and a beta sticker. One problem: you still build everything with tables.',
+  ],
+  highlights: [
+    { icon: '🎨', title: 'Rebuild with CSS', text: 'Your 1997 look stays until you learn CSS. Then go glossy.' },
+    { icon: '📝', title: 'Blogs and comments', text: 'Blogs, comments and tag clouds, each unlocked by a skill.' },
+    { icon: '🏷️', title: 'New names', text: 'The guestbook becomes a shoutbox, the webring a blogroll.' },
+    { icon: '💸', title: 'Ads come back', text: 'Ad rates recover from the crash, and there’s room for more ads.' },
+    { icon: '🤖', title: 'Spam bots', text: 'Bots start spamming your comments.' },
+  ],
+  confirmLabel: 'Relaunch as Web 2.0',
+};
+
+/** Stories told on leaving a half-era: it leads into a big era whose own story assumes you skipped it. */
+const STORIES_ON_LEAVING: Readonly<Partial<Record<EraId, EraStory>>> = {
+  'crash-2000': WEB2_AFTER_CRASH_STORY,
+};
+
+/** The story of a relaunch from one era into the next. Null for 1997, which nobody relaunches into. */
+export function findEntryStory(fromEraId: EraId, toEraId: EraId): EraStory | null {
+  return STORIES_ON_LEAVING[fromEraId] ?? ERA_PRESENTATION[toEraId].entryStory;
+}
+
+/** Every story a relaunch can tell, for the tests that keep them short. */
+export function listEntryStories(): readonly EraStory[] {
+  const stories = [...Object.values(ERA_PRESENTATION).map((presentation) => presentation.entryStory), ...Object.values(STORIES_ON_LEAVING)];
+  return stories.filter((story): story is EraStory => story !== null && story !== undefined);
+}
+
 export const BANNER_ADS: readonly string[] = [
   'You are the 1,000,000th visitor!',
   'Get FREE web space! 2 MB!',
   'Make $$$ from home!!!',
   'FREE screensavers! Download now',
   'Win a 56k modem!',
+  'Your PC is running SLOW',
+];
+
+/** The crash's banners: the last dot-coms selling off what's left, and the scams that outlived them. */
+export const CRASH_BANNER_ADS: readonly string[] = [
+  'EVERYTHING MUST GO! Our startup is closing',
+  'Free shipping on 40 lb of dog food!',
+  'Y2K survival kits, 90% off',
+  'Work from home!!! (we mean it now)',
+  'FREE web space! While we last',
   'Your PC is running SLOW',
 ];
 

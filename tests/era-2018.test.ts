@@ -6,7 +6,6 @@ import {
   calculatePageWeightKb,
   createInitialGameState,
   createPlaytestState,
-  ERAS_BY_ID,
   findChosenFramework,
   getAvailableSkillIds,
   getFeatureDisplayName,
@@ -19,13 +18,17 @@ import {
   isFeatureRetired,
   isRenderedOnlyInBrowser,
   isUpgradeRetired,
+  findNextEraId,
 } from '../src/engine';
-import type { GameState, UpgradeId } from '../src/engine';
+import type { GameState, UpgradeId, EraId } from '../src/engine';
 import { buildEditorTabs, buildSiteUrl, measureNodeModulesMb, rateLighthouse, scoreLighthouse } from '../src/ui/browser-chrome';
 import { FRAMEWORK_PRESENTATION, resolveTyping } from '../src/ui/framework-presentation';
 import { renderSite } from '../src/ui/sites';
 import { buildEditorSource, mainEditorFile } from '../src/ui/skill-code';
 import { QUIET_HAZARDS } from './quiet-hazards';
+
+/** What comes after this era in a run: the first run skips the 2000 crash. */
+const nextOf = (eraId: EraId, runNumber = 1): EraId | null => findNextEraId({ ...createInitialGameState(1), eraId, runNumber });
 
 const SEED = 2018;
 const NOW = 0;
@@ -41,8 +44,8 @@ const in2018 = (skills: readonly UpgradeId[] = []): GameState => ({
 
 describe('2018: the era itself', () => {
   it('follows 2011 and leads into 2024', () => {
-    assert.equal(ERAS_BY_ID['social-2011'].nextEraId, 'platform-2018');
-    assert.equal(ERAS_BY_ID['platform-2018'].nextEraId, 'ai-2024');
+    assert.equal(nextOf('social-2011'), 'platform-2018');
+    assert.equal(nextOf('platform-2018'), 'ai-2024');
   });
 
   it('retires share counters, the forum and the one-pager, and stops the "Get our app!" banner', () => {

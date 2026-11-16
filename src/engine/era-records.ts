@@ -41,7 +41,16 @@ export function findEraRecord(state: GameState, eraId: EraId): EraRecord | null 
   return state.eraRecords.find((record) => record.eraId === eraId) ?? null;
 }
 
+export interface EraDuration {
+  readonly eraId: EraId;
+  readonly durationMs: number;
+}
+
 /** How long the player spent in each recorded era: from the previous relaunch (or the start) to this one. */
+export function listEraDurations(records: readonly EraRecord[]): readonly EraDuration[] {
+  return records.map((record, index) => ({ eraId: record.eraId, durationMs: record.endedAtPlayTimeMs - (records[index - 1]?.endedAtPlayTimeMs ?? 0) }));
+}
+
 export function calculateEraDurationsMs(records: readonly EraRecord[]): readonly number[] {
-  return records.map((record, index) => record.endedAtPlayTimeMs - (records[index - 1]?.endedAtPlayTimeMs ?? 0));
+  return listEraDurations(records).map((duration) => duration.durationMs);
 }

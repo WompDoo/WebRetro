@@ -29,6 +29,9 @@ const scam = (label: string, style: PopupButtonStyle = 'button'): PopupButton =>
 const NO_DETAILS: readonly string[] = [];
 const X_ONLY: readonly PopupButton[] = [];
 
+/** 1997's, and only 1997's: by 2000 the clocks rolled over and nothing broke. */
+const Y2K_WARNING: PopupCopy = { design: 'alert', title: 'Year 2000 warning', headline: 'Is your PC ready for the year 2000?', body: 'Only 3 years left. Act now. Or later. We’ll wait.', details: NO_DETAILS, buttons: X_ONLY, scamOutcome: '' };
+
 export const HOMEPAGE_POPUPS: readonly PopupCopy[] = [
   // The shiny button is the only button. Find the ×.
   { design: 'dialog', title: 'Congratulations!!!', headline: 'YOU ARE THE 1,000,000th VISITOR!', body: 'Click OK to claim your FREE prize. This is not a joke!!!', details: NO_DETAILS, buttons: [scam('OK!!!')], scamOutcome: 'You clicked OK to claim your prize. The prize was a “processing fee”.' },
@@ -38,13 +41,21 @@ export const HOMEPAGE_POPUPS: readonly PopupCopy[] = [
   // Both buttons are traps. Classic.
   { design: 'alert', title: 'System warning', headline: 'Your PC may be running SLOW!', body: 'Download our FREE optimizer. Only 14 minutes on a 28.8k modem.', details: NO_DETAILS, buttons: [scam('OK'), scam('Cancel')], scamOutcome: 'Both buttons said yes. The optimizer was spyware, and it optimized your bank account.' },
   { design: 'alert', title: 'Security alert', headline: 'Your computer is broadcasting an IP address!', body: 'Click OK to scan your hard drive for problems.', details: NO_DETAILS, buttons: [scam('Scan now', 'primary'), dismiss('Cancel')], scamOutcome: 'The scan found 312 problems and a $39.95 fix for each one.' },
-  { design: 'alert', title: 'Year 2000 warning', headline: 'Is your PC ready for the year 2000?', body: 'Only 3 years left. Act now. Or later. We’ll wait.', details: NO_DETAILS, buttons: X_ONLY, scamOutcome: '' },
+  Y2K_WARNING,
   { design: 'prize', title: 'WINNER WINNER', headline: 'YOU WON A 56K MODEM!', body: 'Surf the web at blazing speeds. Claim before midnight!', details: NO_DETAILS, buttons: [scam('CLAIM PRIZE NOW >>', 'cta'), dismiss('no thanks', 'link')], scamOutcome: 'You claimed the modem. Shipping and handling cost more than the modem.' },
   { design: 'prize', title: 'FREE FREE FREE', headline: '500 FREE SCREENSAVERS!', body: 'Aquariums. Starfields. Bouncing logos. All yours.', details: NO_DETAILS, buttons: [scam('click here', 'link')], scamOutcome: '500 screensavers, 1 surprise invoice.' },
   { design: 'prize', title: 'You have been chosen', headline: 'FREE CRUISE FOR TWO!', body: 'Just pay $49.99 shipping and handling.', details: NO_DETAILS, buttons: [scam('CLAIM CRUISE >>', 'cta')], scamOutcome: 'You claimed the free cruise. The shipping fee was everything.' },
   { design: 'download', title: 'Downloading...', headline: 'FREE_SCREENSAVERS.EXE', body: 'Saving to C:\\WINDOWS\\DESKTOP', details: ['Time left: 4 hours 12 minutes', 'Transfer rate: 2.1 KB/sec'], buttons: [dismiss('Cancel')], scamOutcome: '' },
   { design: 'download', title: 'Download complete', headline: 'spinning_skull.gif.exe', body: 'Saved to C:\\MY DOCUMENTS\\COOL STUFF', details: ['Size: 1.4 MB', 'Publisher: unknown'], buttons: [scam('Open', 'primary'), dismiss('Close')], scamOutcome: 'It was not a GIF. Your PC now plays a skull sound on startup and you paid to remove it.' },
   { design: 'download', title: 'Installing...', headline: 'COOL_CURSORS.EXE', body: 'Your mouse pointer will never be the same.', details: ['Time left: about 1 hour', 'Please do not pick up the phone'], buttons: X_ONLY, scamOutcome: '' },
+];
+
+/** 2000: 1997's pop-ups without the Y2K scare, and the dot-coms' last offers before the money ran out. */
+export const CRASH_POPUPS: readonly PopupCopy[] = [
+  ...HOMEPAGE_POPUPS.filter((popup) => popup !== Y2K_WARNING),
+  { design: 'prize', title: 'CLOSING DOWN SALE', headline: 'EVERYTHING MUST GO!', body: 'Our startup ran out of money. 40 lb of dog food, delivered free, while we last!', details: NO_DETAILS, buttons: [scam('BUY NOW >>', 'cta'), dismiss('no thanks', 'link')], scamOutcome: 'You paid up front for the dog food. The company closed before it shipped.' },
+  { design: 'dialog', title: 'Investor opportunity', headline: 'Get in before the IPO!', body: 'Shares in the next big web portal, only $5,000. It cannot lose.', details: NO_DETAILS, buttons: [scam('Invest!'), dismiss('No thanks')], scamOutcome: 'You invested before the IPO. There was no IPO.' },
+  { design: 'alert', title: 'Y2K follow-up', headline: 'You survived the year 2000!', body: 'Nothing broke. Buy our Y2K survival kit anyway, for next time.', details: NO_DETAILS, buttons: [scam('Buy the kit'), dismiss('OK')], scamOutcome: 'You bought a Y2K survival kit in March 2000. It was 300 cans of beans.' },
 ];
 
 export const WEB2_POPUPS: readonly PopupCopy[] = [

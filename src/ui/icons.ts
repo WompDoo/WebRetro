@@ -9,6 +9,10 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   guestbook: svg('<path d="M3 5h7a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H3ZM21 5h-7a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h7Z"/>'),
   'midi-player': svg('<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'),
   webring: svg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="4" r="2"/><circle cx="19" cy="15" r="2"/><circle cx="5" cy="15" r="2"/>'),
+  // A card with a heart on it.
+  'e-cards': svg('<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M12 16s-4-2.5-4-5a2 2 0 0 1 4-1 2 2 0 0 1 4 1c0 2.5-4 5-4 5Z"/>'),
+  // An @.
+  'free-email': svg('<circle cx="12" cy="12" r="3.5"/><path d="M15.5 12v1.5a2.5 2.5 0 0 0 5 0V12a8.5 8.5 0 1 0-3.4 6.8"/>'),
   blog: svg('<path d="M4 20h4L19 9l-4-4L4 16Z"/><path d="m13 7 4 4"/>'),
   comments: svg('<path d="M4 4h16v11H9l-5 5Z"/><path d="M8 9h8M8 12h5"/>'),
   'tag-cloud': svg('<path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.5 1.5A3.5 3.5 0 0 1 17.5 18Z"/>'),

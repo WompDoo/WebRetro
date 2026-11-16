@@ -177,7 +177,8 @@ describe('the second run: features the first never had', () => {
     const html = renderEndingAct(banked.state, 'legacy', null, banked.legacy);
     assert.match(html, /New on your next site/);
     RUN_TWO.forEach((featureId) => assert.ok(html.includes(FEATURES_BY_ID[featureId].name), featureId));
-    assert.doesNotMatch(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 2 }), /New on your next site/);
+    assert.match(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 2 }), /The dot-com crash<\/b>, a new era in 2000/);
+    assert.doesNotMatch(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 3 }), /New on your next site/);
   });
 });
 

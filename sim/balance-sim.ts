@@ -15,8 +15,8 @@ import {
   calculateRetirementPayout,
   calculateVisitorsPerSecond,
   createInitialGameState,
-  ERA_IDS,
-  ERAS_BY_ID,
+  findNextEraId,
+  getErasOfRun,
   formatCompactNumber,
   formatMoney,
   UPGRADES_BY_ID,
@@ -90,6 +90,9 @@ const SEEDS_PER_FRAMEWORK = 3;
 /** Far enough apart that the seeded rolls share nothing. */
 const SEED_STRIDE = 7_919;
 
+
+/** The balance sim plays a first run: the 2000 crash comes with the third. */
+const FIRST_RUN_ERAS = getErasOfRun(1);
 
 function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResult {
   let state = start.state;
@@ -187,7 +190,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
 
 /** What the relaunch pays back for retired features, in seconds of the income the player has right then. */
 function reportTradeIn(profileName: string, state: GameState, log: Log): void {
-  const nextEraId = ERAS_BY_ID[state.eraId].nextEraId;
+  const nextEraId = findNextEraId(state);
   if (nextEraId === null) return;
   const tradeIn = calculateRetirementPayout(state, nextEraId);
   const seconds = tradeIn / Math.max(1, calculateNetRevenuePerSecond(state));
@@ -366,7 +369,7 @@ async function playProfile(pool: WorkerPool, profile: PlayerProfile): Promise<Pl
   return {
     outcome: {
       name: profile.name,
-      finishedEveryEra: full.reports.length === ERA_IDS.length && frameworks.length === FRAMEWORK_IDS.length && frameworks.every(isFinished),
+      finishedEveryEra: full.reports.length === FIRST_RUN_ERAS.length && frameworks.length === FRAMEWORK_IDS.length && frameworks.every(isFinished),
       frameworks,
     },
     lines: [...full.lines, ...results.flatMap((result) => result.lines)],
@@ -406,7 +409,7 @@ function judge(outcomes: readonly ProfileOutcome[]): void {
     console.error(`FAILED: for ${names}, one framework's median makes 2018 more than ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% slower than another's.`);
     process.exitCode = 1;
   } else {
-    console.log(`OK: every player finished all ${ERA_IDS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% of the fastest.`);
+    console.log(`OK: every player finished all ${FIRST_RUN_ERAS.length} eras, with every framework within ${MAX_FRAMEWORK_SPREAD_SHARE * 100}% of the fastest.`);
   }
 }
 

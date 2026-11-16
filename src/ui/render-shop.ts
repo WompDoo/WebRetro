@@ -234,6 +234,9 @@ function renderBuildTab(state: GameState, view: ShopView): string {
 
 // ---------- Effects ----------
 
+/** Money per visitor is cents and fractions of them: three decimals, like the ad slot's line. */
+const PER_VISITOR_DECIMALS = 3;
+
 const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Extract<UpgradeEffect, { kind: K }>, eraId: EraId) => string } = {
   'keystroke-value-multiplier': (effect) => `Typing earns ${formatFactor(effect.factor)} this era`,
   'keystroke-revenue-share': (effect) => `Each keystroke also earns ${formatPercent(effect.share)} of your revenue per second`,
@@ -259,6 +262,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'automatic-certificate-renewal': () => 'The certificate never expires',
   'privacy-fine-multiplier': (effect) => `Privacy fines ${formatFactor(effect.factor)}`,
   'ai-answer-share-multiplier': (effect) => `Visitors kept away by AI answers ${formatFactor(effect.factor)}`,
+  'direct-revenue-per-visitor': (effect, eraId) => `+$${(effect.amount / ERAS_BY_ID[eraId].revenuePace).toFixed(PER_VISITOR_DECIMALS)} per visitor, ads or not`,
 };
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
@@ -467,8 +471,8 @@ function renderAdControls(state: GameState): string {
     ? '<button type="button" class="buy-button" disabled>Full</button>'
     : buyButton('place-ad', 'ad', calculateNextAdCost(state), describeAdPrice(calculateNextAdCost(state)));
   const removeButton = `<button type="button" class="ghost-button" data-action="remove-ad" ${state.adCount === 0 ? 'disabled' : ''}>Remove one</button>`;
-  return `<p class="shop-effect">Each ad: +$${calculateAdValuePerAd(state).toFixed(3)} per visitor, −${formatPercent(calculateAdAnnoyancePerAd(state))} visitors</p>
-      <p class="shop-effect is-muted">Now: $${calculateRevenuePerVisitor(state).toFixed(3)} per visitor · ads cost you ${formatPercent(NEUTRAL_FACTOR - calculateAdTrafficFactor(state))} of visitors</p>
+  return `<p class="shop-effect">Each ad: +$${calculateAdValuePerAd(state).toFixed(PER_VISITOR_DECIMALS)} per visitor, −${formatPercent(calculateAdAnnoyancePerAd(state))} visitors</p>
+      <p class="shop-effect is-muted">Now: $${calculateRevenuePerVisitor(state).toFixed(PER_VISITOR_DECIMALS)} per visitor · ads cost you ${formatPercent(NEUTRAL_FACTOR - calculateAdTrafficFactor(state))} of visitors</p>
       <div class="ad-controls">${removeButton}${placeButton}</div>`;
 }
 

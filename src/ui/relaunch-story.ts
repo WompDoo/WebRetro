@@ -35,7 +35,12 @@ function renderHighlight(highlight: StoryHighlight, index: number): string {
 function renderRetiring(state: GameState, nextEraId: EraId): string {
   const retiring = getFeaturesRetiringIn(state, nextEraId);
   const chips = retiring.map((featureId, index) => `<s class="retiring-chip" style="--index:${index}">${escapeHtml(getRetiredFeatureName(featureId))}</s>`).join('');
-  return retiring.length === 0 ? '' : `<div class="relaunch-retiring"><span class="relaunch-retiring-label">Retiring</span>${chips}<span class="relaunch-trade-in">Trade-in ${formatMoney(calculateRetirementPayout(state, nextEraId))}</span></div>`;
+  return retiring.length === 0 ? '' : `<div class="relaunch-retiring"><span class="relaunch-retiring-label">Retiring</span>${chips}${renderTradeIn(calculateRetirementPayout(state, nextEraId))}</div>`;
+}
+
+/** Nothing to show when only the crash's stopgaps retire: they pay no trade-in. */
+function renderTradeIn(payout: number): string {
+  return payout > 0 ? `<span class="relaunch-trade-in">Trade-in ${formatMoney(payout)}</span>` : '';
 }
 
 function renderFullStory(story: EraStory): string {

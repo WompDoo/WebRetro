@@ -10,6 +10,7 @@ import {
   DEFENSE_IDS,
   ERA_IDS,
   ERAS_BY_ID,
+  findNextEraId,
   bankBacklinks,
   buyPerk,
   PERK_IDS,
@@ -129,18 +130,19 @@ function runEraWipe(): void {
   void elements.eraWipe.offsetWidth;
   elements.eraWipe.classList.add('is-running');
   window.setTimeout(() => {
-    const nextEraId = ERAS_BY_ID[store.game.eraId].nextEraId;
+    const nextEraId = findNextEraId(store.game);
     // Said before the relaunch: afterwards the retired features are gone and their trade-in is paid.
     const retirement = nextEraId === null ? '' : describeRetirement(store.game, nextEraId);
     updateGame(advanceEra);
-    pushMessage(`Relaunched as ${ERAS_BY_ID[store.game.eraId].name}. Your old features got a makeover. ${retirement}`.trim());
+    const era = ERAS_BY_ID[store.game.eraId];
+    pushMessage(`Relaunched for ${era.year}: ${era.name}. Your old features got a makeover. ${retirement}`.trim());
   }, WIPE_SWAP_DELAY_MS);
   window.setTimeout(() => elements.eraWipe.classList.remove('is-running'), WIPE_DURATION_MS);
 }
 
 function startMigration(): void {
   if (!isEraGateComplete(store.game)) return;
-  const isFinalEra = ERAS_BY_ID[store.game.eraId].nextEraId === null;
+  const isFinalEra = findNextEraId(store.game) === null;
   if (isFinalEra) {
     updateGame(advanceEra);
     return;

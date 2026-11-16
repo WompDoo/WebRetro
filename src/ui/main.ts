@@ -1,4 +1,4 @@
-import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
@@ -60,7 +60,7 @@ function findMinigameTarget(infectionId: number): MinigameTarget | null {
 }
 
 function isJavaScriptLearnedIn1997(): boolean {
-  return store.game.eraId === 'homepage-1997' && store.game.purchasedUpgradeIds.includes('learn-javascript');
+  return getBaseEraId(store.game.eraId) === 'homepage-1997' && store.game.purchasedUpgradeIds.includes('learn-javascript');
 }
 
 /** A game nobody has played yet opens with the intro. Playtests and saves go straight in. */

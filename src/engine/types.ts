@@ -1,4 +1,5 @@
-export type EraId = 'homepage-1997' | 'web2-2005' | 'social-2011' | 'platform-2018' | 'ai-2024';
+/** The eras in order. 2000 is a half-era: the dot-com crash, from the third run on. */
+export type EraId = 'homepage-1997' | 'crash-2000' | 'web2-2005' | 'social-2011' | 'platform-2018' | 'ai-2024';
 
 /** 2018's framework wars: a site picks one, and it shapes everything after. */
 export type FrameworkId = 'react' | 'angular' | 'vue';
@@ -9,6 +10,8 @@ export type FeatureId =
   | 'guestbook'
   | 'midi-player'
   | 'webring'
+  | 'e-cards'
+  | 'free-email'
   | 'blog'
   | 'comments'
   | 'tag-cloud'
@@ -144,6 +147,10 @@ export type UpgradeId =
   | 'paywall'
   | 'observability'
   | 'spot-gpus'
+  | 'learn-sendmail'
+  | 'donate-button'
+  | 'affiliate-links'
+  | 'dancing-hamsters'
   | 'fixed-width-800'
   | 'css-sprites'
   | 'cufon'
@@ -271,7 +278,9 @@ export type UpgradeEffect =
   /** How big the GDPR's fines are: lawyers shrink them, tracking everyone grows them. */
   | { readonly kind: 'privacy-fine-multiplier'; readonly factor: number }
   /** How much of the AI-answers loss is left: writing for AI answers gets you quoted, with a link. */
-  | { readonly kind: 'ai-answer-share-multiplier'; readonly factor: number };
+  | { readonly kind: 'ai-answer-share-multiplier'; readonly factor: number }
+  /** Money a visitor brings without an ad: a donation, a cut of a sale. Ads don't have to be on the page for it. */
+  | { readonly kind: 'direct-revenue-per-visitor'; readonly amount: number };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -317,11 +326,22 @@ export interface EraDefinition {
   readonly id: EraId;
   readonly year: number;
   readonly name: string;
-  readonly nextEraId: EraId | null;
-  readonly nextEraName: string;
-  readonly nextEraYear: number;
-  readonly migrationLabel: string;
+  /**
+   * The first run the era is part of. Every run plays the big eras; a half-era between them (the 2000 crash) comes
+   * with a later run, so which era comes next depends on the run.
+   */
+  readonly fromRun: number;
+  /**
+   * The big era this one belongs to: itself, or for a half-era the one it sits in. The 2000 crash is still 1997's
+   * web, so it types with 1997's editor and skills and keeps 1997's ops.
+   */
+  readonly baseEraId: EraId;
+  /** The button that relaunches the site into this era. */
+  readonly relaunchLabel: string;
+  /** What leaving this era costs: the gate asks you to save it first. */
   readonly migrationCost: number;
+  /** An era finished faster than this earns a Backlink: 45 minutes for a big era, less for a half-era. */
+  readonly fastFinishMinutes: number;
   readonly gateRequirements: readonly EraGateRequirement[];
   readonly adLabel: string;
   /** The skill needed before you can place ads in this era (banners are just images). */

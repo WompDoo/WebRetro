@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createPlaytestState, ERA_IDS } from '../src/engine';
-import { ERA_PRESENTATION } from '../src/ui/presentation';
+import { createPlaytestState } from '../src/engine';
+import { ERA_PRESENTATION, listEntryStories } from '../src/ui/presentation';
 import { renderRelaunchStory, renderYearOdometer } from '../src/ui/relaunch-story';
 
 /**
@@ -16,10 +16,7 @@ const MAX_CARD_TEXT_CHARACTERS = 80;
 const MIN_CARDS = 4;
 const MAX_CARDS = 6;
 
-const stories = ERA_IDS.flatMap((eraId) => {
-  const story = ERA_PRESENTATION[eraId].entryStory;
-  return story === null ? [] : [{ eraId, story }];
-});
+const stories = listEntryStories().map((story) => ({ eraId: story.heading, story }));
 
 describe('every relaunch reads at a glance', () => {
   it('has a one-line hook and four to six short cards', () => {
@@ -35,7 +32,9 @@ describe('every relaunch reads at a glance', () => {
 });
 
 describe('the relaunch card', () => {
-  const end2018 = createPlaytestState('platform-2018', 'end', SEED, 'react');
+  const preset2018 = createPlaytestState('platform-2018', 'end', SEED, 'react');
+  // Stories retire in 2024: what they earned comes back as the trade-in.
+  const end2018 = { ...preset2018, featureEarnings: { ...preset2018.featureEarnings, stories: 2_000_000 } };
   const story = ERA_PRESENTATION['ai-2024'].entryStory;
 
   it('rolls the year over from the era you leave to the one you enter', () => {
@@ -50,7 +49,7 @@ describe('the relaunch card', () => {
     const html = renderRelaunchStory(end2018, 'ai-2024', story);
     assert.equal((html.match(/class="relaunch-card"/g) ?? []).length, story.highlights.length);
     assert.match(html, /<s class="retiring-chip"[^>]*>Stories<\/s>/);
-    assert.match(html, /Trade-in \$/);
+    assert.match(html, /Trade-in \$1\.00M/);
     assert.match(html, /<details class="relaunch-story"><summary>Read the story<\/summary>/);
     assert.match(html, /data-action="cancel-migration">Not yet/);
     assert.match(html, /data-action="confirm-migration">Relaunch with AI/);

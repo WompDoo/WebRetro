@@ -7,6 +7,7 @@
  *   SIM_PLAYERS=idle,ad-free npm run players  just these (run several in parallel from the shell)
  *   SIM_START=social-2011                   start at that era's playtest preset instead of a new game
  *   SIM_PLAYERS=optimizer-run-2             a second run: the same player with a first run's perks
+ *   SIM_PLAYERS=optimizer-run-3             a third run: two runs' perks, and the 2000 crash between 1997 and 2005
  */
 import {
   advanceEra,
@@ -23,6 +24,7 @@ import {
   isEraGateComplete,
   isSiteDown,
   isVisitorsGoalBlockedByAds,
+  isAdLosingMoney,
   removeAd,
   buyDefense,
   canBuyDefense,
@@ -152,10 +154,15 @@ function buyDefenseAgainstTrouble(state: GameState): GameState {
   return counter === undefined ? state : buyDefense(state, counter);
 }
 
-/** Every type reads the tips: when an ad too many holds visitors under the goal, it takes one down. */
+/** Every type reads the tips: when an ad too many holds visitors under the goal, or loses money, it takes one down. */
 function followTips(state: GameState, profile: PlayerProfile): GameState {
   const defended = profile.buysDefenses ? buyDefenseAgainstTrouble(state) : state;
-  return isVisitorsGoalBlockedByAds(defended) ? removeAd(defended) : defended;
+  return isAdTooMany(defended, profile) ? removeAd(defended) : defended;
+}
+
+/** The ad-heavy player keeps every slot full whatever the tips say: that's the type. */
+function isAdTooMany(state: GameState, profile: PlayerProfile): boolean {
+  return isVisitorsGoalBlockedByAds(state) || (profile.policy !== 'ad-heavy' && isAdLosingMoney(state));
 }
 
 /** One visit to the shop: buy, look again, buy again, until nothing more is worth it. The tips last, as a player would. */
@@ -178,6 +185,7 @@ interface Run {
   readonly label: string;
   readonly type: PlayerType;
   readonly perks: Readonly<Record<PerkId, number>>;
+  readonly runNumber: number;
 }
 
 /**
@@ -189,21 +197,32 @@ const SECOND_RUN_PERKS: Readonly<Record<string, Readonly<Record<PerkId, number>>
   casual: { ...NO_PERKS, 'muscle-memory': 1, regulars: 2, templates: 1, 'known-tags': 1, 'early-warning': 1 },
 };
 
-function listRuns(): readonly Run[] {
-  const firstRuns = PLAYER_TYPES.map((type) => ({ label: type.profile.name, type, perks: NO_PERKS }));
-  const secondRuns = PLAYER_TYPES.flatMap((type) => {
-    const perks = SECOND_RUN_PERKS[type.profile.name];
-    return perks === undefined ? [] : [{ label: `${type.profile.name}-run-2`, type, perks }];
+/** Two runs' Backlinks, about 15: the second run's spread, plus a second level of what helps most. */
+const THIRD_RUN_PERKS: Readonly<Record<string, Readonly<Record<PerkId, number>>>> = {
+  optimizer: { ...NO_PERKS, 'muscle-memory': 2, regulars: 3, templates: 2, 'known-tags': 1, 'early-warning': 1, 'old-savings': 1 },
+  casual: { ...NO_PERKS, 'muscle-memory': 2, regulars: 3, templates: 1, 'known-tags': 2, 'early-warning': 2 },
+};
+
+const SECOND_RUN = 2;
+const THIRD_RUN = 3;
+
+function listLaterRuns(perksByType: Readonly<Record<string, Readonly<Record<PerkId, number>>>>, runNumber: number): readonly Run[] {
+  return PLAYER_TYPES.flatMap((type) => {
+    const perks = perksByType[type.profile.name];
+    return perks === undefined ? [] : [{ label: `${type.profile.name}-run-${runNumber}`, type, perks, runNumber }];
   });
-  return [...firstRuns, ...secondRuns];
+}
+
+function listRuns(): readonly Run[] {
+  const firstRuns = PLAYER_TYPES.map((type) => ({ label: type.profile.name, type, perks: NO_PERKS, runNumber: 1 }));
+  return [...firstRuns, ...listLaterRuns(SECOND_RUN_PERKS, SECOND_RUN), ...listLaterRuns(THIRD_RUN_PERKS, THIRD_RUN)];
 }
 
 /** A new game, or the start of the era SIM_START names: each era's cliffs show up without playing the ones before. */
 function createStart(run: Run): GameState {
   const start = process.env['SIM_START'] ?? '';
   const state = isEraId(start) ? createPlaytestState(start, 'start', SEED, run.type.profile.framework) : createInitialGameState(SEED);
-  const isSecondRun = run.perks !== NO_PERKS;
-  return chooseConsentBanner({ ...state, legacyPerkLevels: run.perks, runNumber: isSecondRun ? 2 : 1 }, run.type.profile.consentBanner);
+  return chooseConsentBanner({ ...state, legacyPerkLevels: run.perks, runNumber: run.runNumber }, run.type.profile.consentBanner);
 }
 
 function play(run: Run): PlayerReport {

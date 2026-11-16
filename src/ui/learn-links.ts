@@ -21,6 +21,8 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'table-layouts': `${MDN}/Web/HTML/Element/table`,
   'embed-tag': `${MDN}/Web/HTML/Element/embed`,
   'learn-javascript': `${MDN}/Web/JavaScript/Guide`,
+  // 2000 skill
+  'learn-sendmail': `${WIKIPEDIA}/Sendmail`,
   // 2005 skills
   'learn-css': `${MDN}/Web/CSS`,
   'learn-php': 'https://www.php.net/manual/en/getting-started.php',
@@ -127,6 +129,9 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   observability: `${WIKIPEDIA}/Observability_(software)`,
   'spot-gpus': `${WIKIPEDIA}/Graphics_processing_unit`,
   'fixed-width-800': `${WIKIPEDIA}/Spacer_GIF`,
+  'donate-button': `${WIKIPEDIA}/Dot-com_bubble`,
+  'affiliate-links': `${WIKIPEDIA}/Affiliate_marketing`,
+  'dancing-hamsters': `${WIKIPEDIA}/Hampster_Dance`,
   'css-sprites': `${MDN}/Web/CSS/CSS_images/Implementing_image_sprites_in_CSS`,
   cufon: `${WIKIPEDIA}/Web_typography`,
   'vendor-prefixes': `${MDN}/Glossary/Vendor_Prefix`,

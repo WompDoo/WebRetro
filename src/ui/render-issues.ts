@@ -65,6 +65,7 @@ function renderTicket(issue: Issue, state: GameState, nowMs: number): string {
 
 const TRACKER_STYLES: Readonly<Record<EraId, TrackerStyle>> = {
   'homepage-1997': { panelTitle: 'Inbox', emptyText: 'No new mail.', renderIssue: renderEmail },
+  'crash-2000': { panelTitle: 'Inbox', emptyText: 'No new mail. Not even from investors.', renderIssue: renderEmail },
   'web2-2005': { panelTitle: 'Issues', emptyText: 'No open bugs. Ship it!', renderIssue: renderBug },
   'social-2011': { panelTitle: 'Mentions', emptyText: 'Nobody is complaining about you. For now.', renderIssue: renderMention },
   'platform-2018': { panelTitle: 'Board', emptyText: 'Board is clear. Time for a retro.', renderIssue: renderTicket },

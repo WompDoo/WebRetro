@@ -1,9 +1,9 @@
-import { ERAS_BY_ID } from '../engine';
+import { findNextEraId } from '../engine';
 import type { EraId, GameState, LegacyState } from '../engine';
 import { elements } from './elements';
 import { renderEndingAct } from './ending';
 import type { EndingAct } from './ending';
-import { ERA_PRESENTATION } from './presentation';
+import { findEntryStory } from './presentation';
 import { renderRelaunchStory } from './relaunch-story';
 
 
@@ -19,9 +19,13 @@ export function hideOverlay(overlay: HTMLElement): void {
 
 /** Fills the relaunch story for the next era. False in the final era, which has no story to tell. */
 export function renderStory(state: GameState): boolean {
-  const nextEraId = ERAS_BY_ID[state.eraId].nextEraId;
-  const story = nextEraId === null ? null : ERA_PRESENTATION[nextEraId].entryStory;
-  if (story === null || nextEraId === null) return false;
+  const nextEraId = findNextEraId(state);
+  return nextEraId !== null && renderStoryOf(state, nextEraId);
+}
+
+function renderStoryOf(state: GameState, nextEraId: EraId): boolean {
+  const story = findEntryStory(state.eraId, nextEraId);
+  if (story === null) return false;
   elements.storyCard.innerHTML = renderRelaunchStory(state, nextEraId, story);
   return true;
 }

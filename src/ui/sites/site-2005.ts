@@ -1,7 +1,7 @@
 import { getActiveUpgradeIds } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
-import { CONTEXTUAL_TEXT_ADS, TEXT_ADS } from '../presentation';
+import { BANNER_ADS, CONTEXTUAL_TEXT_ADS, TEXT_ADS } from '../presentation';
 import type { TextAdCopy } from '../presentation';
 import { renderFeatureBlocks } from './features';
 import { siteBrand } from './site-context';
@@ -25,6 +25,8 @@ const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.
 function legacy2005Content(skills: HomepageSkills, state: GameState): HomepageContent {
   return {
     title: skills.font ? `Welcome to ${escapeHtml(siteBrand(state))} 2.0!!!` : `${escapeHtml(siteBrand(state))} 2.0`,
+    notice: '',
+    bannerAds: BANNER_ADS,
     sidebarFeatures: LEGACY_SIDEBAR_FEATURES,
     mainFeatures: LEGACY_MAIN_FEATURES,
   };
