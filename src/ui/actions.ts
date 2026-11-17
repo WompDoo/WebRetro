@@ -48,6 +48,7 @@ import type { Intro } from './intro';
 import type { MinigameModal } from './minigames/minigame-modal';
 import { MOBILE_TABS, pushMessage, startNewGame, store, updateGame } from './store';
 import type { MobileTab } from './store';
+import { addKeystrokePay } from './typing-income';
 
 type ActionHandler = (target: HTMLElement) => void;
 
@@ -121,6 +122,7 @@ function withId<T extends string>(isId: (value: string) => value is T, act: (id:
 export function writeCodeKeystroke(): KeystrokeFeedback {
   const result = writeCode(store.game);
   store.game = result.state;
+  store.typingIncomePool = addKeystrokePay(store.typingIncomePool, result.earned);
   return { outcome: result.outcome, earned: result.earned };
 }
 
