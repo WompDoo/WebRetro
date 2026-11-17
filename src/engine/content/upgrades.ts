@@ -1242,10 +1242,10 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     kind: 'boost',
     eraId: 'ai-2024',
     name: 'Run an AI coding agent',
-    description: 'Never sleeps, never asks for a raise, types twice as fast as you do. Occasionally deletes the database, then apologizes.',
-    cost: 140_000_000_000_000,
+    description: 'Never sleeps, never asks for a raise, types faster than you do. Occasionally deletes the database, then apologizes.',
+    cost: 160_000_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'auto-keystrokes', perSecond: 12 }],
+    effects: [{ kind: 'auto-keystrokes', perSecond: 8 }],
     requiredFeatureId: null,
   },
   // ---------- Ops: how you run the site. They live in the Ops tab, next to hosting ----------
