@@ -557,6 +557,14 @@ like viruses and DDoS have, can come later for the others.
   0.4%, 1.9% and 4% of income, too little to notice. Era-bound like typing skills, paid offline, never on fire, typos included. The agent
   first typed 12 a second for $60T and cut 2024 by a fifth (median of nine runs 34.5 → 27.2 min); at 8 a second for
   $160T the hires shorten 2011 and 2024 by about 7–10% and the whole game by about 4% (2005 and 2018 within noise).
+- **Buffs and hired help, measured together.** `SIM_WITHOUT=fire,offers,hires` plays the same game without them,
+  and each era's report says how much of it every buff was running. With all three, the active player's game took
+  154.6 minutes against 207.5 without (−25%), the relaxed player's 217.6 against 295 (−26%): on fire saved 12%, offers
+  10%, hired help 6.5%. On fire was running 29–45% of every era, so it wasn't a moment but the normal state. It keeps
+  its ×3 and now lasts 15 seconds instead of 30; a clean keystroke adds 0.008 heat instead of 0.01, and a typo takes
+  0.016 instead of 0.02, so 2018 and 2024's typo rates don't shut it out. Now it runs 13–25% of an era for the active
+  player and 7–12% for the relaxed one, and the games take 170.3 and 234.0 minutes: buffs and hires together save
+  18–21%. Offers (5–15% each) and hires stay as they were. Quick fix runs 34–75% of the time: see "Known issues".
 - **The 2018 hazards cost about 5–8% of the era.** Broken builds take 7–8% of play time in minigames, and the GDPR
   is tuned so every banner costs something: none about 11% of revenue in fines, honest about 7% in ad value, a dark
   pattern about the same on average but in lumps. The first pass cost 15% whichever was picked, and stretched 2018
