@@ -15,6 +15,7 @@ import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
 import { applyStep, pickStartingMobileTab, store, updateGame } from './store';
+import { drainTypingIncome } from './typing-income';
 
 interface ClaudeHotApi {
   readonly data?: unknown;
@@ -40,6 +41,7 @@ function tick(): void {
   const now = performance.now();
   const elapsedMs = Math.min(now - lastTickAt, MAX_OFFLINE_MS);
   lastTickAt = now;
+  store.typingIncomePool = drainTypingIncome(store.typingIncomePool, elapsedMs);
   if (isSimulationPaused()) return;
   const mode: SimulationMode = elapsedMs > OFFLINE_THRESHOLD_MS ? 'offline' : 'live';
   // Playtest speed runs more game time per tick; live or offline still depends on real time.

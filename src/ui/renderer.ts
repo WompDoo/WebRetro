@@ -34,6 +34,7 @@ import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './ren
 import { renderPhoneNotifications } from './render-notifications';
 import { buildEditorSource } from './skill-code';
 import { createCursorTrail } from './cursor-trail';
+import { describeIncomeSources, describeTypingBoost, readTypingIncomePerSecond } from './typing-income';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countUnreadNews, markNewsRead, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
@@ -125,11 +126,19 @@ function renderStats(editor: CodeEditor): void {
   const economy = calculateEconomySnapshot(store.game);
   setTextIfChanged(elements.statMoney, formatMoney(store.game.money));
   setTextIfChanged(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
-  setTextIfChanged(elements.statRevenue, `${formatMoney(economy.netRevenuePerSecond)}/s`);
+  renderIncome(economy.netRevenuePerSecond);
   renderProjectedBacklinks();
   editor.updateRate(economy.keystrokeValue, economy.bugChance);
   editor.updateHeat(store.game.typingHeat, findFireRemainingMs(store.game));
   renderBuffs();
+}
+
+/** Income is everything coming in: the site's revenue, and what your typing has paid over the last few seconds. */
+function renderIncome(siteRevenuePerSecond: number): void {
+  const typingPerSecond = readTypingIncomePerSecond(store.typingIncomePool);
+  setTextIfChanged(elements.statIncome, `${formatMoney(siteRevenuePerSecond + typingPerSecond)}/s`);
+  setTextIfChanged(elements.statIncomeTyping, describeTypingBoost(siteRevenuePerSecond, typingPerSecond));
+  elements.statIncomeBox.title = describeIncomeSources(siteRevenuePerSecond, typingPerSecond);
 }
 
 function updateChipTime(key: string, text: string): void {
@@ -146,7 +155,7 @@ function renderBuffs(): void {
   buffChipsSignature = signature;
   listChipTimes(store.game).forEach(([key, text]) => updateChipTime(key, text));
   elements.statVisitorsBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'traffic'));
-  elements.statRevenueBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'ad-value'));
+  elements.statIncomeBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'ad-value') || isTargetBuffed(store.game, 'typing'));
 }
 
 /** After the first finished run: what finishing this one now would earn. The first run is about the site. */

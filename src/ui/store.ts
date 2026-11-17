@@ -40,6 +40,8 @@ interface UiStore {
   /** The playtest panel: hidden from players unless asked for (?playtest, or five taps on the money). */
   isPlaytestEnabled: boolean;
   playtestSpeed: PlaytestSpeed;
+  /** What your recent keystrokes paid, draining over a couple of seconds: see typing-income.ts. */
+  typingIncomePool: number;
 }
 
 const MAX_NEWS_ITEMS = 14;
@@ -68,6 +70,7 @@ export const store: UiStore = {
   lastSeenNewsId: 0,
   isPlaytestEnabled: false,
   playtestSpeed: 1,
+  typingIncomePool: 0,
 };
 
 export function updateGame(update: (state: GameState) => GameState): void {
@@ -101,6 +104,7 @@ export function replaceGame(game: GameState): void {
   store.editorFile = null;
   store.deviceView = 'desktop';
   store.mobileTab = pickStartingMobileTab(store.game);
+  store.typingIncomePool = 0;
 }
 
 /** Every new site starts in 1997 with the legacy's perks: Start over and a new run from the credits alike. */
