@@ -39,11 +39,11 @@ export const OPPORTUNITIES_BY_KIND: Readonly<Record<OpportunityKind, Opportunity
   'launch-day': {
     kind: 'launch-day',
     buffId: 'launch-day',
-    minigameId: 'merge-conflict',
-    offer: 'Two versions of the same page: merge them and launch',
+    minigameId: 'launch-window',
+    offer: 'A big release is ready: launch it',
     icon: '🚀',
-    won: `Merged and launched! Visitors ×${BUFFS_BY_ID['launch-day'].factor} for ${BUFFS_BY_ID['launch-day'].durationMs / 1_000} seconds.`,
-    missed: 'The merge sat too long. The launch slipped to next week.',
+    won: `Launched! Visitors ×${BUFFS_BY_ID['launch-day'].factor} for ${BUFFS_BY_ID['launch-day'].durationMs / 1_000} seconds.`,
+    missed: 'The launch slipped to next week.',
     isUseful: (state) => FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0),
   },
 };

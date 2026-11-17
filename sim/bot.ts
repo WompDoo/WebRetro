@@ -312,8 +312,8 @@ export function renewWhenNoticed(state: GameState, seenAt: Map<number, number>, 
   return now - noticedAt >= profile.reactionMs && PLAYER_POLICIES[profile.policy].renewsCertificate ? renewCertificate(state) : state;
 }
 
-/** How long winning an offer's minigame takes once it's open: typing a sponsor's code, or reading and merging a conflict. */
-const OFFER_MINIGAME_MS: Readonly<Record<BuffMinigameId, number>> = { 'code-entry': 8_000, 'merge-conflict': 10_000 };
+/** How long winning an offer's minigame takes once it's open: typing a sponsor's code, or three launch windows. */
+const OFFER_MINIGAME_MS: Readonly<Record<BuffMinigameId, number>> = { 'code-entry': 8_000, 'launch-window': 6_000 };
 
 /**
  * An offer, taken once noticed and typed in: a player who notices within the window wins it, one who takes longer

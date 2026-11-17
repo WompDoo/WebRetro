@@ -325,7 +325,13 @@ export function createClickHandler(handlers: Readonly<Record<string, ActionHandl
 
 export function createKeydownHandler(minigame: MinigameModal): (event: KeyboardEvent) => void {
   return (event) => {
-    if (minigame.handleKey(event) || event.key !== 'Escape') return;
+    // A key the minigame used stops there: Space or Enter would otherwise also press whatever button has focus,
+    // such as the offer chip that opened it, and start the minigame over.
+    if (minigame.handleKey(event)) {
+      event.preventDefault();
+      return;
+    }
+    if (event.key !== 'Escape') return;
     const topPopup = store.game.popups[store.game.popups.length - 1];
     if (topPopup !== undefined) updateGame((state) => closePopup(state, topPopup.id));
   };
