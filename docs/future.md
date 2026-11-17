@@ -248,9 +248,18 @@ How it plays:
 - **The list is on screen from the first minute**, at the top of the Build tab (where the levels are raised), and
   folds away. Every route is a card: icon, pitch, how it makes money, and its conditions with progress
   ("Photo gallery 9/15 · Comments 10/10 ✓"). A route whose features come later says so ("Builds in 2005").
-- **An unlock is a few feature levels**, sometimes a skill, reached this run. It unlocks for good, with a news line
-  ("New specialization unlocked: Photo sharing. You can become one at your next relaunch."); levels lost later don't
-  take it back. The thresholds sit above the checklist's, so a route is a choice to focus.
+- **An unlock is a commitment.** Its signature feature costs about six minutes of the era's end income above what a
+  player builds anyway, and its other condition about a minute and a half (the balance sim logs every relaunch's
+  levels, so the numbers come from play, not guesses). One route is a detour; two is a sacrifice; a normal run
+  unlocks nothing by accident (a test checks it).
+- **It has a window: the era its features belong to.** A 2005 feature costs next to nothing in 2011's money, so the
+  2005 routes unlock by the end of 2005 or not this run, and 2011's by the end of 2011. Cards say "Unlock by the end
+  of 2005", then "Missed this run".
+- **It unlocks for good**, with a news line ("New specialization unlocked: Photo sharing. You can become one at your
+  next relaunch."); levels lost later don't take it back.
+- **The checklist's focus asks about as much of you as the era's own item does**: a few levels above what a player
+  builds anyway in 2011 and 2018, and about what they have by the end in 2024 (players finish with the AI chatbot at
+  27, so its 15 never costs the era time). Not 15 of everything: the video player ends 2011 around 5.
 - **The relaunch story asks** "What does your site become in 2011?" with a card per unlocked route, and how many
   more there are to unlock. The news says what it became.
 - **Each era it shapes, the route changes:** the checklist's feature requirement (a video site's 2011 asks for the
@@ -258,17 +267,17 @@ How it plays:
 - **The ending says what the homepage became:** "Your homepage became a photo-sharing site, then a social network."
   A site that went back says so ("…a video site, then a homepage again"); one that never specialized says nothing.
 
-| Route | Unlocks with | 2011 focus | 2018 focus | 2024 focus | Money |
+| Route | Unlocks with (and by when) | 2011 checklist | 2018 checklist | 2024 checklist | Money |
 |---|---|---|---|---|---|
-| 🏠 Homepage | always: no specialization | share buttons | stories | AI chatbot | the classic game's: ads, steady all the way |
-| 📷 Photo sharing | Photo gallery 15 · Comments 10 | share buttons | stories | AI images | more room for ads, heavy on servers |
-| 🎬 Video site | Flash intro 15 · Learn the `<EMBED>` tag | video player | stories | for-you feed | pre-roll ads worth more every era; huge bandwidth |
-| 💬 Microblog | Guestbook 60 · Comments 15 | activity feed | live chat | for-you feed | enormous traffic, little per visitor |
-| 📰 News site | Blog 25 · Tag cloud 10 · Learn RSS and tagging | activity feed | newsletter | AI articles | ads early, a paywall later; AI answers take clicks |
-| ⭐ Reviews | Map mashup 10 · Comments 10 | social login | language switcher | AI search | a cut of every booking |
-| 👥 Social network | Activity feed 10 · Share buttons 25 | activity feed | stories | for-you feed | slow start, then the biggest ad business, and fines |
-| 📡 Live streaming | Video player 15 · Activity feed 5 | video player | live chat | AI chatbot | subscriptions and tips that grow every era |
-| 🛒 Shop | Photo gallery 15 · Social login 10 | social login | pricing table | AI chatbot | sales instead of ads; ads drive shoppers away |
+| 🏠 Homepage | always: no specialization | Share buttons 15 | Stories 15 | AI chatbot 15 | the classic game's: ads, steady all the way |
+| 📷 Photo sharing | Photo gallery 35 · Comments 20, by the end of 2005 | Share buttons 15 | Stories 15 | AI images 12 | ads that annoy less; heavy on servers |
+| 🎬 Video site | Flash intro 30 · Learn the `<EMBED>` tag, by the end of 2005 | Video player 8 | Stories 15 | For-you feed 12 | pre-roll ads pay very well; huge bandwidth |
+| 💬 Microblog | Guestbook 90 · Comments 20, by the end of 2005 | Activity feed 9 | Live chat 10 | For-you feed 12 | enormous traffic, little per visitor |
+| 📰 News site | Blog 60 · Tag cloud 5 · Learn RSS and tagging, by the end of 2005 | Activity feed 9 | Newsletter 13 | AI articles 20 | ads early, a paywall later; AI answers take clicks |
+| ⭐ Reviews | Map mashup 20 · Comments 20, by the end of 2005 | Sign in with… 5 | Language switcher 14 | AI search 15 | a cut of every booking |
+| 👥 Social network | Activity feed 18 · Share buttons 25, by the end of 2011 | Activity feed 9 | Stories 15 | For-you feed 12 | slow start, then the biggest ad business, and fines |
+| 📡 Live streaming | Video player 25 · Activity feed 10, by the end of 2011 | Video player 8 | Live chat 10 | AI chatbot 15 | subscriptions and tips |
+| 🛒 Shop | Sign in with… 13 · Photo gallery 35, by the end of 2011 | Sign in with… 5 | Pricing table 14 | AI chatbot 15 | sales instead of ads; ads drive shoppers away |
 
 What changed from the design, and why:
 
