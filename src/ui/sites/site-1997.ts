@@ -8,7 +8,7 @@ import type { SiteContext } from './site-context';
 const BANNER_STYLES = 4;
 const MARQUEE_TEXT = '*** Best viewed with Web Navigator 3.0 *** Sign my guestbook!!! *** You are LIVE on the World Wide Web ***';
 /** With tables, the music player sits right under the navigation, where every 1997 sidebar kept it. */
-const TABLE_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'webring'];
+const TABLE_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'custom-cursor', 'webring'];
 const TABLE_MAIN_FEATURES: readonly FeatureId[] = ['webcam', 'e-cards', 'free-email', 'under-construction', 'guestbook'];
 // Stacked 1997 pages list the sidebar features first, the way they were built.
 const STACKED_1997_ORDER: readonly FeatureId[] = FEATURE_IDS;

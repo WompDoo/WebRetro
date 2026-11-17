@@ -33,6 +33,7 @@ export const FEATURE_IDS: readonly FeatureId[] = [
   'ai-images',
   'for-you-feed',
   'webcam',
+  'custom-cursor',
   'wiki',
   'deal-of-the-day',
   'community-chat',
@@ -534,6 +535,24 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pluginDiesIn: null,
     sunsetIn: 'web2-2005',
   },
+  // The pointer itself, replaced: a lime arrow at level 1, a rainbow cat with a trail of copies at 60.
+  'custom-cursor': {
+    id: 'custom-cursor',
+    eraId: 'homepage-1997',
+    name: 'Custom cursor',
+    laterEraNames: { 'web2-2005': 'Glitter cursor' },
+    description: 'Your visitors’ mouse pointer, replaced, and more outrageous every few levels: an arrow, a wand, sparkles, fire, then something nobody asked for. They can’t find the links any more. They stay to look.',
+    baseCost: 5_000,
+    visitorsPerSecondPerLevel: 160,
+    synergy: null,
+    pageWeightKb: 6,
+    pageWeightKbPerLevel: 1,
+    requiredSkillId: 'learn-javascript',
+    isSwitchable: false,
+    pluginDiesIn: null,
+    // Phones don't have a cursor. By 2011 most of your visitors don't either.
+    sunsetIn: 'social-2011',
+  },
   wiki: {
     id: 'wiki',
     eraId: 'web2-2005',
@@ -606,6 +625,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
  */
 export const FEATURE_FIRST_RUNS: Readonly<Partial<Record<FeatureId, number>>> = {
   webcam: 2,
+  'custom-cursor': 2,
   wiki: 2,
   'deal-of-the-day': 2,
   'community-chat': 2,

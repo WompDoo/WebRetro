@@ -32,6 +32,7 @@ import type { Issue } from './issues';
 import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './render-issues';
 import { renderPhoneNotifications } from './render-notifications';
 import { buildEditorSource } from './skill-code';
+import { createCursorTrail } from './cursor-trail';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countUnreadNews, markNewsRead, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
@@ -324,11 +325,13 @@ export function createRenderer(editor: CodeEditor): Renderer {
     showEnding(store.game, store.legacy, 'archive');
   };
 
+  const cursorTrail = createCursorTrail(elements.site);
   const renderStructure = (): void => {
     renderEraChromeOnce();
     const file = resolveEditorFile(store.game, store.editorFile);
     renderWhenChanged('skills', `${store.game.eraId}|${store.game.purchasedUpgradeIds.length}|${file}|${store.game.siteName}|${store.game.isCertificateExpired}`, () => renderSkillChrome(editor, file));
     renderWhenChanged('site', calculateSiteSignature(store.game), renderSiteAndReload);
+    cursorTrail.update(store.game.featureLevels['custom-cursor'], resolveDeviceView(store.game, store.deviceView) === 'phone');
     renderWhenChanged('popups', calculatePopupSignature(store.game), () => syncPopups(elements.popupLayer, store.game));
     renderWhenChanged('shop', calculateShopSignature(store.game, store.shopTab, readShopView()), renderShop);
     renderWhenChanged('goal', calculateGoalSignature(store.game), () => {
