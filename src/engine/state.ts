@@ -108,5 +108,6 @@ export function createInitialGameState(randomSeed: number): GameState {
     legacyPerkLevels: NO_PERKS,
     areBacklinksBanked: false,
     edition: 'classic',
+    siteColors: null,
   };
 }

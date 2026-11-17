@@ -38,3 +38,4 @@ export * from './minigames/fix-build';
 export * from './minigames/code-entry';
 export * from './minigames/merge-conflict';
 export * from './playtest';
+export * from './site-colors';

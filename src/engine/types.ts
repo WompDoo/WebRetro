@@ -433,6 +433,15 @@ export interface Infection {
  */
 export type Edition = 'classic' | 'webspecialization';
 
+/** Behind the page: plain white, a whisper of your accent color, or warm cream. Each keeps every era readable. */
+export type SiteBackground = 'white' | 'tint' | 'cream';
+
+/** Your site's colors: an accent from anywhere on the color wheel (#RRGGBB) and a background. */
+export interface SiteColors {
+  readonly accent: string;
+  readonly background: SiteBackground;
+}
+
 export interface GameState {
   readonly saveVersion: number;
   readonly eraId: EraId;
@@ -492,6 +501,8 @@ export interface GameState {
   /** This run's Backlinks are in the legacy already: a finished run pays out once. */
   readonly areBacklinksBanked: boolean;
   readonly edition: Edition;
+  /** Null: the era's own look. The test build lets you pick; the classic game never does. */
+  readonly siteColors: SiteColors | null;
 }
 
 /** Bought with Backlinks, kept across runs. */
@@ -511,7 +522,7 @@ export interface LegacyState {
 /** The parts of the game that decide how the page looks: enough to show an old page again. */
 export type SiteSnapshot = Pick<
   GameState,
-  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors'
+  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors' | 'siteColors'
 >;
 
 /** The site the day it left an era. */
