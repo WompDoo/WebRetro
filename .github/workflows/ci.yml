@@ -47,11 +47,12 @@ jobs:
           retention-days: 14
 
   # One job per scripted player, in parallel: one job for both took 10 to 15+ minutes depending on the runner, and
-  # timed out on identical code. Each job still plays a whole game.
+  # timed out on identical code. Each job still plays a whole game. Measured: active about 5 minutes, relaxed about 13
+  # (its game up to 2018 has to run in order before the framework branches spread over the cores), so 20 is headroom.
   simulate:
     name: Balance simulation · ${{ matrix.profile }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
