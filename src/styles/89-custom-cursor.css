@@ -1,0 +1,24 @@
+/* ---------- Custom cursors: over the whole site, links and buttons included ---------- */
+#site[data-custom-cursor], #site[data-custom-cursor] * { cursor: var(--site-cursor) !important; }
+
+/* "Get this cursor!": a preview in a sunken 1997 box. */
+.cursor-offer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px; text-align: center; }
+/* In a narrow sidebar the preview sits above the words, not squeezed beside them. */
+.cursor-offer > span:last-child { flex: 1 1 100px; }
+.cursor-preview { width: 42px; height: 42px; flex: none; border: 2px inset #808080; background: #FFFFFF center / 32px no-repeat; }
+
+/* The trail: short-lived particles in a layer above the page that never catches a click. */
+.cursor-trail-layer { position: fixed; inset: 0; z-index: 9; overflow: hidden; pointer-events: none; }
+.cursor-particle { position: absolute; font-size: 14px; line-height: 1; transform: translate(-50%, -50%); animation: cursor-sparkle 700ms ease-out forwards; }
+.cursor-particle--fire { font-size: 16px; animation-name: cursor-flame; }
+.cursor-particle--rainbow {
+  width: 24px; height: 13px; animation-duration: 900ms;
+  background: linear-gradient(#FF3B3B 0 16.6%, #FF9F1A 0 33.3%, #FFE12E 0 50%, #3BD16F 0 66.6%, #2E8BFF 0 83.3%, #8B4BFF 0);
+}
+/* At the top tier, copies of the pointer itself chase the cat, like the old "pointer trails" setting gone wrong. */
+.cursor-particle--pointer {
+  width: 24px; height: 24px; animation-duration: 900ms;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M3 2 L3 25 L9 19.5 L13.5 29 L17.5 27.2 L13.2 18 L21 18 Z' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+@keyframes cursor-sparkle { to { opacity: 0; transform: translate(calc(-50% + var(--drift, 0px)), -40%) scale(0.4) rotate(40deg); } }
+@keyframes cursor-flame { to { opacity: 0; transform: translate(calc(-50% + var(--drift, 0px)), -160%) scale(0.5); } }
