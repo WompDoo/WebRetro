@@ -12,5 +12,5 @@ export const MINIGAME_NAMES: Readonly<Record<AnyMinigameId, string>> = {
   'cross-traffic': 'Cross the traffic',
   'fix-build': 'Fix the build',
   'code-entry': 'Enter the code',
-  'merge-conflict': 'Merge the conflict',
+  'launch-window': 'Hit the launch window',
 };

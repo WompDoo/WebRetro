@@ -550,7 +550,7 @@ export interface BuffDefinition {
 /** An offer that turns up while you play: win its minigame for a buff. */
 export type OpportunityKind = 'sponsor-slot' | 'launch-day';
 /** The minigames that win buffs, apart from the ones that fix infections. */
-export type BuffMinigameId = 'code-entry' | 'merge-conflict';
+export type BuffMinigameId = 'code-entry' | 'launch-window';
 export type AnyMinigameId = MinigameId | BuffMinigameId;
 
 export interface Opportunity {

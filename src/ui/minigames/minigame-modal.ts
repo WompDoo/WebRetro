@@ -6,7 +6,7 @@ import { backupRestoreView } from './backup-restore-view';
 import { crossTrafficView } from './cross-traffic-view';
 import { firewallView } from './firewall-view';
 import { codeEntryView } from './code-entry-view';
-import { mergeConflictView } from './merge-conflict-view';
+import { launchWindowView } from './launch-window-view';
 import { fixBuildView } from './fix-build-view';
 import { snakeView } from './snake-view';
 import { resetPasswordsView } from './reset-passwords-view';
@@ -56,7 +56,7 @@ const VIEWS: Readonly<Record<AnyMinigameId, MinigameView>> = {
   'cross-traffic': crossTrafficView,
   'fix-build': fixBuildView,
   'code-entry': codeEntryView,
-  'merge-conflict': mergeConflictView,
+  'launch-window': launchWindowView,
 };
 
 const OTHER_TITLES: Readonly<Record<Exclude<AnyMinigameId, 'snake' | 'virus-scan' | 'firewall'>, string>> = {
@@ -67,7 +67,7 @@ const OTHER_TITLES: Readonly<Record<Exclude<AnyMinigameId, 'snake' | 'virus-scan
   'cross-traffic': 'ssh admin@server · rate limiting',
   'fix-build': 'Terminal · build failed',
   'code-entry': 'Sponsor deal · enter the code',
-  'merge-conflict': 'Merge conflict · launch day',
+  'launch-window': 'Launch day · hit the window',
 };
 
 const CLOSE_AFTER_WIN_MS = 900;
