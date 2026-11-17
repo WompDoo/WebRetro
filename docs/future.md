@@ -15,6 +15,8 @@ This is the design thinking for what comes after, written to be argued with. Eac
 | Slower players (a casual game is about 7 hours) | **Keep as is**: slow is allowed; no catch-up bonus, no global shortening |
 | CI's framework-spread check on one seed | **Keep one seed**: an occasional red run from luck is accepted over a slower CI |
 | Should Sell / Keep matter after the ending | **No, it stays flavor**: a story beat, no gameplay difference |
+| Buffs, not only hazards | **Both sources**: on fire from typing without typos, and offers won in minigames (stratagem codes, merge conflicts) |
+| Making the site yours | **Pivots at each relaunch, plus customization**, customization first (section 5) |
 
 Numbers it builds on (`player-types.md`): the balance bot finishes in about 3.5 hours, the relaxed bot in about 4.5,
 a casual player in about 7. Any plan that only adds time makes the casual player's game too long already.
@@ -216,7 +218,78 @@ From the era notes that aren't built yet, and from what the player types ran int
   reduced motion everywhere (partly done). Necessary before anything public.
 - **Sound:** the MIDI player and the podcast player could actually play something, muted by default.
 
-## 5. Known issues, from the sweeps
+## 5. Your site, your way: pivots and customization (designed, not built)
+
+Every player builds the same site today: the archive at the end shows everyone the same five pages. Two things change
+that, at very different costs. **Decided:** both, customization first.
+
+### Customization: the archive becomes yours (cheap)
+
+At each relaunch (and any time from a Design tab), a few choices that fit the era's tools:
+
+| Era | What you choose |
+|---|---|
+| 1997 | Background tile (starfield, flames, a photo of your cat), text colour, the MIDI that autoplays, the welcome line |
+| 2000 | The banner over the crash ticker ("still here!!!" or your own) |
+| 2005 | The gloss colour, rounded or square, the beta sticker's word |
+| 2011 | A Bootstrap theme (three swatches), the hero photo |
+| 2018 | Brand colour, light or dark, the hero promise |
+| 2024 | The gradient, the "✨ AI" wording |
+
+- Stored per era (`state.design[eraId]`), so the archive replays *your* 1997 page, not the default one.
+- The site name already works this way; this is the same idea for the look.
+- It changes nothing in the economy, so it needs no balance pass and no new sim bot.
+- Cost: a picker per era, and each renderer reading its choices. About one PR.
+
+### Pivots: what your site *is* (the big one)
+
+Every site starts as a 1997 homepage, because that's how the web started. Each relaunch then offers **two or three
+directions that fit the era**, and the one you pick becomes your site's story:
+
+| Relaunch into | Directions |
+|---|---|
+| 2005 | **Blog** (today's path: posts, comments, tags) · **Video site** (uploads, embeds, view counts) · **Community** (forum, wiki, members) |
+| 2011 | **Social network** (feed, share buttons, sign in with…) · **Shop** (deals, a cart, reviews) · **App** (mobile first, the app banner, push) |
+| 2018 | **Platform** (today's path: pricing, onboarding, live chat) · **Marketplace** (sellers, reviews, payments) · **Media** (stories, newsletter, video) |
+| 2024 | **AI product** (today's path: assistant, agents) · **Creator platform** (for-you feed, AI images, subscriptions) · **Search** (AI answers, llms.txt) |
+
+What a direction decides:
+
+- **The checklist's core features.** The gate asks for the direction's features, not the era's fixed list.
+- **One or two features of its own.** Most come from what already exists: the video player, the forum and the wiki are
+  already in the game, so the video site and the community mostly re-weight them.
+- **The page's hero section and names.** "Upload your video" instead of "Latest posts".
+- **The ending's story.** "From a homepage to the web's biggest video site", and an archive that shows the path.
+
+Why pivots and not one archetype chosen at the start:
+
+- It's the web's real history: real sites pivoted all the time, often into something unrecognisable.
+- It's a decision at every relaunch, not one at minute zero.
+- It costs about two to three times an era's checklist content, not four to five times the whole game.
+- The 2018 framework choice already proved an exclusive decision works here. Frameworks are the tech and directions
+  are the product, so they combine rather than multiply the content.
+- It gives prestige a reason: run 2 tries the other path.
+
+Data model:
+
+- A `DirectionDefinition` per era: its core features, its extra features, its hero copy and its name overrides.
+- `state.directions: Partial<Record<EraId, DirectionId>>`, chosen in the relaunch overlay. The relaunch story already
+  has the room for it.
+
+Balance: each direction's gate has to be tuned. The CI balance sim now runs one job per bot (WompDoo/WebRetro#63), so a
+bot per direction is one more matrix entry, not a longer job.
+
+**Recommendation:** customization first (cheap, and it makes the archive personal at once). Then **one vertical slice
+of pivots**, 2005 only, with Blog, Video site and Community, to find out whether choosing is fun before building
+the other three relaunches.
+
+**Open questions for you:**
+
+1. Is a pivot permanent for the run, or can a later relaunch pivot back ("we're a blog again")?
+2. Should the directions you didn't take show up in the archive as "what could have been"?
+3. Should run 2 *require* a different path (a reason to replay), or just suggest one?
+
+## 6. Known issues, from the sweeps
 
 - Idle play stalls in 2011: hazards pile up between five-minute check-ins. Offline progress covers a closed tab;
   an "away mode" (defenses auto-bought, minigames auto-lost at a cost) would cover an open one.
