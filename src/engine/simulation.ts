@@ -29,6 +29,11 @@ function prepare(state: GameState, mode: SimulationMode): GameState {
   return mode === 'live' ? state : withoutBuffs(state);
 }
 
+/** Buffs are for the player at the keyboard: an offline catch-up runs without them, or one buff would pay for hours. */
+function prepare(state: GameState, mode: SimulationMode): GameState {
+  return mode === 'live' ? state : withoutBuffs(state);
+}
+
 /**
  * Advances the game by elapsed wall-clock time, never by counting ticks, so throttled
  * background tabs and closed tabs both catch up correctly. Offline mode is production only.
