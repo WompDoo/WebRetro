@@ -97,8 +97,8 @@ describe('specializing', () => {
 
   it('asks the checklist for the specialization’s focus from 2011 on', () => {
     const focus = (state: GameState): string => calculateGateChecks(state).find((check) => check.requirement.kind === 'feature-level')?.requirement.label ?? '';
-    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 10');
-    assert.equal(focus(as(at('social-2011'), 'shop')), 'Sign in with… level 7', 'a few above what a player builds anyway');
+    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 8');
+    assert.equal(focus(as(at('social-2011'), 'shop')), 'Sign in with… level 5', 'a few above what a player builds anyway');
     assert.equal(focus(as(at('social-2011'), 'homepage')), 'Like and share buttons level 15');
     assert.equal(focus(as(at('web2-2005'), 'video')), 'Blog level 15', 'before 2011 every site is a homepage');
   });

@@ -23,8 +23,9 @@ export interface SpecializationEraPlan {
   /** The checklist's focus feature this era, in place of the era's own feature-level item. */
   readonly focus: FeatureId;
   /**
-   * The level it asks for: a few above what a player builds anyway by the era's end (the balance sim logs it). Not the
-   * era's usual 15 for every feature: the for-you feed is at 15 by itself, the sign-in buttons barely reach 2.
+   * The level it asks for: about as much on purpose as the era's own item is, judged from what a player builds anyway
+   * by the era's end (the balance sim logs it). 2011 and 2018 ask for a few levels above that, as their own items do;
+   * not the usual 15 for every feature, since the video player ends 2011 around 5 and stories around 15.
    */
   readonly level: number;
   readonly effects: readonly UpgradeEffect[];
@@ -56,11 +57,15 @@ const serverLoad = (factor: number): UpgradeEffect => ({ kind: 'server-load-mult
 /** Money a visitor brings without an ad (a sale, a booking, a subscription), in the units every era divides by its pace. */
 const perVisitor = (amount: number): UpgradeEffect => ({ kind: 'direct-revenue-per-visitor', amount });
 
-/** 2024's focus levels: a few above what a player builds anyway by the end of the game. */
+/**
+ * 2024's focus levels: about what a player has by the end of the game anyway (the balance sim's "levels at the end"),
+ * as the era's own AI chatbot 15 is: players finish with it at 27, so it never costs the era time. A route's focus
+ * shouldn't either.
+ */
 const AI_IMAGES_LEVEL = 12;
-const FOR_YOU_FEED_LEVEL = 15;
-const AI_ARTICLES_LEVEL = 12;
-const AI_SEARCH_LEVEL = 10;
+const FOR_YOU_FEED_LEVEL = 12;
+const AI_ARTICLES_LEVEL = 20;
+const AI_SEARCH_LEVEL = 15;
 
 export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, SpecializationDefinition>> = {
   homepage: {
@@ -97,7 +102,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'An ad before every video pays very well. The bandwidth bill is enormous.',
     unlock: [feature('flash-intro', 30), skill('embed-tag')],
     eras: {
-      'social-2011': { focus: 'video-player', level: 10, effects: [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)] },
+      'social-2011': { focus: 'video-player', level: 8, effects: [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)] },
       'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)] },
       'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.35), adAnnoyance(1.2), serverLoad(1.6)] },
     },
@@ -110,8 +115,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'Enormous traffic, and not much money per visitor.',
     unlock: [feature('guestbook', 90), feature('comments', 20)],
     eras: {
-      'social-2011': { focus: 'activity-feed', level: 11, effects: [traffic(1.4), adValue(0.8)] },
-      'platform-2018': { focus: 'live-chat', level: 12, effects: [traffic(1.5), adValue(0.85)] },
+      'social-2011': { focus: 'activity-feed', level: 9, effects: [traffic(1.4), adValue(0.8)] },
+      'platform-2018': { focus: 'live-chat', level: 10, effects: [traffic(1.5), adValue(0.85)] },
       'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [traffic(1.4), adValue(0.75)] },
     },
   },
@@ -123,8 +128,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'Ads pay best early on. Later a paywall helps, and in 2024 AI answers take more of the clicks.',
     unlock: [feature('blog', 60), feature('tag-cloud', 5), skill('learn-rss')],
     eras: {
-      'social-2011': { focus: 'activity-feed', level: 11, effects: [adValue(1.15)] },
-      'platform-2018': { focus: 'newsletter', level: 14, effects: [adValue(1.1), perVisitor(0.25)] },
+      'social-2011': { focus: 'activity-feed', level: 9, effects: [adValue(1.15)] },
+      'platform-2018': { focus: 'newsletter', level: 13, effects: [adValue(1.1), perVisitor(0.25)] },
       'ai-2024': { focus: 'ai-articles', level: AI_ARTICLES_LEVEL, effects: [adValue(0.95), perVisitor(0.35), { kind: 'ai-answer-share-multiplier', factor: 1.3 }] },
     },
   },
@@ -136,8 +141,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'A cut of every booking: steady money per visitor, ads or not.',
     unlock: [feature('map-mashup', 20), feature('comments', 20)],
     eras: {
-      'social-2011': { focus: 'social-login', level: 7, effects: [adValue(0.9), perVisitor(0.3)] },
-      'platform-2018': { focus: 'language-switcher', level: 15, effects: [adValue(1.0), perVisitor(0.45)] },
+      'social-2011': { focus: 'social-login', level: 5, effects: [adValue(0.9), perVisitor(0.3)] },
+      'platform-2018': { focus: 'language-switcher', level: 14, effects: [adValue(1.0), perVisitor(0.45)] },
       'ai-2024': { focus: 'ai-search', level: AI_SEARCH_LEVEL, effects: [adValue(1.0), perVisitor(0.5)] },
     },
   },
@@ -149,7 +154,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'A slow start: growth first, money later. Then the biggest ad business of all, and the biggest privacy fines.',
     unlock: [feature('activity-feed', 18), feature('share-buttons', 25)],
     eras: {
-      'social-2011': { focus: 'activity-feed', level: 11, effects: [adValue(0.75), traffic(1.2)] },
+      'social-2011': { focus: 'activity-feed', level: 9, effects: [adValue(0.75), traffic(1.2)] },
       'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.2), traffic(1.1), { kind: 'privacy-fine-multiplier', factor: 1.5 }] },
       'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.4), traffic(1.1)] },
     },
@@ -162,8 +167,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'Subscriptions and tips that grow every era. Live video is heavy on the servers.',
     unlock: [feature('video-player', 25), feature('activity-feed', 10)],
     eras: {
-      'social-2011': { focus: 'video-player', level: 10, effects: [adValue(0.95), serverLoad(1.3), perVisitor(0.3)] },
-      'platform-2018': { focus: 'live-chat', level: 12, effects: [adValue(0.9), serverLoad(1.3), perVisitor(0.4)] },
+      'social-2011': { focus: 'video-player', level: 8, effects: [adValue(0.95), serverLoad(1.3), perVisitor(0.3)] },
+      'platform-2018': { focus: 'live-chat', level: 10, effects: [adValue(0.9), serverLoad(1.3), perVisitor(0.4)] },
       'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.85), serverLoad(1.3), perVisitor(0.55)] },
     },
   },
@@ -175,8 +180,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'Sales instead of ads: every visitor might buy. Ads pay less and drive shoppers away.',
     unlock: [feature('social-login', 13), feature('photo-gallery', 35)],
     eras: {
-      'social-2011': { focus: 'social-login', level: 7, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.8)] },
-      'platform-2018': { focus: 'pricing-table', level: 15, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(1.0)] },
+      'social-2011': { focus: 'social-login', level: 5, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.8)] },
+      'platform-2018': { focus: 'pricing-table', level: 14, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(1.0)] },
       'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(1.1)] },
     },
   },
