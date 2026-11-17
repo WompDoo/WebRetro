@@ -40,3 +40,4 @@ export * from './minigames/merge-conflict';
 export * from './playtest';
 export * from './specializations';
 export * from './content/specializations';
+export * from './site-colors';

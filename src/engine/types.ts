@@ -438,6 +438,15 @@ export type SpecializationId = 'platform' | 'photos' | 'video' | 'microblog' | '
 /** The eras a specialization shapes. */
 export type SpecializedEraId = 'social-2011' | 'platform-2018' | 'ai-2024';
 
+/** Behind the page: plain white, a whisper of your accent color, or warm cream. Each keeps every era readable. */
+export type SiteBackground = 'white' | 'tint' | 'cream';
+
+/** Your site's colors: an accent from anywhere on the color wheel (#RRGGBB) and a background. */
+export interface SiteColors {
+  readonly accent: string;
+  readonly background: SiteBackground;
+}
+
 export interface GameState {
   readonly saveVersion: number;
   readonly eraId: EraId;
@@ -501,6 +510,8 @@ export interface GameState {
   readonly specializationId: SpecializationId;
   /** Unlocked this run by what you've built: a new run starts with none. */
   readonly unlockedSpecializationIds: readonly SpecializationId[];
+  /** Null: the era's own look. The test build lets you pick; the classic game never does. */
+  readonly siteColors: SiteColors | null;
 }
 
 /** Bought with Backlinks, kept across runs. */
@@ -520,7 +531,7 @@ export interface LegacyState {
 /** The parts of the game that decide how the page looks: enough to show an old page again. */
 export type SiteSnapshot = Pick<
   GameState,
-  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors' | 'specializationId'
+  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors' | 'specializationId' | 'siteColors'
 >;
 
 /** The site the day it left an era. */

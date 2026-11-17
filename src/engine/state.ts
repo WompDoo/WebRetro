@@ -110,5 +110,6 @@ export function createInitialGameState(randomSeed: number): GameState {
     edition: 'classic',
     specializationId: 'platform',
     unlockedSpecializationIds: [],
+    siteColors: null,
   };
 }

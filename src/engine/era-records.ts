@@ -23,6 +23,7 @@ export function createEraRecord(state: GameState): EraRecord {
       consentBanner: state.consentBanner,
       lifetimeVisitors: state.lifetimeVisitors,
       specializationId: state.specializationId,
+      siteColors: state.siteColors,
     },
   };
 }
