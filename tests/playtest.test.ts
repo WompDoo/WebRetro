@@ -14,7 +14,12 @@ import {
   UPGRADES_BY_ID,
   createPlaytestState,
   MINIGAME_IDS,
+  claimOpportunity,
+  isBuffActive,
+  offerPlaytestOpportunity,
+  setPlaytestCursorLevel,
 } from '../src/engine';
+import { renderPlaytestPanel } from '../src/ui/playtest';
 
 const SEED = 7;
 
@@ -77,5 +82,37 @@ describe('playtest cheats', () => {
     assert.equal(addPlaytestPopup(createPlaytestState('homepage-1997', 'start', SEED, 'react'), 0.3).popups.length, 1);
     assert.equal(startPlaytestTrafficSpike(createPlaytestState('homepage-1997', 'end', SEED, 'react')).trafficSpikeRemainingMs, 0);
     assert.ok(startPlaytestTrafficSpike(createPlaytestState('web2-2005', 'start', SEED, 'react')).trafficSpikeRemainingMs > 0);
+  });
+
+  it('brings an offer now, and winning it starts its buff like a real one', () => {
+    const offered = offerPlaytestOpportunity(createPlaytestState('web2-2005', 'end', SEED, 'react'), 'sponsor-slot');
+    assert.equal(offered.opportunity?.kind, 'sponsor-slot');
+    const won = claimOpportunity(offered, offered.opportunity?.id ?? -1).state;
+    assert.ok(isBuffActive(won, 'sponsor-slot'));
+  });
+
+  it('sets the custom cursor’s level, and makes a first run the second the cursor needs', () => {
+    const cursor = setPlaytestCursorLevel(createPlaytestState('homepage-1997', 'start', SEED, 'react'), 30);
+    assert.equal(cursor.featureLevels['custom-cursor'], 30);
+    assert.equal(cursor.runNumber, 2);
+    assert.equal(setPlaytestCursorLevel({ ...cursor, runNumber: 3 }, 5).runNumber, 3, 'never back to an earlier run');
+  });
+});
+
+describe('the playtest panel', () => {
+  const view = { speed: 1, hasBackup: false } as const;
+
+  it('starts every buff, and offers a sponsor only to a site with banners', () => {
+    const noAds = renderPlaytestPanel(createPlaytestState('homepage-1997', 'start', SEED, 'react'), view);
+    assert.match(noAds, /data-action="playtest-buff" data-id="on-fire"/);
+    assert.match(noAds, /data-action="playtest-offer" data-id="sponsor-slot" disabled title="No banners to sponsor yet/);
+    const ads = renderPlaytestPanel(createPlaytestState('web2-2005', 'end', SEED, 'react'), view);
+    assert.doesNotMatch(ads, /data-id="sponsor-slot" disabled/);
+  });
+
+  it('has a button per cursor tier, the current one pressed', () => {
+    const html = renderPlaytestPanel(setPlaytestCursorLevel(createPlaytestState('homepage-1997', 'start', SEED, 'react'), 15), view);
+    ['0', '1', '5', '15', '30', '60'].forEach((level) => assert.match(html, new RegExp(`data-action="playtest-cursor" data-id="${level}"`)));
+    assert.match(html, /data-id="15" aria-pressed="true">15: Glitter arrow/);
   });
 });

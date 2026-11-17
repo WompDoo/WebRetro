@@ -16,8 +16,9 @@ import {
 import { getErasOfRun, isEraInRun } from './era-chain';
 import { calculateGateChecks } from './era-gate';
 import { createEraRecord } from './era-records';
+import { OPPORTUNITY_WINDOW_MS } from './opportunities';
 import { createInitialGameState } from './state';
-import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, UpgradeId } from './types';
+import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, OpportunityKind, UpgradeId } from './types';
 
 /**
  * Playtest presets: a believable game at the start or the end of any era, built from the content itself.
@@ -245,4 +246,16 @@ export function expirePlaytestCertificate(state: GameState): GameState {
 /** Only eras with a server have traffic spikes. */
 export function startPlaytestTrafficSpike(state: GameState): GameState {
   return ERAS_BY_ID[state.eraId].hasServerLoad ? { ...state, trafficSpikeRemainingMs: TRAFFIC_SPIKE_DURATION_MS } : state;
+}
+
+/** An offer at the door now, not in three minutes: its chip shows, and clicking it plays the minigame. */
+export function offerPlaytestOpportunity(state: GameState, kind: OpportunityKind): GameState {
+  const opportunity = { id: state.nextEntityId, kind, remainingMs: OPPORTUNITY_WINDOW_MS };
+  return { ...state, opportunity, nextEntityId: state.nextEntityId + 1 };
+}
+
+/** The custom cursor at this level. It's a run-two feature, so a first run becomes the second. */
+export function setPlaytestCursorLevel(state: GameState, level: number): GameState {
+  const runNumber = Math.max(state.runNumber, getFeatureFirstRun('custom-cursor'));
+  return { ...state, runNumber, featureLevels: { ...state.featureLevels, 'custom-cursor': level } };
 }

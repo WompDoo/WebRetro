@@ -36,7 +36,7 @@ export const OPPORTUNITIES_BY_KIND: Readonly<Record<OpportunityKind, Opportunity
   },
 };
 
-const OPPORTUNITY_KINDS: readonly OpportunityKind[] = ['sponsor-slot'];
+export const OPPORTUNITY_KINDS: readonly OpportunityKind[] = ['sponsor-slot'];
 
 /** How long an offer waits for you. */
 export const OPPORTUNITY_WINDOW_MS = 25_000;

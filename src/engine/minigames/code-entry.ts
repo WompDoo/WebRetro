@@ -1,9 +1,10 @@
+import { drawRandoms } from '../random';
 import type { MinigameStatus } from './status';
 
 /**
  * Code entry, stratagem style: a code shows as keycaps, you type it before the clock runs out, and one wrong key
- * starts you over. Each offer has the same code in the same era, so you get faster at it. Spaces and dashes are only
- * there to read it by: you type the letters and digits.
+ * starts you over. Each offer brings a fresh code in its era's format (a modem number in 1997, a product key in 2005),
+ * so it's a reading test, not a memory one. Spaces and dashes are only there to read it by: you type the letters and digits.
  */
 
 export interface CodeEntry {
@@ -51,4 +52,26 @@ export function typeCodeKey(entry: CodeEntry, key: string): CodeEntry {
 
 export function tickCodeEntry(entry: CodeEntry, deltaMs: number): CodeEntry {
   return entry.hasStarted && isOpen(entry) ? { ...entry, elapsedMs: Math.min(entry.limitMs, entry.elapsedMs + deltaMs) } : entry;
+}
+
+/**
+ * A code pattern's placeholders: # a digit, @ a letter, * either. Characters that read alike (0 and O, 1, I and L,
+ * 5 and S) are left out, the way product keys leave them out: the test is your fingers, not your eyes.
+ */
+const PLACEHOLDER_ALPHABETS: Readonly<Record<string, string>> = {
+  '#': '2346789',
+  '@': 'ABCDEFGHJKMNPQRTUVWXYZ',
+  '*': 'ABCDEFGHJKMNPQRTUVWXYZ2346789',
+};
+
+function fillPlaceholder(character: string, roll: number): string {
+  const alphabet = PLACEHOLDER_ALPHABETS[character];
+  return alphabet === undefined ? character : alphabet.charAt(Math.floor(roll * alphabet.length));
+}
+
+/** One of the patterns, its placeholders filled at random. The same seed always makes the same code. */
+export function createCodeFromPatterns(patterns: readonly string[], seed: number): string {
+  const [pick = 0, ...rolls] = drawRandoms(seed, Math.max(0, ...patterns.map((pattern) => pattern.length)) + 1).values;
+  const pattern = patterns[Math.floor(pick * patterns.length)] ?? '';
+  return [...pattern].map((character, index) => fillPlaceholder(character, rolls[index] ?? 0)).join('');
 }
