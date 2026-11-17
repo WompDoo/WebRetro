@@ -14,7 +14,7 @@ import { openPlaytestPanel, setPlaytestEnabled } from './playtest-actions';
 import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
-import { applyStep, pickStartingMobileTab, store, updateGame } from './store';
+import { applyStep, markSiteSeen, pickStartingMobileTab, store, updateGame } from './store';
 import { drainTypingIncome } from './typing-income';
 
 interface ClaudeHotApi {
@@ -95,6 +95,8 @@ function start(hotData: unknown): void {
   restoreGame(hotData);
   restorePreferences();
   store.mobileTab = pickStartingMobileTab(store.game);
+  // A returning player's site is all seen: only what they add from now on is news.
+  markSiteSeen();
   const editor = createCodeEditor(editorElements, writeCodeKeystroke);
   const minigame = createMinigameModal(minigameElements, {
     findTarget: findMinigameTarget,

@@ -38,7 +38,7 @@ import { describeIncomeSources, describeTypingBoost, isTypingIdle, readTypingInc
 import type { IncomeSources } from './typing-income';
 import { accrueAutoKeystrokes, describeHiredKeystroke } from './auto-typing';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
-import { countUnreadNews, markNewsRead, MOBILE_TABS, store } from './store';
+import { countNewOnSiteSinceSeen, countUnreadNews, markNewsRead, markSiteSeen, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
 
 export interface Renderer {
@@ -232,6 +232,7 @@ function renderMobileChrome(): void {
     else button.removeAttribute('aria-current');
   });
   if (store.mobileTab === 'inbox') markNewsRead();
+  if (store.mobileTab === 'site') markSiteSeen();
 }
 
 function countAffordableNewPurchases(): number {
@@ -251,7 +252,8 @@ const NEW_PURCHASE_TABS = SHOP_TABS.filter((tab) => tab !== 'build');
 
 function calculateTabBadges(issues: readonly Issue[]): Readonly<Record<MobileTab, TabBadge>> {
   return {
-    site: { count: store.game.popups.length, isAlert: true, isDot: false },
+    // Pop-ups are trouble, so they win; otherwise what was added while you were on another tab.
+    site: store.game.popups.length > 0 ? { count: store.game.popups.length, isAlert: true, isDot: false } : { count: countNewOnSiteSinceSeen(), isAlert: false, isDot: false },
     code: { count: 0, isAlert: false, isDot: false },
     shop: { count: countAffordableNewPurchases(), isAlert: false, isDot: true },
     inbox: issues.length > 0 ? { count: issues.length, isAlert: true, isDot: false } : { count: countUnreadNews(), isAlert: false, isDot: false },
