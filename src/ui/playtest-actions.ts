@@ -14,10 +14,13 @@ import {
   offerPlaytestOpportunity,
   OPPORTUNITY_KINDS,
   setPlaytestCursorLevel,
+  setPlaytestSpecialization,
+  SPECIALIZATION_IDS,
+  unlockPlaytestSpecializations,
   startBuff,
   startPlaytestTrafficSpike,
 } from '../engine';
-import type { BuffId, EraId, FrameworkId, GameState, MinigameId, OpportunityKind, PlaytestStage } from '../engine';
+import type { BuffId, EraId, FrameworkId, GameState, MinigameId, OpportunityKind, PlaytestStage, SpecializationId } from '../engine';
 import { elements } from './elements';
 import type { MinigameModal } from './minigames/minigame-modal';
 import { hideOverlay, showOverlay } from './overlays';
@@ -49,6 +52,10 @@ function isMinigameId(value: string): value is MinigameId {
 
 function isBuffId(value: string): value is BuffId {
   return (BUFF_IDS as readonly string[]).includes(value);
+}
+
+function isSpecializationId(value: string): value is SpecializationId {
+  return (SPECIALIZATION_IDS as readonly string[]).includes(value);
 }
 
 function isOpportunityKind(value: string): value is OpportunityKind {
@@ -161,6 +168,11 @@ export function createPlaytestHandlers(renderer: Renderer, minigame: MinigameMod
     'playtest-cursor': (target) => {
       const level = Number(readId(target));
       if (Number.isInteger(level)) updateGameAndLook((state) => setPlaytestCursorLevel(state, level));
+    },
+    'playtest-unlock-specializations': () => updateGameAndLook(unlockPlaytestSpecializations),
+    'playtest-specialization': (target) => {
+      const specializationId = readId(target);
+      if (isSpecializationId(specializationId)) updateGameAndLook((state) => setPlaytestSpecialization(state, specializationId));
     },
     'playtest-next-run': () => updateGame((state) => ({ ...state, runNumber: state.runNumber + 1 })),
     'playtest-speed': (target) => {

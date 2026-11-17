@@ -1,4 +1,5 @@
 import {
+  areSpecializationsOn,
   BUFF_IDS,
   BUFFS_BY_ID,
   canCertificateExpire,
@@ -12,6 +13,8 @@ import {
   MINIGAME_IDS,
   OPPORTUNITIES_BY_KIND,
   OPPORTUNITY_KINDS,
+  SPECIALIZATION_IDS,
+  SPECIALIZATIONS_BY_ID,
   UPGRADES_BY_ID,
 } from '../engine';
 import type { EraId, GameState, OpportunityKind } from '../engine';
@@ -129,6 +132,13 @@ function renderCursors(state: GameState): string {
   return `<h3 class="playtest-heading">Custom cursor</h3><p class="playtest-buttons">${renderCursorButton(NO_CURSOR, 'None', current)}${tiers}</p>`;
 }
 
+/** The test build's specializations: unlock them all, or become one now (from 2011 on, it changes the page and the money). */
+function renderSpecializations(state: GameState): string {
+  if (!areSpecializationsOn(state)) return '';
+  const routes = SPECIALIZATION_IDS.map((id) => button('playtest-specialization', id, `${SPECIALIZATIONS_BY_ID[id].icon} ${SPECIALIZATIONS_BY_ID[id].name}`, ` aria-pressed="${state.specializationId === id}"`)).join('');
+  return `<h3 class="playtest-heading">Specializations</h3><p class="playtest-buttons">${button('playtest-unlock-specializations', 'all', 'Unlock every specialization')}</p><p class="playtest-buttons">${routes}</p>`;
+}
+
 /** The 2000 crash comes with the third run: after it, a new run opens nothing new. */
 const LAST_RUN_WITH_NEW_CONTENT = CRASH_FIRST_RUN;
 
@@ -147,5 +157,5 @@ function renderSpeed(view: PlaytestView): string {
 }
 
 export function renderPlaytestPanel(state: GameState, view: PlaytestView): string {
-  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderBuffs(state), renderCursors(state), renderRuns(state), renderSpeed(view)].join('');
+  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderBuffs(state), renderCursors(state), renderSpecializations(state), renderRuns(state), renderSpeed(view)].join('');
 }
