@@ -17,6 +17,7 @@ This is the design thinking for what comes after, written to be argued with. Eac
 | Should Sell / Keep matter after the ending | **No, it stays flavor**: a story beat, no gameplay difference |
 | Buffs, not only hazards | **Both sources**: on fire from typing without typos, and offers won in minigames (stratagem codes, merge conflicts) |
 | Making the site yours | **Pivots at each relaunch, plus customization**, customization first (section 5) |
+| Auto-typing | **Hired help, one per era**: a little brother (0.2 keystrokes/s) up to an AI coding agent (8/s, faster than an active player's 6). Era-bound like typing skills, paid offline, never on fire |
 
 Numbers it builds on (`player-types.md`): the balance bot finishes in about 3.5 hours, the relaxed bot in about 4.5,
 a casual player in about 7. Any plan that only adds time makes the casual player's game too long already.

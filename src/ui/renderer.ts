@@ -34,7 +34,9 @@ import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './ren
 import { renderPhoneNotifications } from './render-notifications';
 import { buildEditorSource } from './skill-code';
 import { createCursorTrail } from './cursor-trail';
-import { describeIncomeSources, describeTypingBoost, readTypingIncomePerSecond } from './typing-income';
+import { describeIncomeSources, describeTypingBoost, isTypingIdle, readTypingIncomePerSecond, sumIncome } from './typing-income';
+import type { IncomeSources } from './typing-income';
+import { accrueAutoKeystrokes, describeHiredKeystroke } from './auto-typing';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countUnreadNews, markNewsRead, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
@@ -126,19 +128,19 @@ function renderStats(editor: CodeEditor): void {
   const economy = calculateEconomySnapshot(store.game);
   setTextIfChanged(elements.statMoney, formatMoney(store.game.money));
   setTextIfChanged(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
-  renderIncome(economy.netRevenuePerSecond);
+  renderIncome({ site: economy.netRevenuePerSecond, hired: economy.hiredTypingPerSecond, typing: readTypingIncomePerSecond(store.typingIncomePool) });
   renderProjectedBacklinks();
   editor.updateRate(economy.keystrokeValue, economy.bugChance);
   editor.updateHeat(store.game.typingHeat, findFireRemainingMs(store.game));
   renderBuffs();
 }
 
-/** Income is everything coming in: the site's revenue, and what your typing has paid over the last few seconds. */
-function renderIncome(siteRevenuePerSecond: number): void {
-  const typingPerSecond = readTypingIncomePerSecond(store.typingIncomePool);
-  setTextIfChanged(elements.statIncome, `${formatMoney(siteRevenuePerSecond + typingPerSecond)}/s`);
-  setTextIfChanged(elements.statIncomeTyping, describeTypingBoost(siteRevenuePerSecond, typingPerSecond));
-  elements.statIncomeBox.title = describeIncomeSources(siteRevenuePerSecond, typingPerSecond);
+/** Income is everything coming in: the site's revenue, hired help, and what your typing paid over the last few seconds. */
+function renderIncome(sources: IncomeSources): void {
+  setTextIfChanged(elements.statIncome, `${formatMoney(sumIncome(sources))}/s`);
+  setTextIfChanged(elements.statIncomeTyping, describeTypingBoost(sources));
+  elements.statIncomeTyping.classList.toggle('is-idle', isTypingIdle(sources));
+  elements.statIncomeBox.title = describeIncomeSources(sources);
 }
 
 function updateChipTime(key: string, text: string): void {
@@ -392,8 +394,23 @@ export function createRenderer(editor: CodeEditor): Renderer {
     renderSlow();
   };
 
+  let lastFrameAt = performance.now();
+  let pendingAutoKeystrokes = 0;
+
+  /** Hired help at the keyboard: their keystrokes show in the editor, a few a second at most. */
+  const renderAutoTyping = (now: number): void => {
+    const economy = calculateEconomySnapshot(store.game);
+    const step = accrueAutoKeystrokes(pendingAutoKeystrokes, economy.autoKeystrokesPerSecond, now - lastFrameAt);
+    lastFrameAt = now;
+    pendingAutoKeystrokes = step.pending;
+    if (step.keystrokes === 0) return;
+    const floater = describeHiredKeystroke(store.game.eraId, economy.hiredTypingPerSecond, economy.autoKeystrokesPerSecond);
+    Array.from({ length: step.keystrokes }).forEach(() => editor.autoType(floater));
+  };
+
   const frame = (now: number): void => {
     renderStats(editor);
+    renderAutoTyping(now);
     renderStructure();
     updateLiveSlots(elements.site, store.game, Date.now());
     updateLiveSlots(elements.issueList, store.game, Date.now());

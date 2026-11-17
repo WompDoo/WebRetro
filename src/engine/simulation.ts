@@ -1,19 +1,21 @@
 import { coolDown, tickBuffs, withoutBuffs } from './buffs';
 import { MS_PER_SECOND } from './constants';
-import { calculateNetRevenuePerSecond, calculateVisitorsPerSecond, creditFeatureEarnings } from './economy';
+import { calculateHiredTypingPerSecond, calculateNetRevenuePerSecond, calculateVisitorsPerSecond, creditFeatureEarnings } from './economy';
 import { advanceHazards } from './hazards';
 import { advanceOpportunities } from './opportunities';
 import { checkMilestones } from './milestones';
 import type { GameState, GameStep, SimulationMode } from './types';
 
+/** The site's revenue, and what hired help types: both keep coming while you're away. Only the site's is the features'. */
 function applyProduction(state: GameState, deltaMs: number): GameState {
   const seconds = deltaMs / MS_PER_SECOND;
-  const earned = calculateNetRevenuePerSecond(state) * seconds;
+  const siteEarned = calculateNetRevenuePerSecond(state) * seconds;
+  const earned = siteEarned + calculateHiredTypingPerSecond(state) * seconds;
   return {
     ...state,
     money: state.money + earned,
     lifetimeEarnings: state.lifetimeEarnings + earned,
-    featureEarnings: creditFeatureEarnings(state, earned),
+    featureEarnings: creditFeatureEarnings(state, siteEarned),
     lifetimeVisitors: state.lifetimeVisitors + calculateVisitorsPerSecond(state) * seconds,
   };
 }

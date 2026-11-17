@@ -5,7 +5,9 @@ import {
   describeIncomeSources,
   describeTypingBoost,
   drainTypingIncome,
+  isTypingIdle,
   readTypingIncomePerSecond,
+  sumIncome,
   TYPING_INCOME_FADE_MS,
 } from '../src/ui/typing-income';
 
@@ -40,17 +42,25 @@ describe('typing income', () => {
 });
 
 describe('the Income stat', () => {
-  it('shows the typing part while it’s a visible part of the income', () => {
-    assert.equal(describeTypingBoost(100, 60), '⌨ +$60');
-    assert.equal(describeTypingBoost(0, 0.5), '⌨ +$0.50', 'the first keystrokes, before the site earns anything');
+  const sources = (site: number, typing: number, hired = 0): { site: number; hired: number; typing: number } => ({ site, hired, typing });
+
+  it('adds up the site, hired help and your typing', () => {
+    assert.equal(sumIncome(sources(100, 60, 40)), 200);
   });
 
-  it('hides it when you aren’t typing, or it’s a rounding error next to the site', () => {
-    assert.equal(describeTypingBoost(100, 0), '');
-    assert.equal(describeTypingBoost(1_000_000, 5), '');
+  it('shows what your typing adds while you type', () => {
+    assert.equal(describeTypingBoost(sources(100, 60)), '⌨ +$60');
+    assert.equal(describeTypingBoost(sources(0, 0.5)), '⌨ +$0.50', 'the first keystrokes, before the site earns anything');
+    assert.equal(isTypingIdle(sources(100, 60)), false);
   });
 
-  it('says where the money comes from', () => {
-    assert.equal(describeIncomeSources(100, 60), 'Your site: $100/s · Your typing: $60/s');
+  it('reads zero while you don’t, rather than disappearing and moving the label', () => {
+    assert.equal(describeTypingBoost(sources(100, 0)), '⌨ +$0.00');
+    assert.equal(isTypingIdle(sources(100, 0)), true);
+  });
+
+  it('says where the money comes from, hired help once there is some', () => {
+    assert.equal(describeIncomeSources(sources(100, 60)), 'Your site: $100/s · Your typing: $60/s');
+    assert.equal(describeIncomeSources(sources(100, 60, 40)), 'Your site: $100/s · Your hires: $40/s · Your typing: $60/s');
   });
 });

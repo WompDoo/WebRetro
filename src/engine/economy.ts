@@ -125,6 +125,8 @@ interface EffectSummary {
   readonly typingFactor: number;
   /** This era's typo reductions only. */
   readonly typoReduction: number;
+  /** This era's hired help only: keystrokes a second someone else types for you. */
+  readonly autoKeystrokesPerSecond: number;
   /** Shares of revenue that running things costs: blue-green's second production, and so on. */
   readonly upkeepShare: number;
   readonly quickFixWindowFactor: number;
@@ -212,6 +214,7 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     keystrokeRevenueShare: sumAll(effects.flatMap((effect) => (effect.kind === 'keystroke-revenue-share' ? [effect.share] : []))),
     typingFactor: multiplyTypingFactors(thisEraEffects),
     typoReduction: sumTypoReductions(thisEraEffects),
+    autoKeystrokesPerSecond: sumAll(thisEraEffects.flatMap((effect) => (effect.kind === 'auto-keystrokes' ? [effect.perSecond] : []))),
     upkeepShare: sumAll(effects.flatMap((effect) => (effect.kind === 'revenue-upkeep-share' ? [effect.share] : []))),
     quickFixWindowFactor: multiplyEffectFactors(effects, 'quick-fix-window-multiplier'),
     overloadTolerance: multiplyEffectFactors(effects, 'overload-tolerance-multiplier'),
@@ -303,10 +306,29 @@ function calculateKeystrokeRevenueShare(state: GameState): number {
  * were worth, so a relaunch starts where the last era left off.
  */
 export function calculateKeystrokeValue(state: GameState): number {
+  return calculateUnbuffedKeystrokeValue(state) * calculateBuffFactor(state, 'typing');
+}
+
+/** A keystroke's pay before buffs: what hired help earns, since being on fire is yours alone. */
+function calculateUnbuffedKeystrokeValue(state: GameState): number {
   const eraMultiplier = ERAS_BY_ID[state.eraId].keystrokeValueMultiplier;
   const freelancePay = (BASE_KEYSTROKE_VALUE * eraMultiplier) / ERAS_BY_ID[state.eraId].typingPace;
   const revenueShare = calculateKeystrokeRevenueShare(state) * calculateNetRevenuePerSecond(state);
-  return (freelancePay + revenueShare) * getEffectSummary(state).typingFactor * calculateBuffFactor(state, 'typing');
+  return (freelancePay + revenueShare) * getEffectSummary(state).typingFactor;
+}
+
+/** Keystrokes a second this era's hired help types for you. */
+export function calculateAutoKeystrokesPerSecond(state: GameState): number {
+  return getEffectSummary(state).autoKeystrokesPerSecond;
+}
+
+/**
+ * What hired help earns a second. They make your typos too: a typo pays nothing and the next keystroke fixes it, so
+ * each keystroke pays its value over (1 + typo chance), the same as yours on average. Nobody hired, nothing to work out.
+ */
+export function calculateHiredTypingPerSecond(state: GameState): number {
+  const keystrokes = calculateAutoKeystrokesPerSecond(state);
+  return keystrokes === 0 ? 0 : (keystrokes * calculateUnbuffedKeystrokeValue(state)) / (1 + calculateBugChance(state));
 }
 
 export function calculateBugChance(state: GameState): number {
@@ -811,6 +833,8 @@ export const calculateEconomySnapshot = memoizeByState((state: GameState): Econo
     netRevenuePerSecond: calculateNetRevenuePerSecond(state),
     keystrokeValue: calculateKeystrokeValue(state),
     bugChance: calculateBugChance(state),
+    autoKeystrokesPerSecond: calculateAutoKeystrokesPerSecond(state),
+    hiredTypingPerSecond: calculateHiredTypingPerSecond(state),
   };
 });
 

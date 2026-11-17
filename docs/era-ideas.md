@@ -551,6 +551,11 @@ like viruses and DDoS have, can come later for the others.
   about a tenth of a fast typist's income to a quarter, and the frameworks type differently: at the end of 2018 a
   keystroke is worth 30% more with React than with Vue. Retuned: JavaScript's share 0.01 → 0.0015 (1997's ×18
   would otherwise make late-1997 typing half of all income), Rails ×2 → ×1.5, Node.js ×1.5 → ×1.3, REST ×1.3 → ×1.2.
+- **Hired help types for you, one hire per era.** A little brother (0.2 keystrokes a second), an unpaid intern in the
+  crash (0.4), a junior developer (1), a gig-site freelancer (2), a bootcamp cohort (4) and an AI coding agent (8, more
+  than an active player's 6). Era-bound like typing skills, paid offline, never on fire, typos included. The agent
+  first typed 12 a second for $60T and cut 2024 by a fifth (median of nine runs 34.5 → 27.2 min); at 8 a second for
+  $160T the hires shorten 2011 and 2024 by about 7–10% and the whole game by about 4% (2005 and 2018 within noise).
 - **The 2018 hazards cost about 5–8% of the era.** Broken builds take 7–8% of play time in minigames, and the GDPR
   is tuned so every banner costs something: none about 11% of revenue in fines, honest about 7% in ad value, a dark
   pattern about the same on average but in lumps. The first pass cost 15% whichever was picked, and stretched 2018
