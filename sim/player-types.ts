@@ -37,7 +37,7 @@ import {
   type GameState,
   type PerkId,
 } from '../src/engine';
-import { decide, reactToHazards, renewWhenNoticed, typeKeystrokes } from './bot';
+import { claimOfferWhenNoticed, decide, reactToHazards, renewWhenNoticed, typeKeystrokes } from './bot';
 import type { PlayerProfile } from './bot';
 
 interface PlayerType {
@@ -239,7 +239,7 @@ function play(run: Run): PlayerReport {
     const keystrokes = Math.floor(typingDebt);
     typingDebt -= keystrokes;
     const step = advanceSimulation(typeKeystrokes(state, keystrokes), TICK_MS, 'live');
-    state = renewWhenNoticed(reactToHazards(step.state, seenAt, now, type.profile).state, seenAt, now, type.profile);
+    state = claimOfferWhenNoticed(renewWhenNoticed(reactToHazards(step.state, seenAt, now, type.profile).state, seenAt, now, type.profile), seenAt, now, type.profile);
     if (now % type.decisionIntervalAt(now / MS_PER_MINUTE) === 0) state = shop(state, type.profile);
     track(tracker, state, now, step.events.map((event) => event.message));
     if (isEraGateComplete(state)) {

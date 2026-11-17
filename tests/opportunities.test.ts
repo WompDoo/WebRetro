@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   advanceSimulation,
+  BUFFS_BY_ID,
   calculateAdValuePerAd,
   claimOpportunity,
   codeEntryStatus,
@@ -40,13 +41,13 @@ describe('opportunities', () => {
     assert.equal(advanceSimulation(due, 10, 'live').state.opportunity, null);
   });
 
-  it('start their buff when won: a sponsor triples what a banner pays', () => {
+  it("start their buff when won: a sponsor multiplies what a banner pays", () => {
     const offered = advanceSimulation({ ...playing(), opportunityCountdownMs: 1 }, 10, 'live').state;
     const id = offered.opportunity?.id ?? -1;
     const won = claimOpportunity(offered, id).state;
     assert.ok(isBuffActive(won, 'sponsor-slot'));
     assert.equal(won.opportunity, null);
-    assert.ok(Math.abs(calculateAdValuePerAd(won) - calculateAdValuePerAd(offered) * 3) < 1e-12);
+    assert.ok(Math.abs(calculateAdValuePerAd(won) - calculateAdValuePerAd(offered) * BUFFS_BY_ID["sponsor-slot"].factor) < 1e-12);
     assert.equal(claimOpportunity(won, id).state, won, 'an offer is won once');
   });
 });

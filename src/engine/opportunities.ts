@@ -30,7 +30,7 @@ export const OPPORTUNITIES_BY_KIND: Readonly<Record<OpportunityKind, Opportunity
     minigameId: 'code-entry',
     offer: 'A sponsor wants your banner slot',
     icon: '💰',
-    won: `Sponsor deal! Your ads pay ×${BUFFS_BY_ID['sponsor-slot'].factor} for a minute.`,
+    won: `Sponsor deal! Your ads pay ×${BUFFS_BY_ID['sponsor-slot'].factor} for ${BUFFS_BY_ID['sponsor-slot'].durationMs / 1_000} seconds.`,
     missed: 'The sponsor went with someone else.',
     isUseful: (state) => canUseAds(state) && state.adCount > 0,
   },

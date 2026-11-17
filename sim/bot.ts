@@ -19,6 +19,7 @@ import {
   canPlaceAd,
   canUpgradeHosting,
   canUseAds,
+  claimOpportunity,
   cleanInfection,
   closePopup,
   DEFENSES_BY_ID,
@@ -304,6 +305,21 @@ export function renewWhenNoticed(state: GameState, seenAt: Map<number, number>, 
   const noticedAt = seenAt.get(CERTIFICATE_SEEN_ID) ?? now;
   seenAt.set(CERTIFICATE_SEEN_ID, noticedAt);
   return now - noticedAt >= profile.reactionMs && PLAYER_POLICIES[profile.policy].renewsCertificate ? renewCertificate(state) : state;
+}
+
+/** How long typing a sponsor's code takes a player who has seen it before. */
+const CODE_ENTRY_MS = 8_000;
+
+/**
+ * An offer, taken once noticed and typed in: a player who notices within the window wins it, one who takes longer
+ * than the window to look up never does. Offers and infections share ids, so one seen-at map holds both.
+ */
+export function claimOfferWhenNoticed(state: GameState, seenAt: Map<number, number>, now: number, profile: PlayerProfile): GameState {
+  const offer = state.opportunity;
+  if (offer === null) return state;
+  const noticedAt = seenAt.get(offer.id) ?? now;
+  seenAt.set(offer.id, noticedAt);
+  return now - noticedAt >= profile.reactionMs + CODE_ENTRY_MS ? claimOpportunity(state, offer.id).state : state;
 }
 
 export function typeKeystrokes(state: GameState, count: number): GameState {

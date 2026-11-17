@@ -30,7 +30,7 @@ import {
   type FrameworkId,
   type GameState,
 } from '../src/engine';
-import { decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
+import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
 import type { PlayerProfile } from './bot';
 
 
@@ -117,7 +117,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     state = advanceSimulation(state, TICK_MS, 'live').state;
     const reaction = reactToHazards(state, seenAt, now, profile);
     const wasExpired = reaction.state.isCertificateExpired;
-    state = renewWhenNoticed(reaction.state, seenAt, now, profile);
+    state = claimOfferWhenNoticed(renewWhenNoticed(reaction.state, seenAt, now, profile), seenAt, now, profile);
     certificateExpiredMsThisEra += Number(state.isCertificateExpired) * TICK_MS;
     certificateRenewalsThisEra += Number(wasExpired && !state.isCertificateExpired);
     minigameMsThisEra += reaction.minigameMs;
