@@ -40,6 +40,11 @@
 .wizard-label { font-weight: 700; }
 .wizard-input { width: 100%; padding: 3px 4px; border: 2px inset #DFDFDF; border-radius: 0; background: #FFFFFF; color: #000000; font: inherit; }
 .wizard-input:focus { outline: 1px dotted #000000; outline-offset: 1px; }
+/* iOS zooms into a text field under 16px when it's tapped, and doesn't zoom back out: the page ends up off the side of
+   the screen. On a touch screen the name field is 16px; with a mouse it keeps the dialog's 13px. */
+@media (pointer: coarse) {
+  .wizard-input { font-size: 16px; }
+}
 .wizard-preview { margin: 0; color: #404040; font-size: 12px; overflow-wrap: anywhere; }
 .wizard-preview span { color: #0000EE; text-decoration: underline; }
 .wizard-buttons { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px 12px; border-top: 1px solid #808080; box-shadow: inset 0 1px 0 #FFFFFF; }
