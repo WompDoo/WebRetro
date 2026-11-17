@@ -34,7 +34,7 @@ import {
   type GameState,
 } from '../src/engine';
 import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
-import { applySwitches, SWITCHED_OFF } from './switches';
+import { applySimSpecialization, applySwitches, SIM_SPECIALIZATION, SWITCHED_OFF } from './switches';
 import type { PlayerProfile } from './bot';
 
 
@@ -104,7 +104,7 @@ const MAX_FRAMEWORK_SPREAD_SHARE = 0.15;
  * every later traffic spike lands: one seed per framework measures luck as much as balance. Each framework plays
  * 2018 this many times from the same relaunch, each with its own seed, and the medians are compared.
  */
-const SEEDS_PER_FRAMEWORK = 3;
+const SEEDS_PER_FRAMEWORK = Number(process.env['SIM_SEEDS_PER_FRAMEWORK'] ?? 3);
 /** Far enough apart that the seeded rolls share nothing. */
 const SEED_STRIDE = 7_919;
 
@@ -133,7 +133,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     const keystrokes = Math.floor(typingDebt);
     typingDebt -= keystrokes;
     state = typeKeystrokes(state, keystrokes);
-    state = applySwitches(advanceSimulation(state, TICK_MS, 'live').state, SWITCHED_OFF);
+    state = applySimSpecialization(applySwitches(advanceSimulation(state, TICK_MS, 'live').state, SWITCHED_OFF), SIM_SPECIALIZATION);
     buffMsThisEra = addBuffTime(buffMsThisEra, state, TICK_MS);
     const reaction = reactToHazards(state, seenAt, now, profile);
     const wasExpired = reaction.state.isCertificateExpired;

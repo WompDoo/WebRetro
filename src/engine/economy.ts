@@ -22,6 +22,7 @@ import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades
 import { listPerkEffects } from './content/perks';
 import { calculateBuffFactor } from './buffs';
 import { isEraInRun } from './era-chain';
+import { listSpecializationEffects } from './specializations';
 import type {
   DefenseDefinition,
   DefenseId,
@@ -253,7 +254,7 @@ function findSummariesOf(state: GameState): Map<string, EffectSummary> {
 function summarizePurchases(state: GameState, byEra: Map<string, EffectSummary>): EffectSummary {
   const active = getActiveUpgradeIds(state);
   const thisEra = active.filter((id) => isOfBaseEra(id, state.eraId));
-  const perks = listPerkEffects(state.legacyPerkLevels);
+  const perks = [...listPerkEffects(state.legacyPerkLevels), ...listSpecializationEffects(state)];
   const summary = summarizeEffects(
     [...active.flatMap((id) => UPGRADES_BY_ID[id].effects.filter((effect) => countsInEra(id, effect, state.eraId))), ...perks],
     [...thisEra.flatMap((id) => UPGRADES_BY_ID[id].effects), ...perks],
@@ -264,7 +265,7 @@ function summarizePurchases(state: GameState, byEra: Map<string, EffectSummary>)
 
 /** The era and the run: what has retired depends on both, since a run that skips the crash never unlocks it. */
 function summaryKey(state: GameState): string {
-  return `${state.eraId}|${state.runNumber}`;
+  return `${state.eraId}|${state.runNumber}|${state.specializationId}`;
 }
 
 function getEffectSummary(state: GameState): EffectSummary {

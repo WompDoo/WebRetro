@@ -433,6 +433,11 @@ export interface Infection {
  */
 export type Edition = 'classic' | 'webspecialization';
 
+/** What the site becomes, from the relaunch out of 2005 on. Platform is today's path, and the classic game's only one. */
+export type SpecializationId = 'platform' | 'photos' | 'video' | 'microblog' | 'news' | 'reviews' | 'social' | 'streaming' | 'shop';
+/** The eras a specialization shapes. */
+export type SpecializedEraId = 'social-2011' | 'platform-2018' | 'ai-2024';
+
 export interface GameState {
   readonly saveVersion: number;
   readonly eraId: EraId;
@@ -492,6 +497,10 @@ export interface GameState {
   /** This run's Backlinks are in the legacy already: a finished run pays out once. */
   readonly areBacklinksBanked: boolean;
   readonly edition: Edition;
+  /** What the site is now. Chosen at a relaunch from 2011 on, among the unlocked; Platform until then. */
+  readonly specializationId: SpecializationId;
+  /** Unlocked this run by what you've built: a new run starts with none. */
+  readonly unlockedSpecializationIds: readonly SpecializationId[];
 }
 
 /** Bought with Backlinks, kept across runs. */
@@ -511,7 +520,7 @@ export interface LegacyState {
 /** The parts of the game that decide how the page looks: enough to show an old page again. */
 export type SiteSnapshot = Pick<
   GameState,
-  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors'
+  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors' | 'specializationId'
 >;
 
 /** The site the day it left an era. */
