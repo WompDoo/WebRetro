@@ -3,6 +3,8 @@ import type { GameEvent, GameState, GameStep, LegacyState } from '../engine';
 import type { DeviceView } from './browser-chrome';
 import type { PlaytestSpeed } from './playtest';
 import type { BuyAmount, ShopTab } from './render-shop';
+import { captureSiteSeen, countNewOnSite } from './site-news';
+import type { SiteSeen } from './site-news';
 
 export interface NewsItem {
   readonly id: number;
@@ -37,6 +39,8 @@ interface UiStore {
   newsCounter: number;
   /** The newest news item seen on the phone's Inbox tab; anything newer counts as unread. */
   lastSeenNewsId: number;
+  /** What the site had when the phone's Site tab was last open; anything added since is news. */
+  siteSeen: SiteSeen;
   /** The playtest panel: hidden from players unless asked for (?playtest, or five taps on the money). */
   isPlaytestEnabled: boolean;
   playtestSpeed: PlaytestSpeed;
@@ -68,6 +72,7 @@ export const store: UiStore = {
   news: [],
   newsCounter: 0,
   lastSeenNewsId: 0,
+  siteSeen: { features: [], adCount: 0 },
   isPlaytestEnabled: false,
   playtestSpeed: 1,
   typingIncomePool: 0,
@@ -105,6 +110,7 @@ export function replaceGame(game: GameState): void {
   store.deviceView = 'desktop';
   store.mobileTab = pickStartingMobileTab(store.game);
   store.typingIncomePool = 0;
+  markSiteSeen();
 }
 
 /** Every new site starts in 1997 with the legacy's perks: Start over and a new run from the credits alike. */
@@ -118,4 +124,13 @@ export function countUnreadNews(): number {
 
 export function markNewsRead(): void {
   store.lastSeenNewsId = store.news[0]?.id ?? store.lastSeenNewsId;
+}
+
+export function countNewOnSiteSinceSeen(): number {
+  return countNewOnSite(store.game, store.siteSeen);
+}
+
+/** Looking at the site, or arriving with a game that already has one: everything on it is seen. */
+export function markSiteSeen(): void {
+  store.siteSeen = captureSiteSeen(store.game);
 }
