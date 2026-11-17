@@ -1,4 +1,4 @@
-import { formatMoney, formatPercent } from '../engine';
+import { BUFFS_BY_ID, formatMoney, formatPercent, MS_PER_SECOND } from '../engine';
 import type { CodeInputOutcome, EraId } from '../engine';
 import { escapeHtml } from './dom';
 import { createEditorBuffers, fixTypo, peekChunk, showFile as showFileIn, typeBuggedChunk, typeCleanChunk } from './editor-buffers';
@@ -22,6 +22,8 @@ export interface CodeEditorElements {
   readonly tabs: HTMLElement;
   readonly position: HTMLElement;
   readonly rate: HTMLElement;
+  /** The heat meter in the status bar, and the fire it lights. */
+  readonly heat: HTMLElement;
 }
 
 export interface CodeEditor {
@@ -39,6 +41,8 @@ export interface CodeEditor {
   /** Syntax colours can arrive mid-era too: 2005 buys them. */
   readonly setHighlights: (isOn: boolean) => void;
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
+  /** The heat meter, 0 to 1, and how long you're still on fire (0 when you aren't). */
+  readonly updateHeat: (heat: number, fireRemainingMs: number) => void;
 }
 
 /** Counted keystrokes per second are capped, so mashing the keyboard can't outrun a mouse. */
@@ -179,8 +183,13 @@ function scrollTabsWithWheel(tabs: HTMLElement, event: WheelEvent): void {
   tabs.scrollLeft += event.deltaY;
 }
 
+/** How far a keystroke knocks the editor while you're on fire, at most, each way. */
+const NUDGE_PX = 2;
+
 export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () => KeystrokeFeedback): CodeEditor {
   let buffers = createEditorBuffers();
+  let isOnFire = false;
+  let nudgeTurn = false;
   let highlights = false;
   let typing = ERA_PRESENTATION['homepage-1997'].typing;
   let lastAcceptedAt = Number.NEGATIVE_INFINITY;
@@ -205,7 +214,8 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
       'bugged-line': typing.typoLabel,
       'fixed-bug': `${typing.fixLabel} +${formatMoney(feedback.earned)}`,
     };
-    floater.className = `floater floater--${feedback.outcome}`;
+    floater.className = `floater floater--${feedback.outcome}${isOnFire ? ' floater--fire' : ''}`;
+    if (isOnFire) nudge();
     floater.textContent = texts[feedback.outcome];
     floater.style.left = `${FLOATER_MIN_LEFT_PERCENT + Math.random() * FLOATER_LEFT_SPAN_PERCENT}%`;
     floater.addEventListener('animationend', () => floater.remove());
@@ -256,6 +266,29 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     render();
   };
 
+  /**
+   * On fire, every keystroke knocks the editor a pixel or two, a different way each time, the way clickers shake on a
+   * big click. Two identical animations take turns, so each keystroke restarts it without forcing a layout.
+   */
+  const nudge = (): void => {
+    nudgeTurn = !nudgeTurn;
+    elements.window.style.setProperty('--nudge-x', `${(Math.random() * 2 - 1) * NUDGE_PX}px`);
+    elements.window.style.setProperty('--nudge-y', `${(Math.random() * 2 - 1) * NUDGE_PX}px`);
+    elements.window.classList.toggle('is-nudged-a', nudgeTurn);
+    elements.window.classList.toggle('is-nudged-b', !nudgeTurn);
+  };
+
+  /** The meter fills in the status bar; on fire, the editor burns and the meter becomes a countdown. */
+  const updateHeat = (heat: number, fireRemainingMs: number): void => {
+    isOnFire = fireRemainingMs > 0;
+    elements.window.classList.toggle('is-on-fire', isOnFire);
+    elements.heat.style.setProperty('--heat', String(heat));
+    elements.heat.classList.toggle('is-burning', isOnFire);
+    const label = isOnFire ? `🔥 ON FIRE ×${BUFFS_BY_ID['on-fire'].factor} · ${Math.ceil(fireRemainingMs / MS_PER_SECOND)} s` : '';
+    const labelElement = elements.heat.querySelector<HTMLElement>('.heat-label');
+    if (labelElement !== null && labelElement.textContent !== label) labelElement.textContent = label;
+  };
+
   const updateRate = (keystrokeValue: number, bugChance: number): void => {
     const text = `${formatMoney(keystrokeValue)} per keystroke · ${formatPercent(bugChance)} typos`;
     if (elements.rate.textContent !== text) elements.rate.textContent = text;
@@ -295,5 +328,5 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     render();
   };
 
-  return { setEra, showFile, setTitle, setTabs, updateRate, setTyping, setHighlights };
+  return { setEra, showFile, setTitle, setTabs, updateRate, updateHeat, setTyping, setHighlights };
 }

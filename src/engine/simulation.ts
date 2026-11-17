@@ -1,3 +1,4 @@
+import { coolDown, tickBuffs, withoutBuffs } from './buffs';
 import { MS_PER_SECOND } from './constants';
 import { calculateNetRevenuePerSecond, calculateVisitorsPerSecond, creditFeatureEarnings } from './economy';
 import { advanceHazards } from './hazards';
@@ -17,8 +18,13 @@ function applyProduction(state: GameState, deltaMs: number): GameState {
 }
 
 function advanceLiveSystems(state: GameState, deltaMs: number): GameStep {
-  const hazards = advanceHazards(state, deltaMs);
+  const hazards = advanceHazards(coolDown(tickBuffs(state, deltaMs), deltaMs), deltaMs);
   return { state: { ...hazards.state, playTimeMs: hazards.state.playTimeMs + deltaMs }, events: hazards.events };
+}
+
+/** Buffs are for the player at the keyboard: an offline catch-up runs without them, or one buff would pay for hours. */
+function prepare(state: GameState, mode: SimulationMode): GameState {
+  return mode === 'live' ? state : withoutBuffs(state);
 }
 
 /**
@@ -26,7 +32,7 @@ function advanceLiveSystems(state: GameState, deltaMs: number): GameStep {
  * background tabs and closed tabs both catch up correctly. Offline mode is production only.
  */
 export function advanceSimulation(state: GameState, deltaMs: number, mode: SimulationMode): GameStep {
-  const produced = applyProduction(state, deltaMs);
+  const produced = applyProduction(prepare(state, mode), deltaMs);
   const advanced = mode === 'live' ? advanceLiveSystems(produced, deltaMs) : { state: produced, events: [] };
   const milestones = checkMilestones(advanced.state);
   return { state: milestones.state, events: [...advanced.events, ...milestones.events] };

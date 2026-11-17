@@ -140,7 +140,7 @@ export function isOtherFramework(skillId: UpgradeId, profile: PlayerProfile): bo
  * measured on this, so cleaning an infection doesn't read as a snowball.
  */
 export function underlyingIncome(state: GameState, profile: PlayerProfile): number {
-  return effectiveIncome({ ...state, infections: [], popups: [], trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 }, profile);
+  return effectiveIncome({ ...state, infections: [], popups: [], trafficSpikeRemainingMs: 0, buffs: [] }, profile);
 }
 
 export function effectiveIncome(state: GameState, profile: PlayerProfile): number {

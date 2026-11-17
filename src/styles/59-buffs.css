@@ -1,0 +1,50 @@
+/* ---------- Buffs: one look for every boost ---------- */
+/* The chips hang from the bottom edge of the top bar, so a buff starting never pushes the page around. */
+.topbar { position: relative; }
+.buff-chips { position: absolute; right: 12px; bottom: -13px; z-index: 6; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; pointer-events: none; }
+.buff-chips:empty { display: none; }
+.buff-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 7px; border: 2px solid var(--line); border-radius: 999px;
+  background: linear-gradient(180deg, #FFC23A, #FF6A1F); color: #2A0E00; font: 600 11.5px/1.2 var(--font-body); white-space: nowrap;
+  box-shadow: 0 0 0 0 rgba(255, 106, 31, 0.6); animation: buff-burn 1.4s ease-in-out infinite;
+}
+.buff-chip b { font-weight: 800; }
+.buff-icon { font-size: 13px; line-height: 1; animation: buff-flicker 0.9s steps(3) infinite; }
+@keyframes buff-burn { 50% { box-shadow: 0 0 12px 2px rgba(255, 106, 31, 0.55); } }
+@keyframes buff-flicker { 50% { transform: translateY(-1px) scale(1.12); } }
+
+/* The number a buff boosts burns with it. */
+.stat.is-buffed dd { color: #FF6A1F; text-shadow: 0 0 10px rgba(255, 140, 0, 0.55); animation: buff-flicker-text 1.2s ease-in-out infinite; }
+@keyframes buff-flicker-text { 50% { text-shadow: 0 0 16px rgba(255, 140, 0, 0.85); } }
+
+/* ---------- The heat meter, and the editor on fire ---------- */
+.heat { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.heat-meter { position: relative; width: 52px; height: 7px; overflow: hidden; border: 1px solid currentColor; border-radius: 4px; opacity: 0.85; }
+.heat-meter i { position: absolute; inset: 0 auto 0 0; width: calc(var(--heat, 0) * 100%); background: linear-gradient(90deg, #FFD23A, #FF8A1F 60%, #E8320C); transition: width 120ms linear; }
+.heat-label:empty { display: none; }
+.heat.is-burning .heat-meter { display: none; }
+.heat-label { color: #E8460C; font-weight: 800; letter-spacing: 0.02em; }
+
+.editor-window.is-on-fire { border-color: #E8460C; box-shadow: 0 0 0 2px #FF8A1F, 0 0 22px rgba(255, 106, 31, 0.55), var(--lift); animation: editor-burn 1.6s ease-in-out infinite; }
+/* Flames licking up from the bottom of the editor, behind the code. */
+.editor-window.is-on-fire .editor-surface::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 46%; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(18% 70% at 12% 100%, rgba(255, 210, 58, 0.75), transparent 70%),
+    radial-gradient(16% 85% at 32% 100%, rgba(255, 120, 31, 0.7), transparent 70%),
+    radial-gradient(20% 75% at 55% 100%, rgba(255, 190, 40, 0.7), transparent 70%),
+    radial-gradient(15% 90% at 76% 100%, rgba(232, 70, 12, 0.65), transparent 70%),
+    radial-gradient(18% 70% at 93% 100%, rgba(255, 200, 50, 0.7), transparent 70%);
+  filter: blur(2px); transform-origin: bottom; animation: flames 0.7s ease-in-out infinite alternate;
+}
+.editor-window.is-on-fire .editor-code { position: relative; z-index: 1; }
+@keyframes flames { from { transform: scaleY(0.92) skewX(-2deg); opacity: 0.85; } to { transform: scaleY(1.08) skewX(2deg); opacity: 1; } }
+@keyframes editor-burn { 50% { box-shadow: 0 0 0 2px #FFC23A, 0 0 30px rgba(255, 106, 31, 0.7), var(--lift); } }
+/* A keystroke on fire knocks the whole editor a pixel or two, then it settles. The burn keeps running underneath. */
+.editor-window.is-on-fire.is-nudged-a { animation: editor-burn 1.6s ease-in-out infinite, editor-nudge-a 110ms ease-out; }
+.editor-window.is-on-fire.is-nudged-b { animation: editor-burn 1.6s ease-in-out infinite, editor-nudge-b 110ms ease-out; }
+@keyframes editor-nudge-a { 30% { transform: translate(var(--nudge-x, 1px), var(--nudge-y, -1px)); } }
+@keyframes editor-nudge-b { 30% { transform: translate(var(--nudge-x, -1px), var(--nudge-y, 1px)); } }
+
+.floater--fire { color: #E8460C; font-weight: 800; text-shadow: 0 0 6px rgba(255, 170, 40, 0.9); }
+.floater--fire::before { content: "🔥 "; }
