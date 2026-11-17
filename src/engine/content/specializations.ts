@@ -103,8 +103,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [feature('flash-intro', 30), skill('embed-tag')],
     eras: {
       'social-2011': { focus: 'video-player', level: 8, effects: [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)] },
-      'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.45), adAnnoyance(1.2), serverLoad(1.6)] },
-      'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.15), adAnnoyance(1.2), serverLoad(1.6)] },
+      'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)] },
+      'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.22), adAnnoyance(1.2), serverLoad(1.6)] },
     },
   },
   microblog: {
@@ -169,7 +169,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eras: {
       'social-2011': { focus: 'video-player', level: 8, effects: [adValue(0.95), serverLoad(1.3), perVisitor(0.3)] },
       'platform-2018': { focus: 'live-chat', level: 10, effects: [adValue(0.9), serverLoad(1.3), perVisitor(0.4)] },
-      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.85), serverLoad(1.3), perVisitor(0.35)] },
+      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.85), serverLoad(1.3), perVisitor(0.2)] },
     },
   },
   shop: {
@@ -182,7 +182,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eras: {
       'social-2011': { focus: 'social-login', level: 5, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.8)] },
       'platform-2018': { focus: 'pricing-table', level: 14, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(1.0)] },
-      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.8)] },
+      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.55)] },
     },
   },
 };
