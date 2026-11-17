@@ -311,7 +311,29 @@ and a way back to the page's own colors. While you drag, the page changes live; 
 
 ### Balance
 
-<!-- route-balance -->
+The active player, one seed per framework, playing each route from 2011 (`SIM_SPECIALIZATION=<id>`), minutes per era.
+Every era of every route lands within ±12% of Homepage's; the shapes differ (Social starts slow; Streaming's 2018 is
+its longest).
+
+| Route | 2011 | 2018 | 2024 | Total run |
+|---|---|---|---|---|
+| Homepage | 33.4 | 37.5 | 35.2 | 170.1 |
+| Photo sharing | 31.9 | 33.2 | 32.1 | 161.2 |
+| Video site | 32.0 | 36.3 | 35.8 | 168.1 |
+| Microblog | 30.2 | 34.1 | 33.5 | 161.8 |
+| News site | 31.1 | 33.9 | 35.0 | 164.0 |
+| Reviews | 32.9 | 35.1 | 32.5 | 164.5 |
+| Social network | 37.0 | 38.1 | 36.0 | 175.1 |
+| Live streaming | 33.2 | 40.4 | 31.3 | 168.9 |
+| Shop | 32.7 | 34.3 | 34.8 | 165.8 |
+
+The bot doesn't chase unlocks, so these leave out the commitment itself: the minutes spent past the checklist to
+reach a route. Routes run a few minutes shorter than Homepage, which is roughly that detour paid back.
+
+What tuning taught: the checklist's focus level matters as much as the money. A level players reach anyway costs
+nothing (the for-you feed ends the game at 12 by itself), and one nobody builds costs minutes, so focus levels come
+from the levels the sim logs, not from a flat 15. And ad annoyance is the strongest lever: it moves visitors, and every
+era's checklist asks for visitors.
 
 ## 6. Known issues, from the sweeps
 
