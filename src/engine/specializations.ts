@@ -1,9 +1,10 @@
+import { FEATURE_COST_GROWTH } from './constants';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURES_BY_ID } from './content/features';
 import { SPECIALIZATION_IDS, SPECIALIZATIONS_BY_ID, SPECIALIZED_ERA_IDS } from './content/specializations';
 import type { SpecializationCondition, SpecializationEraPlan } from './content/specializations';
 import { UPGRADES_BY_ID } from './content/upgrades';
-import type { EraGateRequirement, EraId, GameEvent, GameState, GameStep, SpecializationId, SpecializedEraId, UpgradeEffect } from './types';
+import type { EraGateRequirement, EraId, FeatureId, GameEvent, GameState, GameStep, SpecializationId, SpecializedEraId, UpgradeEffect } from './types';
 
 /** Only the web specialization test build has them; the classic game stays a Homepage, with no specialization. */
 export function areSpecializationsOn(state: GameState): boolean {
@@ -98,13 +99,40 @@ export function listSpecializationEffects(state: GameState): readonly UpgradeEff
   return plan === null ? [] : plan.effects;
 }
 
-function withFocus(requirement: EraGateRequirement, plan: SpecializationEraPlan): EraGateRequirement {
-  return { ...requirement, featureId: plan.focus, label: `${FEATURES_BY_ID[plan.focus].name} level ${requirement.target}` };
+/**
+ * A route's focus may cost this many times what the checklist item it replaces costs, and no more. Focus features
+ * cost very different amounts (2011's activity feed starts at 17 times the share buttons' price), so the level a
+ * route asks for comes from this budget: a cheap focus at the era's usual level, a dear one at fewer levels.
+ */
+export const FOCUS_COST_ALLOWANCE = 4;
+/** Even the dearest focus is worth a few levels. */
+const MIN_FOCUS_LEVEL = 3;
+
+/** What the first `levels` levels of a feature cost at list price, before any discount. */
+function sumLevelCosts(featureId: FeatureId, levels: number): number {
+  return (FEATURES_BY_ID[featureId].baseCost * (FEATURE_COST_GROWTH ** levels - 1)) / (FEATURE_COST_GROWTH - 1);
+}
+
+/** The highest level of the focus that fits the budget, never above the era's usual level. */
+export function calculateFocusLevel(replacedFeatureId: FeatureId, usualLevel: number, focusFeatureId: FeatureId): number {
+  const budget = sumLevelCosts(replacedFeatureId, usualLevel) * FOCUS_COST_ALLOWANCE;
+  const affordable = Math.floor(Math.log((budget * (FEATURE_COST_GROWTH - 1)) / FEATURES_BY_ID[focusFeatureId].baseCost + 1) / Math.log(FEATURE_COST_GROWTH));
+  return Math.max(MIN_FOCUS_LEVEL, Math.min(usualLevel, affordable));
+}
+
+function withFocus(requirement: EraGateRequirement, replacedFeatureId: FeatureId, plan: SpecializationEraPlan): EraGateRequirement {
+  const target = calculateFocusLevel(replacedFeatureId, requirement.target, plan.focus);
+  return { ...requirement, featureId: plan.focus, target, label: `${FEATURES_BY_ID[plan.focus].name} level ${target}` };
+}
+
+function focusRequirement(requirement: EraGateRequirement, plan: SpecializationEraPlan): EraGateRequirement {
+  const { featureId } = requirement;
+  return requirement.kind === 'feature-level' && featureId !== null ? withFocus(requirement, featureId, plan) : requirement;
 }
 
 /** The era's checklist, with its focus feature swapped for the specialization's: a video site's 2011 asks for the video player. */
 export function listGateRequirements(state: GameState): readonly EraGateRequirement[] {
   const requirements = ERAS_BY_ID[state.eraId].gateRequirements;
   const plan = state.specializationId === 'homepage' ? null : findSpecializationPlan(state);
-  return plan === null ? requirements : requirements.map((requirement) => (requirement.kind === 'feature-level' ? withFocus(requirement, plan) : requirement));
+  return plan === null ? requirements : requirements.map((requirement) => focusRequirement(requirement, plan));
 }

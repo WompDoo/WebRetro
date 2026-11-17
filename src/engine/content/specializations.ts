@@ -20,7 +20,7 @@ export type SpecializationCondition =
   | { readonly kind: 'skill'; readonly upgradeId: UpgradeId };
 
 export interface SpecializationEraPlan {
-  /** The checklist's focus feature this era, asked for at the era's usual level. */
+  /** The checklist's focus feature this era, at the era's usual level or as many as its price allows: see calculateFocusLevel. */
   readonly focus: FeatureId;
   readonly effects: readonly UpgradeEffect[];
 }

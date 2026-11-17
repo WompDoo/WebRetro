@@ -4,6 +4,7 @@ import {
   advanceSimulation,
   calculateAdValuePerAd,
   calculateDirectRevenuePerVisitor,
+  calculateFocusLevel,
   calculateGateChecks,
   calculateServerLoad,
   calculateSpecializationProgress,
@@ -75,7 +76,8 @@ describe('specializing', () => {
 
   it('asks the checklist for the specialization’s focus from 2011 on', () => {
     const focus = (state: GameState): string => calculateGateChecks(state).find((check) => check.requirement.kind === 'feature-level')?.requirement.label ?? '';
-    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 15');
+    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 14');
+    assert.equal(focus(as(at('social-2011'), 'shop')), 'Sign in with… level 5', 'a dear focus asks for fewer levels');
     assert.equal(focus(as(at('social-2011'), 'homepage')), 'Like and share buttons level 15');
     assert.equal(focus(as(at('web2-2005'), 'video')), 'Blog level 15', 'before 2011 every site is a homepage');
   });
@@ -161,5 +163,15 @@ describe('staying a homepage', () => {
     const video2011 = createEraRecord(as(at('social-2011'), 'video'));
     const ending = { ...as(at('ai-2024'), 'homepage'), eraRecords: [createEraRecord(at('web2-2005')), video2011] };
     assert.equal(describeSpecializationPath(ending), 'Your homepage became a video site, then a homepage again.');
+  });
+});
+
+describe('a route’s focus on the checklist', () => {
+  it('costs at most a few times the item it replaces: dearer features ask for fewer levels, never more than usual', () => {
+    assert.equal(calculateFocusLevel('share-buttons', 15, 'share-buttons'), 15);
+    assert.equal(calculateFocusLevel('share-buttons', 15, 'video-player'), 14);
+    assert.equal(calculateFocusLevel('share-buttons', 15, 'activity-feed'), 7);
+    assert.equal(calculateFocusLevel('stories', 15, 'language-switcher'), 15, 'cheap enough for the usual level');
+    assert.equal(calculateFocusLevel('ai-chatbot', 15, 'for-you-feed'), 3, 'the dearest still asks for a few');
   });
 });

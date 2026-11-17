@@ -74,7 +74,7 @@ function countUnlocked(state: GameState): number {
   return SPECIALIZATION_IDS.filter((id) => id !== 'homepage' && isSpecializationUnlocked(state, id)).length;
 }
 
-const INTRO = 'What your site can become. Build towards the ones you like: from the relaunch out of 2005 on, every relaunch lets you specialize, or specialize again, into any you’ve unlocked this run.';
+const INTRO = 'What your site can become. Each one takes commitment: its features far past what the checklist asks, money that isn’t going elsewhere. Pick one or two to work towards. From the relaunch out of 2005 on, every relaunch lets you specialize, or specialize again, into any you’ve unlocked this run.';
 
 /** The list at the top of the Build tab. Folds away, and remembers that it did. */
 export function renderSpecializationPanel(state: GameState, isOpen: boolean): string {
