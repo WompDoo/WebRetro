@@ -1,5 +1,23 @@
-import { addPlaytestIncome, addPlaytestInfection, addPlaytestPopup, createPlaytestState, ERA_IDS, ERAS_BY_ID, expirePlaytestCertificate, findChosenFramework, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, MINIGAME_IDS, startPlaytestTrafficSpike } from '../engine';
-import type { EraId, FrameworkId, MinigameId, PlaytestStage } from '../engine';
+import {
+  addPlaytestIncome,
+  addPlaytestInfection,
+  addPlaytestPopup,
+  BUFF_IDS,
+  createPlaytestState,
+  ERA_IDS,
+  ERAS_BY_ID,
+  expirePlaytestCertificate,
+  findChosenFramework,
+  FRAMEWORK_IDS,
+  FRAMEWORKS_BY_ID,
+  MINIGAME_IDS,
+  offerPlaytestOpportunity,
+  OPPORTUNITY_KINDS,
+  setPlaytestCursorLevel,
+  startBuff,
+  startPlaytestTrafficSpike,
+} from '../engine';
+import type { BuffId, EraId, FrameworkId, GameState, MinigameId, OpportunityKind, PlaytestStage } from '../engine';
 import { elements } from './elements';
 import type { MinigameModal } from './minigames/minigame-modal';
 import { hideOverlay, showOverlay } from './overlays';
@@ -27,6 +45,20 @@ function isStage(value: string): value is PlaytestStage {
 
 function isMinigameId(value: string): value is MinigameId {
   return (MINIGAME_IDS as readonly string[]).includes(value);
+}
+
+function isBuffId(value: string): value is BuffId {
+  return (BUFF_IDS as readonly string[]).includes(value);
+}
+
+function isOpportunityKind(value: string): value is OpportunityKind {
+  return (OPPORTUNITY_KINDS as readonly string[]).includes(value);
+}
+
+/** A change you want to see happen on the page: make it, and get the panel out of the way. */
+function updateGameAndLook(change: (state: GameState) => GameState): void {
+  updateGame(change);
+  hideOverlay(elements.playtestOverlay);
 }
 
 function findSpeed(value: string): PlaytestSpeed | null {
@@ -118,6 +150,18 @@ export function createPlaytestHandlers(renderer: Renderer, minigame: MinigameMod
     'playtest-popup': () => updateGame((state) => addPlaytestPopup(state, Math.random())),
     'playtest-spike': () => updateGame(startPlaytestTrafficSpike),
     'playtest-certificate': () => updateGame(expirePlaytestCertificate),
+    'playtest-buff': (target) => {
+      const buffId = readId(target);
+      if (isBuffId(buffId)) updateGameAndLook((state) => startBuff(state, buffId));
+    },
+    'playtest-offer': (target) => {
+      const kind = readId(target);
+      if (isOpportunityKind(kind)) updateGameAndLook((state) => offerPlaytestOpportunity(state, kind));
+    },
+    'playtest-cursor': (target) => {
+      const level = Number(readId(target));
+      if (Number.isInteger(level)) updateGameAndLook((state) => setPlaytestCursorLevel(state, level));
+    },
     'playtest-next-run': () => updateGame((state) => ({ ...state, runNumber: state.runNumber + 1 })),
     'playtest-speed': (target) => {
       store.playtestSpeed = findSpeed(readId(target)) ?? store.playtestSpeed;

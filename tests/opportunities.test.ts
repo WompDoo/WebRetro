@@ -6,6 +6,7 @@ import {
   calculateAdValuePerAd,
   claimOpportunity,
   codeEntryStatus,
+  createCodeFromPatterns,
   createPlaytestState,
   isBuffActive,
   listCodeKeys,
@@ -69,5 +70,32 @@ describe('code entry', () => {
     assert.equal(tickCodeEntry(fresh, 60_000).elapsedMs, 0);
     const started = typeCodeKey(fresh, 'A');
     assert.equal(codeEntryStatus(tickCodeEntry(started, started.limitMs)), 'lost');
+  });
+});
+
+describe('sponsor codes', () => {
+  const SEEDS = Array.from({ length: 40 }, (_, index) => index * 7_919 + 1);
+
+  it('keep the pattern’s format: # a digit, @ a letter, * either, the rest as written', () => {
+    SEEDS.forEach((seed) => {
+      assert.match(createCodeFromPatterns(['ATDT 555-####'], seed), /^ATDT 555-\d{4}$/);
+      assert.match(createCodeFromPatterns(['@@-*****'], seed), /^[A-Z]{2}-[A-Z0-9]{5}$/);
+    });
+  });
+
+  it('are a fresh code each time, and the same one for the same seed', () => {
+    const codes = new Set(SEEDS.map((seed) => createCodeFromPatterns(['*****-*****'], seed)));
+    assert.ok(codes.size > SEEDS.length * 0.9, `only ${codes.size} different codes`);
+    assert.equal(createCodeFromPatterns(['*****'], 42), createCodeFromPatterns(['*****'], 42));
+  });
+
+  it('never use characters that read alike: 0 and O, 1, I and L, 5 and S', () => {
+    const typed = SEEDS.map((seed) => createCodeFromPatterns(['#####@@@@@*****'], seed)).join('');
+    assert.doesNotMatch(typed, /[0O1IL5S]/);
+  });
+
+  it('pick among the era’s patterns', () => {
+    const picked = new Set(SEEDS.map((seed) => createCodeFromPatterns(['A#', 'B#', 'C#'], seed).charAt(0)));
+    assert.deepEqual([...picked].sort(), ['A', 'B', 'C']);
   });
 });

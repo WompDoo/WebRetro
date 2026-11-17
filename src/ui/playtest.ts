@@ -1,5 +1,21 @@
-import { canCertificateExpire, CRASH_FIRST_RUN, ERA_IDS, ERAS_BY_ID, formatMoney, FRAMEWORK_IDS, FRAMEWORKS_BY_ID, getEraIndex, MINIGAME_IDS, UPGRADES_BY_ID } from '../engine';
-import type { EraId, GameState } from '../engine';
+import {
+  BUFF_IDS,
+  BUFFS_BY_ID,
+  canCertificateExpire,
+  CRASH_FIRST_RUN,
+  ERA_IDS,
+  ERAS_BY_ID,
+  formatMoney,
+  FRAMEWORK_IDS,
+  FRAMEWORKS_BY_ID,
+  getEraIndex,
+  MINIGAME_IDS,
+  OPPORTUNITIES_BY_KIND,
+  OPPORTUNITY_KINDS,
+  UPGRADES_BY_ID,
+} from '../engine';
+import type { EraId, GameState, OpportunityKind } from '../engine';
+import { CURSOR_TIERS } from './cursors';
 import { escapeHtml } from './dom';
 import { MINIGAME_NAMES } from './minigame-names';
 
@@ -82,6 +98,36 @@ function renderHazards(state: GameState): string {
   return `<h3 class="playtest-heading">Hazards</h3><p class="playtest-buttons">${button('playtest-popup', 'popup', 'Pop-up')}${button('playtest-spike', 'spike', 'Traffic spike', noServer)}${button('playtest-certificate', 'certificate', 'Expire the certificate', noCertificate)}</p>`;
 }
 
+/** Why an offer can't come yet: it would boost nothing. */
+const OFFER_UNAVAILABLE: Readonly<Record<OpportunityKind, string>> = {
+  'sponsor-slot': 'No banners to sponsor yet: run some ads first',
+};
+
+function renderOfferButton(state: GameState, kind: OpportunityKind): string {
+  const unavailable = OPPORTUNITIES_BY_KIND[kind].isUseful(state) ? '' : ` disabled title="${OFFER_UNAVAILABLE[kind]}"`;
+  return button('playtest-offer', kind, `${OPPORTUNITIES_BY_KIND[kind].icon} Offer now: ${OPPORTUNITIES_BY_KIND[kind].offer}`, unavailable);
+}
+
+/** Start a buff straight away, or have an offer turn up now and win it the usual way. */
+function renderBuffs(state: GameState): string {
+  const buffs = BUFF_IDS.map((buffId) => button('playtest-buff', buffId, `${BUFFS_BY_ID[buffId].icon} ${BUFFS_BY_ID[buffId].name}`)).join('');
+  const offers = OPPORTUNITY_KINDS.map((kind) => renderOfferButton(state, kind)).join('');
+  return `<h3 class="playtest-heading">Buffs</h3><p class="playtest-buttons">${buffs}</p><p class="playtest-buttons">${offers}</p>`;
+}
+
+const NO_CURSOR = 0;
+
+function renderCursorButton(level: number, label: string, current: number): string {
+  return button('playtest-cursor', String(level), label, ` aria-pressed="${level === current}"`);
+}
+
+/** Every cursor tier at its level. The cursor is a run-two feature: on a first run this makes it the second. */
+function renderCursors(state: GameState): string {
+  const current = state.featureLevels['custom-cursor'];
+  const tiers = CURSOR_TIERS.map((tier) => renderCursorButton(tier.level, `${tier.level}: ${tier.name}`, current)).join('');
+  return `<h3 class="playtest-heading">Custom cursor</h3><p class="playtest-buttons">${renderCursorButton(NO_CURSOR, 'None', current)}${tiers}</p>`;
+}
+
 /** The 2000 crash comes with the third run: after it, a new run opens nothing new. */
 const LAST_RUN_WITH_NEW_CONTENT = CRASH_FIRST_RUN;
 
@@ -100,5 +146,5 @@ function renderSpeed(view: PlaytestView): string {
 }
 
 export function renderPlaytestPanel(state: GameState, view: PlaytestView): string {
-  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderRuns(state), renderSpeed(view)].join('');
+  return [renderEraJumps(state), renderBackup(view), renderMoney(state), renderMinigames(), renderHazards(state), renderBuffs(state), renderCursors(state), renderRuns(state), renderSpeed(view)].join('');
 }

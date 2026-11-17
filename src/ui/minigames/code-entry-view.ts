@@ -1,24 +1,24 @@
-import { codeEntryStatus, listCodeKeys, startCodeEntry, tickCodeEntry, typeCodeKey } from '../../engine';
+import { codeEntryStatus, createCodeFromPatterns, listCodeKeys, startCodeEntry, tickCodeEntry, typeCodeKey } from '../../engine';
 import type { CodeEntry, EraId, MinigameStatus } from '../../engine';
 import { escapeHtml } from '../dom';
 import type { MinigameView } from './types';
 
 /**
- * The sponsor's code, era by era. The same code every time in the same era, like a stratagem: the second deal is
- * faster than the first.
+ * The sponsor's code, era by era: always the era's kind of code (a modem number, a coupon, a product key), never the
+ * same one twice. # is a digit, @ a letter, * either.
  */
 interface SponsorCode {
   readonly brief: string;
-  readonly code: string;
+  readonly patterns: readonly string[];
 }
 
 const SPONSOR_CODES: Readonly<Record<EraId, SponsorCode>> = {
-  'homepage-1997': { brief: 'A sponsor wants your banner slot. Dial their modem before they hang up.', code: 'ATDT 555-0199' },
-  'crash-2000': { brief: 'One of the last dot-coms wants your banner. Enter their coupon code before they fold.', code: 'FREESHIP-2000' },
-  'web2-2005': { brief: 'A sponsor sent their ad software. It wants a product key.', code: 'XJ4KQ-9PL22' },
-  'social-2011': { brief: 'The sponsor’s dashboard texted you a login code. It expires any second.', code: '482 913' },
-  'platform-2018': { brief: 'The sponsor needs their tracking ID on the page. Paste it in. By hand.', code: 'UA-4471-2' },
-  'ai-2024': { brief: 'The sponsor sent their API key. Never share it with anyone. Type it in here.', code: 'sk-live-7Q2X' },
+  'homepage-1997': { brief: 'A sponsor wants your banner slot. Dial their modem before they hang up.', patterns: ['ATDT 555-####'] },
+  'crash-2000': { brief: 'One of the last dot-coms wants your banner. Enter their coupon code before they fold.', patterns: ['FREESHIP-##', 'SAVE##-NOW', 'DOTCOM-@@##'] },
+  'web2-2005': { brief: 'A sponsor sent their ad software. It wants a product key.', patterns: ['*****-*****'] },
+  'social-2011': { brief: 'The sponsor’s dashboard texted you a login code. It expires any second.', patterns: ['### ###'] },
+  'platform-2018': { brief: 'The sponsor needs their tracking ID on the page. Paste it in. By hand.', patterns: ['UA-####-#'] },
+  'ai-2024': { brief: 'The sponsor sent their API key. Never share it with anyone. Type it in here.', patterns: ['sk-live-****'] },
 };
 
 const STATUS_TEXTS: Readonly<Record<MinigameStatus, string>> = {
@@ -69,10 +69,11 @@ function isCodeCharacter(event: KeyboardEvent): boolean {
 
 export const codeEntryView: MinigameView = (stage, target, seed) => {
   const copy = SPONSOR_CODES[target.eraId];
-  let entry: CodeEntry = startCodeEntry(copy.code);
+  const code = createCodeFromPatterns(copy.patterns, seed);
+  let entry: CodeEntry = startCodeEntry(code);
   const box = document.createElement('div');
   box.className = 'code-entry';
-  box.innerHTML = `<div class="code-caps">${renderKeycaps(copy.code)}</div><div class="code-timer"><i></i></div><div class="code-pad">${renderKeypad(copy.code, seed)}</div>`;
+  box.innerHTML = `<div class="code-caps">${renderKeycaps(code)}</div><div class="code-timer"><i></i></div><div class="code-pad">${renderKeypad(code, seed)}</div>`;
   stage.append(box);
   const caps = [...box.querySelectorAll<HTMLElement>('.code-cap')];
   const timer = box.querySelector<HTMLElement>('.code-timer i');

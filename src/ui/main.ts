@@ -46,7 +46,7 @@ function tick(): void {
   applyStep(advanceSimulation(store.game, elapsedMs * store.playtestSpeed, mode));
 }
 
-/** An offer's minigame: the same code for the same era, whatever the difficulty. */
+/** An offer's minigame: a fresh code in the era's format, whatever the difficulty. */
 function findOpportunityTarget(opportunityId: number): MinigameTarget | null {
   const opportunity = findOpportunity(store.game, opportunityId);
   if (opportunity === null) return null;
