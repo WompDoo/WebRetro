@@ -1,8 +1,8 @@
-import type { EraId, FrameworkId, MinigameId, MinigameStatus } from '../../engine';
+import type { AnyMinigameId, EraId, FrameworkId, MinigameStatus } from '../../engine';
 
-/** What a minigame needs to know about the infection it fixes. */
+/** What a minigame needs to know: the infection it fixes, or the offer it wins. */
 export interface MinigameTarget {
-  readonly minigameId: MinigameId;
+  readonly minigameId: AnyMinigameId;
   readonly difficulty: number;
   readonly featureName: string;
   readonly eraId: EraId;

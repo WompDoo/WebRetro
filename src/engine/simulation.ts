@@ -2,6 +2,7 @@ import { coolDown, tickBuffs, withoutBuffs } from './buffs';
 import { MS_PER_SECOND } from './constants';
 import { calculateNetRevenuePerSecond, calculateVisitorsPerSecond, creditFeatureEarnings } from './economy';
 import { advanceHazards } from './hazards';
+import { advanceOpportunities } from './opportunities';
 import { checkMilestones } from './milestones';
 import type { GameState, GameStep, SimulationMode } from './types';
 
@@ -19,7 +20,8 @@ function applyProduction(state: GameState, deltaMs: number): GameState {
 
 function advanceLiveSystems(state: GameState, deltaMs: number): GameStep {
   const hazards = advanceHazards(coolDown(tickBuffs(state, deltaMs), deltaMs), deltaMs);
-  return { state: { ...hazards.state, playTimeMs: hazards.state.playTimeMs + deltaMs }, events: hazards.events };
+  const offers = advanceOpportunities(hazards.state, deltaMs);
+  return { state: { ...offers.state, playTimeMs: offers.state.playTimeMs + deltaMs }, events: [...hazards.events, ...offers.events] };
 }
 
 /** Buffs are for the player at the keyboard: an offline catch-up runs without them, or one buff would pay for hours. */
