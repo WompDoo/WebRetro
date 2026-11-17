@@ -219,130 +219,85 @@ From the era notes that aren't built yet, and from what the player types ran int
   reduced motion everywhere (partly done). Necessary before anything public.
 - **Sound:** the MIDI player and the podcast player could actually play something, muted by default.
 
-## 5. Your site, your way: routes and customization (designed, not built)
+## 5. Your site, your way: specializations and colors (built in the test build)
 
-Every player builds the same site today: the archive at the end shows everyone the same five pages. Two things change
-that, at very different costs. **Decided:** both: routes for what the site becomes, customization for how it looks.
+Every player used to build the same site: the archive at the end showed everyone the same five pages. The **web
+specialization test build** changes that, and runs beside the classic game so the two can be compared:
 
-### Customization: the archive becomes yours (cheap)
+- **Classic:** https://wompdoo.github.io/WebRetro/ (unchanged).
+- **Test build:** https://wompdoo.github.io/WebRetro/webspecialization/, with its own saves and a "Test build" badge.
 
-At each relaunch (and any time from a Design tab), a few choices that fit the era's tools:
+One bundle serves both: the page's `game-edition` meta sets `state.edition`, and everything below checks
+`areSpecializationsOn(state)`. The classic game never sees a specialization, a route's money or a theme, whatever a
+save says.
 
-| Era | What you choose |
-|---|---|
-| 1997 | Background tile (starfield, flames, a photo of your cat), text colour, the MIDI that autoplays, the welcome line |
-| 2000 | The banner over the crash ticker ("still here!!!" or your own) |
-| 2005 | The gloss colour, rounded or square, the beta sticker's word |
-| 2011 | A Bootstrap theme (three swatches), the hero photo |
-| 2018 | Brand colour, light or dark, the hero promise |
-| 2024 | The gradient, the "✨ AI" wording |
+### Specializations: what your site becomes
 
-- Stored per era (`state.design[eraId]`), so the archive replays *your* 1997 page, not the default one.
-- The site name already works this way; this is the same idea for the look.
-- It changes nothing in the economy, so it needs no balance pass and no new sim bot.
-- Cost: a picker per era, and each renderer reading its choices. About one PR.
-
-### Routes: what your site becomes (the big one)
-
-**Decided:** 1997 is a personal homepage for everyone, because that's how the web started. At the relaunch out of 2005,
-the end of Web 2.0, you choose **one route** for the rest of the run, from the routes you've **unlocked** by what you
-built. You can unlock several; you take one. What unlocks each route is **on screen the whole run**, so choosing is
-something you work towards, not a surprise at the door.
+**Decided:** 1997 is a personal homepage for everyone, because that's how the web started. From the relaunch out of
+2005 on, each relaunch (into 2011, 2018 and 2024) lets you **specialize, or specialize again**, into any route you've
+**unlocked this run**. You can unlock several; the site is one at a time, so a run can go photo sharing → social
+network, or video → live streaming. A new run starts with none unlocked; Platform (today's path) is always open.
+Run two doesn't have to take a different route, and the archive doesn't show the routes you didn't take.
 
 How it plays:
 
-- **From the first minute, a Routes list** sits under the checklist in the objective panel (on a phone, in the goal
-  sheet). Every route is a card: its icon, a one-line pitch, and its conditions with progress ("Photo gallery level
-  9/15 · Comments level 10 ✓"). A route you can't reach this run says why ("from run two").
-- **An unlock is a few feature levels**, sometimes with a skill, from 1997, the 2000 crash or 2005. Reaching them unlocks
-  the route for good, with a news line ("New route unlocked: Photo sharing"); levels lost later don't take it back.
-- **The thresholds sit well above the checklist.** A typical 2005 ends with its features around level 5 and the blog at
-  15, so "level 15" is a choice to focus, and focusing on everything costs the era time.
-- **At the relaunch out of 2005** the overlay shows the unlocked routes as cards, the locked ones greyed with what's
-  missing. **Platform** (today's path: blog, then platform, then AI product) is always there, so nobody is stuck.
-- **The route shapes 2011, 2018 and 2024**: each era's checklist, one or two features of its own per era, a signature
-  pressure, a way of making money, the page's hero and names, and the ending's story.
-- **Some routes split again** at the relaunch out of 2011, into a sub-route unlocked the same way by what you built in
-  2011. Social media is too big for one road.
+- **The list is on screen from the first minute**, at the top of the Build tab (where the levels are raised), and
+  folds away. Every route is a card: icon, pitch, how it makes money, and its conditions with progress
+  ("Photo gallery 9/15 · Comments 10/10 ✓"). A route whose features come later says so ("Builds in 2005").
+- **An unlock is a few feature levels**, sometimes a skill, reached this run. It unlocks for good, with a news line
+  ("New specialization unlocked: Photo sharing. You can become one at your next relaunch."); levels lost later don't
+  take it back. The thresholds sit above the checklist's, so a route is a choice to focus.
+- **The relaunch story asks** "What does your site become in 2011?" with a card per unlocked route, and how many
+  more there are to unlock. The news says what it became.
+- **Each era it shapes, the route changes:** the checklist's feature requirement (a video site's 2011 asks for the
+  video player, not share buttons), how it makes money (effects, summarized like any upgrade's), and the page.
+- **The ending says what the homepage became:** "Your homepage became a photo-sharing site, then a social network."
 
-The routes (in game every company is a parody; the "like" column is for us):
-
-| Route | Like | Unlocks with (by the end of 2005) | Signature pressure (a system we have) | Money | Sub-routes at 2018 |
+| Route | Unlocks with | 2011 focus | 2018 focus | 2024 focus | Money |
 |---|---|---|---|---|---|
-| **Platform** | today's path | always | as today | as today | — |
-| **Social network** | the big friends network | Blog 25 · Comments 15 | privacy: password leaks, and GDPR fines ×1.5 in 2018 | targeted ads | Friends feed · Professional network |
-| **Photo sharing** | the photo app | Photo gallery 15 · Comments 10 | storage: server load ×1.5 | ads in the feed | Stories · Pinboard |
-| **Microblog** | 140 characters | **Shoutbox** 10 · Comments 10 | virality: traffic spikes ×2, and a "fail walrus" page when the server gives | weak ads, kept alive by funding rounds | — |
-| **Video site** | user video | Flash intro 10 · MIDI player 40 | bandwidth: server load ×2, hosting is the game | pre-roll ads: worth ×1.5, annoying ×1.4 | Creators · Streaming service |
-| **Live streaming** | live channels | Webcam 10 (run two on) · Comments 10 | live chat: spam ×1.5, and server load | tips and subscriptions | — |
-| **News site** | news and RSS | Blog 25 · Webring 40 · Learn RSS | breaking-news spikes; in 2024, AI answers take its clicks | ads, then a paywall | Newsroom · Aggregator |
-| **Reviews** | reviews and maps | Map mashup 10 · Comments 10 | fake reviews: the spam hazard and its minigame | a cut of every booking | — |
-| **Shop** | the online store | **Shop window** 10 · Photo gallery 5 | fraud (the password-leak hazard reskinned), and Black Friday spikes | sales: money per visitor without ads | Marketplace · Bargain bin |
+| 🧩 Platform | always | share buttons | stories | AI chatbot | ads, steady all the way |
+| 📷 Photo sharing | Photo gallery 15 · Comments 10 | share buttons | stories | AI images | more room for ads, heavy on servers |
+| 🎬 Video site | Flash intro 15 · Learn the `<EMBED>` tag | video player | stories | for-you feed | pre-roll ads worth more every era; huge bandwidth |
+| 💬 Microblog | Guestbook 60 · Comments 15 | activity feed | live chat | for-you feed | enormous traffic, little per visitor |
+| 📰 News site | Blog 25 · Tag cloud 10 · Learn RSS and tagging | activity feed | newsletter | AI articles | ads early, a paywall later; AI answers take clicks |
+| ⭐ Reviews | Map mashup 10 · Comments 10 | social login | language switcher | AI search | a cut of every booking |
+| 👥 Social network | Activity feed 10 · Share buttons 25 | activity feed | stories | for-you feed | slow start, then the biggest ad business, and fines |
+| 📡 Live streaming | Video player 15 · Activity feed 5 | video player | live chat | AI chatbot | subscriptions and tips that grow every era |
+| 🛒 Shop | Photo gallery 15 · Social login 10 | social login | pricing table | AI chatbot | sales instead of ads; ads drive shoppers away |
 
-- **Two small new 2005 features seed routes** that nothing before 2011 can: a **shoutbox** (the mid-2000s sidebar
-  chat) for the microblog, and a **shop window** (products with "Buy now" buttons) for the shop. Like the run-two
-  features, no checklist asks for them.
-- **Comments are in five routes**, because in 2005 comments were what made a site social. The other condition is
-  what tells the routes apart.
-- **Live streaming needs the webcam**, a run-two feature, so it's a reason to play again: in run one its card says
-  "from run two".
-- **Not a route: the adult web.** The game is shared by link and played by anyone. Its history (online payments,
-  streaming and pop-ups all grew up there) is a joke 1997's pop-ups already tell. At most, a card that never unlocks:
-  "18+: Kevin's idea. Vetoed."
+What changed from the design, and why:
 
-What a route changes, era by era (one example; every route gets the same treatment):
+- **No new shoutbox or shop window.** The guestbook already is the shoutbox (it seeds the microblog), and comments,
+  photos and logins seed the rest.
+- **No sub-routes.** Specializing again at each relaunch does the same job with one mechanism.
+- **Live streaming isn't gated on run two.** It grows out of the video player and the activity feed instead.
+- **Not a route: the adult web.** The game is shared by link and played by anyone.
+- **Pressures are effects for now** (server load, ad annoyance, privacy fines, AI answers). A route-specific hazard
+  (a fail-whale page, copyright takedowns) is the next layer if routes need more character.
 
-| Video site | 2011 | 2018 | 2024 |
-|---|---|---|---|
-| Checklist asks for | the video player at a high level, HTML5 video (Flash dies, as today) | recommendations; then Creators (a partner program) or Streaming service (subscriptions, originals) | the short-video feed, AI clips |
-| Pressure | server load ×2 | copyright takedowns, a reskin of the spam minigame | AI-generated slop flooding uploads |
-| Page | a grid of thumbnails and an upload button | autoplay, a "Up next" column | a vertical feed |
-| Ending | "From a homepage with a MIDI file to the web's biggest video site." | | |
+### The page looks the part
 
-Data model:
+A specialized site keeps its era's page (2011's Bootstrap, 2018's landing page, 2024's AI site) and leads with what it
+is: its own navigation, a hero in that era's voice, and one block under it: photos in a grid, trending videos, a
+timeline of posts, headlines, star ratings, a news feed, live channels, today's deals. Platform keeps the page as it was.
+Code: `src/ui/sites/specialization-look.ts`, styles in `91-specialization-looks.css`.
 
-```ts
-type RouteId = 'platform' | 'social' | 'photos' | 'microblog' | 'video' | 'streaming' | 'news' | 'reviews' | 'shop';
-type RouteCondition =
-  | { readonly kind: 'feature-level'; readonly featureId: FeatureId; readonly level: number }
-  | { readonly kind: 'skill'; readonly upgradeId: UpgradeId }
-  | { readonly kind: 'from-run'; readonly run: number };
-interface RouteDefinition {
-  readonly id: RouteId;
-  readonly unlock: readonly RouteCondition[];
-  readonly eras: Readonly<Partial<Record<EraId, RouteEraDefinition>>>; // 2011, 2018, 2024
-  readonly subRoutes: readonly SubRouteId[];
-}
-interface RouteEraDefinition {
-  readonly gate: readonly EraGateRequirement[];
-  readonly features: readonly FeatureId[];
-  readonly effects: readonly UpgradeEffect[]; // the signature pressure and the money model
-}
-// state.unlockedRoutes: RouteId[] (ever reached), state.route: RouteId, state.subRoute: SubRouteId | null
-```
+### Colors: the archive becomes yours
 
-- **The economy is effects.** A route's pressure and money model are `UpgradeEffect`s, summarized like the perks, so
-  "server load ×2" or "ads ×1.5" needs no new engine code. What's new is checklists, a few features, and copy.
-- **The page is the biggest cost.** Each era's page is built from feature sections, so a route keeps the era's look
-  (the 2011 Bootstrap site, the 2018 landing page) and changes the hero, the section order and a block or two.
-- **Balance:** one sim bot per route, one more entry in CI's matrix each, every route's eras in the usual band. The bot
-  needs to chase an unlock on purpose, which is the one new piece of bot logic.
+A 🎨 button in the browser's toolbar (test build) opens the site's colors: eight palettes picked to look good on every
+era's page, a wheel with every hue and saturation plus a lightness slider, three backgrounds (white, tinted, cream),
+and a way back to the page's own colors. While you drag, the page changes live; the color is kept when you let go.
 
-Order of work:
+- One accent becomes the shades each era uses (`site-theme.ts`): darker for links, a pale tint for wells and heroes,
+  light ones for dark pages (1997's starfield, 2024's dark mode), white or dark text for buttons and navbars, and its
+  neighbours on the wheel for gradients. `92-site-theme.css` says where each era uses them.
+- A specialized site wears its kind's color (video red, social blue, shop orange) until you pick your own.
+- The Web Attic keeps each year's colors: the era record snapshots them with the rest of the page.
+- Colors change nothing in the economy.
 
-1. **The choice, visible.** Route definitions with their unlock conditions, the Routes list with progress from 1997,
-   the unlock news, and the pick in the relaunch out of 2005. A route changes only the names, the hero line and the
-   ending at first. This alone answers "what could my site become?" and lets the unlocks be felt and tuned.
-2. **The first real route: Video site** in 2011. Its pressure is the most distinct (bandwidth), and it reuses the most
-   (the 2011 video player, Flash dying, HTML5 video).
-3. **Photo sharing and Social network** in 2011 (the photo gallery's masonry, share buttons, the activity feed).
-4. **The shoutbox and the shop window**, then Microblog, Shop, News and Reviews in 2011.
-5. **Through 2018 and 2024**, with the sub-routes at the relaunch out of 2011.
+### Balance
 
-**Open questions for you:**
-
-1. Should run two require a route you haven't taken, or only suggest one?
-2. Should the archive show the routes you unlocked but didn't take, as "what could have been"?
+<!-- route-balance -->
 
 ## 6. Known issues, from the sweeps
 

@@ -1,7 +1,7 @@
 import type { SiteBackground, SiteColors } from '../engine';
 import { hexToHsl, hslToHex } from './color-math';
 import type { Hsl } from './color-math';
-import { clampLightness, describeWheelStyle, placeOnWheel, readWheelPoint } from './render-site-colors';
+import { clampLightness, describeMarkerStyle, describeWheelStyle, readWheelPoint } from './render-site-colors';
 import { buildThemeVariables } from './site-theme';
 
 /**
@@ -41,9 +41,8 @@ function startDraft(colors: SiteColors): Draft {
 /** The wheel, its marker, the swatch and the hex code: what the panel shows of the color being dragged. */
 function previewInPanel(panel: HTMLElement, draft: Draft): void {
   const { accent } = toColors(draft);
-  const marker = placeOnWheel(draft.hsl);
   withElement<HTMLElement>(panel, '.colors-custom', (custom) => custom.setAttribute('style', describeWheelStyle(draft.hsl)));
-  withElement<HTMLElement>(panel, '.color-wheel-marker', (element) => element.setAttribute('style', `left:${marker.left.toFixed(1)}%;top:${marker.top.toFixed(1)}%;background:${accent}`));
+  withElement<HTMLElement>(panel, '.color-wheel-marker', (element) => element.setAttribute('style', describeMarkerStyle(draft.hsl, accent)));
   withElement<HTMLElement>(panel, '.colors-preview', (element) => element.setAttribute('style', `background:${accent}`));
   withElement<HTMLElement>(panel, '.colors-hex', (element) => {
     element.textContent = accent;

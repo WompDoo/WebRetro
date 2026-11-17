@@ -16,6 +16,8 @@ const PERCENT = 100;
 const HALF = 0.5;
 const DEGREES_PER_HALF_TURN = 180;
 const DEGREES = 360;
+const SHADE_DECIMALS = 2;
+const POSITION_DECIMALS = 1;
 export const LIGHTNESS_MIN = 0.2;
 export const LIGHTNESS_MAX = 0.8;
 
@@ -45,9 +47,15 @@ export function readWheelPoint(box: WheelBox, x: number, y: number): Pick<Hsl, '
   return { hue, saturation: Math.min(1, Math.hypot(across, down) / radius) };
 }
 
+/** The marker: where the color sits on the wheel, filled with it. Also used live while dragging. */
+export function describeMarkerStyle(hsl: Hsl, accent: string): string {
+  const marker = placeOnWheel(hsl);
+  return `left:${marker.left.toFixed(POSITION_DECIMALS)}%;top:${marker.top.toFixed(POSITION_DECIMALS)}%;background:${accent}`;
+}
+
 /** The wheel shows hues at half lightness; this layer darkens or lightens it to the slider's lightness, as HSL does. */
 export function describeWheelShade(lightness: number): string {
-  const amount = Math.abs(2 * lightness - 1).toFixed(2);
+  const amount = Math.abs(2 * lightness - 1).toFixed(SHADE_DECIMALS);
   return lightness < HALF ? `rgba(0, 0, 0, ${amount})` : `rgba(255, 255, 255, ${amount})`;
 }
 
@@ -82,10 +90,9 @@ function renderBackground(current: SiteBackground, background: SiteBackground): 
 
 function renderWheel(colors: SiteColors): string {
   const hsl = hexToHsl(colors.accent);
-  const marker = placeOnWheel(hsl);
   const lightness = Math.round(clampLightness(hsl.lightness) * PERCENT);
   return `<div class="colors-custom" style="${describeWheelStyle(hsl)}">
-    <div class="color-wheel" data-color-wheel role="img" aria-label="Color wheel: drag to pick any color"><span class="color-wheel-marker" style="left:${marker.left.toFixed(1)}%;top:${marker.top.toFixed(1)}%;background:${colors.accent}"></span></div>
+    <div class="color-wheel" data-color-wheel role="img" aria-label="Color wheel: drag to pick any color"><span class="color-wheel-marker" style="${describeMarkerStyle(hsl, colors.accent)}"></span></div>
     <div class="colors-side">
       <span class="colors-preview" style="background:${colors.accent}" aria-hidden="true"></span>
       <code class="colors-hex">${colors.accent}</code>
