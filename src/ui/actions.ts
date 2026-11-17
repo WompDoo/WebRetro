@@ -1,5 +1,7 @@
 import {
   advanceEra,
+  chooseSiteColors,
+  isSiteBackground,
   specialize,
   SPECIALIZATION_IDS,
   buyDefense,
@@ -44,6 +46,8 @@ import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
 import { createPlaytestHandlers } from './playtest-actions';
 import { describeSpecialization } from './render-specializations';
+import { findPickerColors } from './render-site-colors';
+import { SITE_PALETTES } from './site-theme';
 import { flashMoneyLoss } from './renderer';
 import { describeRetirement } from './retirement';
 import type { Renderer } from './renderer';
@@ -282,6 +286,18 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
       store.pendingSpecializationId = id;
       renderStory(store.game);
     }),
+    'toggle-colors': () => {
+      store.isColorsOpen = !store.isColorsOpen;
+    },
+    'site-palette': (target) => {
+      const palette = SITE_PALETTES.find((candidate) => candidate.id === readId(target));
+      if (palette !== undefined) updateGame((state) => chooseSiteColors(state, palette.colors));
+    },
+    /** A new background keeps the accent on the page now, the specialization's included. */
+    'site-background': withId(isSiteBackground, (background) => {
+      updateGame((state) => chooseSiteColors(state, { ...findPickerColors(state), background }));
+    }),
+    'site-colors-reset': () => updateGame((state) => chooseSiteColors(state, null)),
     'open-reset': () => showOverlay(elements.resetOverlay),
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),

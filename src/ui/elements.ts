@@ -23,6 +23,8 @@ export const elements = {
   browserStatusbar: requireElement<HTMLElement>('#browser-statusbar'),
   browserViewport: requireElement<HTMLElement>('#browser-viewport'),
   deviceSwitch: requireElement<HTMLElement>('#device-switch'),
+  colorsButton: requireElement<HTMLElement>('#colors-button'),
+  colorsPanel: requireElement<HTMLElement>('#colors-panel'),
   deviceCaption: requireElement<HTMLElement>('#device-caption'),
   deviceNotifications: requireElement<HTMLElement>('#device-notifications'),
   site: requireElement<HTMLElement>('#site'),

@@ -56,7 +56,9 @@
           <button type="button" class="device-button" data-action="device-view" data-id="desktop" aria-pressed="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg><span>Desktop</span></button>
           <button type="button" class="device-button" data-action="device-view" data-id="phone" aria-pressed="false"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg><span>Phone</span></button>
         </div>
+        <button type="button" class="colors-button" id="colors-button" data-action="toggle-colors" aria-expanded="false" aria-controls="colors-panel" hidden><span aria-hidden="true">🎨</span><span class="colors-button-label">Colors</span></button>
       </div>
+      <div class="colors-panel" id="colors-panel" role="dialog" aria-label="Your site’s colors" hidden></div>
       <div class="browser-viewport" id="browser-viewport" data-device="desktop">
         <div class="device">
           <div class="device-frame">

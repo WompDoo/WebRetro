@@ -8,6 +8,7 @@ import { renderFeatureBlocks } from './features';
 import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { renderBootScreen, renderLegalWall } from './site-2018';
+import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
 
 /**
  * 2024: the relaunch asked an AI for a redesign, and got the page every 2024 startup had. Big type with a gradient,
@@ -38,18 +39,33 @@ const LOOKS: readonly Look[] = [
 function renderLookClasses(state: GameState): string {
   const framework = findChosenFramework(state);
   const frameworkClass = framework === null ? [] : [`fw-${framework}`];
-  return ['site-2024', ...frameworkClass, ...LOOKS.filter((look) => look.applies(state)).map((look) => look.className)].join(' ');
+  return ['site-2024', ...frameworkClass, ...LOOKS.filter((look) => look.applies(state)).map((look) => look.className)].join(' ') + specializationClass(state);
 }
 
 function renderNav(context: SiteContext): string {
-  const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
+  const items = renderNavLinks(context.state, NAV_ITEMS, '');
   return `<header class="ai-nav"><span class="ai-logo"><i aria-hidden="true"></i><span class="nav-brand">${escapeHtml(siteBrand(context.state))}</span></span><nav class="ai-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="ai-cmdk">⌘K</span><span class="ai-login">Sign in</span><span class="ai-cta">Get started</span></header>`;
+}
+
+function renderPlatformHeroText(brand: string): string {
+  return `<h1>The AI-native platform for <span class="ai-gradient">everything</span>.</h1><p>Built for humans. Loved by agents. Join 40 million people who let ${brand} do the thinking.</p>`;
+}
+
+const PLATFORM_BUTTONS = '<span class="ai-button is-primary">Start for free</span><span class="ai-button">Book a demo</span>';
+
+/** A specialized site's headline, all of it in the gradient. */
+function renderHeroWords(context: SiteContext, brand: string): readonly [string, string] {
+  const copy = findHeroCopy(context.state);
+  return copy === null
+    ? [renderPlatformHeroText(brand), PLATFORM_BUTTONS]
+    : [`<h1><span class="ai-gradient">${copy.title}</span></h1><p>${copy.text}</p>`, `<span class="ai-button is-primary">${copy.cta}</span><span class="ai-button">Get the app</span>`];
 }
 
 /** The hero: a sparkle badge, a gradient headline, and the "Ask AI" box once you've built it. */
 function renderHero(context: SiteContext): string {
   const brand = escapeHtml(siteBrand(context.state));
-  return `<section class="ai-hero"><span class="ai-badge">✨ New: ${brand} AI is here</span><h1>The AI-native platform for <span class="ai-gradient">everything</span>.</h1><p>Built for humans. Loved by agents. Join 40 million people who let ${brand} do the thinking.</p>${renderFeatureBlocks(context, ['ai-search']).join('')}<div class="ai-hero-buttons"><span class="ai-button is-primary">Start for free</span><span class="ai-button">Book a demo</span></div></section>`;
+  const [text, buttons] = renderHeroWords(context, brand);
+  return `<section class="ai-hero"><span class="ai-badge">✨ New: ${brand} AI is here</span>${text}${renderFeatureBlocks(context, ['ai-search']).join('')}<div class="ai-hero-buttons">${buttons}</div></section>`;
 }
 
 /** The first ad sits in the grid as a tile marked "Sponsored", as if it were one of yours. */
@@ -86,6 +102,7 @@ export function render2024Site(context: SiteContext): string {
     ${renderBoot(context.state)}
     ${renderNav(context)}
     ${renderHero(context)}
+    ${renderSignatureBlock(context.state)}
     <section class="ai-logos"><span>Trusted by 10,000+ AI-native teams</span>${TRUSTED_BY.map((name) => `<b>${name}</b>`).join('')}</section>
     ${renderBento(context)}
     ${renderFeatureBlocks(context, ['pricing-table']).join('')}

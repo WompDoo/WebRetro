@@ -48,6 +48,8 @@ interface UiStore {
   isSpecializationsOpen: boolean;
   /** Picked in the relaunch story, applied once the new era starts. Null: keep the current one. */
   pendingSpecializationId: SpecializationId | null;
+  /** The site's color picker, under the browser's toolbar. */
+  isColorsOpen: boolean;
   /** The playtest panel: hidden from players unless asked for (?playtest, or five taps on the money). */
   isPlaytestEnabled: boolean;
   playtestSpeed: PlaytestSpeed;
@@ -83,6 +85,7 @@ export const store: UiStore = {
   siteSeen: { features: [], adCount: 0 },
   isSpecializationsOpen: true,
   pendingSpecializationId: null,
+  isColorsOpen: false,
   isPlaytestEnabled: false,
   playtestSpeed: 1,
   typingIncomePool: 0,
