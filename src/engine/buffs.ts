@@ -7,11 +7,12 @@ import type { ActiveBuff, BuffId, BuffTarget, CodeInputOutcome, GameState } from
  */
 
 /**
- * The heat meter: typing without typos fills it, a typo cools it, and so does stopping. Typos are common (12–22% a
- * keystroke, era by era), so one costs two keystrokes' worth, not the streak: steady typing catches fire in 30 to 60
- * seconds, sooner with every upgrade that cuts typos.
+ * The heat meter: typing without typos fills it, a typo cools it, and so does stopping. Typos are common (12–25% a
+ * keystroke, era by era), so one costs a couple of keystrokes' worth, not the streak: steady typing catches fire in
+ * 35 to 70 seconds, sooner with every upgrade that cuts typos. Tuned so being on fire is a moment, about a fifth of an
+ * active typist's time: at 0.01 a keystroke and 30 seconds of fire it was two fifths, and the normal state.
  */
-export const HEAT_PER_CLEAN_KEYSTROKE = 0.01;
+export const HEAT_PER_CLEAN_KEYSTROKE = 0.008;
 export const HEAT_LOST_PER_TYPO = 0.02;
 /** A pause this long and the meter starts to cool: a breath is fine, walking away isn't. */
 export const HEAT_IDLE_GRACE_MS = 1_500;
