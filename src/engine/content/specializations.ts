@@ -102,9 +102,9 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     money: 'An ad before every video pays very well. The bandwidth bill is enormous.',
     unlock: [feature('flash-intro', 30), skill('embed-tag')],
     eras: {
-      'social-2011': { focus: 'video-player', level: 8, effects: [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)] },
-      'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)] },
-      'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.35), adAnnoyance(1.2), serverLoad(1.6)] },
+      'social-2011': { focus: 'video-player', level: 8, effects: [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)] },
+      'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.45), adAnnoyance(1.2), serverLoad(1.6)] },
+      'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.15), adAnnoyance(1.2), serverLoad(1.6)] },
     },
   },
   microblog: {
@@ -129,7 +129,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [feature('blog', 60), feature('tag-cloud', 5), skill('learn-rss')],
     eras: {
       'social-2011': { focus: 'activity-feed', level: 9, effects: [adValue(1.15)] },
-      'platform-2018': { focus: 'newsletter', level: 13, effects: [adValue(1.1), perVisitor(0.25)] },
+      'platform-2018': { focus: 'newsletter', level: 13, effects: [adValue(1.0), perVisitor(0.2)] },
       'ai-2024': { focus: 'ai-articles', level: AI_ARTICLES_LEVEL, effects: [adValue(0.95), perVisitor(0.35), { kind: 'ai-answer-share-multiplier', factor: 1.3 }] },
     },
   },
@@ -151,12 +151,12 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     name: 'Social network',
     icon: '👥',
     pitch: 'Everyone you know, and everything they’re up to.',
-    money: 'A slow start: growth first, money later. Then the biggest ad business of all, and the biggest privacy fines.',
+    money: 'A slow start: growth first, money later. Then ads that pay off, and the biggest privacy fines.',
     unlock: [feature('activity-feed', 18), feature('share-buttons', 25)],
     eras: {
       'social-2011': { focus: 'activity-feed', level: 9, effects: [adValue(0.75), traffic(1.2)] },
-      'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.2), traffic(1.1), { kind: 'privacy-fine-multiplier', factor: 1.5 }] },
-      'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.4), traffic(1.1)] },
+      'platform-2018': { focus: 'stories', level: 15, effects: [adValue(1.0), { kind: 'privacy-fine-multiplier', factor: 1.5 }] },
+      'ai-2024': { focus: 'for-you-feed', level: FOR_YOU_FEED_LEVEL, effects: [adValue(1.1)] },
     },
   },
   streaming: {
@@ -164,12 +164,12 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     name: 'Live streaming',
     icon: '📡',
     pitch: 'Live channels, a chat beside every one, and tips.',
-    money: 'Subscriptions and tips that grow every era. Live video is heavy on the servers.',
+    money: 'Subscriptions and tips on top of the ads. Live video is heavy on the servers.',
     unlock: [feature('video-player', 25), feature('activity-feed', 10)],
     eras: {
       'social-2011': { focus: 'video-player', level: 8, effects: [adValue(0.95), serverLoad(1.3), perVisitor(0.3)] },
       'platform-2018': { focus: 'live-chat', level: 10, effects: [adValue(0.9), serverLoad(1.3), perVisitor(0.4)] },
-      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.85), serverLoad(1.3), perVisitor(0.55)] },
+      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.85), serverLoad(1.3), perVisitor(0.35)] },
     },
   },
   shop: {
@@ -182,7 +182,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eras: {
       'social-2011': { focus: 'social-login', level: 5, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.8)] },
       'platform-2018': { focus: 'pricing-table', level: 14, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(1.0)] },
-      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(1.1)] },
+      'ai-2024': { focus: 'ai-chatbot', level: 15, effects: [adValue(0.8), adAnnoyance(1.15), perVisitor(0.8)] },
     },
   },
 };
