@@ -35,6 +35,7 @@ export type FeatureId =
   | 'ai-images'
   | 'for-you-feed'
   | 'webcam'
+  | 'custom-cursor'
   | 'wiki'
   | 'deal-of-the-day'
   | 'community-chat'

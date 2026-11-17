@@ -4,6 +4,7 @@ import { escapeHtml, pickCyclic } from '../dom';
 import { BLOGROLL, ERA_PRESENTATION, READER_TAGS, TAGS } from '../presentation';
 import { SITE_CONTENT } from '../site-content';
 import type { MessageCopy } from '../presentation';
+import { describeNextCursorTier, findShownCursorTier, toCursorImage } from '../cursors';
 import { renderInfectionOverlay } from './infections';
 import { formatMinutesAndSeconds, heading, is1997, levelOf, siteBrand, toWholeSeconds } from './site-context';
 import type { FeatureRenderer, SiteContext } from './site-context';
@@ -518,6 +519,15 @@ const renderWebcam: FeatureRenderer = (context) => {
   return `${heading(context, 'webcam', 'Live webcam!!')}<div class="webcam-frame"><span class="webcam-desk" aria-hidden="true"></span><span class="webcam-stamp">LIVE · my desk</span></div><p class="post-meta">Next picture in ${secondsLeft} s · ${formatCompactNumber(levelOf(context, 'webcam') * WATCHERS_PER_LEVEL)} people watching</p>`;
 };
 
+const DOWNLOADS_PER_LEVEL = 75;
+/** "Get this cursor!": the one you have, a download counter, and what the next few levels turn it into. */
+const renderCustomCursor: FeatureRenderer = (context) => {
+  const level = levelOf(context, 'custom-cursor');
+  const tier = findShownCursorTier(level);
+  const preview = `<span class="cursor-preview" style="background-image:${toCursorImage(tier)}"></span>`;
+  return `${heading(context, 'custom-cursor', 'Get this cursor!')}<div class="cursor-offer">${preview}<span><b>${escapeHtml(tier.name)}</b><br><span class="fake-link">FREE download!</span> (toolbar included)</span></div><p class="post-meta">${formatCompactNumber(level * DOWNLOADS_PER_LEVEL)} downloads · ${escapeHtml(describeNextCursorTier(level))}</p>`;
+};
+
 const WIKI_PAGES: readonly string[] = ['Main Page', 'How to make text blink', 'List of webrings', 'Our forum rules', 'Talk:Main Page', 'Pizza (disputed)', 'Recent changes'];
 const BASE_WIKI_PAGES = 2;
 const MAX_WIKI_PAGES = 6;
@@ -599,6 +609,7 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'ai-images': renderAiImages,
   'for-you-feed': renderForYouFeed,
   webcam: renderWebcam,
+  'custom-cursor': renderCustomCursor,
   wiki: renderWiki,
   'deal-of-the-day': renderDealOfTheDay,
   'community-chat': renderCommunityChat,
