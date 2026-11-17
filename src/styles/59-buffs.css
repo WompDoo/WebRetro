@@ -27,11 +27,13 @@
 .merge-conflict .code-timer { width: 100%; }
 .merge-conflict[data-status="won"] .code-timer i { background: #3BD16F; }
 .conflict { position: relative; display: grid; gap: 6px; padding: 8px; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-sunken); }
-.conflict-code { margin: 0; overflow-x: auto; font: 500 12.5px/1.5 var(--font-code); white-space: pre; }
+/* Long lines wrap rather than scroll: on a phone, the end of a line is often the part that matters. */
+.conflict-code { margin: 0; font: 500 12.5px/1.5 var(--font-code); white-space: pre-wrap; overflow-wrap: anywhere; }
 .conflict-marker { color: var(--ink-soft); font-weight: 700; }
 .conflict-ours { display: inline-block; min-width: 100%; background: rgba(59, 209, 111, 0.18); }
 .conflict-theirs { display: inline-block; min-width: 100%; background: rgba(56, 132, 255, 0.18); }
-.conflict-picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.conflict-picks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.conflict-keep { color: var(--ink-soft); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
 .conflict-pick { padding: 5px 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: 600 13px/1.2 var(--font-body); cursor: pointer; }
 .conflict-pick:hover { background: #FFF3A6; }
 .conflict-pick kbd { font: 700 11px/1 var(--font-code); opacity: 0.6; }

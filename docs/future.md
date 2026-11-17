@@ -15,7 +15,7 @@ This is the design thinking for what comes after, written to be argued with. Eac
 | Slower players (a casual game is about 7 hours) | **Keep as is**: slow is allowed; no catch-up bonus, no global shortening |
 | CI's framework-spread check on one seed | **Keep one seed**: an occasional red run from luck is accepted over a slower CI |
 | Should Sell / Keep matter after the ending | **No, it stays flavor**: a story beat, no gameplay difference |
-| Buffs, not only hazards | **Both sources**: on fire from typing without typos, and offers won in minigames (stratagem codes, merge conflicts) |
+| Buffs, not only hazards | **Both sources**: on fire from typing without typos, and offers won in minigames. Built: a sponsor's code (ads ×2, 40 s) and a merge conflict (Launch day: visitors ×1.5, 45 s); each offer is a random kind among the ones that would do something, and a failed one is gone |
 | Making the site yours | **Pivots at each relaunch, plus customization**, customization first (section 5) |
 | Auto-typing | **Hired help, one per era**: a little brother (1.5 keystrokes/s, a quarter of your speed) up to an AI coding agent (8/s, faster than an active player's 6). Era-bound like typing skills, paid offline, never on fire |
 

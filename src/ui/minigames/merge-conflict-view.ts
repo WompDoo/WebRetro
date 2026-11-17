@@ -92,7 +92,7 @@ const STATUS_TEXTS: Readonly<Record<MinigameStatus, string>> = {
   lost: 'Out of time: the launch slips to next week.',
 };
 
-const PICK_LABELS: Readonly<Record<ConflictPick, string>> = { ours: 'Keep mine', theirs: 'Keep theirs', both: 'Keep both' };
+const PICK_LABELS: Readonly<Record<ConflictPick, string>> = { ours: 'Mine', theirs: 'Theirs', both: 'Both' };
 /** 1, 2 and 3 answer the first open block, in the buttons' order. */
 const PICK_KEYS: Readonly<Record<string, ConflictPick>> = { '1': 'ours', '2': 'theirs', '3': 'both' };
 const MISTAKE_SHAKE: readonly Keyframe[] = [{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }];
@@ -114,8 +114,10 @@ function renderConflictCode(block: ConflictBlock, markers: ConflictMarkers): str
   ].join('\n');
 }
 
+/** "Keep: 1 Mine · 2 Theirs · 3 Both", short enough for one row on a phone. */
 function renderPickButtons(blockIndex: number): string {
-  return CONFLICT_PICKS.map((pick, index) => `<button type="button" class="conflict-pick" data-block="${blockIndex}" data-pick="${pick}"><kbd>${index + 1}</kbd> ${PICK_LABELS[pick]}</button>`).join('');
+  const buttons = CONFLICT_PICKS.map((pick, index) => `<button type="button" class="conflict-pick" data-block="${blockIndex}" data-pick="${pick}"><kbd>${index + 1}</kbd> ${PICK_LABELS[pick]}</button>`).join('');
+  return `<span class="conflict-keep">Keep</span>${buttons}`;
 }
 
 function renderBlock(block: ConflictBlock, markers: ConflictMarkers, blockIndex: number): string {
