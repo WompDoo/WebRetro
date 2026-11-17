@@ -48,6 +48,8 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   // A feed of lines, and a dot where it picks for you.
   'for-you-feed': svg('<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/>'),
   webcam: svg('<circle cx="12" cy="10" r="6"/><circle cx="12" cy="10" r="2"/><path d="M8 20h8M12 16v4"/>'),
+  // An arrow pointer with a sparkle beside it.
+  'custom-cursor': svg('<path d="M5 3v15l4-4 3 7 3-1.4-3-6.6h6Z"/><path d="M19 3v4M17 5h4"/>'),
   wiki: svg('<path d="M4 5h16v14H4Z"/><path d="m7 9 1.5 6L10 11l1.5 4L13 9M15 9h2M15 12h2"/>'),
   'deal-of-the-day': svg('<path d="M3 12 12 3h8v8l-9 9Z"/><circle cx="16" cy="7" r="1.5"/>'),
   'community-chat': svg('<path d="M3 5h12v8H8l-4 3v-3H3Z"/><path d="M9 13v2h7l4 3v-3h1V7h-4"/>'),

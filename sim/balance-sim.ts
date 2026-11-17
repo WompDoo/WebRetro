@@ -413,10 +413,25 @@ function judge(outcomes: readonly ProfileOutcome[]): void {
   }
 }
 
+/**
+ * CI runs one profile per job (SIM_PROFILE=active or relaxed), in parallel: each still plays a whole game, and
+ * together they check what one job used to. A name that matches nothing fails, rather than passing on zero players.
+ */
+function selectProfiles(): readonly PlayerProfile[] {
+  const wanted = process.env['SIM_PROFILE'] ?? '';
+  return wanted === '' ? PROFILES : PROFILES.filter((profile) => profile.name === wanted);
+}
+
 async function main(): Promise<void> {
   const startedAt = performance.now();
+  const profiles = selectProfiles();
+  if (profiles.length === 0) {
+    console.error(`FAILED: SIM_PROFILE=${process.env['SIM_PROFILE'] ?? ''} names no player. Known: ${PROFILES.map((profile) => profile.name).join(', ')}.`);
+    process.exitCode = 1;
+    return;
+  }
   const pool = createWorkerPool(availableParallelism());
-  const played = await Promise.all(PROFILES.map((profile) => playProfile(pool, profile)));
+  const played = await Promise.all(profiles.map((profile) => playProfile(pool, profile)));
   await pool.close();
   console.log('Balance simulation');
   played.forEach(({ lines }) => lines.forEach((line) => console.log(line)));

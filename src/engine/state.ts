@@ -56,6 +56,7 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   'ai-images': 0,
   'for-you-feed': 0,
   'webcam': 0,
+  'custom-cursor': 0,
   'wiki': 0,
   'deal-of-the-day': 0,
   'community-chat': 0,

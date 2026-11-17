@@ -16,8 +16,8 @@ import type { HomepageContent, HomepageSkills } from './site-1997';
  * bottom of the main column.
  */
 const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat'];
-const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'deal-of-the-day', 'share-buttons', 'hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'webring'];
-const LEGACY_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'webring', 'tag-cloud', 'share-buttons', 'social-login'];
+const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'deal-of-the-day', 'share-buttons', 'hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'custom-cursor', 'webring'];
+const LEGACY_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'custom-cursor', 'webring', 'tag-cloud', 'share-buttons', 'social-login'];
 const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat', 'deal-of-the-day', 'under-construction', 'guestbook'];
 const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.0', 'PHP powered', 'MySQL', 'Get the fox browser'];
 
