@@ -10,6 +10,7 @@ import {
   createPlaytestState,
   isBuffActive,
   listCodeKeys,
+  loseOpportunity,
   OPPORTUNITY_WINDOW_MS,
   startCodeEntry,
   tickCodeEntry,
@@ -50,6 +51,23 @@ describe('opportunities', () => {
     assert.equal(won.opportunity, null);
     assert.ok(Math.abs(calculateAdValuePerAd(won) - calculateAdValuePerAd(offered) * BUFFS_BY_ID["sponsor-slot"].factor) < 1e-12);
     assert.equal(claimOpportunity(won, id).state, won, 'an offer is won once');
+  });
+
+  it('go for good when their minigame is lost: one try per offer, and no buff', () => {
+    const offered = advanceSimulation({ ...playing(), opportunityCountdownMs: 1 }, 10, 'live').state;
+    const id = offered.opportunity?.id ?? -1;
+    const lost = loseOpportunity(offered, id);
+    assert.equal(lost.state.opportunity, null);
+    assert.equal(isBuffActive(lost.state, 'sponsor-slot'), false);
+    assert.deepEqual(lost.events.map((event) => event.message), ['The sponsor went with someone else.']);
+    assert.equal(claimOpportunity(lost.state, id).state, lost.state, 'a lost offer can’t be won after all');
+  });
+
+  it('losing anything else (an infection’s minigame) leaves the offer alone', () => {
+    const offered = advanceSimulation({ ...playing(), opportunityCountdownMs: 1 }, 10, 'live').state;
+    const other = loseOpportunity(offered, (offered.opportunity?.id ?? 0) + 1);
+    assert.equal(other.state, offered);
+    assert.deepEqual(other.events, []);
   });
 });
 
