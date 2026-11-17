@@ -18,9 +18,9 @@ export interface MergeConflict {
   readonly mistakes: number;
 }
 
-/** Time to take in the file, and then a few seconds per block to read it and choose. */
-const BASE_MS = 3_000;
-const MS_PER_BLOCK = 3_500;
+/** Time to take in the file, and then a few seconds per block to read its two notes and choose. */
+const BASE_MS = 4_000;
+const MS_PER_BLOCK = 5_000;
 /** A wrong pick: you merged it, the build broke, you undid it. */
 export const WRONG_PICK_PENALTY_MS = 2_500;
 
