@@ -209,6 +209,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
   log(`  [${profile.name}] steepest minute: underlying income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
   log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
+  reportLevels(profile.name, state, 'the end', log);
   return { reports, entry2018 };
 }
 
@@ -219,16 +220,16 @@ function reportTradeIn(profileName: string, state: GameState, log: Log): void {
   const tradeIn = calculateRetirementPayout(state, nextEraId);
   const seconds = tradeIn / Math.max(1, calculateNetRevenuePerSecond(state));
   log(`  [${profileName}] trade-in at the relaunch into ${nextEraId}: ${formatMoney(tradeIn)}, ${seconds.toFixed(1)} s of income`);
-  reportLevels(profileName, state, nextEraId, log);
+  reportLevels(profileName, state, `the relaunch into ${nextEraId}`, log);
 }
 
 /**
  * What a player has built by a relaunch, without chasing anything: where a specialization's unlock has to sit above
  * to be a commitment. With the income then, to price the levels above it.
  */
-function reportLevels(profileName: string, state: GameState, nextEraId: string, log: Log): void {
+function reportLevels(profileName: string, state: GameState, moment: string, log: Log): void {
   const levels = FEATURE_IDS.filter((featureId) => state.featureLevels[featureId] > 0).map((featureId) => `${featureId} ${state.featureLevels[featureId]}`);
-  log(`  [${profileName}] levels at the relaunch into ${nextEraId} (${formatMoney(calculateNetRevenuePerSecond(state))}/s): ${levels.join(', ')}`);
+  log(`  [${profileName}] levels at ${moment} (${formatMoney(calculateNetRevenuePerSecond(state))}/s): ${levels.join(', ')}`);
 }
 
 function printReports(name: string, reports: readonly EraReport[], log: Log): void {

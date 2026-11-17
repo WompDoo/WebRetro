@@ -4,7 +4,8 @@ import {
   advanceSimulation,
   calculateAdValuePerAd,
   calculateDirectRevenuePerVisitor,
-  calculateFocusLevel,
+  findUnlockEra,
+  isUnlockWindowOpen,
   calculateGateChecks,
   calculateServerLoad,
   calculateSpecializationProgress,
@@ -15,6 +16,7 @@ import {
   createInitialGameState,
   createPlaytestState,
   ERAS_BY_ID,
+  FEATURES_BY_ID,
   listGateRequirements,
   listSpecializationChoices,
   listSpecializationEffects,
@@ -28,6 +30,9 @@ import { renderSite } from '../src/ui/sites';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
 const SEED = 77;
+/** Below this a focus is a token; above it, a grind. */
+const MIN_FOCUS_LEVEL = 5;
+const MAX_FOCUS_LEVEL = 30;
 const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization' });
 const at = (eraId: 'web2-2005' | 'social-2011' | 'platform-2018' | 'ai-2024', stage: 'start' | 'end' = 'end'): GameState =>
   testBuild({ ...createPlaytestState(eraId, stage, SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [] });
@@ -36,7 +41,7 @@ const withLevels = (state: GameState, levels: Partial<GameState['featureLevels']
 
 describe('unlocking a specialization', () => {
   it('happens this run, by building, with a news line', () => {
-    const photos = withLevels(at('web2-2005'), { 'photo-gallery': 15, comments: 10 });
+    const photos = withLevels(at('web2-2005'), { 'photo-gallery': 35, comments: 20 });
     const step = checkSpecializationUnlocks(photos);
     assert.ok(step.state.unlockedSpecializationIds.includes('photos'));
     assert.match(step.events.map((event) => event.message).join(' '), /New specialization unlocked: Photo sharing/);
@@ -45,18 +50,34 @@ describe('unlocking a specialization', () => {
 
   it('shows how far along each condition is', () => {
     const progress = calculateSpecializationProgress(withLevels(at('web2-2005'), { 'photo-gallery': 9 }), 'photos');
-    assert.deepEqual(progress.map((condition) => [condition.label, condition.current, condition.target, condition.isMet]), [['Photo gallery', 9, 15, false], ['Comments', 5, 10, false]]);
+    assert.deepEqual(progress.map((condition) => [condition.label, condition.current, condition.target, condition.isMet]), [['Photo gallery', 9, 35, false], ['Comments', 5, 20, false]]);
   });
 
   it('never happens in the classic game, and a new run starts with none', () => {
-    const classic = { ...withLevels(at('web2-2005'), { 'photo-gallery': 15, comments: 10 }), edition: 'classic' as const };
+    const classic = { ...withLevels(at('web2-2005'), { 'photo-gallery': 35, comments: 20 }), edition: 'classic' as const };
     assert.deepEqual(checkSpecializationUnlocks(classic).state.unlockedSpecializationIds, []);
     assert.deepEqual(createInitialGameState(1).unlockedSpecializationIds, []);
   });
 
   it('is checked as the game runs', () => {
-    const ready = withLevels(at('web2-2005'), { 'map-mashup': 10, comments: 10 });
+    const ready = withLevels(at('web2-2005'), { 'map-mashup': 20, comments: 20 });
     assert.ok(advanceSimulation(ready, 100, 'live').state.unlockedSpecializationIds.includes('reviews'));
+  });
+
+  it('takes commitment: a usual end of 2005 has unlocked nothing', () => {
+    assert.deepEqual(checkSpecializationUnlocks(at('web2-2005')).state.unlockedSpecializationIds, []);
+  });
+
+  it('has a window: the era its features belong to, since they cost next to nothing in the next era’s money', () => {
+    const late = withLevels(at('social-2011'), { 'photo-gallery': 35, comments: 20 });
+    assert.ok(!checkSpecializationUnlocks(late).state.unlockedSpecializationIds.includes('photos'), 'photos closed with 2005');
+    assert.ok(!isUnlockWindowOpen(late, 'photos'));
+    assert.match(renderSpecializationPanel(late, true), /data-specialization="photos"[\s\S]*?Missed this run/);
+    const social = withLevels(at('social-2011'), { 'activity-feed': 18, 'share-buttons': 25 });
+    assert.ok(checkSpecializationUnlocks(social).state.unlockedSpecializationIds.includes('social'), 'social is a 2011 route');
+    assert.equal(findUnlockEra('video'), 'web2-2005');
+    assert.equal(findUnlockEra('shop'), 'social-2011');
+    assert.ok(isUnlockWindowOpen({ ...at('web2-2005'), eraId: 'crash-2000' }, 'photos'), 'the 2000 crash is still before 2005');
   });
 });
 
@@ -76,8 +97,8 @@ describe('specializing', () => {
 
   it('asks the checklist for the specialization’s focus from 2011 on', () => {
     const focus = (state: GameState): string => calculateGateChecks(state).find((check) => check.requirement.kind === 'feature-level')?.requirement.label ?? '';
-    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 14');
-    assert.equal(focus(as(at('social-2011'), 'shop')), 'Sign in with… level 5', 'a dear focus asks for fewer levels');
+    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 10');
+    assert.equal(focus(as(at('social-2011'), 'shop')), 'Sign in with… level 7', 'a few above what a player builds anyway');
     assert.equal(focus(as(at('social-2011'), 'homepage')), 'Like and share buttons level 15');
     assert.equal(focus(as(at('web2-2005'), 'video')), 'Blog level 15', 'before 2011 every site is a homepage');
   });
@@ -115,8 +136,9 @@ describe('specializations on screen', () => {
   it('list every one with its progress in the test build, and nothing in the classic game', () => {
     const html = renderSpecializationPanel(at('web2-2005'), true);
     SPECIALIZATION_IDS.forEach((id) => assert.ok(html.includes(SPECIALIZATIONS_BY_ID[id].name), id));
-    assert.match(html, /Photo gallery 5\/15/);
+    assert.match(html, /Photo gallery 5\/35/);
     assert.match(html, /Builds in 2011/, 'the routes 2011 unlocks say when');
+    assert.match(html, /Unlock by the end of 2005/, 'the routes 2005 unlocks say by when');
     assert.equal(renderSpecializationPanel({ ...at('web2-2005'), edition: 'classic' }, true), '');
   });
 
@@ -167,11 +189,12 @@ describe('staying a homepage', () => {
 });
 
 describe('a route’s focus on the checklist', () => {
-  it('costs at most a few times the item it replaces: dearer features ask for fewer levels, never more than usual', () => {
-    assert.equal(calculateFocusLevel('share-buttons', 15, 'share-buttons'), 15);
-    assert.equal(calculateFocusLevel('share-buttons', 15, 'video-player'), 14);
-    assert.equal(calculateFocusLevel('share-buttons', 15, 'activity-feed'), 7);
-    assert.equal(calculateFocusLevel('stories', 15, 'language-switcher'), 15, 'cheap enough for the usual level');
-    assert.equal(calculateFocusLevel('ai-chatbot', 15, 'for-you-feed'), 3, 'the dearest still asks for a few');
+  it('asks for a feature of its own era, at a level that means building it on purpose', () => {
+    SPECIALIZATION_IDS.forEach((id) =>
+      Object.entries(SPECIALIZATIONS_BY_ID[id].eras).forEach(([eraId, plan]) => {
+        assert.equal(FEATURES_BY_ID[plan.focus].eraId, eraId, `${id} in ${eraId}`);
+        assert.ok(plan.level >= MIN_FOCUS_LEVEL && plan.level <= MAX_FOCUS_LEVEL, `${id} in ${eraId}: level ${plan.level}`);
+      }),
+    );
   });
 });

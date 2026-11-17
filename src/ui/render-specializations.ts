@@ -3,15 +3,15 @@ import {
   calculateSpecializationProgress,
   canSpecializeInto,
   ERAS_BY_ID,
-  FEATURES_BY_ID,
-  getEraIndex,
+  findUnlockEra,
   isSpecializationUnlocked,
+  isUnlockStillAhead,
+  isUnlockWindowOpen,
   listSpecializationChoices,
   SPECIALIZATION_IDS,
   SPECIALIZATIONS_BY_ID,
-  UPGRADES_BY_ID,
 } from '../engine';
-import type { ConditionProgress, EraId, EraRecord, GameState, SpecializationCondition, SpecializationId } from '../engine';
+import type { ConditionProgress, EraId, EraRecord, GameState, SpecializationId } from '../engine';
 import { escapeHtml } from './dom';
 
 /**
@@ -19,16 +19,6 @@ import { escapeHtml } from './dom';
  * unlocks are feature levels, and Build is where you raise them); the choice in the relaunch story; and in the
  * ending, what your site became. Only the web specialization test build shows any of it.
  */
-
-function conditionEra(condition: SpecializationCondition): EraId {
-  return condition.kind === 'feature-level' ? FEATURES_BY_ID[condition.featureId].eraId : UPGRADES_BY_ID[condition.upgradeId].eraId;
-}
-
-/** The latest era a specialization's conditions come from: before it, the route can't be built yet. */
-function findUnlockEra(specializationId: SpecializationId): EraId {
-  const eras = SPECIALIZATIONS_BY_ID[specializationId].unlock.map(conditionEra);
-  return eras.reduce<EraId>((latest, eraId) => (getEraIndex(eraId) > getEraIndex(latest) ? eraId : latest), 'homepage-1997');
-}
 
 function renderCondition(progress: ConditionProgress): string {
   const shown = Math.min(progress.current, progress.target);
@@ -43,17 +33,24 @@ function renderConditions(state: GameState, specializationId: SpecializationId):
   return progress.length === 0 ? ALWAYS_OPEN : progress.map(renderCondition).join('');
 }
 
-/** "Current", "Unlocked", or for a route whose features come later, the year you can start on it. */
+function yearOf(eraId: EraId): number {
+  return ERAS_BY_ID[eraId].year;
+}
+
+/**
+ * Where a route stands this run: your site now, unlocked, missed (its window closed), not yet buildable, or the
+ * deadline to reach it by.
+ */
 function describeStanding(state: GameState, specializationId: SpecializationId): string {
-  const unlockEra = findUnlockEra(specializationId);
-  const isLater = getEraIndex(unlockEra) > getEraIndex(state.eraId);
+  const unlockYear = yearOf(findUnlockEra(specializationId));
   const standings: readonly [boolean, string][] = [
     [state.specializationId === specializationId, '<span class="spec-badge is-current">Your site now</span>'],
     [isSpecializationUnlocked(state, specializationId), '<span class="spec-badge is-unlocked">Unlocked</span>'],
-    [isLater, `<span class="spec-badge is-later">Builds in ${ERAS_BY_ID[unlockEra].year}</span>`],
+    [!isUnlockWindowOpen(state, specializationId), '<span class="spec-badge is-missed">Missed this run</span>'],
+    [isUnlockStillAhead(state, specializationId), `<span class="spec-badge is-later">Builds in ${unlockYear}</span>`],
   ];
   const found = standings.find(([applies]) => applies);
-  return found === undefined ? '' : found[1];
+  return found === undefined ? `<span class="spec-badge is-deadline">Unlock by the end of ${unlockYear}</span>` : found[1];
 }
 
 function renderCard(state: GameState, specializationId: SpecializationId): string {

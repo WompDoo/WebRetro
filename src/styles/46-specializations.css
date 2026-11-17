@@ -18,6 +18,9 @@
 .spec-badge.is-unlocked { background: #3BD16F; color: #052E14; }
 .spec-badge.is-current { background: #FF8A1F; color: #2A0E00; }
 .spec-badge.is-later { background: var(--panel-sunken); color: var(--ink-soft); border: 1px solid var(--line-soft); }
+.spec-badge.is-deadline { background: #FFE066; color: #3D2E00; }
+.spec-badge.is-missed { background: var(--panel-sunken); color: var(--ink-soft); text-decoration: line-through; }
+.spec-card:has(.is-missed) { opacity: 0.55; }
 .spec-pitch { margin: 0; color: var(--ink); font-size: 12.5px; line-height: 1.4; }
 .spec-money { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.4; }
 .spec-money::before { content: "💰 "; }
