@@ -6,6 +6,8 @@ import { availableParallelism } from 'node:os';
 import { isMainThread, MessagePort, parentPort, Worker } from 'node:worker_threads';
 import {
   advanceEra,
+  BUFF_IDS,
+  calculateHiredTypingPerSecond,
   MS_PER_SECOND,
   chooseConsentBanner,
   advanceSimulation,
@@ -26,11 +28,13 @@ import {
   calculateServerLoad,
   isEraGateComplete,
   FRAMEWORK_IDS,
+  type BuffId,
   type EraId,
   type FrameworkId,
   type GameState,
 } from '../src/engine';
 import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
+import { applySwitches, SWITCHED_OFF } from './switches';
 import type { PlayerProfile } from './bot';
 
 
@@ -58,6 +62,20 @@ interface EraReport {
   /** How much of the era the site sat behind an expired certificate's warning page. */
   readonly certificateExpiredShare: number;
   readonly certificateRenewals: number;
+  /** How much of the era each buff was running. */
+  readonly buffShares: Readonly<Record<BuffId, number>>;
+  /** Hired help's share of income when the era ended. */
+  readonly hiredShareAtEnd: number;
+}
+
+const NO_BUFF_TIME: Readonly<Record<BuffId, number>> = Object.fromEntries(BUFF_IDS.map((buffId) => [buffId, 0])) as Record<BuffId, number>;
+
+function addBuffTime(time: Readonly<Record<BuffId, number>>, state: GameState, ms: number): Readonly<Record<BuffId, number>> {
+  return state.buffs.reduce((total, buff) => ({ ...total, [buff.id]: total[buff.id] + ms }), time);
+}
+
+function shareOf(time: Readonly<Record<BuffId, number>>, durationMs: number): Readonly<Record<BuffId, number>> {
+  return Object.fromEntries(BUFF_IDS.map((buffId) => [buffId, time[buffId] / Math.max(1, durationMs)])) as Record<BuffId, number>;
 }
 
 
@@ -103,6 +121,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
   let minigameMsThisEra = 0;
   let certificateExpiredMsThisEra = 0;
   let certificateRenewalsThisEra = 0;
+  let buffMsThisEra = NO_BUFF_TIME;
   let revenueAMinuteAgo = 0;
   let steepestMinute = { ratio: 1, atMinute: 0 };
   const reports: EraReport[] = [];
@@ -114,7 +133,8 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     const keystrokes = Math.floor(typingDebt);
     typingDebt -= keystrokes;
     state = typeKeystrokes(state, keystrokes);
-    state = advanceSimulation(state, TICK_MS, 'live').state;
+    state = applySwitches(advanceSimulation(state, TICK_MS, 'live').state, SWITCHED_OFF);
+    buffMsThisEra = addBuffTime(buffMsThisEra, state, TICK_MS);
     const reaction = reactToHazards(state, seenAt, now, profile);
     const wasExpired = reaction.state.isCertificateExpired;
     state = claimOfferWhenNoticed(renewWhenNoticed(reaction.state, seenAt, now, profile), seenAt, now, profile);
@@ -160,6 +180,8 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
         minigameShare: minigameMsThisEra / Math.max(1, now - eraStartedAt),
         certificateExpiredShare: certificateExpiredMsThisEra / Math.max(1, now - eraStartedAt),
         certificateRenewals: certificateRenewalsThisEra,
+        buffShares: shareOf(buffMsThisEra, now - eraStartedAt),
+        hiredShareAtEnd: calculateHiredTypingPerSecond(state) / effectiveIncome(state, profile),
       });
       log(
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
@@ -174,6 +196,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
       minigameMsThisEra = 0;
       certificateExpiredMsThisEra = 0;
       certificateRenewalsThisEra = 0;
+      buffMsThisEra = NO_BUFF_TIME;
     }
     now += TICK_MS;
   }
@@ -203,7 +226,9 @@ function printReports(name: string, reports: readonly EraReport[], log: Log): vo
       `  [${name}] ${report.eraId}: ${(report.durationMs / MS_PER_MINUTE).toFixed(1)} min, ` +
         `typing = ${(report.keystrokeIncomeShareAtEnd * 100).toFixed(0)}% of income at the end, ` +
         `minigames = ${(report.minigameShare * 100).toFixed(0)}% of play time, ` +
-        `certificate expired ${(report.certificateExpiredShare * 100).toFixed(1)}% of it (${report.certificateRenewals} renewals)`,
+        `certificate expired ${(report.certificateExpiredShare * 100).toFixed(1)}% of it (${report.certificateRenewals} renewals), ` +
+        `hires = ${(report.hiredShareAtEnd * 100).toFixed(0)}% of income at the end, buffs running: ` +
+        BUFF_IDS.map((buffId) => `${buffId} ${(report.buffShares[buffId] * 100).toFixed(0)}%`).join(' '),
     ),
   );
 }
