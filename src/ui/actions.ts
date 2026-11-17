@@ -229,7 +229,7 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'close-popup': (target) => updateGame((state) => closePopup(state, readNumericId(target))),
     'accept-popup': (target) => fallForScam(readNumericId(target)),
     'open-minigame': (target) => minigame.open(readNumericId(target)),
-    'close-minigame': () => minigame.close(),
+    'close-minigame': () => minigame.leave(),
     'retry-minigame': () => minigame.retry(),
     'shop-tab': withId(isShopTab, (id) => {
       store.shopTab = id;

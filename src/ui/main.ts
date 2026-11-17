@@ -1,4 +1,4 @@
-import { advanceSimulation, calculateInfectionDifficulty, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
@@ -99,6 +99,8 @@ function start(hotData: unknown): void {
   const minigame = createMinigameModal(minigameElements, {
     findTarget: findMinigameTarget,
     onWin: (id) => applyStep(findInfection(store.game, id) === null ? claimOpportunity(store.game, id) : cleanInfection(store.game, id)),
+    // An infection is still there to retry; an offer is gone. Losing an infection's minigame costs nothing more.
+    onLose: (id) => applyStep(loseOpportunity(store.game, id)),
   });
   const renderer = createRenderer(editor);
   const intro = createIntro(introElements, nameSiteAndSave);

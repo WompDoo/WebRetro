@@ -6,7 +6,8 @@ import type { BuffId, BuffMinigameId, GameEvent, GameState, GameStep, Opportunit
 
 /**
  * Opportunities: hazards in reverse. Every few minutes of play an offer turns up and waits a little while: win its
- * minigame and a buff starts; ignore it and it goes, costing nothing. Like hazards, they only come while you play.
+ * minigame and a buff starts; lose it, or ignore it, and it goes, costing nothing. One try per offer: a sponsor whose
+ * code you fumbled doesn't wait for a second go. Like hazards, they only come while you play.
  */
 
 export interface OpportunityDefinition {
@@ -75,6 +76,14 @@ export function advanceOpportunities(state: GameState, deltaMs: number): GameSte
 
 export function findOpportunity(state: GameState, opportunityId: number): Opportunity | null {
   return state.opportunity?.id === opportunityId ? state.opportunity : null;
+}
+
+/** Lost its minigame: the offer goes to someone else, the same as letting it run out. No second try. */
+export function loseOpportunity(state: GameState, opportunityId: number): GameStep {
+  const opportunity = findOpportunity(state, opportunityId);
+  if (opportunity === null) return { state, events: [] };
+  const missed: GameEvent = { kind: 'opportunity', message: OPPORTUNITIES_BY_KIND[opportunity.kind].missed };
+  return { state: { ...state, opportunity: null }, events: [missed] };
 }
 
 /** Won its minigame: the buff starts, and the offer is gone. */
