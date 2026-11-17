@@ -53,6 +53,7 @@ import {
   type Infection,
   type UpgradeId,
 } from '../src/engine';
+import { isSwitchedOffPurchase, SWITCHED_OFF } from './switches';
 
 
 /**
@@ -192,7 +193,7 @@ export function listOptions(state: GameState, profile: PlayerProfile): readonly 
     const unlocksGateFeature = unlocked.some((featureId) => isGateFeature(state, featureId));
     return { label: `skill:${skillId}`, cost, isRequiredForGate: unlocksGateFeature, apply: learn, canApply: (current) => canBuyUpgrade(current, skillId), valueCost: cost + featureCost, valueApply };
   });
-  const boosts = getRevealedBoostIds(state).map<PurchaseOption>((upgradeId) => {
+  const boosts = getRevealedBoostIds(state).filter((upgradeId) => !isSwitchedOffPurchase(upgradeId, SWITCHED_OFF)).map<PurchaseOption>((upgradeId) => {
     const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
     const cost = calculateUpgradeCost(state, upgradeId);
     return { label: `boost:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };

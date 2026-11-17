@@ -8,8 +8,9 @@ import type { BuffDefinition, BuffId } from '../types';
 export const BUFF_IDS: readonly BuffId[] = ['on-fire', 'quick-fix', 'sponsor-slot', 'launch-day'];
 
 export const BUFFS_BY_ID: Readonly<Record<BuffId, BuffDefinition>> = {
-  // Earned by typing without typos: the heat meter fills, and for half a minute every keystroke pays triple.
-  'on-fire': { id: 'on-fire', name: 'On fire', icon: '🔥', target: 'typing', factor: 3, durationMs: 30_000 },
+  // Earned by typing without typos: the heat meter fills, and for fifteen seconds every keystroke pays triple. A burst,
+  // not a state: half a minute of it was on two fifths of the time, and saved an active player 12% of the game.
+  'on-fire': { id: 'on-fire', name: 'On fire', icon: '🔥', target: 'typing', factor: 3, durationMs: 15_000 },
   // Earned by winning an infection's minigame fast: visitors notice a site that gets fixed quickly.
   'quick-fix': { id: 'quick-fix', name: 'Quick fix', icon: '🛠️', target: 'traffic', factor: QUICK_FIX_TRAFFIC_FACTOR, durationMs: QUICK_FIX_BONUS_MS },
   // Won by typing a sponsor's code before they change their mind: for 40 seconds, every banner pays double. Offers come

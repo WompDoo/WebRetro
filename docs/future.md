@@ -299,3 +299,7 @@ the other three relaunches.
   measures luck as well as balance. Three seeds, as the docs' own medians do, would make CI as stable as the
   balancing.
 - Display-font digits ("2025" reads as "2029" at button size): numbers on buttons should use the numbers font.
+- Quick fix is on 34–75% of the time (an infection fixed fast gives 60 seconds of +15% visitors, and infections are
+  frequent), so its chip is nearly always showing: a buff that never ends reads as a constant. It predates the other
+  buffs and the eras were paced with it, so changing it (say 20 seconds at +40%) means re-pacing every era: a
+  decision of its own.
