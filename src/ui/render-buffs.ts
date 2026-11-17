@@ -1,5 +1,5 @@
-import { BUFFS_BY_ID, calculateBuffFactor, formatPercent, MS_PER_SECOND } from '../engine';
-import type { ActiveBuff, BuffTarget, GameState } from '../engine';
+import { BUFFS_BY_ID, calculateBuffFactor, formatPercent, MS_PER_SECOND, OPPORTUNITIES_BY_KIND } from '../engine';
+import type { ActiveBuff, BuffTarget, GameState, Opportunity } from '../engine';
 import { escapeHtml } from './dom';
 
 /**
@@ -23,11 +23,38 @@ function describeFactor(factor: number): string {
 function renderChip(buff: ActiveBuff): string {
   const definition = BUFFS_BY_ID[buff.id];
   const seconds = Math.ceil(buff.remainingMs / MS_PER_SECOND);
-  return `<span class="buff-chip" data-buff="${buff.id}"><span class="buff-icon" aria-hidden="true">${definition.icon}</span><b>${escapeHtml(definition.name)}</b> ${describeFactor(definition.factor)} ${TARGET_NAMES[definition.target]} · ${seconds} s</span>`;
+  return `<span class="buff-chip" data-buff="${buff.id}"><span class="buff-icon" aria-hidden="true">${definition.icon}</span><b>${escapeHtml(definition.name)}</b> ${describeFactor(definition.factor)} ${TARGET_NAMES[definition.target]} · <span data-buff-time="${buff.id}">${seconds} s</span></span>`;
+}
+
+/** An offer waiting for you: gold, clickable, counting down. It opens the minigame that wins it. */
+function renderOffer(opportunity: Opportunity): string {
+  const definition = OPPORTUNITIES_BY_KIND[opportunity.kind];
+  const seconds = Math.ceil(opportunity.remainingMs / MS_PER_SECOND);
+  return `<button type="button" class="buff-chip is-offer" data-action="open-minigame" data-id="${opportunity.id}"><span class="buff-icon" aria-hidden="true">${definition.icon}</span><b>${escapeHtml(definition.offer)}</b> · <span data-buff-time="offer">${seconds} s</span></button>`;
 }
 
 export function renderBuffChips(state: GameState): string {
-  return state.buffs.map(renderChip).join('');
+  const offer = state.opportunity === null ? '' : renderOffer(state.opportunity);
+  return `${offer}${state.buffs.map(renderChip).join('')}`;
+}
+
+/**
+ * Which chips there are. The chips are rebuilt only when this changes; their countdowns tick in place, so the offer
+ * stays the same button under your click instead of being replaced every second.
+ */
+export function calculateBuffChipsSignature(state: GameState): string {
+  const offerId = state.opportunity === null ? '' : String(state.opportunity.id);
+  return [offerId, ...state.buffs.map((buff) => buff.id)].join('|');
+}
+
+/** Each chip's countdown, by the key its time slot carries. */
+export function listChipTimes(state: GameState): readonly (readonly [string, string])[] {
+  const offer: readonly (readonly [string, string])[] = state.opportunity === null ? [] : [['offer', formatSeconds(state.opportunity.remainingMs)]];
+  return [...offer, ...state.buffs.map((buff): readonly [string, string] => [buff.id, formatSeconds(buff.remainingMs)])];
+}
+
+function formatSeconds(ms: number): string {
+  return `${Math.ceil(ms / MS_PER_SECOND)} s`;
 }
 
 /** Whether this number is being boosted right now: its stat burns along with the chip. */

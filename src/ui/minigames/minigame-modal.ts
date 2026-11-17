@@ -1,10 +1,11 @@
 import { isMinigameOver } from '../../engine';
-import type { EraId, MinigameId } from '../../engine';
+import type { AnyMinigameId, EraId } from '../../engine';
 import { setTextIfChanged } from '../dom';
 import { ERA_PRESENTATION } from '../presentation';
 import { backupRestoreView } from './backup-restore-view';
 import { crossTrafficView } from './cross-traffic-view';
 import { firewallView } from './firewall-view';
+import { codeEntryView } from './code-entry-view';
 import { fixBuildView } from './fix-build-view';
 import { snakeView } from './snake-view';
 import { resetPasswordsView } from './reset-passwords-view';
@@ -39,7 +40,7 @@ export interface MinigameModal {
   readonly handleKey: (event: KeyboardEvent) => boolean;
 }
 
-const VIEWS: Readonly<Record<MinigameId, MinigameView>> = {
+const VIEWS: Readonly<Record<AnyMinigameId, MinigameView>> = {
   snake: snakeView,
   'virus-scan': virusScanView,
   firewall: firewallView,
@@ -49,15 +50,17 @@ const VIEWS: Readonly<Record<MinigameId, MinigameView>> = {
   'reroute-traffic': rerouteTrafficView,
   'cross-traffic': crossTrafficView,
   'fix-build': fixBuildView,
+  'code-entry': codeEntryView,
 };
 
-const OTHER_TITLES: Readonly<Record<Exclude<MinigameId, 'snake' | 'virus-scan' | 'firewall'>, string>> = {
+const OTHER_TITLES: Readonly<Record<Exclude<AnyMinigameId, 'snake' | 'virus-scan' | 'firewall'>, string>> = {
   'spam-sort': 'moderate_comments.php',
   'backup-restore': 'mysql_restore.sh',
   'reset-passwords': 'Admin · Users · Force password reset',
   'reroute-traffic': 'Cloud console · Reroute traffic',
   'cross-traffic': 'ssh admin@server · rate limiting',
   'fix-build': 'Terminal · build failed',
+  'code-entry': 'Sponsor deal · enter the code',
 };
 
 const CLOSE_AFTER_WIN_MS = 900;
@@ -65,11 +68,11 @@ const CLOSE_AFTER_WIN_MS = 900;
 const MAX_FRAME_MS = 100;
 const SEED_RANGE = 2 ** 31;
 
-function isVirusGame(minigameId: MinigameId): minigameId is 'snake' | 'virus-scan' | 'firewall' {
+function isVirusGame(minigameId: AnyMinigameId): minigameId is 'snake' | 'virus-scan' | 'firewall' {
   return minigameId === 'snake' || minigameId === 'virus-scan' || minigameId === 'firewall';
 }
 
-function titleFor(minigameId: MinigameId, eraId: EraId): string {
+function titleFor(minigameId: AnyMinigameId, eraId: EraId): string {
   return isVirusGame(minigameId) ? ERA_PRESENTATION[eraId].antivirusTitle : OTHER_TITLES[minigameId];
 }
 
@@ -131,6 +134,8 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
     session?.destroy();
     hasReportedWin = false;
     elements.title.textContent = titleFor(target.minigameId, target.eraId);
+    // Red for trouble, gold for an offer: the shell says which before the brief does.
+    elements.overlay.dataset['minigame'] = target.minigameId;
     session = VIEWS[target.minigameId](elements.stage, target, Math.floor(Math.random() * SEED_RANGE));
     elements.brief.textContent = session.brief;
     elements.hint.textContent = session.hint;

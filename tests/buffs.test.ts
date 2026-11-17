@@ -92,8 +92,8 @@ describe('buffs', () => {
 describe('the buff chips', () => {
   it('say what each buff does and how long it has left', () => {
     const html = renderBuffChips(startBuff(startBuff(playing(), 'on-fire'), 'quick-fix'));
-    assert.match(html, /<b>On fire<\/b> ×3 typing · 30 s/);
-    assert.match(html, /<b>Quick fix<\/b> \+15% visitors · 60 s/);
+    assert.match(html, /<b>On fire<\/b> ×3 typing · <span data-buff-time="on-fire">30 s<\/span>/);
+    assert.match(html, /<b>Quick fix<\/b> \+15% visitors · <span data-buff-time="quick-fix">60 s<\/span>/);
     assert.equal(renderBuffChips(playing()), '');
   });
 });

@@ -1,5 +1,5 @@
 import { calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks } from '../engine';
-import { findFireRemainingMs, isTargetBuffed, renderBuffChips } from './render-buffs';
+import { calculateBuffChipsSignature, findFireRemainingMs, isTargetBuffed, listChipTimes, renderBuffChips } from './render-buffs';
 import type { GameState } from '../engine';
 import {
   buildBrowserTitle,
@@ -132,9 +132,19 @@ function renderStats(editor: CodeEditor): void {
   renderBuffs();
 }
 
+function updateChipTime(key: string, text: string): void {
+  const slot = elements.buffChips.querySelector<HTMLElement>(`[data-buff-time="${key}"]`);
+  if (slot !== null) setTextIfChanged(slot, text);
+}
+
+let buffChipsSignature = '';
+
 /** The chips under the top bar, and the stats they boost burning with them. */
 function renderBuffs(): void {
-  setHtmlIfChanged(elements.buffChips, renderBuffChips(store.game));
+  const signature = calculateBuffChipsSignature(store.game);
+  if (signature !== buffChipsSignature) elements.buffChips.innerHTML = renderBuffChips(store.game);
+  buffChipsSignature = signature;
+  listChipTimes(store.game).forEach(([key, text]) => updateChipTime(key, text));
   elements.statVisitorsBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'traffic'));
   elements.statRevenueBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'ad-value'));
 }

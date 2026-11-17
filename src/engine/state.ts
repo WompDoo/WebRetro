@@ -63,6 +63,9 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   'agent-store': 0,
 };
 
+/** The first sponsor turns up after a few minutes of play, once there are banners to sponsor. */
+const FIRST_OPPORTUNITY_MS = 240_000;
+
 export function createInitialGameState(randomSeed: number): GameState {
   return {
     saveVersion: SAVE_VERSION,
@@ -91,6 +94,9 @@ export function createInitialGameState(randomSeed: number): GameState {
     buffs: [],
     typingHeat: 0,
     msSinceKeystroke: 0,
+    opportunity: null,
+    // The first offer comes once you've settled in.
+    opportunityCountdownMs: FIRST_OPPORTUNITY_MS,
     consentBanner: 'none',
     isCookieBannerDismissed: false,
     isCertificateExpired: false,

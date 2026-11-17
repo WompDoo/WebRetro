@@ -192,7 +192,7 @@ export type HostingTierId =
 export type DefenseCounterMode = 'prevents-spawn' | 'auto-cleans' | 'slows-spawn';
 export type CodeInputOutcome = 'clean-line' | 'bugged-line' | 'fixed-bug';
 export type SimulationMode = 'live' | 'offline';
-export type GameEventKind = 'hazard' | 'defense' | 'milestone' | 'cleanup';
+export type GameEventKind = 'hazard' | 'defense' | 'milestone' | 'cleanup' | 'opportunity';
 export type MilestoneId = 'first-visitor' | 'first-revenue' | 'quit-day-job';
 export type GateRequirementKind =
   | 'era-features-built'
@@ -453,6 +453,9 @@ export interface GameState {
   readonly typingHeat: number;
   /** Since the last keystroke: after a short pause the heat meter starts to cool. */
   readonly msSinceKeystroke: number;
+  /** The offer waiting for you right now, if any. */
+  readonly opportunity: Opportunity | null;
+  readonly opportunityCountdownMs: number;
   readonly consentBanner: ConsentBanner;
   /** You answered the banner on your own site: it stays closed until you pick another banner. */
   readonly isCookieBannerDismissed: boolean;
@@ -514,7 +517,7 @@ export interface GameStep {
 }
 
 /** A short boost: what it multiplies, by how much, for how long. */
-export type BuffId = 'on-fire' | 'quick-fix';
+export type BuffId = 'on-fire' | 'quick-fix' | 'sponsor-slot';
 export type BuffTarget = 'typing' | 'traffic' | 'ad-value';
 
 export interface BuffDefinition {
@@ -524,6 +527,18 @@ export interface BuffDefinition {
   readonly target: BuffTarget;
   readonly factor: number;
   readonly durationMs: number;
+}
+
+/** An offer that turns up while you play: win its minigame for a buff. */
+export type OpportunityKind = 'sponsor-slot';
+/** The minigames that win buffs, apart from the ones that fix infections. */
+export type BuffMinigameId = 'code-entry';
+export type AnyMinigameId = MinigameId | BuffMinigameId;
+
+export interface Opportunity {
+  readonly id: number;
+  readonly kind: OpportunityKind;
+  readonly remainingMs: number;
 }
 
 export interface ActiveBuff {

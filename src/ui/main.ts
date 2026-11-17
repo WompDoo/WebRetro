@@ -1,4 +1,4 @@
-import { advanceSimulation, calculateInfectionDifficulty, cleanInfection, findChosenFramework, findInfection, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
@@ -46,10 +46,20 @@ function tick(): void {
   applyStep(advanceSimulation(store.game, elapsedMs * store.playtestSpeed, mode));
 }
 
-/** The difficulty is read when an attempt starts, so an infection can't get harder in the middle of a run. */
-function findMinigameTarget(infectionId: number): MinigameTarget | null {
-  const infection = findInfection(store.game, infectionId);
-  if (infection === null) return null;
+/** An offer's minigame: the same code for the same era, whatever the difficulty. */
+function findOpportunityTarget(opportunityId: number): MinigameTarget | null {
+  const opportunity = findOpportunity(store.game, opportunityId);
+  if (opportunity === null) return null;
+  return { minigameId: OPPORTUNITIES_BY_KIND[opportunity.kind].minigameId, difficulty: 1, featureName: '', eraId: store.game.eraId, framework: findChosenFramework(store.game) };
+}
+
+/**
+ * Infections and offers share one id counter, so one id names one or the other. The difficulty is read when an
+ * attempt starts, so an infection can't get harder in the middle of a run.
+ */
+function findMinigameTarget(id: number): MinigameTarget | null {
+  const infection = findInfection(store.game, id);
+  if (infection === null) return findOpportunityTarget(id);
   return {
     minigameId: infection.minigameId,
     difficulty: calculateInfectionDifficulty(infection),
@@ -86,7 +96,7 @@ function start(hotData: unknown): void {
   const editor = createCodeEditor(editorElements, writeCodeKeystroke);
   const minigame = createMinigameModal(minigameElements, {
     findTarget: findMinigameTarget,
-    onWin: (infectionId) => applyStep(cleanInfection(store.game, infectionId)),
+    onWin: (id) => applyStep(findInfection(store.game, id) === null ? claimOpportunity(store.game, id) : cleanInfection(store.game, id)),
   });
   const renderer = createRenderer(editor);
   const intro = createIntro(introElements, nameSiteAndSave);
