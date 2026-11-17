@@ -12,7 +12,7 @@
 }
 .site-theme.is-themed .site-1997.has-background {
   --s97-bg: #000020; --s97-heading: var(--site-accent-light); --s97-link: var(--site-accent-light); --s97-name: var(--site-light-2);
-  --s97-accent: var(--site-light-3); --s97-nav: var(--site-accent-deep); --s97-box: var(--site-accent-deep);
+  --s97-accent: var(--site-light-3); --s97-nav: var(--site-accent-dark); --s97-box: var(--site-accent-dark);
 }
 
 /* 2005: the header bar, its tabs, and the blue that every link and heading was. */

@@ -45,6 +45,8 @@ const STRONG_LIGHTNESS_LIMIT = 0.36;
 const STRONG_SHADE = 0.8;
 /** Headings and links on a dark page. */
 const LIGHT_LIGHTNESS = 0.74;
+/** Boxes on a dark page: the color, nearly black. */
+const DARK_LIGHTNESS = 0.16;
 /** Neighbours either side on the wheel: orange runs from pink to gold, blue from teal to indigo. Never across it. */
 const SECOND_HUE_TURN = 30;
 const THIRD_HUE_TURN = -30;
@@ -82,6 +84,7 @@ export function buildThemeVariables(colors: SiteColors): string {
     '--site-accent-soft': mixHex(WHITE, accent, SOFT_SHARE),
     '--site-accent-line': mixHex(WHITE, accent, LINE_SHARE),
     '--site-accent-light': light,
+    '--site-accent-dark': withLightness(accent, DARK_LIGHTNESS),
     '--site-accent-ink': pickInk(accent),
     '--site-accent-2': rotateHue(accent, SECOND_HUE_TURN),
     '--site-accent-3': rotateHue(accent, THIRD_HUE_TURN),

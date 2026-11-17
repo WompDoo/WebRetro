@@ -83,10 +83,13 @@ export function specialize(state: GameState, specializationId: SpecializationId)
   return isAllowed ? { ...state, specializationId } : state;
 }
 
-/** This era's plan for the current specialization, or null before 2011 (everyone is a homepage then). */
+/**
+ * This era's plan for the current specialization, or null before 2011 (everyone is a homepage then) and in the classic
+ * game, which keeps the era's own checklist and money whatever a save says.
+ */
 export function findSpecializationPlan(state: GameState): SpecializationEraPlan | null {
   const baseEraId = ERAS_BY_ID[state.eraId].baseEraId;
-  return isSpecializedEra(baseEraId) ? SPECIALIZATIONS_BY_ID[state.specializationId].eras[baseEraId] : null;
+  return areSpecializationsOn(state) && isSpecializedEra(baseEraId) ? SPECIALIZATIONS_BY_ID[state.specializationId].eras[baseEraId] : null;
 }
 
 /** How the specialization makes money this era: effects, summarized like any upgrade's. */

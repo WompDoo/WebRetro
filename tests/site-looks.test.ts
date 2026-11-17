@@ -20,7 +20,7 @@ describe('a specialized site looks the part', () => {
   it('leads 2011’s Bootstrap page with what it is: its own navigation, hero and block', () => {
     const page = renderSite(as(at('social-2011'), 'video'), NOW);
     assert.match(page, /<h1>Upload\. Watch\. Repeat\.<\/h1>/);
-    assert.match(page, /<span class="is-active">Home<\/span><span>Trending<\/span><span>Subscriptions<\/span>/);
+    assert.match(page, /<span class="is-active">Home<\/span><span>Trending<\/span><span>Library<\/span>/);
     assert.match(page, /spec-block--video[\s\S]*Trending now[\s\S]*Cat plays the keyboard/);
     assert.match(page, /class="site-2011[^"]* is-spec-video"/);
     assert.doesNotMatch(page, /Hello, world!/);
@@ -39,7 +39,7 @@ describe('a specialized site looks the part', () => {
     assert.match(shop2018, /Today’s deals[\s\S]*Rubber duck/);
     const news2024 = renderSite(as(at('ai-2024'), 'news'), NOW);
     assert.match(news2024, /<span class="ai-gradient">The news, summarized\.<\/span>/);
-    assert.match(news2024, /<nav class="ai-links"><span>Top stories<\/span>/);
+    assert.match(news2024, /<nav class="ai-links"><span>Latest<\/span>/);
   });
 
   it('has a page for every specialization in every era it shapes', () => {

@@ -98,6 +98,12 @@ function renderStoryBand(context: SiteContext): string {
   return story === '' ? '' : `<div class="bs-story">${story}</div>`;
 }
 
+/** A specialized site's block, full width under the hero: the first thing it shows after saying what it is. */
+function renderSpecializationBand(context: SiteContext): string {
+  const block = renderSignatureBlock(context.state);
+  return block === '' ? '' : `<div class="bs-spec">${block}</div>`;
+}
+
 /** "Get our app!": across the top of the page, above even the navbar. */
 function renderAppBanner(context: SiteContext): string {
   const name = escapeHtml(siteBrand(context.state));
@@ -134,8 +140,9 @@ function renderBootstrapSite(context: SiteContext): string {
     ${renderAppBanner(context)}
     <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteBrand(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderFeatureBlocks(context, ['language-switcher']).join('')}${renderNavbarSignIn(context)}</header>
     <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span>${renderHeroText(context.state)}</section>
+    ${renderSpecializationBand(context)}
     ${renderStoryBand(context)}
-    <div class="bs-row"><div class="bs-main">${renderSignatureBlock(context.state)}${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
+    <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
     <footer class="bs-footer">© ${escapeHtml(siteBrand(context.state))} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
   </div>`;
 }

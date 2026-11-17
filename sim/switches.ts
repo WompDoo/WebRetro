@@ -54,7 +54,8 @@ export function readSimSpecialization(value: string | undefined): Specialization
 
 export const SIM_SPECIALIZATION: SpecializationId = readSimSpecialization(process.env['SIM_SPECIALIZATION']);
 
+/** Specializations exist only in the test build: a forced one plays it. */
 export function applySimSpecialization(state: GameState, specializationId: SpecializationId): GameState {
   const isDue = isSpecializedEra(state.eraId) && state.specializationId !== specializationId;
-  return isDue ? { ...state, specializationId } : state;
+  return isDue ? { ...state, edition: 'webspecialization', specializationId } : state;
 }

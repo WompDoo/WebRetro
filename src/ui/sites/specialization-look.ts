@@ -22,6 +22,7 @@ interface SignatureItem {
 }
 
 interface SpecializationLook {
+  /** Four short links: they share the header with the site's name, which shortens with an ellipsis when crowded. */
   readonly nav: readonly string[];
   readonly heroes: Readonly<Record<SpecializedEraId, HeroCopy>>;
   readonly blockTitle: string;
@@ -50,7 +51,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     accent: '#D6336C',
   },
   video: {
-    nav: ['Home', 'Trending', 'Subscriptions', 'Upload'],
+    nav: ['Home', 'Trending', 'Library', 'Upload'],
     heroes: {
       'social-2011': { title: 'Upload. Watch. Repeat.', text: 'The web’s videos in one place, from cats to tutorials.', cta: 'Upload a video' },
       'platform-2018': { title: 'Watch what everyone’s watching.', text: 'Creators, playlists, and autoplay you never asked for.', cta: 'Start watching' },
@@ -66,7 +67,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     accent: '#E03131',
   },
   microblog: {
-    nav: ['Home', 'Trending', 'Notifications', 'Profile'],
+    nav: ['Home', 'Explore', 'Alerts', 'Profile'],
     heroes: {
       'social-2011': { title: 'What’s happening?', text: 'Say it in 140 characters. Everyone else is.', cta: 'Post an update' },
       'platform-2018': { title: 'Join the conversation.', text: 'Trending topics, hot takes, and a thread about it.', cta: 'Sign up' },
@@ -82,7 +83,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     accent: '#1C7ED6',
   },
   news: {
-    nav: ['Top stories', 'World', 'Tech', 'Opinion'],
+    nav: ['Latest', 'World', 'Tech', 'Opinion'],
     heroes: {
       'social-2011': { title: 'Breaking news, all day.', text: 'Live updates, the stories that matter, and a comment section to regret.', cta: 'Read the latest' },
       'platform-2018': { title: 'Quality journalism. Three free articles.', text: 'Subscribe for the rest. Or open it in a private window.', cta: 'Subscribe' },
@@ -98,7 +99,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     accent: '#343A40',
   },
   reviews: {
-    nav: ['Hotels', 'Restaurants', 'Things to do', 'Write a review'],
+    nav: ['Hotels', 'Food', 'Sights', 'Reviews'],
     heroes: {
       'social-2011': { title: 'Where to next?', text: 'Real reviews from real travelers. Mostly real.', cta: 'Find a place' },
       'platform-2018': { title: 'Book the best, for less.', text: 'Hotels, restaurants and things to do, rated by millions.', cta: 'Search deals' },
@@ -114,7 +115,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     accent: '#2B8A3E',
   },
   social: {
-    nav: ['News feed', 'Friends', 'Groups', 'Messages'],
+    nav: ['Feed', 'Friends', 'Groups', 'Messages'],
     heroes: {
       'social-2011': { title: 'Everyone you know is here.', text: 'Share what’s new and see what your friends are up to.', cta: 'Sign up, it’s free' },
       'platform-2018': { title: 'Bringing everyone closer together.', text: 'Friends, groups, events, and ads that know you a little too well.', cta: 'Create an account' },
@@ -146,7 +147,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     accent: '#7048E8',
   },
   shop: {
-    nav: ['Deals', 'Categories', 'Orders', 'Cart (2)'],
+    nav: ['Deals', 'Shop', 'Orders', 'Cart (2)'],
     heroes: {
       'social-2011': { title: 'Everything. Delivered tomorrow.', text: 'Millions of products, and free shipping on orders you’ll regret.', cta: 'Shop deals' },
       'platform-2018': { title: 'One click, and it’s yours.', text: 'Same-day delivery, a membership for shipping, and reviews from strangers.', cta: 'Start shopping' },

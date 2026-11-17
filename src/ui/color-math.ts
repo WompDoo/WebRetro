@@ -118,12 +118,13 @@ export function calculateLuminance(hex: string): number {
 export const LIGHT_INK = '#FFFFFF';
 export const DARK_INK = '#111111';
 
-/** White or near-black, whichever reads better on this color. */
+/** WCAG's minimum for large text: navbars, heroes and buttons are what the ink is for. */
+const LARGE_TEXT_CONTRAST = 3;
+
+/** White, as designers would, on any color it reads on at that size; near-black on the light ones (yellow, lime, pastels). */
 export function pickInk(background: string): string {
-  const luminance = calculateLuminance(background);
-  const onWhite = (WHITE_LUMINANCE + CONTRAST_FLARE) / (luminance + CONTRAST_FLARE);
-  const onBlack = (luminance + CONTRAST_FLARE) / CONTRAST_FLARE;
-  return onWhite >= onBlack ? LIGHT_INK : DARK_INK;
+  const onWhite = (WHITE_LUMINANCE + CONTRAST_FLARE) / (calculateLuminance(background) + CONTRAST_FLARE);
+  return onWhite >= LARGE_TEXT_CONTRAST ? LIGHT_INK : DARK_INK;
 }
 
 /** The same color turned round the wheel, for gradients that go somewhere. */
