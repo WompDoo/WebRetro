@@ -25,7 +25,7 @@ const STATUS_TEXTS: Readonly<Record<MinigameStatus, string>> = {
   waiting: 'Type the code. The clock starts on your first key.',
   running: 'One wrong key and you start over.',
   won: 'Deal! Your banners are sponsored.',
-  lost: 'Too slow: they went with someone else. Try again while the offer lasts.',
+  lost: 'Too slow: they went with someone else.',
 };
 
 /** A few wrong keys among the right ones, so the keypad isn't the answer. */

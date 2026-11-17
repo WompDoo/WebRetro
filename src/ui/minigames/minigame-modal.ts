@@ -1,5 +1,5 @@
 import { isMinigameOver } from '../../engine';
-import type { AnyMinigameId, EraId } from '../../engine';
+import type { AnyMinigameId, EraId, MinigameStatus } from '../../engine';
 import { setTextIfChanged } from '../dom';
 import { ERA_PRESENTATION } from '../presentation';
 import { backupRestoreView } from './backup-restore-view';
@@ -29,11 +29,15 @@ export interface MinigameModalCallbacks {
   /** Null when the infection is gone (an antivirus cleaned it, or the game was reset). */
   readonly findTarget: (infectionId: number) => MinigameTarget | null;
   readonly onWin: (infectionId: number) => void;
+  /** Lost, or left once the clock was running. An infection waits for a retry; an offer goes. */
+  readonly onLose: (infectionId: number) => void;
 }
 
 export interface MinigameModal {
   readonly open: (infectionId: number) => void;
   readonly close: () => void;
+  /** The player walks away: mid-attempt, that's a loss. */
+  readonly leave: () => void;
   readonly retry: () => void;
   readonly isOpen: () => boolean;
   /** True when the minigame used the key, so the rest of the game should ignore it. */
@@ -64,6 +68,8 @@ const OTHER_TITLES: Readonly<Record<Exclude<AnyMinigameId, 'snake' | 'virus-scan
 };
 
 const CLOSE_AFTER_WIN_MS = 900;
+/** Long enough to read why it's gone. */
+const CLOSE_AFTER_LOSS_MS = 1_800;
 /** A background tab can hand over a huge frame; games should never jump that far at once. */
 const MAX_FRAME_MS = 100;
 const SEED_RANGE = 2 ** 31;
@@ -82,7 +88,7 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
   let infectionId: number | null = null;
   let frameRequest: number | null = null;
   let lastFrameAt = 0;
-  let hasReportedWin = false;
+  let hasReportedOutcome = false;
 
   const stopFrames = (): void => {
     if (frameRequest !== null) window.cancelAnimationFrame(frameRequest);
@@ -105,22 +111,35 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
   };
 
   const reportWin = (id: number): void => {
-    if (hasReportedWin) return;
-    hasReportedWin = true;
+    if (hasReportedOutcome) return;
+    hasReportedOutcome = true;
     callbacks.onWin(id);
     window.setTimeout(close, CLOSE_AFTER_WIN_MS);
   };
 
+  /** A loss that takes the target with it (an offer) leaves nothing to retry: the modal says so and closes. */
+  const reportLoss = (id: number): void => {
+    if (hasReportedOutcome) return;
+    hasReportedOutcome = true;
+    callbacks.onLose(id);
+    const isGone = callbacks.findTarget(id) === null;
+    elements.retry.hidden = isGone;
+    if (isGone) window.setTimeout(close, CLOSE_AFTER_LOSS_MS);
+  };
+
+  const ignoreOutcome = (): void => undefined;
+  const outcomeReports: Readonly<Record<MinigameStatus, (id: number) => void>> = { waiting: ignoreOutcome, running: ignoreOutcome, won: reportWin, lost: reportLoss };
+
   const frame = (now: number): void => {
     if (session === null || infectionId === null) return;
-    if (callbacks.findTarget(infectionId) === null && !hasReportedWin) {
+    if (callbacks.findTarget(infectionId) === null && !hasReportedOutcome) {
       close();
       return;
     }
     session.tick(Math.min(MAX_FRAME_MS, now - lastFrameAt));
     lastFrameAt = now;
     renderHud(session);
-    if (session.status() === 'won') reportWin(infectionId);
+    outcomeReports[session.status()](infectionId);
     frameRequest = isMinigameOver(session.status()) ? null : window.requestAnimationFrame(frame);
   };
 
@@ -132,7 +151,7 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
     }
     stopFrames();
     session?.destroy();
-    hasReportedWin = false;
+    hasReportedOutcome = false;
     elements.title.textContent = titleFor(target.minigameId, target.eraId);
     // Red for trouble, gold for an offer: the shell says which before the brief does.
     elements.overlay.dataset['minigame'] = target.minigameId;
@@ -144,10 +163,16 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
     frameRequest = window.requestAnimationFrame(frame);
   };
 
+  /** Walking away from a running attempt is losing it: otherwise a fumbled offer could be dodged and tried again. */
+  const leave = (): void => {
+    if (session?.status() === 'running' && infectionId !== null) reportLoss(infectionId);
+    close();
+  };
+
   const handleKey = (event: KeyboardEvent): boolean => {
     if (session === null) return false;
     if (event.key !== 'Escape') return session.handleKey(event);
-    close();
+    leave();
     return true;
   };
 
@@ -158,6 +183,7 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
       startAttempt();
     },
     close,
+    leave,
     retry: startAttempt,
     isOpen: () => session !== null,
     handleKey,
