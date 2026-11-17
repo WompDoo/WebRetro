@@ -1,4 +1,5 @@
-import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_BONUS_MS, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
+import { heatUp, startBuff } from './buffs';
+import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
 import { formatPercent } from './format';
 import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
@@ -72,9 +73,13 @@ function writeFreshLine(state: GameState): CodeInputResult {
   return { state: written, outcome: isBug ? 'bugged-line' : 'clean-line', earned };
 }
 
-/** One keystroke or click in the editor. A typo earns nothing; the next keystroke rewrites it and earns. */
+/**
+ * One keystroke or click in the editor. A typo earns nothing; the next keystroke rewrites it and earns. Every
+ * keystroke moves the heat meter: clean ones warm it, typos cool it, and a full meter sets you on fire.
+ */
 export function writeCode(state: GameState): CodeInputResult {
-  return state.hasPendingBug ? rewriteBuggedLine(state) : writeFreshLine(state);
+  const result = state.hasPendingBug ? rewriteBuggedLine(state) : writeFreshLine(state);
+  return { ...result, state: heatUp(result.state, result.outcome) };
 }
 
 export function canBuyFeature(state: GameState, featureId: FeatureId): boolean {
@@ -254,7 +259,7 @@ export function isQuickFix(state: GameState, infection: Infection): boolean {
 function withQuickFixBonus(state: GameState, infection: Infection): GameStep {
   if (!isQuickFix(state, infection)) return { state, events: [] };
   return {
-    state: { ...state, quickFixBonusRemainingMs: QUICK_FIX_BONUS_MS },
+    state: startBuff(state, 'quick-fix'),
     events: [{ kind: 'cleanup', message: `Quick fix! Visitors noticed: +${formatPercent(QUICK_FIX_TRAFFIC_FACTOR - 1)} traffic for a minute.` }],
   };
 }

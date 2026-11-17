@@ -14,6 +14,9 @@ import {
   QUICK_FIX_WINDOW_MS,
   restoreGameState,
   SAVE_VERSION,
+  advanceSimulation,
+  findBuff,
+  startBuff,
 } from '../src/engine';
 import type { GameState, Infection } from '../src/engine';
 import { QUIET_HAZARDS } from './quiet-hazards';
@@ -71,7 +74,7 @@ describe('cleaning an infection', () => {
     const step = cleanInfection(withInfections([virusAged(QUICK_FIX_WINDOW_MS + 1)]), 7);
     assert.equal(step.state.infections.length, 0);
     assert.equal(step.events.length, 1);
-    assert.equal(step.state.quickFixBonusRemainingMs, 0);
+    assert.equal(findBuff(step.state, 'quick-fix'), null);
   });
 
   it('does nothing for an unknown infection', () => {
@@ -82,14 +85,14 @@ describe('cleaning an infection', () => {
   it('rewards a quick fix with a short traffic bonus', () => {
     const before = withInfections([virusAged(QUICK_FIX_WINDOW_MS - 1)]);
     const step = cleanInfection(before, 7);
-    assert.equal(step.state.quickFixBonusRemainingMs, QUICK_FIX_BONUS_MS);
+    assert.equal(findBuff(step.state, 'quick-fix')?.remainingMs, QUICK_FIX_BONUS_MS);
     assert.ok(step.events.some((event) => event.message.startsWith('Quick fix')));
-    assert.ok(calculateDemandVisitorsPerSecond(step.state) > calculateDemandVisitorsPerSecond({ ...step.state, quickFixBonusRemainingMs: 0 }));
+    assert.ok(calculateDemandVisitorsPerSecond(step.state) > calculateDemandVisitorsPerSecond({ ...step.state, buffs: [] }));
   });
 
-  it('the bonus runs out', () => {
-    const boosted = { ...withInfections([]), quickFixBonusRemainingMs: QUICK_FIX_BONUS_MS };
-    assert.equal(advanceHazards(boosted, QUICK_FIX_BONUS_MS).state.quickFixBonusRemainingMs, 0);
+  it('the bonus runs out while you play', () => {
+    const boosted = startBuff(withInfections([]), 'quick-fix');
+    assert.equal(findBuff(advanceSimulation(boosted, QUICK_FIX_BONUS_MS, 'live').state, 'quick-fix'), null);
   });
 });
 

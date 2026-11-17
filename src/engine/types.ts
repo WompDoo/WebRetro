@@ -446,7 +446,12 @@ export interface GameState {
   /** Time left on a front-page traffic spike; 0 when there is none. */
   readonly trafficSpikeRemainingMs: number;
   /** Fixing an infection quickly earns a short traffic bonus. */
-  readonly quickFixBonusRemainingMs: number;
+  /** What's boosting the site right now: on fire, a quick fix. They run down only while you play. */
+  readonly buffs: readonly ActiveBuff[];
+  /** The heat meter, 0 to 1: typing without typos fills it, and full sets you on fire. */
+  readonly typingHeat: number;
+  /** Since the last keystroke: after a short pause the heat meter starts to cool. */
+  readonly msSinceKeystroke: number;
   readonly consentBanner: ConsentBanner;
   /** You answered the banner on your own site: it stays closed until you pick another banner. */
   readonly isCookieBannerDismissed: boolean;
@@ -505,6 +510,24 @@ export interface GameEvent {
 export interface GameStep {
   readonly state: GameState;
   readonly events: readonly GameEvent[];
+}
+
+/** A short boost: what it multiplies, by how much, for how long. */
+export type BuffId = 'on-fire' | 'quick-fix';
+export type BuffTarget = 'typing' | 'traffic' | 'ad-value';
+
+export interface BuffDefinition {
+  readonly id: BuffId;
+  readonly name: string;
+  readonly icon: string;
+  readonly target: BuffTarget;
+  readonly factor: number;
+  readonly durationMs: number;
+}
+
+export interface ActiveBuff {
+  readonly id: BuffId;
+  readonly remainingMs: number;
 }
 
 export interface CodeInputResult {

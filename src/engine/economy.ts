@@ -8,7 +8,6 @@ import {
   POPUP_TRAFFIC_PENALTY,
   QUICK_FIX_WINDOW_MS,
   SITE_DOWN_SERVER_LOAD,
-  QUICK_FIX_TRAFFIC_FACTOR,
   TRAFFIC_SPIKE_DEMAND_FACTOR,
   UPGRADE_REVEAL_EARNINGS_SHARE,
 } from './constants';
@@ -21,6 +20,7 @@ import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
 import { listPerkEffects } from './content/perks';
+import { calculateBuffFactor } from './buffs';
 import { isEraInRun } from './era-chain';
 import type {
   DefenseDefinition,
@@ -306,7 +306,7 @@ export function calculateKeystrokeValue(state: GameState): number {
   const eraMultiplier = ERAS_BY_ID[state.eraId].keystrokeValueMultiplier;
   const freelancePay = (BASE_KEYSTROKE_VALUE * eraMultiplier) / ERAS_BY_ID[state.eraId].typingPace;
   const revenueShare = calculateKeystrokeRevenueShare(state) * calculateNetRevenuePerSecond(state);
-  return (freelancePay + revenueShare) * getEffectSummary(state).typingFactor;
+  return (freelancePay + revenueShare) * getEffectSummary(state).typingFactor * calculateBuffFactor(state, 'typing');
 }
 
 export function calculateBugChance(state: GameState): number {
@@ -535,9 +535,9 @@ export function calculateMobileTrafficFactor(state: GameState): number {
   return NEUTRAL_FACTOR - mobileShare + mobileShare * calculateMobileStayShare(state);
 }
 
-/** Visitors notice a site that gets fixed fast. */
-export function calculateQuickFixFactor(state: GameState): number {
-  return state.quickFixBonusRemainingMs > 0 ? QUICK_FIX_TRAFFIC_FACTOR : NEUTRAL_FACTOR;
+/** What the running buffs do to traffic: a quick fix, and later the launch-day crowd. */
+export function calculateTrafficBuffFactor(state: GameState): number {
+  return calculateBuffFactor(state, 'traffic');
 }
 
 export function calculateTrafficSpikeFactor(state: GameState): number {
@@ -552,7 +552,7 @@ export const calculateDemandVisitorsPerSecond = memoizeByState((state: GameState
     calculateAdTrafficFactor(state) *
     calculatePopupTrafficFactor(state) *
     calculateTrafficSpikeFactor(state) *
-    calculateQuickFixFactor(state) *
+    calculateTrafficBuffFactor(state) *
     calculateMobileTrafficFactor(state) *
     calculateRenderingTrafficFactor(state) *
     calculateSecurityTrafficFactor(state) *
@@ -690,14 +690,14 @@ export const calculateUsualVisitorsPerSecond = memoizeByState((state: GameState)
 
 /** The site without the trouble or the luck of the moment: what the checklist and the ad tip judge. */
 function toUsualDay(state: GameState): GameState {
-  return { ...state, popups: [], infections: [], isCertificateExpired: false, trafficSpikeRemainingMs: 0, quickFixBonusRemainingMs: 0 };
+  return { ...state, popups: [], infections: [], isCertificateExpired: false, trafficSpikeRemainingMs: 0, buffs: [] };
 }
 
 export function calculateAdValuePerAd(state: GameState): number {
   const defenseFactors = getEnabledDefenses(state).map((defense) => defense.adValueFactor);
   const era = ERAS_BY_ID[state.eraId];
   const consentFactor = CONSENT_BANNERS_BY_ID[state.consentBanner].adValueFactor;
-  return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors) * consentFactor) / era.revenuePace;
+  return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors) * consentFactor * calculateBuffFactor(state, 'ad-value')) / era.revenuePace;
 }
 
 /** Money a visitor brings without an ad: the 2000 crash's donate button and affiliate links. At the era's pace. */

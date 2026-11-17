@@ -467,11 +467,7 @@ function mergeSteps(previous: GameStep, next: GameStep): GameStep {
 
 /** Hazards only tick while the player is watching. Offline progress never spawns them. */
 export function advanceHazards(state: GameState, deltaMs: number): GameStep {
-  const spikeTicked = {
-    ...state,
-    trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs),
-    quickFixBonusRemainingMs: Math.max(0, state.quickFixBonusRemainingMs - deltaMs),
-  };
+  const spikeTicked = { ...state, trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs) };
   const cleaned = ageAndAutoCleanInfections(spikeTicked, deltaMs);
   return HAZARD_RULES.reduce<GameStep>(
     (step, rule) => mergeSteps(step, tickHazardRule(step.state, rule, deltaMs)),

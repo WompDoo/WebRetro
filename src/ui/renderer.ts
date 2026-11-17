@@ -1,4 +1,5 @@
 import { calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks } from '../engine';
+import { findFireRemainingMs, isTargetBuffed, renderBuffChips } from './render-buffs';
 import type { GameState } from '../engine';
 import {
   buildBrowserTitle,
@@ -126,6 +127,15 @@ function renderStats(editor: CodeEditor): void {
   setTextIfChanged(elements.statRevenue, `${formatMoney(economy.netRevenuePerSecond)}/s`);
   renderProjectedBacklinks();
   editor.updateRate(economy.keystrokeValue, economy.bugChance);
+  editor.updateHeat(store.game.typingHeat, findFireRemainingMs(store.game));
+  renderBuffs();
+}
+
+/** The chips under the top bar, and the stats they boost burning with them. */
+function renderBuffs(): void {
+  setHtmlIfChanged(elements.buffChips, renderBuffChips(store.game));
+  elements.statVisitorsBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'traffic'));
+  elements.statRevenueBox.classList.toggle('is-buffed', isTargetBuffed(store.game, 'ad-value'));
 }
 
 /** After the first finished run: what finishing this one now would earn. The first run is about the site. */
