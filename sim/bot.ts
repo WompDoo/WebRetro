@@ -21,6 +21,7 @@ import {
   canUpgradeHosting,
   canUseAds,
   claimOpportunity,
+  OPPORTUNITIES_BY_KIND,
   cleanInfection,
   closePopup,
   DEFENSES_BY_ID,
@@ -47,6 +48,7 @@ import {
   writeCode,
   type ConsentBanner,
   type FrameworkId,
+  type BuffMinigameId,
   type GameState,
   type Infection,
   type UpgradeId,
@@ -308,8 +310,8 @@ export function renewWhenNoticed(state: GameState, seenAt: Map<number, number>, 
   return now - noticedAt >= profile.reactionMs && PLAYER_POLICIES[profile.policy].renewsCertificate ? renewCertificate(state) : state;
 }
 
-/** How long typing a sponsor's code takes a player who has seen it before. */
-const CODE_ENTRY_MS = 8_000;
+/** How long winning an offer's minigame takes once it's open: typing a sponsor's code, or reading and merging a conflict. */
+const OFFER_MINIGAME_MS: Readonly<Record<BuffMinigameId, number>> = { 'code-entry': 8_000, 'merge-conflict': 10_000 };
 
 /**
  * An offer, taken once noticed and typed in: a player who notices within the window wins it, one who takes longer
@@ -320,7 +322,8 @@ export function claimOfferWhenNoticed(state: GameState, seenAt: Map<number, numb
   if (offer === null) return state;
   const noticedAt = seenAt.get(offer.id) ?? now;
   seenAt.set(offer.id, noticedAt);
-  return now - noticedAt >= profile.reactionMs + CODE_ENTRY_MS ? claimOpportunity(state, offer.id).state : state;
+  const playMs = OFFER_MINIGAME_MS[OPPORTUNITIES_BY_KIND[offer.kind].minigameId];
+  return now - noticedAt >= profile.reactionMs + playMs ? claimOpportunity(state, offer.id).state : state;
 }
 
 export function typeKeystrokes(state: GameState, count: number): GameState {

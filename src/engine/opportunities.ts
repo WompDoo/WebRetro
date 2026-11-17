@@ -1,5 +1,6 @@
 import { startBuff } from './buffs';
 import { BUFFS_BY_ID } from './content/buffs';
+import { FEATURE_IDS } from './content/features';
 import { canUseAds } from './economy';
 import { drawRandoms } from './random';
 import type { BuffId, BuffMinigameId, GameEvent, GameState, GameStep, Opportunity, OpportunityKind } from './types';
@@ -35,9 +36,19 @@ export const OPPORTUNITIES_BY_KIND: Readonly<Record<OpportunityKind, Opportunity
     missed: 'The sponsor went with someone else.',
     isUseful: (state) => canUseAds(state) && state.adCount > 0,
   },
+  'launch-day': {
+    kind: 'launch-day',
+    buffId: 'launch-day',
+    minigameId: 'merge-conflict',
+    offer: 'Two versions of the same page: merge them and launch',
+    icon: '🚀',
+    won: `Merged and launched! Visitors ×${BUFFS_BY_ID['launch-day'].factor} for ${BUFFS_BY_ID['launch-day'].durationMs / 1_000} seconds.`,
+    missed: 'The merge sat too long. The launch slipped to next week.',
+    isUseful: (state) => FEATURE_IDS.some((featureId) => state.featureLevels[featureId] > 0),
+  },
 };
 
-export const OPPORTUNITY_KINDS: readonly OpportunityKind[] = ['sponsor-slot'];
+export const OPPORTUNITY_KINDS: readonly OpportunityKind[] = ['sponsor-slot', 'launch-day'];
 
 /** How long an offer waits for you. */
 export const OPPORTUNITY_WINDOW_MS = 25_000;
@@ -50,11 +61,14 @@ function drawGap(state: GameState): GameState {
   return { ...state, opportunityCountdownMs: OPPORTUNITY_MIN_GAP_MS + (draws.values[0] ?? 0) * OPPORTUNITY_GAP_SPAN_MS, randomSeed: draws.nextSeed };
 }
 
+/** One of the kinds that would do something right now, at random: a site without banners only ever gets launches. */
 function offer(state: GameState): GameState {
-  const kind = OPPORTUNITY_KINDS.find((candidate) => OPPORTUNITIES_BY_KIND[candidate].isUseful(state));
+  const useful = OPPORTUNITY_KINDS.filter((candidate) => OPPORTUNITIES_BY_KIND[candidate].isUseful(state));
+  const draws = drawRandoms(state.randomSeed, 1);
+  const kind = useful[Math.floor((draws.values[0] ?? 0) * useful.length)];
   if (kind === undefined) return drawGap(state);
   const opportunity: Opportunity = { id: state.nextEntityId, kind, remainingMs: OPPORTUNITY_WINDOW_MS };
-  return drawGap({ ...state, opportunity, nextEntityId: state.nextEntityId + 1 });
+  return drawGap({ ...state, opportunity, nextEntityId: state.nextEntityId + 1, randomSeed: draws.nextSeed });
 }
 
 function countDownToOffer(state: GameState, deltaMs: number): GameStep {

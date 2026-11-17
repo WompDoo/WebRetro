@@ -19,7 +19,28 @@
 @keyframes offer-pulse { 50% { box-shadow: 0 0 16px 4px rgba(255, 200, 31, 0.85); filter: brightness(1.08); } }
 
 /* An offer's minigame is good news: a gold title bar, not the red one trouble gets. */
-[data-minigame="code-entry"] .minigame-titlebar { background: linear-gradient(90deg, #B8860B, #FFC81F); color: #2A1E00; }
+[data-minigame="code-entry"] .minigame-titlebar,
+[data-minigame="merge-conflict"] .minigame-titlebar { background: linear-gradient(90deg, #B8860B, #FFC81F); color: #2A1E00; }
+
+/* ---------- Merge conflict: blocks with markers, three ways out of each, and why once it's merged ---------- */
+.merge-conflict { display: grid; gap: 10px; }
+.merge-conflict .code-timer { width: 100%; }
+.merge-conflict[data-status="won"] .code-timer i { background: #3BD16F; }
+.conflict { position: relative; display: grid; gap: 6px; padding: 8px; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-sunken); }
+.conflict-code { margin: 0; overflow-x: auto; font: 500 12.5px/1.5 var(--font-code); white-space: pre; }
+.conflict-marker { color: var(--ink-soft); font-weight: 700; }
+.conflict-ours { display: inline-block; min-width: 100%; background: rgba(59, 209, 111, 0.18); }
+.conflict-theirs { display: inline-block; min-width: 100%; background: rgba(56, 132, 255, 0.18); }
+.conflict-picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.conflict-pick { padding: 5px 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: 600 13px/1.2 var(--font-body); cursor: pointer; }
+.conflict-pick:hover { background: #FFF3A6; }
+.conflict-pick kbd { font: 700 11px/1 var(--font-code); opacity: 0.6; }
+/* A wrong pick says what it cost, in the corner, until the next one. */
+.conflict[data-penalty]::after { content: attr(data-penalty); position: absolute; top: 6px; right: 8px; color: #D0202B; font: 800 12px/1 var(--font-numbers); }
+.conflict.is-merged { border-color: #3BD16F; }
+.conflict.is-merged::after { content: none; }
+.conflict-kept { display: inline-block; min-width: 100%; }
+.conflict-why { margin: 0; color: #12753A; font-size: 12.5px; font-weight: 600; }
 
 /* ---------- Code entry: the sponsor's code as keycaps, a clock, and a keypad for fingers ---------- */
 .code-entry { display: grid; gap: 14px; justify-items: center; }
