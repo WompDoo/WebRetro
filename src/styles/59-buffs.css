@@ -20,29 +20,23 @@
 
 /* An offer's minigame is good news: a gold title bar, not the red one trouble gets. */
 [data-minigame="code-entry"] .minigame-titlebar,
-[data-minigame="merge-conflict"] .minigame-titlebar { background: linear-gradient(90deg, #B8860B, #FFC81F); color: #2A1E00; }
+[data-minigame="launch-window"] .minigame-titlebar { background: linear-gradient(90deg, #B8860B, #FFC81F); color: #2A1E00; }
 
-/* ---------- Merge conflict: blocks with markers, three ways out of each, and why once it's merged ---------- */
-.merge-conflict { display: grid; gap: 10px; }
-.merge-conflict .code-timer { width: 100%; }
-.merge-conflict[data-status="won"] .code-timer i { background: #3BD16F; }
-.conflict { position: relative; display: grid; gap: 6px; padding: 8px; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-sunken); }
-/* Long lines wrap rather than scroll: on a phone, the end of a line is often the part that matters. */
-.conflict-code { margin: 0; font: 500 12.5px/1.5 var(--font-code); white-space: pre-wrap; overflow-wrap: anywhere; }
-.conflict-marker { color: var(--ink-soft); font-weight: 700; }
-.conflict-ours { display: inline-block; min-width: 100%; background: rgba(59, 209, 111, 0.18); }
-.conflict-theirs { display: inline-block; min-width: 100%; background: rgba(56, 132, 255, 0.18); }
-.conflict-picks { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.conflict-keep { color: var(--ink-soft); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
-.conflict-pick { padding: 5px 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: 600 13px/1.2 var(--font-body); cursor: pointer; }
-.conflict-pick:hover { background: #FFF3A6; }
-.conflict-pick kbd { font: 700 11px/1 var(--font-code); opacity: 0.6; }
-/* A wrong pick says what it cost, in the corner, until the next one. */
-.conflict[data-penalty]::after { content: attr(data-penalty); position: absolute; top: 6px; right: 8px; color: #D0202B; font: 800 12px/1 var(--font-numbers); }
-.conflict.is-merged { border-color: #3BD16F; }
-.conflict.is-merged::after { content: none; }
-.conflict-kept { display: inline-block; min-width: 100%; }
-.conflict-why { margin: 0; color: #12753A; font-size: 12.5px; font-weight: 600; }
+/* ---------- Launch window: three stages, a marker sweeping across a bar, and a green window to hit ---------- */
+.launch { display: grid; gap: 14px; justify-items: center; }
+.launch-stages { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin: 0; padding: 0; list-style: none; counter-reset: stage; }
+.launch-stage { counter-increment: stage; padding: 4px 10px; border: 2px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink-soft); font: 600 12.5px/1.2 var(--font-body); }
+.launch-stage::before { content: counter(stage) " · "; opacity: 0.6; }
+.launch-stage.is-current { border-color: #FF8A1F; color: var(--ink); box-shadow: 0 0 0 3px rgba(255, 138, 31, 0.3); }
+.launch-stage.is-done { border-color: #3BD16F; background: #3BD16F; color: #052E14; }
+.launch-stage.is-done::before { content: "✓ "; opacity: 1; }
+.launch-bar { position: relative; width: min(100%, 420px); height: 34px; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-sunken); cursor: pointer; touch-action: manipulation; }
+.launch-window { position: absolute; top: 0; bottom: 0; background: linear-gradient(180deg, #5BE38A, #2FB35F); border-left: 2px solid #12753A; border-right: 2px solid #12753A; }
+.launch-marker { position: absolute; top: -6px; bottom: -6px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 2px var(--panel); }
+.launch-button { min-width: 180px; padding: 12px 22px; border: 3px solid var(--line); border-radius: 10px; background: linear-gradient(180deg, #FFC23A, #FF6A1F); color: #2A0E00; font: 800 18px/1 var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 0 var(--line); touch-action: manipulation; }
+.launch-button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.launch .code-timer { width: min(100%, 420px); }
+.launch[data-status="won"] .code-timer i { background: #3BD16F; }
 
 /* ---------- Code entry: the sponsor's code as keycaps, a clock, and a keypad for fingers ---------- */
 .code-entry { display: grid; gap: 14px; justify-items: center; }
