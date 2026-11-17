@@ -42,6 +42,7 @@ import {
   getUnlockedFeatureIds,
   isEraBoundEffect,
   isEraUnlocked,
+  isUpgradeRetired,
   isFeatureBuildable,
   calculateTradeIn,
   getRetiredFeatureName,
@@ -319,21 +320,58 @@ function renderInfoTip(text: string): string {
   return `<span class="info-tip" tabindex="0" aria-label="${escapeHtml(text)}">i<span class="info-tip-text" role="tooltip">${escapeHtml(text)}</span></span>`;
 }
 
+/**
+ * What it did, the way its shop row said before you bought it: what it unlocked and its effects, in the era it was
+ * bought in, and whether it has since gone out of fashion.
+ */
+export function describeWhatItDid(state: GameState, upgradeId: UpgradeId): string {
+  const upgrade = UPGRADES_BY_ID[upgradeId];
+  const unlocked = listUnlocks(upgrade.eraId, upgradeId);
+  const unlocks = unlocked.length === 0 ? [] : [`Unlocks: ${unlocked.join(', ')}`];
+  const retired = isUpgradeRetired(state, upgradeId) ? ['out of fashion now'] : [];
+  return [...unlocks, describeUpgradeEffects(upgrade.effects, upgrade.eraId), ...retired].filter((part) => part !== '').join(' · ');
+}
+
+/** The link stays exactly as it was; what it did sits under it. */
+function renderVisitedEntry(state: GameState, upgradeId: UpgradeId): string {
+  return `<li class="visited-entry">${renderVisitedItem(state, upgradeId)}<span class="visited-effect">${escapeHtml(describeWhatItDid(state, upgradeId))}</span></li>`;
+}
+
+const EARLIER_ERA_NOTE = '<p class="visited-note">What each did when you bought it. Typing multipliers, typo cuts, hires and ops multipliers count only in their own era.</p>';
+
+/** This era's things open; each earlier era's folded away under its year, so a long game doesn't bury the shop. */
+function renderVisitedGroup(state: GameState, eraId: EraId, upgradeIds: readonly UpgradeId[]): string {
+  const entries = `<ul class="visited-entries">${upgradeIds.map((upgradeId) => renderVisitedEntry(state, upgradeId)).join('')}</ul>`;
+  return eraId === state.eraId ? entries : `<details class="visited-era"><summary>From ${ERAS_BY_ID[eraId].year} · ${upgradeIds.length}</summary>${EARLIER_ERA_NOTE}${entries}</details>`;
+}
+
+/** Newest era first: the current one, then back through history. */
+function renderVisitedGroups(state: GameState, upgradeIds: readonly UpgradeId[]): string {
+  return [...ERA_IDS]
+    .reverse()
+    .map((eraId) => ({ eraId, ids: upgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].eraId === eraId) }))
+    .filter((group) => group.ids.length > 0)
+    .map((group) => renderVisitedGroup(state, group.eraId, group.ids))
+    .join('');
+}
+
 function renderVisitedList(state: GameState, upgradeIds: readonly UpgradeId[], list: VisitedList): string {
   if (upgradeIds.length === 0) return '';
-  const items = upgradeIds.map((upgradeId) => renderVisitedItem(state, upgradeId)).join('');
   const copy = VISITED_LISTS[list];
-  return `<h3 class="shop-group-title has-info">${escapeHtml(copy.title)}${renderInfoTip(copy.info)}</h3><p class="visited-list">${items}</p>`;
+  return `<h3 class="shop-group-title has-info">${escapeHtml(copy.title)}${renderInfoTip(copy.info)}</h3><div class="visited-groups">${renderVisitedGroups(state, upgradeIds)}</div>`;
 }
 
 // ---------- Learn ----------
 
+/** What a skill opens up in an era: features to build, and the era's ads when it's the ad skill. */
+function listUnlocks(eraId: EraId, skillId: UpgradeId): readonly string[] {
+  const features = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].requiredSkillId === skillId).map((featureId) => getFeatureDisplayName(featureId, eraId));
+  const unlocksAds = ERAS_BY_ID[eraId].adSkillId === skillId ? [`${ERAS_BY_ID[eraId].adLabel}s`] : [];
+  return [...features, ...unlocksAds];
+}
+
 function describeUnlocks(state: GameState, skillId: UpgradeId): string {
-  const features = FEATURE_IDS.filter((featureId) => FEATURES_BY_ID[featureId].requiredSkillId === skillId).map((featureId) =>
-    getFeatureDisplayName(featureId, state.eraId),
-  );
-  const unlocksAds = ERAS_BY_ID[state.eraId].adSkillId === skillId ? [`${ERAS_BY_ID[state.eraId].adLabel}s`] : [];
-  const unlocked = [...features, ...unlocksAds];
+  const unlocked = listUnlocks(state.eraId, skillId);
   return unlocked.length === 0 ? '' : `<p class="shop-effect is-unlock">Unlocks: ${escapeHtml(unlocked.join(', '))}</p>`;
 }
 
