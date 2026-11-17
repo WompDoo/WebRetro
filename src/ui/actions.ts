@@ -1,5 +1,7 @@
 import {
   advanceEra,
+  specialize,
+  SPECIALIZATION_IDS,
   buyDefense,
   buyFeatureLevels,
   buyUpgrade,
@@ -28,7 +30,7 @@ import {
   writeCode,
   findChosenFramework,
 } from '../engine';
-import type { ConsentBanner, DefenseId, EraId, FeatureId, FrameworkId, PerkId, UpgradeId } from '../engine';
+import type { ConsentBanner, DefenseId, EraId, FeatureId, FrameworkId, PerkId, SpecializationId, UpgradeId } from '../engine';
 import { DEVICE_VIEWS } from './browser-chrome';
 import type { DeviceView } from './browser-chrome';
 import type { KeystrokeFeedback } from './code-editor';
@@ -41,6 +43,7 @@ import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
 import { createPlaytestHandlers } from './playtest-actions';
+import { describeSpecialization } from './render-specializations';
 import { flashMoneyLoss } from './renderer';
 import { describeRetirement } from './retirement';
 import type { Renderer } from './renderer';
@@ -71,6 +74,10 @@ function readNumericId(target: HTMLElement): number {
 
 function isConsentBanner(value: string): value is ConsentBanner {
   return (CONSENT_BANNER_IDS as readonly string[]).includes(value);
+}
+
+function isSpecializationId(value: string): value is SpecializationId {
+  return (SPECIALIZATION_IDS as readonly string[]).includes(value);
 }
 
 function isFeatureId(value: string): value is FeatureId {
@@ -127,6 +134,15 @@ export function writeCodeKeystroke(): KeystrokeFeedback {
 }
 
 /** The wipe covers the browser; the era swaps underneath it, halfway through. */
+/** The choice from the relaunch story, once the new era has started: the old era is on record as it was. */
+function applyPendingSpecialization(): void {
+  const pending = store.pendingSpecializationId;
+  store.pendingSpecializationId = null;
+  if (pending === null || pending === store.game.specializationId) return;
+  updateGame((state) => specialize(state, pending));
+  pushMessage(`Your site is now ${describeSpecialization(store.game.specializationId)}.`);
+}
+
 function runEraWipe(): void {
   elements.eraWipe.classList.remove('is-running');
   void elements.eraWipe.offsetWidth;
@@ -138,6 +154,7 @@ function runEraWipe(): void {
     updateGame(advanceEra);
     const era = ERAS_BY_ID[store.game.eraId];
     pushMessage(`Relaunched for ${era.year}: ${era.name}. Your old features got a makeover. ${retirement}`.trim());
+    applyPendingSpecialization();
   }, WIPE_SWAP_DELAY_MS);
   window.setTimeout(() => elements.eraWipe.classList.remove('is-running'), WIPE_DURATION_MS);
 }
@@ -149,6 +166,7 @@ function startMigration(): void {
     updateGame(advanceEra);
     return;
   }
+  store.pendingSpecializationId = null;
   if (renderStory(store.game)) showOverlay(elements.storyOverlay);
 }
 
@@ -257,6 +275,13 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
       runEraWipe();
     },
     'cancel-migration': () => hideOverlay(elements.storyOverlay),
+    'toggle-specializations': () => {
+      store.isSpecializationsOpen = !store.isSpecializationsOpen;
+    },
+    'choose-specialization': withId(isSpecializationId, (id) => {
+      store.pendingSpecializationId = id;
+      renderStory(store.game);
+    }),
     'open-reset': () => showOverlay(elements.resetOverlay),
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),

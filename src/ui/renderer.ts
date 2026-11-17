@@ -274,7 +274,7 @@ function renderTabBadges(issues: readonly Issue[]): void {
 }
 
 function readShopView(): ShopView {
-  return { buyAmount: store.buyAmount, isScrollJackingOn: store.isScrollJackingOn };
+  return { buyAmount: store.buyAmount, isScrollJackingOn: store.isScrollJackingOn, isSpecializationsOpen: store.isSpecializationsOpen };
 }
 
 function renderShop(): void {

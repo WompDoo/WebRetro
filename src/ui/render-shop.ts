@@ -54,6 +54,7 @@ import {
 import type { ConsentBanner, ConsentBannerDefinition, DefenseCounterMode, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
+import { renderSpecializationPanel } from './render-specializations';
 import { describeTradeIn } from './retirement';
 import { AD_ICON, CODE_ICON, COOKIE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, LOCK_ICON, OPS_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
@@ -98,6 +99,8 @@ export interface ShopView {
   readonly buyAmount: BuyAmount;
   /** The player's comfort switch for the one-pager's scrolling: a setting, not part of the game. */
   readonly isScrollJackingOn: boolean;
+  /** The test build's Specializations list, open or folded. */
+  readonly isSpecializationsOpen: boolean;
 }
 
 function renderBuyAmountPicker(buyAmount: BuyAmount): string {
@@ -230,7 +233,7 @@ function renderRetiredFeatures(state: GameState): string {
 
 function renderBuildTab(state: GameState, view: ShopView): string {
   const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
-  return `${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
+  return `${renderSpecializationPanel(state, view.isSpecializationsOpen)}${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
 }
 
 // ---------- Effects ----------
@@ -695,6 +698,9 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
     tab,
     view.buyAmount,
     view.isScrollJackingOn,
+    view.isSpecializationsOpen,
+    state.specializationId,
+    state.unlockedSpecializationIds.join(','),
     state.eraId,
     // A later run lists features the first doesn't have.
     state.runNumber,

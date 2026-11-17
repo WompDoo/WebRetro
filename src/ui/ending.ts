@@ -25,6 +25,7 @@ import {
 import type { EraId, EraRecord, GameState, LegacyState, PerkId } from '../engine';
 import { buildSiteUrl } from './browser-chrome';
 import { escapeHtml } from './dom';
+import { describeSpecializationPath } from './render-specializations';
 import { ERA_PRESENTATION } from './presentation';
 import { renderSite } from './sites';
 import { siteBrand } from './sites/site-context';
@@ -114,6 +115,12 @@ export function calculateOfferAmount(state: GameState): number {
   return state.lifetimeEarnings * OFFER_EARNINGS_MULTIPLE;
 }
 
+/** The test build's line about what your homepage became, between the email and the choice. */
+function renderPathLine(state: GameState): string {
+  const path = describeSpecializationPath(state);
+  return path === '' ? '' : `<p class="ending-path">${escapeHtml(path)}</p>`;
+}
+
 function renderOffer(state: GameState): string {
   const brand = escapeHtml(siteBrand(state));
   const years = ENDING_YEAR - FIRST_YEAR;
@@ -126,6 +133,7 @@ function renderOffer(state: GameState): string {
       <p>Let’s hop on a call!</p>
       <p class="offer-mail-sign">Sent from my AI</p>
     </article>
+    ${renderPathLine(state)}
     <div class="overlay-actions">
       <button type="button" class="ghost-button" data-action="ending-act" data-id="kept">Keep it yours</button>
       <button type="button" class="primary-button" data-action="ending-act" data-id="sold">Sell it</button>
