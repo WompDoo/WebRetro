@@ -1243,7 +1243,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     eraId: 'ai-2024',
     name: 'Run an AI coding agent',
     description: 'Never sleeps, never asks for a raise, types twice as fast as you do. Occasionally deletes the database, then apologizes.',
-    cost: 60_000_000_000_000,
+    cost: 140_000_000_000_000,
     pageWeightKb: 0,
     effects: [{ kind: 'auto-keystrokes', perSecond: 12 }],
     requiredFeatureId: null,
