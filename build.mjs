@@ -47,9 +47,19 @@ if (!simOnly) {
   const styleFiles = (await readdir('src/styles')).filter((name) => name.endsWith('.css')).sort();
   const styles = (await Promise.all(styleFiles.map((name) => readFile(`src/styles/${name}`, 'utf8')))).join('\n');
   const template = await readFile('src/page.html', 'utf8');
-  const page = template.replace('/*__STYLES__*/', () => styles).replace('/*__GAME_SCRIPT__*/', () => script);
-  await writeFile('dist/under-construction.html', page);
-  const preview = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>${page}</body></html>`;
-  await writeFile('dist/preview.html', preview);
-  console.log(`Built dist/under-construction.html (${(page.length / 1024).toFixed(0)} KB)`);
+  // One script, two pages: the classic game, and the web specialization test build. The page's meta tag says which.
+  const editions = [
+    { edition: 'classic', page: 'under-construction', preview: 'preview' },
+    { edition: 'webspecialization', page: 'webspecialization', preview: 'webspecialization-preview' },
+  ];
+  for (const { edition, page: pageName, preview: previewName } of editions) {
+    const page = template
+      .replace('__GAME_EDITION__', edition)
+      .replace('/*__STYLES__*/', () => styles)
+      .replace('/*__GAME_SCRIPT__*/', () => script);
+    await writeFile(`dist/${pageName}.html`, page);
+    const preview = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>${page}</body></html>`;
+    await writeFile(`dist/${previewName}.html`, preview);
+    console.log(`Built dist/${pageName}.html (${(page.length / 1024).toFixed(0)} KB)`);
+  }
 }

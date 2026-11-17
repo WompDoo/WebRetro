@@ -427,6 +427,12 @@ export interface Infection {
   readonly minigameId: MinigameId;
 }
 
+/**
+ * Which game this is: the classic one, or the test build where a site becomes something (routes, site colors). The
+ * engine reads it where the two differ; the classic game never sees the test build's systems.
+ */
+export type Edition = 'classic' | 'webspecialization';
+
 export interface GameState {
   readonly saveVersion: number;
   readonly eraId: EraId;
@@ -485,6 +491,7 @@ export interface GameState {
   readonly legacyPerkLevels: Readonly<Record<PerkId, number>>;
   /** This run's Backlinks are in the legacy already: a finished run pays out once. */
   readonly areBacklinksBanked: boolean;
+  readonly edition: Edition;
 }
 
 /** Bought with Backlinks, kept across runs. */

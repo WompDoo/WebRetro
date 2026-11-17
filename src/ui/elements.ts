@@ -6,6 +6,7 @@ import type { MinigameModalElements } from './minigames/minigame-modal';
 /** Looked up once at startup. A missing element is a broken page, so requireElement throws. */
 export const elements = {
   app: requireElement<HTMLElement>('#app'),
+  editionBadge: requireElement<HTMLElement>('#edition-badge'),
   statMoney: requireElement<HTMLElement>('#stat-money'),
   statVisitors: requireElement<HTMLElement>('#stat-visitors'),
   statIncome: requireElement<HTMLElement>('#stat-income'),
