@@ -1,6 +1,6 @@
-import { ERAS_BY_ID } from './content/eras';
 import { getCoreFeatureIdsOfEra } from './content/features';
 import { calculateUsualVisitorsPerSecond } from './economy';
+import { listGateRequirements } from './specializations';
 import type { EraGateRequirement, GameState, GateCheck, GateRequirementKind } from './types';
 
 type RequirementMeasure = (state: GameState, requirement: EraGateRequirement) => number;
@@ -23,7 +23,7 @@ const REQUIREMENT_MEASURES: Readonly<Record<GateRequirementKind, RequirementMeas
 };
 
 export function calculateGateChecks(state: GameState): readonly GateCheck[] {
-  return ERAS_BY_ID[state.eraId].gateRequirements.map((requirement) => {
+  return listGateRequirements(state).map((requirement) => {
     const current = REQUIREMENT_MEASURES[requirement.kind](state, requirement);
     return { requirement, current, isMet: current >= requirement.target };
   });

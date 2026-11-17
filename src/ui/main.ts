@@ -1,4 +1,4 @@
-import { advanceSimulation, calculateInfectionDifficulty, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { Edition, SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
@@ -17,6 +17,8 @@ import type { MinigameTarget } from './minigames/types';
 import { applyStep, markSiteSeen, pickStartingMobileTab, store, updateGame } from './store';
 import { EDITION_META_NAME, isTestBuild, parseEdition, withEdition } from './edition';
 import { drainTypingIncome } from './typing-income';
+import { findPickerColors } from './render-site-colors';
+import { installSiteColorsPicker } from './site-colors-picker';
 
 interface ClaudeHotApi {
   readonly data?: unknown;
@@ -125,6 +127,13 @@ function start(hotData: unknown): void {
   isSimulationPaused = intro.isOpen;
   installJavaScriptEffects(elements.site, elements.popupLayer, isJavaScriptLearnedIn1997);
   installScrollDepth(elements.site);
+  installSiteColorsPicker(elements.colorsPanel, elements.site, {
+    readColors: () => findPickerColors(store.game),
+    pick: (colors) => {
+      updateGame((state) => chooseSiteColors(state, colors));
+      renderer.renderStructure();
+    },
+  });
   installPhoneSwipe(elements.browserViewport, elements.site, installStoryChapters(elements.site));
   setPlaytestEnabled(isPlaytestRequested(window.location) || readPlaytestFlag());
   const countMoneyTap = createTapCounter(() => performance.now());

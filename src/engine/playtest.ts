@@ -18,8 +18,9 @@ import { getErasOfRun, isEraInRun } from './era-chain';
 import { calculateGateChecks } from './era-gate';
 import { createEraRecord } from './era-records';
 import { OPPORTUNITY_WINDOW_MS } from './opportunities';
+import { SPECIALIZATION_IDS } from './content/specializations';
 import { createInitialGameState } from './state';
-import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, OpportunityKind, UpgradeId } from './types';
+import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, OpportunityKind, SpecializationId, UpgradeId } from './types';
 
 /**
  * Playtest presets: a believable game at the start or the end of any era, built from the content itself.
@@ -259,4 +260,15 @@ export function offerPlaytestOpportunity(state: GameState, kind: OpportunityKind
 export function setPlaytestCursorLevel(state: GameState, level: number): GameState {
   const runNumber = Math.max(state.runNumber, getFeatureFirstRun('custom-cursor'));
   return { ...state, runNumber, featureLevels: { ...state.featureLevels, 'custom-cursor': level } };
+}
+
+/** Every specialization unlocked, as if each had been built towards this run. */
+export function unlockPlaytestSpecializations(state: GameState): GameState {
+  return { ...state, unlockedSpecializationIds: SPECIALIZATION_IDS.filter((id) => id !== 'homepage') };
+}
+
+/** The site becomes this specialization now, unlocked or not: to see a route without building towards it. */
+export function setPlaytestSpecialization(state: GameState, specializationId: SpecializationId): GameState {
+  const unlocked = [...new Set([...state.unlockedSpecializationIds, specializationId])].filter((id) => id !== 'homepage');
+  return { ...state, specializationId, unlockedSpecializationIds: unlocked };
 }

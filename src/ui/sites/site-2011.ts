@@ -6,6 +6,7 @@ import { ownedFeatures, renderDeadNotice, renderFeatureBlocks, renderFeatureSect
 import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2005Site } from './site-2005';
+import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
 
 /**
  * Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no
@@ -97,6 +98,12 @@ function renderStoryBand(context: SiteContext): string {
   return story === '' ? '' : `<div class="bs-story">${story}</div>`;
 }
 
+/** A specialized site's block, full width under the hero: the first thing it shows after saying what it is. */
+function renderSpecializationBand(context: SiteContext): string {
+  const block = renderSignatureBlock(context.state);
+  return block === '' ? '' : `<div class="bs-spec">${block}</div>`;
+}
+
 /** "Get our app!": across the top of the page, above even the navbar. */
 function renderAppBanner(context: SiteContext): string {
   const name = escapeHtml(siteBrand(context.state));
@@ -116,15 +123,24 @@ function renderPlaceholderColumns(): string {
   return PLACEHOLDER_COLUMNS.map((title) => `<section class="feature-block bs-placeholder"><h2 class="feature-heading">${title}</h2><p>Donec id elit non mi porta gravida at eget metus.</p><span class="bs-button">View details »</span></section>`).join('');
 }
 
+const TEMPLATE_HERO = '<h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span>';
+
+/** The template's hero, until the site specializes: then it says what the site is. */
+function renderHeroText(state: GameState): string {
+  const copy = findHeroCopy(state);
+  return copy === null ? TEMPLATE_HERO : `<h1>${copy.title}</h1><p>${copy.text}</p><span class="bs-button is-large">${copy.cta} »</span>`;
+}
+
 /** After "Learn Bootstrap": the template every 2011 site started from, "Hello, world!" and all. */
 function renderBootstrapSite(context: SiteContext): string {
   const main = renderFeatureBlocks(context, BOOTSTRAP_MAIN_FEATURES).join('');
   const sidebar = renderFeatureBlocks(context, BOOTSTRAP_SIDEBAR_FEATURES).join('');
-  const nav = NAV_ITEMS.map((item, index) => `<span${index === 0 ? ' class="is-active"' : ''}>${item}</span>`).join('');
-  return `<div class="site-2011${renderLookClasses(context)}">
+  const nav = renderNavLinks(context.state, NAV_ITEMS, ' class="is-active"');
+  return `<div class="site-2011${renderLookClasses(context)}${specializationClass(context.state)}">
     ${renderAppBanner(context)}
     <header class="bs-navbar"><span class="bs-brand">${escapeHtml(siteBrand(context.state))}</span><nav class="bs-nav">${nav}</nav><span class="bs-menu" aria-hidden="true">☰</span>${renderFeatureBlocks(context, ['language-switcher']).join('')}${renderNavbarSignIn(context)}</header>
-    <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span><h1>Hello, world!</h1><p>This is a template for a simple website. It has a big callout called a hero unit and three supporting pieces of content. Use it as a starting point to make something unique.</p><span class="bs-button is-large">Learn more »</span></section>
+    <section class="bs-hero"><span class="bs-hero-far" aria-hidden="true"></span><span class="bs-hero-near" aria-hidden="true"></span>${renderHeroText(context.state)}</section>
+    ${renderSpecializationBand(context)}
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
     <footer class="bs-footer">© ${escapeHtml(siteBrand(context.state))} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>

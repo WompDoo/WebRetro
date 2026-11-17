@@ -1,5 +1,5 @@
-import { UPGRADES_BY_ID } from '../src/engine';
-import type { BuffId, GameState, UpgradeId } from '../src/engine';
+import { isSpecializedEra, SPECIALIZATION_IDS, UPGRADES_BY_ID } from '../src/engine';
+import type { BuffId, GameState, SpecializationId, UpgradeId } from '../src/engine';
 
 /**
  * Switches for measuring what a system is worth: SIM_WITHOUT=fire,offers,hires plays the same game without them, so
@@ -42,4 +42,20 @@ export function applySwitches(state: GameState, switchedOff: ReadonlySet<SimSyst
 /** With hires switched off, the bot never sees them in the shop. */
 export function isSwitchedOffPurchase(upgradeId: UpgradeId, switchedOff: ReadonlySet<SimSystem>): boolean {
   return switchedOff.has('hires') && UPGRADES_BY_ID[upgradeId].effects.some((effect) => effect.kind === 'auto-keystrokes');
+}
+
+/**
+ * SIM_SPECIALIZATION=video plays the game as a video site from 2011 on, unlocked or not: what each specialization's
+ * money model does to an era's length. Unset, or unknown, the game stays a Homepage.
+ */
+export function readSimSpecialization(value: string | undefined): SpecializationId {
+  return SPECIALIZATION_IDS.find((id) => id === value) ?? 'homepage';
+}
+
+export const SIM_SPECIALIZATION: SpecializationId = readSimSpecialization(process.env['SIM_SPECIALIZATION']);
+
+/** Specializations exist only in the test build: a forced one plays it. */
+export function applySimSpecialization(state: GameState, specializationId: SpecializationId): GameState {
+  const isDue = isSpecializedEra(state.eraId) && state.specializationId !== specializationId;
+  return isDue ? { ...state, edition: 'webspecialization', specializationId } : state;
 }

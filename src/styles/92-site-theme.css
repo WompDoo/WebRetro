@@ -1,0 +1,60 @@
+/*
+ * ---------- The site's colors, era by era ----------
+ * The page is wrapped in .site-theme.is-themed with the shades as variables (see site-theme.ts). Each era keeps its
+ * layout, type and texture; only what a designer would have recoloured changes: the header, links, buttons, the
+ * hero and the background. Dark pages (1997's starfield, 2024's dark mode) use the light shades instead.
+ */
+
+/* 1997: the hand-picked colors of a homepage, through its own variables. */
+.site-theme.is-themed .site-1997 {
+  --s97-bg: var(--site-bg); --s97-heading: var(--site-accent-strong); --s97-link: var(--site-accent-strong); --s97-name: var(--site-accent);
+  --s97-accent: var(--site-accent); --s97-nav: var(--site-accent-soft);
+}
+.site-theme.is-themed .site-1997.has-background {
+  --s97-bg: #000020; --s97-heading: var(--site-accent-light); --s97-link: var(--site-accent-light); --s97-name: var(--site-light-2);
+  --s97-accent: var(--site-light-3); --s97-nav: var(--site-accent-dark); --s97-box: var(--site-accent-dark);
+}
+
+/* 2005: the header bar, its tabs, and the blue that every link and heading was. */
+.site-theme.is-themed .site-2005 { background: var(--site-bg); }
+.site-theme.is-themed .w2-header { background: var(--site-accent-strong); }
+.site-theme.is-themed .w2-nav span { background: var(--site-accent); color: var(--site-accent-ink); }
+.site-theme.is-themed .w2-nav .is-active { background: var(--site-bg); color: var(--site-accent-strong); }
+.site-theme.is-themed .site-2005 :is(.feature-heading, .guestbook-entry b, .fake-link, .blog-post h3, .comment b, .music-play, .tag) { color: var(--site-accent-strong); }
+.site-theme.is-themed .site-2005 .music-eq i { background: var(--site-accent); }
+/* The Web 2.0 look: a glossy gradient from a light shade of the color, rounded tabs and soft tinted wells. */
+.site-theme.is-themed .is-glossy .w2-header { background: linear-gradient(var(--site-accent-light), var(--site-accent)); }
+.site-theme.is-themed .is-glossy .w2-logo { text-shadow: 0 1px 0 var(--site-accent-strong), 0 2px 4px rgba(0, 0, 0, 0.25); }
+.site-theme.is-themed .is-glossy .w2-nav span { background: rgba(255, 255, 255, 0.3); color: #FFFFFF; }
+.site-theme.is-themed .is-glossy .w2-nav .is-active { background: var(--site-bg); color: var(--site-accent-strong); }
+.site-theme.is-themed .is-glossy .feature-block { border-color: var(--site-accent-line); }
+.site-theme.is-themed .is-glossy .feature-heading { color: var(--site-accent-strong); background: linear-gradient(#FFFFFF, var(--site-accent-soft)); border-bottom-color: var(--site-accent-line); }
+.site-theme.is-themed .is-glossy .blog-post + .blog-post { border-top-color: var(--site-accent-line); }
+
+/* 2011: a customised Bootstrap. The navbar in the brand color, the hero unit tinted, the buttons and links to match. */
+.site-theme.is-themed .site-2011 { background: var(--site-bg); }
+.site-theme.is-themed .bs-navbar { background: linear-gradient(var(--site-accent), var(--site-accent-deep)); border-bottom-color: var(--site-accent-deep); color: var(--site-accent-ink); }
+.site-theme.is-themed .bs-navbar :is(.bs-nav span, .bs-signin) { opacity: 0.75; }
+.site-theme.is-themed .bs-navbar :is(.bs-brand, .bs-nav .is-active) { color: var(--site-accent-ink); opacity: 1; }
+.site-theme.is-themed .bs-menu { border-color: currentColor; color: var(--site-accent-ink); }
+.site-theme.is-themed .bs-hero { background: var(--site-accent-soft); }
+.site-theme.is-themed :is(.bs-button.is-large, .bs-button.is-primary) { border-color: var(--site-accent-deep); background: linear-gradient(var(--site-accent), var(--site-accent-deep)); color: var(--site-accent-ink); text-shadow: none; }
+.site-theme.is-themed .site-2011 :is(.fake-link, .blog-post h3, .bs-forgot) { color: var(--site-accent-strong); }
+
+/* 2018: the landing page's gradient hero, logo and links. The A/B test still gets to pick its button colors. */
+.site-theme.is-themed .site-2018 { background: var(--site-bg); }
+.site-theme.is-themed .lp-logo i { background: linear-gradient(135deg, var(--site-accent), var(--site-accent-2)); }
+.site-theme.is-themed .lp-login { color: var(--site-accent-strong); }
+.site-theme.is-themed .lp-hero { background: linear-gradient(135deg, var(--site-accent) 0%, var(--site-accent-deep) 45%, var(--site-accent-2) 100%); color: var(--site-accent-ink); }
+.site-theme.is-themed .lp-hero p { color: var(--site-accent-ink); opacity: 0.85; }
+.site-theme.is-themed .lp-hero .lp-button { color: var(--site-accent-ink); }
+.site-theme.is-themed .lp-hero .lp-button.is-primary:not([class*="is-ab-"]) { background: #FFFFFF; color: var(--site-accent-strong); }
+.site-theme.is-themed .lp-card { background: var(--site-accent-soft); }
+.site-theme.is-themed .site-2018 .fake-link { color: var(--site-accent-strong); }
+
+/* 2024: the gradient that is the whole look, through the color from one neighbour on the wheel to the other. */
+.site-theme.is-themed .site-2024 { --ai-gradient: linear-gradient(90deg, var(--site-accent-3), var(--site-accent) 50%, var(--site-accent-2)); }
+.site-theme.is-themed .site-2024:not(.is-dark) { --ai-bg: var(--site-bg); }
+.site-theme.is-themed .site-2024.is-dark { --ai-gradient: linear-gradient(90deg, var(--site-light-3), var(--site-accent-light) 50%, var(--site-light-2)); }
+.site-theme.is-themed .site-2024 .fake-link { color: var(--site-accent-strong); }
+.site-theme.is-themed .site-2024.is-dark .fake-link { color: var(--site-accent-light); }

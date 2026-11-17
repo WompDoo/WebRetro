@@ -26,6 +26,7 @@ import {
   closePopup,
   DEFENSES_BY_ID,
   ERAS_BY_ID,
+  listGateRequirements,
   FEATURE_IDS,
   FEATURES_BY_ID,
   findFrameworkPickedBy,
@@ -155,9 +156,9 @@ export function effectiveIncome(state: GameState, profile: PlayerProfile): numbe
 }
 
 export function isGateFeature(state: GameState, featureId: string): boolean {
-  const era = ERAS_BY_ID[state.eraId];
   const isEraFeature = getCoreFeatureIdsOfEra(state.eraId).some((id) => id === featureId);
-  const levelRequirement = era.gateRequirements.find((requirement) => requirement.featureId === featureId);
+  // The checklist as the player sees it: a specialized site's asks for its own focus feature.
+  const levelRequirement = listGateRequirements(state).find((requirement) => requirement.featureId === featureId);
   const levelMissing =
     levelRequirement !== undefined &&
     state.featureLevels[levelRequirement.featureId ?? 'hit-counter'] < levelRequirement.target;

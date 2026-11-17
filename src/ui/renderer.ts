@@ -1,4 +1,4 @@
-import { calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks } from '../engine';
+import { areSpecializationsOn, calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks } from '../engine';
 import { calculateBuffChipsSignature, findFireRemainingMs, isTargetBuffed, listChipTimes, renderBuffChips } from './render-buffs';
 import type { GameState } from '../engine';
 import {
@@ -32,6 +32,7 @@ import { listIssues } from './issues';
 import type { Issue } from './issues';
 import { calculateIssueSignature, issuePanelTitle, renderIssueList } from './render-issues';
 import { renderPhoneNotifications } from './render-notifications';
+import { calculateColorsSignature, renderSiteColorsPanel } from './render-site-colors';
 import { buildEditorSource } from './skill-code';
 import { createCursorTrail } from './cursor-trail';
 import { describeIncomeSources, describeTypingBoost, isTypingIdle, readTypingIncomePerSecond, sumIncome } from './typing-income';
@@ -51,7 +52,7 @@ export interface Renderer {
   readonly forgetRenderedState: () => void;
 }
 
-type SignatureKey = 'site' | 'popups' | 'shop' | 'goal' | 'news' | 'skills' | 'issues';
+type SignatureKey = 'site' | 'popups' | 'shop' | 'goal' | 'news' | 'skills' | 'issues' | 'colors';
 
 const SLOW_RENDER_INTERVAL_MS = 250;
 const MIN_RELOAD_MS = 300;
@@ -196,6 +197,17 @@ function renderDeviceView(issues: readonly Issue[]): void {
   });
 }
 
+/** The 🎨 button and its panel: the test build's, any time. */
+function isColorsPanelOpen(state: GameState): boolean {
+  return areSpecializationsOn(state) && store.isColorsOpen;
+}
+
+function renderColorsChrome(): void {
+  elements.colorsButton.hidden = !areSpecializationsOn(store.game);
+  elements.colorsButton.setAttribute('aria-expanded', String(isColorsPanelOpen(store.game)));
+  elements.colorsPanel.hidden = !isColorsPanelOpen(store.game);
+}
+
 /** A new skill adds to the file being typed; picking another tab brings that file back as it was left. */
 /** The era's editor highlights syntax, or you bought it the colours. */
 function hasSyntaxColours(state: GameState): boolean {
@@ -274,7 +286,7 @@ function renderTabBadges(issues: readonly Issue[]): void {
 }
 
 function readShopView(): ShopView {
-  return { buyAmount: store.buyAmount, isScrollJackingOn: store.isScrollJackingOn };
+  return { buyAmount: store.buyAmount, isScrollJackingOn: store.isScrollJackingOn, isSpecializationsOpen: store.isSpecializationsOpen };
 }
 
 function renderShop(): void {
@@ -310,7 +322,7 @@ function updateShopAffordability(): void {
 }
 
 export function createRenderer(editor: CodeEditor): Renderer {
-  const signatures: Record<SignatureKey, string> = { site: '', popups: '', shop: '', goal: '', news: '', skills: '', issues: '' };
+  const signatures: Record<SignatureKey, string> = { site: '', popups: '', shop: '', goal: '', news: '', skills: '', issues: '', colors: '' };
   let renderedEraId = '';
   let hasRenderedSite = false;
   let endCardShown = store.game.isGameFinished;
@@ -378,6 +390,10 @@ export function createRenderer(editor: CodeEditor): Renderer {
     });
     renderWhenChanged('news', store.news.map((item) => item.id).join(','), renderNewsList);
     renderDeviceView(issues);
+    renderColorsChrome();
+    renderWhenChanged('colors', calculateColorsSignature(store.game, isColorsPanelOpen(store.game)), () => {
+      elements.colorsPanel.innerHTML = isColorsPanelOpen(store.game) ? renderSiteColorsPanel(store.game) : '';
+    });
     renderScrollJackingSwitch();
     renderMobileChrome();
     showEndCardOnce();

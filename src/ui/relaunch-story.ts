@@ -47,7 +47,7 @@ function renderFullStory(story: EraStory): string {
   return `<details class="relaunch-story"><summary>Read the story</summary>${story.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')}</details>`;
 }
 
-export function renderRelaunchStory(state: GameState, nextEraId: EraId, story: EraStory): string {
+export function renderRelaunchStory(state: GameState, nextEraId: EraId, story: EraStory, choice = ''): string {
   const fromYear = ERA_PRESENTATION[state.eraId].year;
   const toYear = ERA_PRESENTATION[nextEraId].year;
   return `<div class="relaunch" data-era-to="${toYear}">
@@ -56,6 +56,7 @@ export function renderRelaunchStory(state: GameState, nextEraId: EraId, story: E
       <h2 class="relaunch-heading">${escapeHtml(story.heading)}</h2>
       <p class="relaunch-hook">${escapeHtml(story.hook)}</p>
       <ul class="relaunch-cards">${story.highlights.map(renderHighlight).join('')}</ul>
+      ${choice}
       ${renderRetiring(state, nextEraId)}
       ${renderFullStory(story)}
     </div>

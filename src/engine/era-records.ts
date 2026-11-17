@@ -22,6 +22,8 @@ export function createEraRecord(state: GameState): EraRecord {
       hostingTier: state.hostingTier,
       consentBanner: state.consentBanner,
       lifetimeVisitors: state.lifetimeVisitors,
+      specializationId: state.specializationId,
+      siteColors: state.siteColors,
     },
   };
 }

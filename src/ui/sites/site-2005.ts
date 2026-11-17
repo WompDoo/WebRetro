@@ -5,6 +5,7 @@ import { BANNER_ADS, CONTEXTUAL_TEXT_ADS, TEXT_ADS } from '../presentation';
 import type { TextAdCopy } from '../presentation';
 import { renderFeatureBlocks } from './features';
 import { siteBrand } from './site-context';
+import { renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
 import type { SiteContext } from './site-context';
 import { renderOldSchoolPage } from './site-1997';
 import type { HomepageContent, HomepageSkills } from './site-1997';
@@ -19,6 +20,7 @@ const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'flash-intro', 'one
 const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'deal-of-the-day', 'share-buttons', 'hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'custom-cursor', 'webring'];
 const LEGACY_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'custom-cursor', 'webring', 'tag-cloud', 'share-buttons', 'social-login'];
 const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat', 'deal-of-the-day', 'under-construction', 'guestbook'];
+const NAV_ITEMS: readonly string[] = ['Home', 'Blog', 'Tags', 'About'];
 const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.0', 'PHP powered', 'MySQL', 'Get the fox browser'];
 
 /** 2005 content crammed into a 1997 page: what you get before you learn CSS. */
@@ -43,7 +45,7 @@ function web2Classes(state: GameState): string {
     knows('optimize-gifs') ? 'has-16-colors' : '',
     getActiveUpgradeIds(state).includes('css-sprites') ? 'has-sprites' : '',
     getActiveUpgradeIds(state).includes('cufon') ? 'has-cufon' : '',
-  ].filter((name) => name !== '').join(' ');
+  ].filter((name) => name !== '').join(' ') + specializationClass(state);
 }
 
 function renderStandardsBadges(state: GameState): string {
@@ -77,8 +79,8 @@ function renderBetaBadge(state: GameState): string {
 function render2005DivSite(context: SiteContext): string {
   const main = renderFeatureBlocks(context, WEB2_MAIN_FEATURES).join('');
   const sidebar = renderFeatureBlocks(context, WEB2_SIDEBAR_FEATURES).join('');
-  const intro = main === '' ? '<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new ${escapeHtml(siteBrand(context.state))}!</h2><p>We relaunched. Start a blog to fill this space.</p></section>' : main;
-  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span>${renderBetaBadge(context.state)}<nav class="w2-nav"><span class="is-active">Home</span><span>Blog</span><span>Tags</span><span>About</span></nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}</header><div class="w2-columns"><div class="w2-main">${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
+  const intro = main === '' ? `<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new ${escapeHtml(siteBrand(context.state))}!</h2><p>We relaunched. Start a blog to fill this space.</p></section>` : main;
+  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span>${renderBetaBadge(context.state)}<nav class="w2-nav">${renderNavLinks(context.state, NAV_ITEMS, ' class="is-active"')}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}</header><div class="w2-columns"><div class="w2-main">${renderSignatureBlock(context.state)}${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
 }
 
 /** The relaunch keeps the old hand-written page until you learn CSS; then it becomes a div layout. */

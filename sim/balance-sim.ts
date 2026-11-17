@@ -7,6 +7,7 @@ import { isMainThread, MessagePort, parentPort, Worker } from 'node:worker_threa
 import {
   advanceEra,
   BUFF_IDS,
+  FEATURE_IDS,
   calculateHiredTypingPerSecond,
   MS_PER_SECOND,
   chooseConsentBanner,
@@ -34,7 +35,7 @@ import {
   type GameState,
 } from '../src/engine';
 import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
-import { applySwitches, SWITCHED_OFF } from './switches';
+import { applySimSpecialization, applySwitches, SIM_SPECIALIZATION, SWITCHED_OFF } from './switches';
 import type { PlayerProfile } from './bot';
 
 
@@ -104,7 +105,7 @@ const MAX_FRAMEWORK_SPREAD_SHARE = 0.15;
  * every later traffic spike lands: one seed per framework measures luck as much as balance. Each framework plays
  * 2018 this many times from the same relaunch, each with its own seed, and the medians are compared.
  */
-const SEEDS_PER_FRAMEWORK = 3;
+const SEEDS_PER_FRAMEWORK = Number(process.env['SIM_SEEDS_PER_FRAMEWORK'] ?? 3);
 /** Far enough apart that the seeded rolls share nothing. */
 const SEED_STRIDE = 7_919;
 
@@ -133,7 +134,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     const keystrokes = Math.floor(typingDebt);
     typingDebt -= keystrokes;
     state = typeKeystrokes(state, keystrokes);
-    state = applySwitches(advanceSimulation(state, TICK_MS, 'live').state, SWITCHED_OFF);
+    state = applySimSpecialization(applySwitches(advanceSimulation(state, TICK_MS, 'live').state, SWITCHED_OFF), SIM_SPECIALIZATION);
     buffMsThisEra = addBuffTime(buffMsThisEra, state, TICK_MS);
     const reaction = reactToHazards(state, seenAt, now, profile);
     const wasExpired = reaction.state.isCertificateExpired;
@@ -208,6 +209,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
   log(`  [${profile.name}] steepest minute: underlying income ×${steepestMinute.ratio.toFixed(1)} at minute ${steepestMinute.atMinute}`);
   const quitDayJob = state.reachedMilestoneIds.includes('quit-day-job');
   log(`  [${profile.name}] quit-day-job milestone reached: ${quitDayJob}`);
+  reportLevels(profile.name, state, 'the end', log);
   return { reports, entry2018 };
 }
 
@@ -218,6 +220,16 @@ function reportTradeIn(profileName: string, state: GameState, log: Log): void {
   const tradeIn = calculateRetirementPayout(state, nextEraId);
   const seconds = tradeIn / Math.max(1, calculateNetRevenuePerSecond(state));
   log(`  [${profileName}] trade-in at the relaunch into ${nextEraId}: ${formatMoney(tradeIn)}, ${seconds.toFixed(1)} s of income`);
+  reportLevels(profileName, state, `the relaunch into ${nextEraId}`, log);
+}
+
+/**
+ * What a player has built by a relaunch, without chasing anything: where a specialization's unlock has to sit above
+ * to be a commitment. With the income then, to price the levels above it.
+ */
+function reportLevels(profileName: string, state: GameState, moment: string, log: Log): void {
+  const levels = FEATURE_IDS.filter((featureId) => state.featureLevels[featureId] > 0).map((featureId) => `${featureId} ${state.featureLevels[featureId]}`);
+  log(`  [${profileName}] levels at ${moment} (${formatMoney(calculateNetRevenuePerSecond(state))}/s): ${levels.join(', ')}`);
 }
 
 function printReports(name: string, reports: readonly EraReport[], log: Log): void {

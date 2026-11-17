@@ -8,6 +8,7 @@ import { ownedFeatures, renderFeatureBlocks } from './features';
 import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2011Site } from './site-2011';
+import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
 
 /** Under the hero: what the old site still has, as sections of the landing page. */
 const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'activity-feed', 'community-chat', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
@@ -62,12 +63,22 @@ function renderAbVariant(context: SiteContext): string {
   return context.state.purchasedUpgradeIds.includes('growth-hacking') ? ` is-ab-${context.state.keystrokes % AB_VARIANTS}` : '';
 }
 
+function renderEraHeroText(context: SiteContext): string {
+  return `<h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary${renderAbVariant(context)}">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p>`;
+}
+
+/** A specialized site's hero says what it is; the A/B test still picks the button's colour. */
+function renderHeroText(context: SiteContext): string {
+  const copy = findHeroCopy(context.state);
+  return copy === null ? renderEraHeroText(context) : `<h1>${copy.title}</h1><p>${copy.text}</p><span class="lp-button is-primary${renderAbVariant(context)}">${copy.cta}</span><span class="lp-button">Get the app</span>`;
+}
+
 function renderHero(context: SiteContext): string {
-  return `<section class="lp-hero"><div class="lp-hero-text"><h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary${renderAbVariant(context)}">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p></div>${renderHeroPhoto()}</section>`;
+  return `<section class="lp-hero"><div class="lp-hero-text">${renderHeroText(context)}</div>${renderHeroPhoto()}</section>`;
 }
 
 function renderNav(context: SiteContext): string {
-  const items = NAV_ITEMS.map((item) => `<span>${item}</span>`).join('');
+  const items = renderNavLinks(context.state, NAV_ITEMS, '');
   return `<header class="lp-nav"><span class="lp-logo"><i aria-hidden="true"></i><span class="nav-brand">${escapeHtml(siteBrand(context.state))}</span></span><nav class="lp-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="lp-login">Log in</span><span class="lp-cta">Get started</span></header>`;
 }
 
@@ -131,7 +142,7 @@ function renderLookClasses(context: SiteContext, framework: FrameworkId): string
     [context.state.purchasedUpgradeIds.includes('scroll-animations'), 'has-scroll-reveal'],
     [context.state.purchasedUpgradeIds.includes('every-font-weight'), 'has-every-weight'],
   ];
-  return [` fw-${framework}`, ...looks.filter(([applies]) => applies).map(([, name]) => ` ${name}`)].join('');
+  return [` fw-${framework}`, ...looks.filter(([applies]) => applies).map(([, name]) => ` ${name}`)].join('') + specializationClass(context.state);
 }
 
 /** The single-page app a framework rewrote your site into: a SaaS landing page, like every other one. */
@@ -141,6 +152,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     ${renderNav(context)}
     ${renderFeatureBlocks(context, ['stories']).join('')}
     ${renderHero(context)}
+    ${renderSignatureBlock(context.state)}
     ${renderLeaderboard(context)}
     <section class="lp-logos"><span>Trusted by teams at</span>${TRUSTED_BY.map((name) => `<b>${name}</b>`).join('')}</section>
     <section class="lp-cards">${renderValueCards()}</section>

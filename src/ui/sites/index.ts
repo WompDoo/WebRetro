@@ -1,6 +1,7 @@
 import { FEATURE_IDS, calculateInfectionDifficulty, isEraUnlocked, isSiteDown, UPGRADES_BY_ID } from '../../engine';
 import type { EraId, GameState } from '../../engine';
 import { renderCertificateWarning } from './certificate-warning';
+import { wrapInSiteTheme } from '../site-theme';
 import { escapeHtml } from '../dom';
 import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
@@ -47,8 +48,13 @@ function renderReachableSite(state: GameState, nowMs: number): string {
 }
 
 /** An expired certificate stops visitors before the server is even asked: the browser's warning comes first. */
-export function renderSite(state: GameState, nowMs: number): string {
+function renderPage(state: GameState, nowMs: number): string {
   return state.isCertificateExpired ? renderCertificateWarning(state) : renderReachableSite(state, nowMs);
+}
+
+/** The page, in the site's colors where it has them. */
+export function renderSite(state: GameState, nowMs: number): string {
+  return wrapInSiteTheme(state, renderPage(state, nowMs));
 }
 
 function calculateInfectionSignature(state: GameState): string {
@@ -60,5 +66,5 @@ export function calculateSiteSignature(state: GameState): string {
   const levels = FEATURE_IDS.map((featureId) => state.featureLevels[featureId]).join(',');
   const skills = state.purchasedUpgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].kind === 'skill').join(',');
   const boosts = state.purchasedUpgradeIds.length;
-  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.enabledDefenseIds.join(',')}|${state.adCount}|${calculateInfectionSignature(state)}|${isSiteDown(state) ? 'down' : 'up'}|${state.consentBanner}|${state.isCookieBannerDismissed}|${state.siteName}|${state.isCertificateExpired}`;
+  return `${state.eraId}|${skills}|${boosts}|${levels}|${state.switchedOffFeatureIds.join(',')}|${state.enabledDefenseIds.join(',')}|${state.adCount}|${calculateInfectionSignature(state)}|${isSiteDown(state) ? 'down' : 'up'}|${state.consentBanner}|${state.isCookieBannerDismissed}|${state.siteName}|${state.isCertificateExpired}|${state.specializationId}|${JSON.stringify(state.siteColors)}`;
 }

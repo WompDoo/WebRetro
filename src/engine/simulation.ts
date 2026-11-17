@@ -4,6 +4,7 @@ import { calculateHiredTypingPerSecond, calculateNetRevenuePerSecond, calculateV
 import { advanceHazards } from './hazards';
 import { advanceOpportunities } from './opportunities';
 import { checkMilestones } from './milestones';
+import { checkSpecializationUnlocks } from './specializations';
 import type { GameState, GameStep, SimulationMode } from './types';
 
 /** The site's revenue, and what hired help types: both keep coming while you're away. Only the site's is the features'. */
@@ -39,5 +40,6 @@ export function advanceSimulation(state: GameState, deltaMs: number, mode: Simul
   const produced = applyProduction(prepare(state, mode), deltaMs);
   const advanced = mode === 'live' ? advanceLiveSystems(produced, deltaMs) : { state: produced, events: [] };
   const milestones = checkMilestones(advanced.state);
-  return { state: milestones.state, events: [...advanced.events, ...milestones.events] };
+  const unlocks = checkSpecializationUnlocks(milestones.state);
+  return { state: unlocks.state, events: [...advanced.events, ...milestones.events, ...unlocks.events] };
 }

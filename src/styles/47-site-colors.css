@@ -1,0 +1,61 @@
+/* ---------- The site's colors: a 🎨 button in the browser's toolbar and the picker it opens ---------- */
+.browser { position: relative; }
+.colors-button {
+  flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid rgba(0, 0, 0, 0.25); border-radius: 4px;
+  background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.colors-button[aria-expanded="true"] { background: rgba(0, 0, 0, 0.12); font-weight: 700; }
+.colors-button[hidden], .colors-panel[hidden] { display: none; }
+@media (max-width: 520px) { .colors-button-label { display: none; } }
+
+.colors-panel {
+  position: absolute; z-index: 30; top: 64px; right: 10px; display: grid; gap: 10px; width: min(330px, calc(100% - 20px)); max-height: calc(100% - 76px);
+  padding: 12px; overflow: auto; border: 2px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); box-shadow: var(--lift);
+  font: 13px/1.4 var(--font-body);
+}
+.colors-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.colors-title { font-size: 14px; }
+.colors-close { width: 28px; height: 28px; border: 0; border-radius: 6px; background: var(--panel-sunken); color: var(--ink); font: 700 18px/1 var(--font-body); cursor: pointer; }
+.colors-intro { margin: 0; color: var(--ink-soft); font-size: 12px; }
+
+.colors-palettes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.colors-palette {
+  display: grid; justify-items: center; gap: 3px; padding: 6px 2px; border: 2px solid var(--line-soft); border-radius: 8px; background: var(--panel); color: var(--ink);
+  font: 600 11px/1.2 var(--font-body); cursor: pointer;
+}
+.colors-palette[aria-pressed="true"] { border-color: var(--swatch); box-shadow: 0 0 0 2px var(--swatch); }
+.colors-palette-swatch { width: 26px; height: 26px; border-radius: 50%; background: var(--swatch); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45); }
+
+/* The wheel: every hue round the rim, grey in the middle, darkened or lightened to the slider's lightness. */
+.colors-custom { display: grid; grid-template-columns: 132px minmax(0, 1fr); align-items: center; gap: 12px; }
+.color-wheel {
+  position: relative; width: 132px; aspect-ratio: 1; border-radius: 50%; cursor: crosshair; touch-action: none;
+  background:
+    linear-gradient(var(--wheel-shade), var(--wheel-shade)),
+    radial-gradient(circle closest-side, #808080, rgba(128, 128, 128, 0)),
+    conic-gradient(#FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.color-wheel-marker { position: absolute; width: 18px; height: 18px; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3); transform: translate(-50%, -50%); pointer-events: none; }
+.colors-side { display: grid; gap: 6px; min-width: 0; }
+.colors-preview { height: 34px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
+.colors-hex { font: 700 13px/1 var(--font-numbers); }
+.colors-lightness-label { display: grid; gap: 4px; color: var(--ink-soft); font-size: 12px; }
+.color-lightness {
+  width: 100%; height: 14px; margin: 0; border-radius: 999px; appearance: none; -webkit-appearance: none; cursor: pointer;
+  background: linear-gradient(90deg, var(--slider-low), var(--slider-middle), var(--slider-high));
+}
+.color-lightness::-webkit-slider-thumb { width: 18px; height: 18px; border: 3px solid #FFFFFF; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); -webkit-appearance: none; }
+.color-lightness::-moz-range-thumb { width: 14px; height: 14px; border: 3px solid #FFFFFF; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); }
+
+.colors-backgrounds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.colors-background { padding: 6px 4px; border: 2px solid var(--line-soft); border-radius: 8px; color: #222222; font: 600 12px/1.2 var(--font-body); cursor: pointer; }
+.colors-background.is-white { background: #FFFFFF; }
+.colors-background.is-tint { background: linear-gradient(135deg, #FFFFFF, #EAF1FB); }
+.colors-background.is-cream { background: #FBF6EC; }
+.colors-background[aria-pressed="true"] { border-color: var(--line); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.18); }
+.colors-reset { justify-self: start; padding: 4px 0; border: 0; background: transparent; color: var(--ink-soft); font: 600 12px/1.3 var(--font-body); text-decoration: underline; cursor: pointer; }
+.colors-reset:disabled { opacity: 0.45; cursor: default; text-decoration: none; }
+
+/* The theme wrapper generates no box: the era's page lays out as if it weren't there. */
+.site-theme { display: contents; }
