@@ -16,7 +16,7 @@ This is the design thinking for what comes after, written to be argued with. Eac
 | CI's framework-spread check on one seed | **Keep one seed**: an occasional red run from luck is accepted over a slower CI |
 | Should Sell / Keep matter after the ending | **No, it stays flavor**: a story beat, no gameplay difference |
 | Buffs, not only hazards | **Both sources**: on fire from typing without typos, and offers won in minigames. Built: a sponsor's code (ads ×2, 40 s) and a merge conflict (Launch day: visitors ×1.5, 45 s); each offer is a random kind among the ones that would do something, and a failed one is gone |
-| Making the site yours | **Pivots at each relaunch, plus customization**, customization first (section 5) |
+| Making the site yours | **Routes, plus customization**: unlock routes by what you build, pick one at the relaunch out of 2005; the unlocks are visible all run (section 5) |
 | Auto-typing | **Hired help, one per era**: a little brother (1.5 keystrokes/s, a quarter of your speed) up to an AI coding agent (8/s, faster than an active player's 6). Era-bound like typing skills, paid offline, never on fire |
 
 Numbers it builds on (`player-types.md`): the balance bot finishes in about 3.5 hours, the relaxed bot in about 4.5,
@@ -219,10 +219,10 @@ From the era notes that aren't built yet, and from what the player types ran int
   reduced motion everywhere (partly done). Necessary before anything public.
 - **Sound:** the MIDI player and the podcast player could actually play something, muted by default.
 
-## 5. Your site, your way: pivots and customization (designed, not built)
+## 5. Your site, your way: routes and customization (designed, not built)
 
 Every player builds the same site today: the archive at the end shows everyone the same five pages. Two things change
-that, at very different costs. **Decided:** both, customization first.
+that, at very different costs. **Decided:** both: routes for what the site becomes, customization for how it looks.
 
 ### Customization: the archive becomes yours (cheap)
 
@@ -242,53 +242,107 @@ At each relaunch (and any time from a Design tab), a few choices that fit the er
 - It changes nothing in the economy, so it needs no balance pass and no new sim bot.
 - Cost: a picker per era, and each renderer reading its choices. About one PR.
 
-### Pivots: what your site *is* (the big one)
+### Routes: what your site becomes (the big one)
 
-Every site starts as a 1997 homepage, because that's how the web started. Each relaunch then offers **two or three
-directions that fit the era**, and the one you pick becomes your site's story:
+**Decided:** 1997 is a personal homepage for everyone, because that's how the web started. At the relaunch out of 2005,
+the end of Web 2.0, you choose **one route** for the rest of the run, from the routes you've **unlocked** by what you
+built. You can unlock several; you take one. What unlocks each route is **on screen the whole run**, so choosing is
+something you work towards, not a surprise at the door.
 
-| Relaunch into | Directions |
-|---|---|
-| 2005 | **Blog** (today's path: posts, comments, tags) · **Video site** (uploads, embeds, view counts) · **Community** (forum, wiki, members) |
-| 2011 | **Social network** (feed, share buttons, sign in with…) · **Shop** (deals, a cart, reviews) · **App** (mobile first, the app banner, push) |
-| 2018 | **Platform** (today's path: pricing, onboarding, live chat) · **Marketplace** (sellers, reviews, payments) · **Media** (stories, newsletter, video) |
-| 2024 | **AI product** (today's path: assistant, agents) · **Creator platform** (for-you feed, AI images, subscriptions) · **Search** (AI answers, llms.txt) |
+How it plays:
 
-What a direction decides:
+- **From the first minute, a Routes list** sits under the checklist in the objective panel (on a phone, in the goal
+  sheet). Every route is a card: its icon, a one-line pitch, and its conditions with progress ("Photo gallery level
+  9/15 · Comments level 10 ✓"). A route you can't reach this run says why ("from run two").
+- **An unlock is a few feature levels**, sometimes with a skill, from 1997, the 2000 crash or 2005. Reaching them unlocks
+  the route for good, with a news line ("New route unlocked: Photo sharing"); levels lost later don't take it back.
+- **The thresholds sit well above the checklist.** A typical 2005 ends with its features around level 5 and the blog at
+  15, so "level 15" is a choice to focus, and focusing on everything costs the era time.
+- **At the relaunch out of 2005** the overlay shows the unlocked routes as cards, the locked ones greyed with what's
+  missing. **Platform** (today's path: blog, then platform, then AI product) is always there, so nobody is stuck.
+- **The route shapes 2011, 2018 and 2024**: each era's checklist, one or two features of its own per era, a signature
+  pressure, a way of making money, the page's hero and names, and the ending's story.
+- **Some routes split again** at the relaunch out of 2011, into a sub-route unlocked the same way by what you built in
+  2011. Social media is too big for one road.
 
-- **The checklist's core features.** The gate asks for the direction's features, not the era's fixed list.
-- **One or two features of its own.** Most come from what already exists: the video player, the forum and the wiki are
-  already in the game, so the video site and the community mostly re-weight them.
-- **The page's hero section and names.** "Upload your video" instead of "Latest posts".
-- **The ending's story.** "From a homepage to the web's biggest video site", and an archive that shows the path.
+The routes (in game every company is a parody; the "like" column is for us):
 
-Why pivots and not one archetype chosen at the start:
+| Route | Like | Unlocks with (by the end of 2005) | Signature pressure (a system we have) | Money | Sub-routes at 2018 |
+|---|---|---|---|---|---|
+| **Platform** | today's path | always | as today | as today | — |
+| **Social network** | the big friends network | Blog 25 · Comments 15 | privacy: password leaks, and GDPR fines ×1.5 in 2018 | targeted ads | Friends feed · Professional network |
+| **Photo sharing** | the photo app | Photo gallery 15 · Comments 10 | storage: server load ×1.5 | ads in the feed | Stories · Pinboard |
+| **Microblog** | 140 characters | **Shoutbox** 10 · Comments 10 | virality: traffic spikes ×2, and a "fail walrus" page when the server gives | weak ads, kept alive by funding rounds | — |
+| **Video site** | user video | Flash intro 10 · MIDI player 40 | bandwidth: server load ×2, hosting is the game | pre-roll ads: worth ×1.5, annoying ×1.4 | Creators · Streaming service |
+| **Live streaming** | live channels | Webcam 10 (run two on) · Comments 10 | live chat: spam ×1.5, and server load | tips and subscriptions | — |
+| **News site** | news and RSS | Blog 25 · Webring 40 · Learn RSS | breaking-news spikes; in 2024, AI answers take its clicks | ads, then a paywall | Newsroom · Aggregator |
+| **Reviews** | reviews and maps | Map mashup 10 · Comments 10 | fake reviews: the spam hazard and its minigame | a cut of every booking | — |
+| **Shop** | the online store | **Shop window** 10 · Photo gallery 5 | fraud (the password-leak hazard reskinned), and Black Friday spikes | sales: money per visitor without ads | Marketplace · Bargain bin |
 
-- It's the web's real history: real sites pivoted all the time, often into something unrecognisable.
-- It's a decision at every relaunch, not one at minute zero.
-- It costs about two to three times an era's checklist content, not four to five times the whole game.
-- The 2018 framework choice already proved an exclusive decision works here. Frameworks are the tech and directions
-  are the product, so they combine rather than multiply the content.
-- It gives prestige a reason: run 2 tries the other path.
+- **Two small new 2005 features seed routes** that nothing before 2011 can: a **shoutbox** (the mid-2000s sidebar
+  chat) for the microblog, and a **shop window** (products with "Buy now" buttons) for the shop. Like the run-two
+  features, no checklist asks for them.
+- **Comments are in five routes**, because in 2005 comments were what made a site social. The other condition is
+  what tells the routes apart.
+- **Live streaming needs the webcam**, a run-two feature, so it's a reason to play again: in run one its card says
+  "from run two".
+- **Not a route: the adult web.** The game is shared by link and played by anyone. Its history (online payments,
+  streaming and pop-ups all grew up there) is a joke 1997's pop-ups already tell. At most, a card that never unlocks:
+  "18+: Kevin's idea. Vetoed."
+
+What a route changes, era by era (one example; every route gets the same treatment):
+
+| Video site | 2011 | 2018 | 2024 |
+|---|---|---|---|
+| Checklist asks for | the video player at a high level, HTML5 video (Flash dies, as today) | recommendations; then Creators (a partner program) or Streaming service (subscriptions, originals) | the short-video feed, AI clips |
+| Pressure | server load ×2 | copyright takedowns, a reskin of the spam minigame | AI-generated slop flooding uploads |
+| Page | a grid of thumbnails and an upload button | autoplay, a "Up next" column | a vertical feed |
+| Ending | "From a homepage with a MIDI file to the web's biggest video site." | | |
 
 Data model:
 
-- A `DirectionDefinition` per era: its core features, its extra features, its hero copy and its name overrides.
-- `state.directions: Partial<Record<EraId, DirectionId>>`, chosen in the relaunch overlay. The relaunch story already
-  has the room for it.
+```ts
+type RouteId = 'platform' | 'social' | 'photos' | 'microblog' | 'video' | 'streaming' | 'news' | 'reviews' | 'shop';
+type RouteCondition =
+  | { readonly kind: 'feature-level'; readonly featureId: FeatureId; readonly level: number }
+  | { readonly kind: 'skill'; readonly upgradeId: UpgradeId }
+  | { readonly kind: 'from-run'; readonly run: number };
+interface RouteDefinition {
+  readonly id: RouteId;
+  readonly unlock: readonly RouteCondition[];
+  readonly eras: Readonly<Partial<Record<EraId, RouteEraDefinition>>>; // 2011, 2018, 2024
+  readonly subRoutes: readonly SubRouteId[];
+}
+interface RouteEraDefinition {
+  readonly gate: readonly EraGateRequirement[];
+  readonly features: readonly FeatureId[];
+  readonly effects: readonly UpgradeEffect[]; // the signature pressure and the money model
+}
+// state.unlockedRoutes: RouteId[] (ever reached), state.route: RouteId, state.subRoute: SubRouteId | null
+```
 
-Balance: each direction's gate has to be tuned. The CI balance sim now runs one job per bot (WompDoo/WebRetro#63), so a
-bot per direction is one more matrix entry, not a longer job.
+- **The economy is effects.** A route's pressure and money model are `UpgradeEffect`s, summarized like the perks, so
+  "server load ×2" or "ads ×1.5" needs no new engine code. What's new is checklists, a few features, and copy.
+- **The page is the biggest cost.** Each era's page is built from feature sections, so a route keeps the era's look
+  (the 2011 Bootstrap site, the 2018 landing page) and changes the hero, the section order and a block or two.
+- **Balance:** one sim bot per route, one more entry in CI's matrix each, every route's eras in the usual band. The bot
+  needs to chase an unlock on purpose, which is the one new piece of bot logic.
 
-**Recommendation:** customization first (cheap, and it makes the archive personal at once). Then **one vertical slice
-of pivots**, 2005 only, with Blog, Video site and Community, to find out whether choosing is fun before building
-the other three relaunches.
+Order of work:
+
+1. **The choice, visible.** Route definitions with their unlock conditions, the Routes list with progress from 1997,
+   the unlock news, and the pick in the relaunch out of 2005. A route changes only the names, the hero line and the
+   ending at first. This alone answers "what could my site become?" and lets the unlocks be felt and tuned.
+2. **The first real route: Video site** in 2011. Its pressure is the most distinct (bandwidth), and it reuses the most
+   (the 2011 video player, Flash dying, HTML5 video).
+3. **Photo sharing and Social network** in 2011 (the photo gallery's masonry, share buttons, the activity feed).
+4. **The shoutbox and the shop window**, then Microblog, Shop, News and Reviews in 2011.
+5. **Through 2018 and 2024**, with the sub-routes at the relaunch out of 2011.
 
 **Open questions for you:**
 
-1. Is a pivot permanent for the run, or can a later relaunch pivot back ("we're a blog again")?
-2. Should the directions you didn't take show up in the archive as "what could have been"?
-3. Should run 2 *require* a different path (a reason to replay), or just suggest one?
+1. Should run two require a route you haven't taken, or only suggest one?
+2. Should the archive show the routes you unlocked but didn't take, as "what could have been"?
 
 ## 6. Known issues, from the sweeps
 
