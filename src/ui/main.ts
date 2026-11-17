@@ -1,5 +1,5 @@
 import { advanceSimulation, calculateInfectionDifficulty, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
-import type { SimulationMode } from '../engine';
+import type { Edition, SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, introElements, minigameElements } from './elements';
@@ -15,6 +15,7 @@ import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
 import { applyStep, markSiteSeen, pickStartingMobileTab, store, updateGame } from './store';
+import { EDITION_META_NAME, isTestBuild, parseEdition, withEdition } from './edition';
 import { drainTypingIncome } from './typing-income';
 
 interface ClaudeHotApi {
@@ -85,14 +86,29 @@ function nameSiteAndSave(name: string): void {
   writeSave();
 }
 
+/** The page's own edition tag. A page built without one is the classic game. */
+function readEditionMeta(): string | null {
+  const meta = document.querySelector<HTMLMetaElement>(`meta[name="${EDITION_META_NAME}"]`);
+  return meta === null ? null : meta.content;
+}
+
+/** The test build says so, in the top bar and the tab title, so nobody mistakes it for the real game. */
+function showEdition(edition: Edition): void {
+  elements.editionBadge.hidden = !isTestBuild(edition);
+  if (isTestBuild(edition)) document.title = `${document.title} · Web specialization (test)`;
+}
+
 function saveWhenHidden(): void {
   if (document.visibilityState === 'hidden') writeSave();
 }
 
 function start(hotData: unknown): void {
+  store.edition = parseEdition(readEditionMeta());
+  showEdition(store.edition);
   store.legacy = readLegacy();
   store.game = startNextRun(store.legacy, store.game.randomSeed);
   restoreGame(hotData);
+  store.game = withEdition(store.game, store.edition);
   restorePreferences();
   store.mobileTab = pickStartingMobileTab(store.game);
   // A returning player's site is all seen: only what they add from now on is news.

@@ -19,6 +19,9 @@
 .stat-money dd { color: var(--money); }
 /* .stat sets display, which would beat the hidden attribute: the projected Backlinks hide until a run is finished. */
 .stat[hidden] { display: none; }
+/* The test build's name tag beside the title: small, but impossible to mistake for the real game. */
+.edition-badge { margin-left: 8px; padding: 2px 7px; border: 2px dashed currentColor; border-radius: 4px; color: #B4235A; font: 700 10px/1.3 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.edition-badge[hidden] { display: none; }
 .stat-backlinks dd { color: var(--link); }
 /* Next to Income: what your typing adds. Always there and never wrapping under the label, "+$0.00" and quiet until you type. */
 #stat-income-box dt { white-space: nowrap; }
