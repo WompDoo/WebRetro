@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createPlaytestState, ERAS_BY_ID, FEATURES_BY_ID, FEATURE_IDS, getFeatureDisplayName } from '../src/engine';
+import { createPlaytestState, ERAS_BY_ID, FEATURES_BY_ID, FEATURE_IDS, formatPercent, getFeatureDisplayName } from '../src/engine';
 import type { GameState } from '../src/engine';
 import { LEARN_LINKS } from '../src/ui/learn-links';
 import { describeWhatItDid, renderShopBody } from '../src/ui/render-shop';
@@ -35,5 +35,13 @@ describe('what everything you have did', () => {
   it('says what has gone out of fashion since', () => {
     assert.match(describeWhatItDid(startOf2005(), 'animated-gif-pack'), /All traffic ×1\.05 · out of fashion now$/);
     assert.doesNotMatch(describeWhatItDid(endOf1997(), 'animated-gif-pack'), /out of fashion/);
+  });
+
+  it('never rounds a small share away: JavaScript’s 0.15% of revenue says 0.15%, not 0%', () => {
+    assert.equal(formatPercent(0.0015), '0.15%');
+    assert.equal(formatPercent(0.004), '0.4%');
+    assert.equal(formatPercent(0.15), '15%');
+    assert.equal(formatPercent(0), '0%');
+    assert.match(describeWhatItDid(endOf1997(), 'learn-javascript'), /earns 0\.15% of your revenue/);
   });
 });

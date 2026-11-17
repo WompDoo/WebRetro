@@ -11,7 +11,12 @@ import {
   isBuffActive,
   listCodeKeys,
   loseOpportunity,
+  OPPORTUNITIES_BY_KIND,
+  OPPORTUNITY_KINDS,
   OPPORTUNITY_WINDOW_MS,
+  offerPlaytestOpportunity,
+  calculateUsualVisitorsPerSecond,
+  calculateVisitorsPerSecond,
   startCodeEntry,
   tickCodeEntry,
   typeCodeKey,
@@ -23,14 +28,16 @@ const SEED = 68;
 const playing = (): GameState => ({ ...createPlaytestState('web2-2005', 'end', SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [] });
 const typeAll = (entry: CodeEntry, keys: readonly string[]): CodeEntry => keys.reduce(typeCodeKey, entry);
 
+const offerNow = (state: GameState): GameState => advanceSimulation({ ...state, opportunityCountdownMs: 1 }, 10, 'live').state;
+const SEEDS = Array.from({ length: 30 }, (_, index) => index * 7_919 + 3);
+
 describe('opportunities', () => {
   it('turn up while you play, and wait their window out', () => {
-    const due = { ...playing(), opportunityCountdownMs: 1 };
-    const offered = advanceSimulation(due, 10, 'live').state;
-    assert.equal(offered.opportunity?.kind, 'sponsor-slot');
+    const offered = offerNow(playing());
+    const kind = offered.opportunity?.kind ?? 'sponsor-slot';
     const gone = advanceSimulation(offered, OPPORTUNITY_WINDOW_MS, 'live');
     assert.equal(gone.state.opportunity, null);
-    assert.ok(gone.events.some((event) => event.message === 'The sponsor went with someone else.'));
+    assert.ok(gone.events.some((event) => event.message === OPPORTUNITIES_BY_KIND[kind].missed));
   });
 
   it('never turn up offline', () => {
@@ -38,23 +45,38 @@ describe('opportunities', () => {
     assert.equal(advanceSimulation(due, 60_000, 'offline').state.opportunity, null);
   });
 
-  it('only offer a sponsor when there are banners to sponsor', () => {
-    const due = { ...playing(), adCount: 0, opportunityCountdownMs: 1 };
-    assert.equal(advanceSimulation(due, 10, 'live').state.opportunity, null);
+  it('are any kind that would do something, at random', () => {
+    const kinds = new Set(SEEDS.map((seed) => offerNow({ ...playing(), randomSeed: seed }).opportunity?.kind));
+    assert.deepEqual([...kinds].sort(), [...OPPORTUNITY_KINDS].sort());
   });
 
-  it("start their buff when won: a sponsor multiplies what a banner pays", () => {
-    const offered = advanceSimulation({ ...playing(), opportunityCountdownMs: 1 }, 10, 'live').state;
+  it('never a sponsor without banners, and nothing at all for a site with nothing built', () => {
+    const noAds = new Set(SEEDS.map((seed) => offerNow({ ...playing(), adCount: 0, randomSeed: seed }).opportunity?.kind));
+    assert.deepEqual([...noAds], ['launch-day']);
+    const empty = createPlaytestState('homepage-1997', 'start', SEED, 'react');
+    assert.equal(offerNow({ ...empty, hazardCountdownsMs: QUIET_HAZARDS }).opportunity, null);
+  });
+
+  it('start their buff when won: a sponsor multiplies what a banner pays', () => {
+    const offered = offerPlaytestOpportunity(playing(), 'sponsor-slot');
     const id = offered.opportunity?.id ?? -1;
     const won = claimOpportunity(offered, id).state;
     assert.ok(isBuffActive(won, 'sponsor-slot'));
     assert.equal(won.opportunity, null);
-    assert.ok(Math.abs(calculateAdValuePerAd(won) - calculateAdValuePerAd(offered) * BUFFS_BY_ID["sponsor-slot"].factor) < 1e-12);
+    assert.ok(Math.abs(calculateAdValuePerAd(won) - calculateAdValuePerAd(offered) * BUFFS_BY_ID['sponsor-slot'].factor) < 1e-12);
     assert.equal(claimOpportunity(won, id).state, won, 'an offer is won once');
   });
 
+  it('launch day brings half as many visitors again, for the length of the buff', () => {
+    const offered = offerPlaytestOpportunity(playing(), 'launch-day');
+    const launched = claimOpportunity(offered, offered.opportunity?.id ?? -1).state;
+    assert.ok(isBuffActive(launched, 'launch-day'));
+    assert.ok(Math.abs(calculateVisitorsPerSecond(launched) / calculateVisitorsPerSecond(offered) - BUFFS_BY_ID['launch-day'].factor) < 1e-9);
+    assert.equal(calculateUsualVisitorsPerSecond(launched), calculateUsualVisitorsPerSecond(offered), 'the checklist counts a usual day');
+  });
+
   it('go for good when their minigame is lost: one try per offer, and no buff', () => {
-    const offered = advanceSimulation({ ...playing(), opportunityCountdownMs: 1 }, 10, 'live').state;
+    const offered = offerPlaytestOpportunity(playing(), 'sponsor-slot');
     const id = offered.opportunity?.id ?? -1;
     const lost = loseOpportunity(offered, id);
     assert.equal(lost.state.opportunity, null);
@@ -64,7 +86,7 @@ describe('opportunities', () => {
   });
 
   it('losing anything else (an infection’s minigame) leaves the offer alone', () => {
-    const offered = advanceSimulation({ ...playing(), opportunityCountdownMs: 1 }, 10, 'live').state;
+    const offered = offerNow(playing());
     const other = loseOpportunity(offered, (offered.opportunity?.id ?? 0) + 1);
     assert.equal(other.state, offered);
     assert.deepEqual(other.events, []);

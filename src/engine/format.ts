@@ -15,6 +15,8 @@ const ONE_THOUSAND = 1e3;
 const THREE_DIGITS = 100;
 const TWO_DIGITS = 10;
 const PERCENT = 100;
+/** Significant digits for a share under one percent. */
+const SMALL_PERCENT_DIGITS = 2;
 
 function formatWithSignificantDigits(value: number): string {
   const decimals = value >= THREE_DIGITS ? 0 : value >= TWO_DIGITS ? 1 : 2;
@@ -45,8 +47,11 @@ export function formatMoney(value: number): string {
   return `${value < 0 ? '-' : ''}$${amount}`;
 }
 
+/** Whole percents, except under one: a 0.15% share still does something, so it says 0.15%, never 0%. */
 export function formatPercent(share: number): string {
-  return `${Math.round(share * PERCENT)}%`;
+  const percent = share * PERCENT;
+  const isWhole = Math.abs(percent) >= 1 || percent === 0;
+  return isWhole ? `${Math.round(percent)}%` : `${Number(percent.toPrecision(SMALL_PERCENT_DIGITS))}%`;
 }
 
 export function formatWholeNumber(value: number): string {

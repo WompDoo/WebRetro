@@ -101,6 +101,7 @@ function renderHazards(state: GameState): string {
 /** Why an offer can't come yet: it would boost nothing. */
 const OFFER_UNAVAILABLE: Readonly<Record<OpportunityKind, string>> = {
   'sponsor-slot': 'No banners to sponsor yet: run some ads first',
+  'launch-day': 'Nothing to launch yet: build something first',
 };
 
 function renderOfferButton(state: GameState, kind: OpportunityKind): string {

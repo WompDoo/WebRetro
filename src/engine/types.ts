@@ -528,7 +528,7 @@ export interface GameStep {
 }
 
 /** A short boost: what it multiplies, by how much, for how long. */
-export type BuffId = 'on-fire' | 'quick-fix' | 'sponsor-slot';
+export type BuffId = 'on-fire' | 'quick-fix' | 'sponsor-slot' | 'launch-day';
 export type BuffTarget = 'typing' | 'traffic' | 'ad-value';
 
 export interface BuffDefinition {
@@ -541,9 +541,9 @@ export interface BuffDefinition {
 }
 
 /** An offer that turns up while you play: win its minigame for a buff. */
-export type OpportunityKind = 'sponsor-slot';
+export type OpportunityKind = 'sponsor-slot' | 'launch-day';
 /** The minigames that win buffs, apart from the ones that fix infections. */
-export type BuffMinigameId = 'code-entry';
+export type BuffMinigameId = 'code-entry' | 'merge-conflict';
 export type AnyMinigameId = MinigameId | BuffMinigameId;
 
 export interface Opportunity {
