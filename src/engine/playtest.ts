@@ -7,6 +7,7 @@ import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
 import {
   calculateDemandVisitorsPerSecond,
+  calculateHiredTypingPerSecond,
   calculateHostingCapacity,
   calculateNetRevenuePerSecond,
   calculateVisitorsPerSecond,
@@ -189,9 +190,9 @@ export function createPlaytestState(eraId: EraId, stage: PlaytestStage, seed: nu
   return { ...buildPreset(eraId, stage, seed, framework), eraRecords: earlier };
 }
 
-/** Skip ahead: the money this many seconds of income would bring. */
+/** Skip ahead: the money this many seconds of income would bring, hired help's typing included. */
 export function addPlaytestIncome(state: GameState, seconds: number): GameState {
-  const earned = Math.max(0, calculateNetRevenuePerSecond(state)) * seconds;
+  const earned = Math.max(0, calculateNetRevenuePerSecond(state) + calculateHiredTypingPerSecond(state)) * seconds;
   return { ...state, money: state.money + earned, lifetimeEarnings: state.lifetimeEarnings + earned };
 }
 

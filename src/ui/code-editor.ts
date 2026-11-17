@@ -43,6 +43,8 @@ export interface CodeEditor {
   readonly updateRate: (keystrokeValue: number, bugChance: number) => void;
   /** The heat meter, 0 to 1, and how long you're still on fire (0 when you aren't). */
   readonly updateHeat: (heat: number, fireRemainingMs: number) => void;
+  /** Hired help types a chunk, with its own floater. They're paid by the simulation: this is only the show. */
+  readonly autoType: (floaterText: string) => void;
 }
 
 /** Counted keystrokes per second are capped, so mashing the keyboard can't outrun a mouse. */
@@ -206,20 +208,33 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     elements.position.textContent = `Ln ${totalLines}, Col ${column}`;
   };
 
-  const showFloater = (feedback: KeystrokeFeedback): void => {
+  const addFloater = (text: string, className: string): void => {
     if (elements.floaters.childElementCount >= MAX_FLOATERS) elements.floaters.firstElementChild?.remove();
     const floater = document.createElement('span');
+    floater.className = `floater ${className}`;
+    floater.textContent = text;
+    floater.style.left = `${FLOATER_MIN_LEFT_PERCENT + Math.random() * FLOATER_LEFT_SPAN_PERCENT}%`;
+    floater.addEventListener('animationend', () => floater.remove());
+    elements.floaters.append(floater);
+  };
+
+  const showFloater = (feedback: KeystrokeFeedback): void => {
     const texts: Readonly<Record<CodeInputOutcome, string>> = {
       'clean-line': `+${formatMoney(feedback.earned)}`,
       'bugged-line': typing.typoLabel,
       'fixed-bug': `${typing.fixLabel} +${formatMoney(feedback.earned)}`,
     };
-    floater.className = `floater floater--${feedback.outcome}${isOnFire ? ' floater--fire' : ''}`;
     if (isOnFire) nudge();
-    floater.textContent = texts[feedback.outcome];
-    floater.style.left = `${FLOATER_MIN_LEFT_PERCENT + Math.random() * FLOATER_LEFT_SPAN_PERCENT}%`;
-    floater.addEventListener('animationend', () => floater.remove());
-    elements.floaters.append(floater);
+    addFloater(texts[feedback.outcome], `floater--${feedback.outcome}${isOnFire ? ' floater--fire' : ''}`);
+  };
+
+  /** They wait while your typo is on screen: it's yours to fix, and typing past it would hide it. */
+  const autoType = (floaterText: string): void => {
+    if (buffers.active.typo !== null) return;
+    buffers = { ...buffers, active: typeCleanChunk(buffers.active, typing.chunk) };
+    elements.prompt.hidden = true;
+    render();
+    addFloater(floaterText, 'floater--hired');
   };
 
   const applyOutcomes: Readonly<Record<CodeInputOutcome, (buffer: FileBuffer) => FileBuffer>> = {
@@ -328,5 +343,5 @@ export function createCodeEditor(elements: CodeEditorElements, onKeystroke: () =
     render();
   };
 
-  return { setEra, showFile, setTitle, setTabs, updateRate, updateHeat, setTyping, setHighlights };
+  return { setEra, showFile, setTitle, setTabs, updateRate, updateHeat, setTyping, setHighlights, autoType };
 }

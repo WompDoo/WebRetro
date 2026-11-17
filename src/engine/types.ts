@@ -158,7 +158,13 @@ export type UpgradeId =
   | 'vendor-prefixes'
   | 'every-font-weight'
   | 'blockchain-guestbook'
-  | 'status-page';
+  | 'status-page'
+  | 'hire-little-brother'
+  | 'hire-unpaid-intern'
+  | 'hire-junior-developer'
+  | 'hire-gig-freelancer'
+  | 'hire-bootcamp-team'
+  | 'hire-ai-agent';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 /** Skills are learned, boosts are bought, ops are how you run the site: they live in the Ops tab. */
@@ -281,7 +287,12 @@ export type UpgradeEffect =
   /** How much of the AI-answers loss is left: writing for AI answers gets you quoted, with a link. */
   | { readonly kind: 'ai-answer-share-multiplier'; readonly factor: number }
   /** Money a visitor brings without an ad: a donation, a cut of a sale. Ads don't have to be on the page for it. */
-  | { readonly kind: 'direct-revenue-per-visitor'; readonly amount: number };
+  | { readonly kind: 'direct-revenue-per-visitor'; readonly amount: number }
+  /**
+   * Someone else types for you: this many keystrokes a second, paid like yours (typos included, the on-fire bonus
+   * not), offline too. Era-bound like typing skills: each era hires its own help.
+   */
+  | { readonly kind: 'auto-keystrokes'; readonly perSecond: number };
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -573,6 +584,9 @@ export interface EconomySnapshot {
   readonly netRevenuePerSecond: number;
   readonly keystrokeValue: number;
   readonly bugChance: number;
+  /** This era's hired help: keystrokes a second, and what they earn a second. */
+  readonly autoKeystrokesPerSecond: number;
+  readonly hiredTypingPerSecond: number;
 }
 
 export interface GateCheck {

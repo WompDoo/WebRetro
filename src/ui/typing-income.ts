@@ -8,8 +8,8 @@ import { formatMoney, MS_PER_SECOND } from '../engine';
 export const TYPING_INCOME_FADE_MS = 2_000;
 /** Under a cent, the pool is empty: a fade never quite reaches zero on its own. */
 const EMPTY_BELOW_DOLLARS = 0.01;
-/** The typing part shows next to Income only while it's a visible part of it. */
-const SHOWN_FROM_SHARE = 0.01;
+/** The typing part stays next to Income while you aren't typing, so the label never jumps: it just reads zero. */
+const IDLE_TYPING_BOOST = '⌨ +$0.00';
 
 export function addKeystrokePay(pool: number, earned: number): number {
   return pool + earned;
@@ -24,13 +24,30 @@ export function readTypingIncomePerSecond(pool: number): number {
   return pool / (TYPING_INCOME_FADE_MS / MS_PER_SECOND);
 }
 
-/** "⌨ +$6.80M" while your typing is a visible part of your income; nothing once it isn't. */
-export function describeTypingBoost(siteRevenuePerSecond: number, typingPerSecond: number): string {
-  const isVisible = typingPerSecond > 0 && typingPerSecond >= (siteRevenuePerSecond + typingPerSecond) * SHOWN_FROM_SHARE;
-  return isVisible ? `⌨ +${formatMoney(typingPerSecond)}` : '';
+/** Where the money comes in from, a second at a time. */
+export interface IncomeSources {
+  readonly site: number;
+  /** Hired help, typing for you. */
+  readonly hired: number;
+  /** You, over the last few seconds. */
+  readonly typing: number;
 }
 
-/** The tooltip: where the money comes from. */
-export function describeIncomeSources(siteRevenuePerSecond: number, typingPerSecond: number): string {
-  return `Your site: ${formatMoney(siteRevenuePerSecond)}/s · Your typing: ${formatMoney(typingPerSecond)}/s`;
+export function sumIncome(sources: IncomeSources): number {
+  return sources.site + sources.hired + sources.typing;
+}
+
+export function isTypingIdle(sources: IncomeSources): boolean {
+  return sources.typing === 0;
+}
+
+/** "⌨ +$6.80M" while you type, "⌨ +$0.00" while you don't: always there, so it hints that typing counts. */
+export function describeTypingBoost(sources: IncomeSources): string {
+  return isTypingIdle(sources) ? IDLE_TYPING_BOOST : `⌨ +${formatMoney(sources.typing)}`;
+}
+
+/** The tooltip: where the money comes from. Hired help only once there is some. */
+export function describeIncomeSources(sources: IncomeSources): string {
+  const hired = sources.hired > 0 ? ` · Your hires: ${formatMoney(sources.hired)}/s` : '';
+  return `Your site: ${formatMoney(sources.site)}/s${hired} · Your typing: ${formatMoney(sources.typing)}/s`;
 }

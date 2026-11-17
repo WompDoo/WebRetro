@@ -128,6 +128,13 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   paywall: `${WIKIPEDIA}/Paywall`,
   observability: `${WIKIPEDIA}/Observability_(software)`,
   'spot-gpus': `${WIKIPEDIA}/Graphics_processing_unit`,
+  // Hired help: a little brother has no article; the rest do
+  'hire-little-brother': null,
+  'hire-unpaid-intern': `${WIKIPEDIA}/Internship`,
+  'hire-junior-developer': null,
+  'hire-gig-freelancer': `${WIKIPEDIA}/Gig_worker`,
+  'hire-bootcamp-team': `${WIKIPEDIA}/Coding_bootcamp`,
+  'hire-ai-agent': `${WIKIPEDIA}/Intelligent_agent`,
   'fixed-width-800': `${WIKIPEDIA}/Spacer_GIF`,
   'donate-button': `${WIKIPEDIA}/Dot-com_bubble`,
   'affiliate-links': `${WIKIPEDIA}/Affiliate_marketing`,

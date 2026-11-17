@@ -241,6 +241,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'keystroke-value-multiplier': (effect) => `Typing earns ${formatFactor(effect.factor)} this era`,
   'keystroke-revenue-share': (effect) => `Each keystroke also earns ${formatPercent(effect.share)} of your revenue per second`,
   'bug-chance-reduction': (effect) => `Typo chance −${formatPercent(effect.amount)} this era`,
+  'auto-keystrokes': (effect) => `Types ${effect.perSecond} ${effect.perSecond === 1 ? 'keystroke' : 'keystrokes'} a second for you this era, even while you’re away`,
   'feature-traffic-multiplier': (effect, eraId) => `${getFeatureDisplayName(effect.featureId, eraId)} traffic ${formatFactor(effect.factor)}`,
   'global-traffic-multiplier': (effect) => `All traffic ${formatFactor(effect.factor)}`,
   'ad-value-multiplier': (effect) => `Ads pay ${formatFactor(effect.factor)}`,
@@ -375,7 +376,7 @@ function renderLearnTab(state: GameState): string {
 
 // ---------- Upgrades (boosts) ----------
 
-const TYPING_EFFECT_KINDS: readonly UpgradeEffect['kind'][] = ['keystroke-value-multiplier', 'keystroke-revenue-share', 'bug-chance-reduction'];
+const TYPING_EFFECT_KINDS: readonly UpgradeEffect['kind'][] = ['keystroke-value-multiplier', 'keystroke-revenue-share', 'bug-chance-reduction', 'auto-keystrokes'];
 
 function isTypingBoost(upgradeId: UpgradeId): boolean {
   return UPGRADES_BY_ID[upgradeId].effects.some((effect) => TYPING_EFFECT_KINDS.includes(effect.kind));

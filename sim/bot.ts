@@ -9,6 +9,7 @@ import {
   calculateBugChance,
   calculateInfectionDifficulty,
   calculateKeystrokeValue,
+  calculateHiredTypingPerSecond,
   calculateNetRevenuePerSecond,
   calculateNextAdCost,
   calculateNextFeatureCost,
@@ -147,7 +148,7 @@ export function underlyingIncome(state: GameState, profile: PlayerProfile): numb
 export function effectiveIncome(state: GameState, profile: PlayerProfile): number {
   const typingIncome =
     (calculateKeystrokeValue(state) * profile.keystrokesPerSecond) / (1 + calculateBugChance(state));
-  return calculateNetRevenuePerSecond(state) + typingIncome;
+  return calculateNetRevenuePerSecond(state) + calculateHiredTypingPerSecond(state) + typingIncome;
 }
 
 export function isGateFeature(state: GameState, featureId: string): boolean {

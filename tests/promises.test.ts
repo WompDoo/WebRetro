@@ -48,7 +48,7 @@ function observe(state: GameState): readonly string[] {
   const economy = calculateEconomySnapshot(state);
   const tabs = buildEditorTabs(state);
   return [
-    [economy.visitorsPerSecond, economy.netRevenuePerSecond, economy.pageWeightKb, economy.loadTimeSeconds, economy.serverLoad].join(','),
+    [economy.visitorsPerSecond, economy.netRevenuePerSecond, economy.hiredTypingPerSecond, economy.pageWeightKb, economy.loadTimeSeconds, economy.serverLoad].join(','),
     `${calculateKeystrokeValue(state)},${calculateBugChance(state)}`,
     renderSite(state, NOW),
     `${tabs.files.join(',')}+${tabs.hiddenCount}|${tabs.files.map((file) => buildEditorSource(state, file)).join('\n')}`,
