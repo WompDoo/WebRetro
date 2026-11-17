@@ -26,7 +26,7 @@ describe('a specialized site looks the part', () => {
     assert.doesNotMatch(page, /Hello, world!/);
   });
 
-  it('keeps the template on Platform, and the classic game never changes', () => {
+  it('keeps the template on a Homepage, and the classic game never changes', () => {
     assert.match(renderSite(at('social-2011'), NOW), /Hello, world!/);
     const classic: GameState = { ...as(at('social-2011'), 'video'), edition: 'classic' };
     assert.match(renderSite(classic, NOW), /Hello, world!/);
@@ -43,7 +43,7 @@ describe('a specialized site looks the part', () => {
   });
 
   it('has a page for every specialization in every era it shapes', () => {
-    const looked = SPECIALIZATION_IDS.filter((id) => id !== 'platform');
+    const looked = SPECIALIZATION_IDS.filter((id) => id !== 'homepage');
     const eras: readonly EraId[] = ['social-2011', 'platform-2018', 'ai-2024'];
     eras.forEach((eraId) => looked.forEach((id) => assert.match(renderSite(as(at(eraId), id), NOW), new RegExp(`spec-block--${id}`), `${id} in ${eraId}`)));
   });

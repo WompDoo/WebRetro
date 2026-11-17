@@ -63,14 +63,14 @@ function renderAbVariant(context: SiteContext): string {
   return context.state.purchasedUpgradeIds.includes('growth-hacking') ? ` is-ab-${context.state.keystrokes % AB_VARIANTS}` : '';
 }
 
-function renderPlatformHeroText(context: SiteContext): string {
+function renderEraHeroText(context: SiteContext): string {
   return `<h1>The all-in-one platform for everything you do online.</h1><p>Join 2 million teams at ${escapeHtml(siteBrand(context.state))} who stopped worrying and started shipping.</p><span class="lp-button is-primary${renderAbVariant(context)}">Start free trial</span><span class="lp-button">Watch the demo ▶</span><p class="lp-fineprint">No credit card required*</p>`;
 }
 
 /** A specialized site's hero says what it is; the A/B test still picks the button's colour. */
 function renderHeroText(context: SiteContext): string {
   const copy = findHeroCopy(context.state);
-  return copy === null ? renderPlatformHeroText(context) : `<h1>${copy.title}</h1><p>${copy.text}</p><span class="lp-button is-primary${renderAbVariant(context)}">${copy.cta}</span><span class="lp-button">Get the app</span>`;
+  return copy === null ? renderEraHeroText(context) : `<h1>${copy.title}</h1><p>${copy.text}</p><span class="lp-button is-primary${renderAbVariant(context)}">${copy.cta}</span><span class="lp-button">Get the app</span>`;
 }
 
 function renderHero(context: SiteContext): string {

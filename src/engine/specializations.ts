@@ -5,7 +5,7 @@ import type { SpecializationCondition, SpecializationEraPlan } from './content/s
 import { UPGRADES_BY_ID } from './content/upgrades';
 import type { EraGateRequirement, EraId, GameEvent, GameState, GameStep, SpecializationId, SpecializedEraId, UpgradeEffect } from './types';
 
-/** Only the web specialization test build has them; the classic game stays on Platform, today's path. */
+/** Only the web specialization test build has them; the classic game stays a Homepage, with no specialization. */
 export function areSpecializationsOn(state: GameState): boolean {
   return state.edition !== 'classic';
 }
@@ -50,9 +50,9 @@ function isReached(state: GameState, specializationId: SpecializationId): boolea
   return calculateSpecializationProgress(state, specializationId).every((progress) => progress.isMet);
 }
 
-/** Platform is always open; the others once reached this run. A new run starts with none. */
+/** Homepage (no specialization) is always open; the others once reached this run. A new run starts with none. */
 export function isSpecializationUnlocked(state: GameState, specializationId: SpecializationId): boolean {
-  return specializationId === 'platform' || state.unlockedSpecializationIds.includes(specializationId);
+  return specializationId === 'homepage' || state.unlockedSpecializationIds.includes(specializationId);
 }
 
 function announceUnlock(specializationId: SpecializationId): GameEvent {
@@ -72,7 +72,7 @@ export function canSpecializeInto(state: GameState, nextEraId: EraId): boolean {
   return areSpecializationsOn(state) && isSpecializedEra(ERAS_BY_ID[nextEraId].baseEraId);
 }
 
-/** What the relaunch offers: every specialization unlocked this run, Platform and the current one included. */
+/** What the relaunch offers: every specialization unlocked this run, Homepage and the current one included. */
 export function listSpecializationChoices(state: GameState): readonly SpecializationId[] {
   return SPECIALIZATION_IDS.filter((id) => isSpecializationUnlocked(state, id));
 }
@@ -105,6 +105,6 @@ function withFocus(requirement: EraGateRequirement, plan: SpecializationEraPlan)
 /** The era's checklist, with its focus feature swapped for the specialization's: a video site's 2011 asks for the video player. */
 export function listGateRequirements(state: GameState): readonly EraGateRequirement[] {
   const requirements = ERAS_BY_ID[state.eraId].gateRequirements;
-  const plan = findSpecializationPlan(state);
+  const plan = state.specializationId === 'homepage' ? null : findSpecializationPlan(state);
   return plan === null ? requirements : requirements.map((requirement) => (requirement.kind === 'feature-level' ? withFocus(requirement, plan) : requirement));
 }

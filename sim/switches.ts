@@ -46,10 +46,10 @@ export function isSwitchedOffPurchase(upgradeId: UpgradeId, switchedOff: Readonl
 
 /**
  * SIM_SPECIALIZATION=video plays the game as a video site from 2011 on, unlocked or not: what each specialization's
- * money model does to an era's length. Unset, or unknown, the game stays on Platform.
+ * money model does to an era's length. Unset, or unknown, the game stays a Homepage.
  */
 export function readSimSpecialization(value: string | undefined): SpecializationId {
-  return SPECIALIZATION_IDS.find((id) => id === value) ?? 'platform';
+  return SPECIALIZATION_IDS.find((id) => id === value) ?? 'homepage';
 }
 
 export const SIM_SPECIALIZATION: SpecializationId = readSimSpecialization(process.env['SIM_SPECIALIZATION']);

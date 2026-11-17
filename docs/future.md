@@ -236,7 +236,11 @@ save says.
 **Decided:** 1997 is a personal homepage for everyone, because that's how the web started. From the relaunch out of
 2005 on, each relaunch (into 2011, 2018 and 2024) lets you **specialize, or specialize again**, into any route you've
 **unlocked this run**. You can unlock several; the site is one at a time, so a run can go photo sharing → social
-network, or video → live streaming. A new run starts with none unlocked; Platform (today's path) is always open.
+network, or video → live streaming. A new run starts with none unlocked.
+
+**Homepage is always an option: no specialization.** It is the classic game's path, exactly: the era's own checklist
+(the engine doesn't even swap it), no money effects, the era's own page. A site can stay a homepage all run, or go back
+to being one at any relaunch. Tests pin it to the classic game.
 Run two doesn't have to take a different route, and the archive doesn't show the routes you didn't take.
 
 How it plays:
@@ -252,10 +256,11 @@ How it plays:
 - **Each era it shapes, the route changes:** the checklist's feature requirement (a video site's 2011 asks for the
   video player, not share buttons), how it makes money (effects, summarized like any upgrade's), and the page.
 - **The ending says what the homepage became:** "Your homepage became a photo-sharing site, then a social network."
+  A site that went back says so ("…a video site, then a homepage again"); one that never specialized says nothing.
 
 | Route | Unlocks with | 2011 focus | 2018 focus | 2024 focus | Money |
 |---|---|---|---|---|---|
-| 🧩 Platform | always | share buttons | stories | AI chatbot | ads, steady all the way |
+| 🏠 Homepage | always: no specialization | share buttons | stories | AI chatbot | the classic game's: ads, steady all the way |
 | 📷 Photo sharing | Photo gallery 15 · Comments 10 | share buttons | stories | AI images | more room for ads, heavy on servers |
 | 🎬 Video site | Flash intro 15 · Learn the `<EMBED>` tag | video player | stories | for-you feed | pre-roll ads worth more every era; huge bandwidth |
 | 💬 Microblog | Guestbook 60 · Comments 15 | activity feed | live chat | for-you feed | enormous traffic, little per visitor |
@@ -279,7 +284,7 @@ What changed from the design, and why:
 
 A specialized site keeps its era's page (2011's Bootstrap, 2018's landing page, 2024's AI site) and leads with what it
 is: its own navigation, a hero in that era's voice, and one block under it: photos in a grid, trending videos, a
-timeline of posts, headlines, star ratings, a news feed, live channels, today's deals. Platform keeps the page as it was.
+timeline of posts, headlines, star ratings, a news feed, live channels, today's deals. A homepage keeps the page as it was.
 Code: `src/ui/sites/specialization-look.ts`, styles in `91-specialization-looks.css`.
 
 ### Colors: the archive becomes yours

@@ -48,7 +48,7 @@ function describeStanding(state: GameState, specializationId: SpecializationId):
   const unlockEra = findUnlockEra(specializationId);
   const isLater = getEraIndex(unlockEra) > getEraIndex(state.eraId);
   const standings: readonly [boolean, string][] = [
-    [state.specializationId === specializationId && specializationId !== 'platform', '<span class="spec-badge is-current">Your site now</span>'],
+    [state.specializationId === specializationId, '<span class="spec-badge is-current">Your site now</span>'],
     [isSpecializationUnlocked(state, specializationId), '<span class="spec-badge is-unlocked">Unlocked</span>'],
     [isLater, `<span class="spec-badge is-later">Builds in ${ERAS_BY_ID[unlockEra].year}</span>`],
   ];
@@ -71,7 +71,7 @@ function renderCard(state: GameState, specializationId: SpecializationId): strin
 }
 
 function countUnlocked(state: GameState): number {
-  return SPECIALIZATION_IDS.filter((id) => id !== 'platform' && isSpecializationUnlocked(state, id)).length;
+  return SPECIALIZATION_IDS.filter((id) => id !== 'homepage' && isSpecializationUnlocked(state, id)).length;
 }
 
 const INTRO = 'What your site can become. Build towards the ones you like: from the relaunch out of 2005 on, every relaunch lets you specialize, or specialize again, into any you’ve unlocked this run.';
@@ -108,14 +108,24 @@ export function renderSpecializationChoice(state: GameState, nextEraId: EraId, s
   </section>`;
 }
 
-/** "a photo-sharing site, then a social network": each specialization the site has been, in order, once each. */
+/**
+ * "a photo-sharing site, then a social network": each specialization the site has been, in order, once each, from the
+ * first one. Every site starts as a homepage; going back to being one later counts.
+ */
 function listPath(records: readonly EraRecord[], current: SpecializationId): readonly SpecializationId[] {
-  const path = [...records.map((record) => record.site.specializationId), current].filter((id) => id !== 'platform');
+  const all = [...records.map((record) => record.site.specializationId), current];
+  const firstSpecialized = all.findIndex((id) => id !== 'homepage');
+  const path = firstSpecialized < 0 ? [] : all.slice(firstSpecialized);
   return path.filter((id, index) => path[index - 1] !== id);
 }
 
+/** In the ending's path, a homepage comes after something else: it's a homepage again. */
+function namePathStep(specializationId: SpecializationId): string {
+  return specializationId === 'homepage' ? 'a homepage again' : ARTICLES[specializationId];
+}
+
 const ARTICLES: Readonly<Record<SpecializationId, string>> = {
-  platform: 'a platform',
+  homepage: 'a homepage',
   photos: 'a photo-sharing site',
   video: 'a video site',
   microblog: 'a microblog',
@@ -126,11 +136,11 @@ const ARTICLES: Readonly<Record<SpecializationId, string>> = {
   shop: 'an online shop',
 };
 
-/** The ending's line about what the homepage became; nothing for a site that stayed on Platform. */
+/** The ending's line about what the homepage became; nothing for a site that stayed a homepage. */
 export function describeSpecializationPath(state: GameState): string {
   const path = listPath(state.eraRecords, state.specializationId);
   if (!areSpecializationsOn(state) || path.length === 0) return '';
-  return `Your homepage became ${path.map((id) => ARTICLES[id]).join(', then ')}.`;
+  return `Your homepage became ${path.map(namePathStep).join(', then ')}.`;
 }
 
 /** "a video site", for the news when the site specializes. */

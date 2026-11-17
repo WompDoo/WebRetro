@@ -47,17 +47,17 @@ function renderNav(context: SiteContext): string {
   return `<header class="ai-nav"><span class="ai-logo"><i aria-hidden="true"></i><span class="nav-brand">${escapeHtml(siteBrand(context.state))}</span></span><nav class="ai-links">${items}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}<span class="ai-cmdk">⌘K</span><span class="ai-login">Sign in</span><span class="ai-cta">Get started</span></header>`;
 }
 
-function renderPlatformHeroText(brand: string): string {
+function renderEraHeroText(brand: string): string {
   return `<h1>The AI-native platform for <span class="ai-gradient">everything</span>.</h1><p>Built for humans. Loved by agents. Join 40 million people who let ${brand} do the thinking.</p>`;
 }
 
-const PLATFORM_BUTTONS = '<span class="ai-button is-primary">Start for free</span><span class="ai-button">Book a demo</span>';
+const ERA_HERO_BUTTONS = '<span class="ai-button is-primary">Start for free</span><span class="ai-button">Book a demo</span>';
 
 /** A specialized site's headline, all of it in the gradient. */
 function renderHeroWords(context: SiteContext, brand: string): readonly [string, string] {
   const copy = findHeroCopy(context.state);
   return copy === null
-    ? [renderPlatformHeroText(brand), PLATFORM_BUTTONS]
+    ? [renderEraHeroText(brand), ERA_HERO_BUTTONS]
     : [`<h1><span class="ai-gradient">${copy.title}</span></h1><p>${copy.text}</p>`, `<span class="ai-button is-primary">${copy.cta}</span><span class="ai-button">Get the app</span>`];
 }
 

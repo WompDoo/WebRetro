@@ -6,7 +6,7 @@ import { siteBrand } from './site-context';
 /**
  * How a specialization looks: the page is still the era's (2011's Bootstrap, 2018's landing page, 2024's AI site),
  * but the navigation, the hero and a block at the top say what the site is now. A video site leads with what's
- * trending; a shop with today's deals. Platform keeps the era's page as it was.
+ * trending; a shop with today's deals. A Homepage (no specialization) keeps the era's page as it was.
  */
 export interface HeroCopy {
   readonly title: string;
@@ -31,7 +31,7 @@ interface SpecializationLook {
   readonly accent: string;
 }
 
-type LookedSpecializationId = Exclude<SpecializationId, 'platform'>;
+type LookedSpecializationId = Exclude<SpecializationId, 'homepage'>;
 
 const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
   photos: {
@@ -165,7 +165,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
 };
 
 function isLooked(specializationId: SpecializationId): specializationId is LookedSpecializationId {
-  return specializationId !== 'platform';
+  return specializationId !== 'homepage';
 }
 
 function isLookShownIn(state: GameState, eraId: EraId): eraId is SpecializedEraId {
@@ -178,7 +178,7 @@ interface ShownLook {
   readonly eraId: SpecializedEraId;
 }
 
-/** The look for this page: a specialized era of the test build, on anything but Platform. Archived pages keep theirs. */
+/** The look for this page: a specialized era of the test build, on anything but a Homepage. Archived pages keep theirs. */
 function findLook(state: GameState): ShownLook | null {
   const eraId = ERAS_BY_ID[state.eraId].baseEraId;
   const { specializationId } = state;
@@ -204,7 +204,7 @@ export function findHeroCopy(state: GameState): HeroCopy | null {
   return { title: fillBrand(hero.title, state), text: fillBrand(hero.text, state), cta: fillBrand(hero.cta, state) };
 }
 
-/** The accent a site like this tends to have, or null on Platform and before 2011. */
+/** The accent a site like this tends to have, or null for a Homepage and before 2011. */
 export function findSpecializationAccent(state: GameState): string | null {
   const shown = findLook(state);
   return shown === null ? null : shown.look.accent;

@@ -13,7 +13,7 @@ import type { FeatureId, SpecializationId, SpecializedEraId, UpgradeEffect, Upgr
  *   ads, a slow start that pays off later;
  * - the page (hero, names, its own block) and the ending's story.
  *
- * Only the web specialization test build has them: the classic game is always on Platform, today's path.
+ * Only the web specialization test build has them: the classic game is always a Homepage, with no specialization.
  */
 export type SpecializationCondition =
   | { readonly kind: 'feature-level'; readonly featureId: FeatureId; readonly level: number }
@@ -37,7 +37,7 @@ export interface SpecializationDefinition {
   readonly eras: Readonly<Record<SpecializedEraId, SpecializationEraPlan>>;
 }
 
-export const SPECIALIZATION_IDS: readonly SpecializationId[] = ['platform', 'photos', 'video', 'microblog', 'news', 'reviews', 'social', 'streaming', 'shop'];
+export const SPECIALIZATION_IDS: readonly SpecializationId[] = ['homepage', 'photos', 'video', 'microblog', 'news', 'reviews', 'social', 'streaming', 'shop'];
 
 /** The eras a specialization shapes: everything after the relaunch out of 2005. */
 export const SPECIALIZED_ERA_IDS: readonly SpecializedEraId[] = ['social-2011', 'platform-2018', 'ai-2024'];
@@ -52,12 +52,12 @@ const serverLoad = (factor: number): UpgradeEffect => ({ kind: 'server-load-mult
 const perVisitor = (amount: number): UpgradeEffect => ({ kind: 'direct-revenue-per-visitor', amount });
 
 export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, SpecializationDefinition>> = {
-  platform: {
-    id: 'platform',
-    name: 'Platform',
-    icon: '🧩',
-    pitch: 'A bit of everything, run as a business: today’s path.',
-    money: 'Ads, steady all the way.',
+  homepage: {
+    id: 'homepage',
+    name: 'Homepage',
+    icon: '🏠',
+    pitch: 'A bit of everything, the way it’s always been: the classic game’s path.',
+    money: 'No specialization: ads, steady all the way, like the classic game.',
     unlock: [],
     eras: {
       'social-2011': { focus: 'share-buttons', effects: [] },
