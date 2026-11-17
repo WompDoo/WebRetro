@@ -301,7 +301,7 @@ interface VisitedListCopy {
 const VISITED_LISTS: Readonly<Record<VisitedList, VisitedListCopy>> = {
   learned: {
     title: 'Learned (visited links)',
-    info: 'These are real links: each opens the real documentation for what you learned (MDN, the official docs, or Wikipedia for the history), so you can learn it for real. They start out purple: here, learning it counts as having been there.',
+    info: 'These are real links: each opens the real documentation for what you learned (MDN, the official docs, or Wikipedia for the history), so you can learn it for real.',
   },
   bought: {
     title: 'Bought (visited links)',
