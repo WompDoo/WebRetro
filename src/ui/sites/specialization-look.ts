@@ -313,10 +313,10 @@ const LOOKS: Readonly<Record<TreeSpecializationId, SpecializationLook>> = {
     blockTitle: 'Popular near you',
     layout: 'tiles',
     items: [
-      { icon: '🏡', title: 'Cozy loft, city view', meta: '$89 / night · ★ 4.9' },
-      { icon: '🧶', title: 'Knitted cat hat', meta: '$18 · ★ 5.0' },
+      { icon: '🏡', title: 'Cozy loft, city view ★ 4.9', meta: '$89 a night' },
+      { icon: '🧶', title: 'Knitted cat hat ★ 5.0', meta: '$18' },
       { icon: '🚲', title: 'Bike, barely used', meta: '$120' },
-      { icon: '🚗', title: 'Ride to the airport', meta: '$34 · 4 min away' },
+      { icon: '🚗', title: 'Ride to the airport, 4 min away', meta: '$34' },
     ],
     accent: '#0CA678',
   },
@@ -429,7 +429,7 @@ const LOOKS: Readonly<Record<TreeSpecializationId, SpecializationLook>> = {
     blockTitle: 'Top agents',
     layout: 'tiles',
     items: [
-      { icon: '📥', title: 'Inbox Agent', meta: '★★★★★ · 2M installs' },
+      { icon: '📥', title: 'Inbox Agent', meta: '★★★★★' },
       { icon: '✈️', title: 'Trip Planner', meta: '★★★★☆' },
       { icon: '💸', title: 'Refund Negotiator', meta: '★★★★★' },
       { icon: '🛒', title: 'Fridge Restocker', meta: '★★★☆☆' },

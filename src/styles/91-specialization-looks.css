@@ -97,7 +97,7 @@
 /* ---------- Each era's dress ---------- */
 .w2-columns .spec-block { order: 0; }
 /* 2005: the slogan under the logo, the way every Web 2.0 site had one. */
-.w2-tagline { position: relative; z-index: 1; display: block; margin: 2px 0 6px; color: rgba(255, 255, 255, 0.88); font: italic 13px/1.3 Georgia, 'Times New Roman', serif; }
+.w2-tagline { position: relative; z-index: 1; display: block; margin: 2px 0 6px; color: #FFFFFF; font: italic 13px/1.3 Georgia, 'Times New Roman', serif; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
 .is-glossy .w2-tagline { color: #FFFFFF; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25); }
 .bs-spec { display: grid; gap: 16px; margin: 20px 20px 0; }
 .site-2011 .bs-spec .feature-heading { margin-bottom: 12px; }
