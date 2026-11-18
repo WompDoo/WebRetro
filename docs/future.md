@@ -266,7 +266,7 @@ The classic game is unchanged.
 | Era | Specialization | Like | Needs | Unlock, during its era |
 |---|---|---|---|---|
 | 2005 | 📝 Blog network | Blogger, LiveJournal, WordPress.com | — | 40% of the era's spending into Blog · Comments 20 · Learn RSS and tagging |
-| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | 40% into Photo gallery · Flash intro switched off · Tag cloud 3 |
+| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | 40% into Photo gallery · Flash intro switched off · Tag cloud 1 |
 | 2005 | 🎬 Video site | YouTube | — | 40% into Flash intro · Learn the `<EMBED>` tag · ride out a traffic spike |
 | 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | 40% into Forum · Guestbook switched off · sort the spam 3 times |
 | 2005 | 📚 Wiki *(secret)* | Wikipedia | — | 35% into Wiki · no ads for 10 minutes in a row |
@@ -274,13 +274,13 @@ The classic game is unchanged.
 | 2011 | 💬 Microblog | Twitter | Blog network or Forum | 40% into Share buttons · on fire 5 times · Blog switched off |
 | 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | 40% into Video player · Activity feed 5 · ride out 2 traffic spikes |
 | 2011 | 📰 News & viral | HuffPost, BuzzFeed | Blog network or Forum | 35% into One-pager · Share buttons 25 · fend off a DDoS |
-| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Map mashup · Sign in with… 5 · works on phones |
+| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Sign in with… · Map mashup 40 · works on phones |
 | 2011 | 🛒 Online shop | Etsy, Amazon | open door | Photo gallery 40 · Sign in with… 15 · at most 2 ads |
 | 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | 40% into Stories · Photo gallery 50 · loads in under 2.5 s on a phone |
-| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 30% into Video player · Pricing table 10 · at most 2 ads |
+| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Pricing table · Video player 40 · at most 2 ads |
 | 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 50% into Newsletter · Pricing table 10 · the honest consent banner |
 | 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | 40% into Language switcher · Pricing table 10 · Learn OAuth |
-| 2018 | 💼 Professional network | LinkedIn | open door | 40% into Pricing table · Live chat 10 · Newsletter 10 |
+| 2018 | 💼 Professional network | LinkedIn | open door | 35% into Pricing table · Live chat 10 · Newsletter 10 |
 | 2018 | 🎮 Chat community *(secret)* | Discord | Forum or Live streaming | 40% into Community chat · Live chat 10 |
 | 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | 55% into For-you feed · AI images 10 |
 | 2024 | 🔎 AI answer engine | Perplexity, AI Overviews | Newsletter, News & viral or Reviews | 40% into AI search · AI articles 15 · AI answers take 30% of clicks |

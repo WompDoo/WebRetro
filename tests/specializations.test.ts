@@ -97,7 +97,7 @@ describe('unlocking a specialization', () => {
     assert.equal(lean?.unit, 'share');
     assert.equal(lean?.current, 0.5);
     assert.match(lean?.label ?? '', /40% of what you build this era into Photo gallery/);
-    assert.deepEqual([tags?.current, tags?.target, flash?.isMet], [3, 3, true]);
+    assert.deepEqual([tags?.current, tags?.target, flash?.isMet], [3, 1, true]);
   });
 
   it('measures the lean in what you build: a feature’s levels count for it, and nothing else spoils it', () => {

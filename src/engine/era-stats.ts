@@ -48,14 +48,15 @@ export function countFeatureSpending(state: GameState, featureId: FeatureId, amo
 
 /**
  * A lean counts against at least this share of the era's migration budget in features: without it, the first level
- * of anything bought at an era's start would be 100% of what was built, and every lean would be met in a minute.
+ * of anything bought at an era's start would be 100% of what was built, and every lean would be met in a minute. At
+ * half the budget, with a condition on 2005's priciest feature on top, a lean took the photos path 94 minutes.
  */
-export const LEAN_FLOOR_SHARE_OF_BUDGET = 0.5;
+export const LEAN_FLOOR_SHARE_OF_BUDGET = 0.25;
 
 /**
  * What share of this era's feature spending went into one feature. Only features count: a hosting upgrade or a skill
  * is something every site needs, and shouldn't spoil a lean. What you build is the choice, and it has to be real
- * building: the share is of the era's building, or of half its migration budget while there's been less than that.
+ * building: the share is of the era's building, or of a quarter of its migration budget while there's been less.
  */
 export function calculateSpendingShare(state: GameState, featureId: FeatureId): number {
   const total = Object.values(state.eraStats.spentByFeature).reduce((sum, spent) => sum + spent, 0);

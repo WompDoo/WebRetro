@@ -176,7 +176,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,
-    unlock: [lean('photo-gallery', 0.4), off('flash-intro'), feature('tag-cloud', 3)],
+    unlock: [lean('photo-gallery', 0.4), off('flash-intro'), feature('tag-cloud', 1)],
     restriction: keepsOff('flash-intro'),
     eras: {
       'web2-2005': plan('photo-gallery', 15, [adAnnoyance(0.7), serverLoad(1.2)]),
@@ -328,7 +328,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['forum', 'photos'],
     isSecret: false,
-    unlock: [lean('map-mashup', 0.35), feature('social-login', 5), { kind: 'mobile-friendly' }],
+    // A lean on its own era's feature: an old feature's levels are cheap next to the era's, and a lean on one is a grind.
+    unlock: [lean('social-login', 0.35), feature('map-mashup', 40), { kind: 'mobile-friendly' }],
     restriction: null,
     eras: {
       'social-2011': plan('social-login', 5, [adValue(0.9), perVisitor(0.3)]),
@@ -383,7 +384,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['live-streaming', 'video'],
     isSecret: false,
-    unlock: [lean('video-player', 0.3), feature('pricing-table', 10), maxAds(2)],
+    unlock: [lean('pricing-table', 0.35), feature('video-player', 40), maxAds(2)],
     restriction: keepsAdsAtMost(2),
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.6), serverLoad(1.4)]),
@@ -434,7 +435,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: [],
     isSecret: false,
-    unlock: [lean('pricing-table', 0.4), feature('live-chat', 10), feature('newsletter', 10)],
+    unlock: [lean('pricing-table', 0.35), feature('live-chat', 10), feature('newsletter', 10)],
     restriction: null,
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.35), adValue(0.95)]),

@@ -6,13 +6,11 @@ import {
   canBuyFeature,
   canBuyUpgrade,
   canChooseSpecialization,
-  canSwitchFeature,
   chooseConsentBanner,
   chooseSpecialization,
   ERAS_BY_ID,
   FEATURE_IDS,
   FEATURES_BY_ID,
-  isFeatureOnPage,
   isFeatureSwitchedOff,
   isSpecializationOpen,
   removeAd,
@@ -76,17 +74,6 @@ function switchOff(state: GameState, featureId: FeatureId): GameState | null {
   return state.featureLevels[featureId] === 0 ? buildTowards(state, featureId) : toggleFeature(state, featureId);
 }
 
-function calculateWeightKb(state: GameState, featureId: FeatureId): number {
-  return FEATURES_BY_ID[featureId].pageWeightKb + FEATURES_BY_ID[featureId].pageWeightKbPerLevel * state.featureLevels[featureId];
-}
-
-/** The second run's sacrifice tool: the heaviest feature on the page goes, if it can be switched off at all. */
-function switchOffHeaviest(state: GameState): GameState | null {
-  const candidates = FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId) && canSwitchFeature(state, featureId) && !isFeatureSwitchedOff(state, featureId));
-  const [heaviest] = [...candidates].sort((first, second) => calculateWeightKb(state, second) - calculateWeightKb(state, first));
-  return heaviest === undefined ? null : toggleFeature(state, heaviest);
-}
-
 const MOBILE_FRIENDLY_IDS: readonly UpgradeId[] = UPGRADE_IDS.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].effects.some((effect) => effect.kind === 'mobile-friendly'));
 /** What makes a page load faster: lighter pages, a faster load. */
 const LIGHTER_PAGE_IDS: readonly UpgradeId[] = UPGRADE_IDS.filter((upgradeId) =>
@@ -106,7 +93,7 @@ const STEPS: { readonly [K in SpecializationCondition['kind']]: ConditionStep<K>
   consent: (state, condition) => (state.consentBanner === condition.banner ? null : chooseConsentBanner(state, condition.banner)),
   'era-stat': () => null,
   'mobile-friendly': (state) => MOBILE_FRIENDLY_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
-  'phone-load-under': (state) => LIGHTER_PAGE_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? switchOffHeaviest(state),
+  'phone-load-under': (state) => LIGHTER_PAGE_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
   'ai-answer-share': () => null,
 };
 
