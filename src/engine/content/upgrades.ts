@@ -1063,7 +1063,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: '“Like my site? Mail me a dollar!” and your PO box. A few people actually do. Fewer, if the page is all banners.',
     cost: 300,
     pageWeightKb: 1,
-    effects: [{ kind: 'support', adSlots: 0.3, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 0.2, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'support-this-site': {
@@ -1074,7 +1074,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'A whole page on what the site costs you, with a photo of your modem. Regulars send checks.',
     cost: 4_000,
     pageWeightKb: 3,
-    effects: [{ kind: 'support', adSlots: 0.8, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 0.6, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'fan-club': {
@@ -1085,7 +1085,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Five dollars a year by mail gets a secret page, a newsletter and a certificate you printed yourself.',
     cost: 30_000,
     pageWeightKb: 4,
-    effects: [{ kind: 'support', adSlots: 1.4, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 1, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'pro-accounts': {
@@ -1094,7 +1094,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     eraId: 'web2-2005',
     name: 'Pro accounts',
     description: '$24.95 a year for a star next to your name, unlimited uploads and no banners. Nobody pays to skip banners that aren’t there.',
-    cost: 1_500_000,
+    cost: 50_000,
     pageWeightKb: 0,
     effects: [{ kind: 'support', adSlots: 12, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
@@ -1118,7 +1118,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: '$1, $5 or $25 a month: a thank-you, early access, or your name in the credits. Patrons hate ads more than anyone.',
     cost: 500_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'support', adSlots: 6, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 12, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'supporter-plan': {
@@ -1129,7 +1129,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'A monthly plan whose whole pitch is “no ads, ever”. It only sells while that’s true.',
     cost: 40_000_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'support', adSlots: 7, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 1, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'donate-button': {
