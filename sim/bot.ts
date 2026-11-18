@@ -20,6 +20,7 @@ import {
   canBuyUpgrade,
   canPlaceAd,
   canUpgradeHosting,
+  calculateRevenuePerVisitor,
   canUseAds,
   claimOpportunity,
   OPPORTUNITIES_BY_KIND,
@@ -184,6 +185,15 @@ function paysOverTime(upgradeId: UpgradeId): boolean {
 export type ExtraAvoid = (option: PurchaseOption) => boolean;
 const AVOIDS_NOTHING: ExtraAvoid = () => false;
 
+/** The label the ad option has, so a policy that avoids ads can be asked whether it would place the first one. */
+const AD_LABEL = 'ad';
+
+/** A player who'd place the first ad, on a page that earns nothing per visitor without one. */
+function wouldNeedFirstAd(state: GameState, profile: PlayerProfile): boolean {
+  const adOption: PurchaseOption = { label: AD_LABEL, cost: 0, isRequiredForGate: false, apply: placeAd, canApply: canPlaceAd, valueCost: 0, valueApply: placeAd };
+  return !PLAYER_POLICIES[profile.policy].avoids(adOption, state) && calculateRevenuePerVisitor(state) === 0;
+}
+
 export function listOptions(state: GameState, profile: PlayerProfile, extraAvoids: ExtraAvoid = AVOIDS_NOTHING): readonly PurchaseOption[] {
   const features = getUnlockedFeatureIds(state)
     .filter((featureId) => isFeatureBuildable(state, featureId))
@@ -191,7 +201,8 @@ export function listOptions(state: GameState, profile: PlayerProfile, extraAvoid
       const apply = (current: GameState): GameState => buyFeature(current, featureId);
       const cost = calculateNextFeatureCost(state, featureId);
       // A first feature earns nothing without an ad, and an ad earns nothing without visitors: value them together.
-      const needsFirstAd = state.adCount === 0 && canUseAds(state);
+      // Not for a player who never places one, or a page that earns per visitor without one: the tip jar, say.
+      const needsFirstAd = state.adCount === 0 && canUseAds(state) && wouldNeedFirstAd(state, profile);
       const adCost = needsFirstAd ? calculateNextAdCost(state) : 0;
       const valueApply = (current: GameState): GameState => {
         const built = apply(current);
@@ -226,7 +237,7 @@ export function listOptions(state: GameState, profile: PlayerProfile, extraAvoid
   const adCost = calculateNextAdCost(state);
   const ads: PurchaseOption[] =
     canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && !isAdLosingMoney({ ...state, adCount: state.adCount + 1 })
-      ? [{ label: 'ad', cost: adCost, isRequiredForGate: false, apply: placeAd, canApply: canPlaceAd, valueCost: adCost, valueApply: placeAd }]
+      ? [{ label: AD_LABEL, cost: adCost, isRequiredForGate: false, apply: placeAd, canApply: canPlaceAd, valueCost: adCost, valueApply: placeAd }]
       : [];
   const defenses = profile.buysDefenses
     ? getUnlockedDefenseIds(state)

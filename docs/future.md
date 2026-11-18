@@ -162,8 +162,8 @@ makes it. Runs vary by about ±17 minutes between seeds, so compare runs on the 
 
 Prestige makes the same game shorter. Replay value comes from making it different:
 
-- **Challenge runs**, straight from the player types that can't finish today: *No ads* (needs an ad-free economy,
-  see content), *Hands off* (no minigames: defenses only), *Holdout* (no framework, ever), *Speedrun* (under 3 h).
+- **Challenge runs**, straight from the player types that can't finish today: *No ads* (built: support from
+  visitors, section 5b), *Hands off* (no minigames: defenses only), *Holdout* (no framework, ever), *Speedrun* (under 3 h).
   Each one a badge on the archive page; some unlock a perk.
 - **Site archetypes at the intro wizard.** The wizard already names the site; let it pick what kind: *homepage*
   (today's game), *fan site* (forums and galleries carry the gates), *web shop* (a cart from 1999, payments from
@@ -468,6 +468,39 @@ What tuning taught: the checklist's focus level matters as much as the money. A 
 nothing (the for-you feed ends the game at 12 by itself), and one nobody builds costs minutes, so focus levels come
 from the levels the sim logs, not from a flat 15. And ad annoyance is the strongest lever: it moves visitors, and every
 era's checklist asks for visitors.
+
+## 5b. Support from visitors: a run without ads (built)
+
+A run without a single ad used to be impossible: 1997 paid only through banners, and the ad-free player stayed in
+1997 at $0 a second. Now every era has a way to ask visitors to chip in. It's an alternative to ads, not more income
+on top: each ad on the page costs a quarter of the support, because a site covered in banners looks like it doesn't
+need the money. Four ads and it's gone, so an ad player never benefits.
+
+| Era | Item | Pays like | Like |
+|---|---|---|---|
+| 1997 | Tip jar ("Like my site? Mail me a dollar!") | SLOTS_TIP banners | Late-'90s "send a dollar to my PO box" lines |
+| 1997 | "Support this site" page | SLOTS_SUPPORT banners | Homepages' "what this site costs me" pages |
+| 1997 | Fan club (mailed-in $5 a year) | SLOTS_FAN banners | Fan clubs with a members-only page and a newsletter |
+| 2005 | Pro accounts ($24.95 a year, no banners) | SLOTS_PRO banners | Flickr Pro, LiveJournal paid accounts |
+| 2011 | Pay what you want | SLOTS_PWYW banners | Humble Bundle, Radiohead's *In Rainbows* |
+| 2018 | Patron tiers ($1 / $5 / $25 a month) | SLOTS_PATRON banners | Patreon |
+| 2024 | Supporter plan ("no ads, ever") | SLOTS_SUPPORTER banners | YouTube Premium, Substack |
+
+**Priced in banners, not dollars.** An item pays what so many of the era's plain banners would, per visitor. A
+banner pays less every era ($0.15 a visitor in 1997, $0.04 in 2024), and a flat donation didn't: the first version
+paid fixed amounts, and by 2018 the ad-free site was nearly as fast as one full of ads. In banners, support falls
+with the ads and stays a step behind them in every era. They stack: what a run asked for in 1997 still pays in 2024,
+at 2024's banner prices.
+
+**On the page.** 1997's three are badges by the "Best viewed at 800×600" one; later eras put theirs in the footer,
+next to the copyright. Only this era's: a 2018 page doesn't still ask for checks by mail.
+
+**The sim found a bot bug on the way.** The balance bot values a site's first feature together with its first ad
+("a first feature earns nothing without an ad"). An ad-free player never places that ad, and with support on the
+page the imaginary ad made every feature look like a loss, so the bot saved instead of building and stalled in
+1997. It now values the first ad only for a player who places ads, on a page that earns nothing without one.
+
+RESULTS_PLACEHOLDER
 
 ## 6. Known issues, from the sweeps
 

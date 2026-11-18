@@ -1063,7 +1063,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: '“Like my site? Mail me a dollar!” and your PO box. A few people actually do. Fewer, if the page is all banners.',
     cost: 300,
     pageWeightKb: 1,
-    effects: [{ kind: 'support', adSlots: 0.5, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 0.3, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'support-this-site': {
@@ -1074,7 +1074,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'A whole page on what the site costs you, with a photo of your modem. Regulars send checks.',
     cost: 4_000,
     pageWeightKb: 3,
-    effects: [{ kind: 'support', adSlots: 1.5, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 0.8, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'fan-club': {
@@ -1085,7 +1085,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Five dollars a year by mail gets a secret page, a newsletter and a certificate you printed yourself.',
     cost: 30_000,
     pageWeightKb: 4,
-    effects: [{ kind: 'support', adSlots: 2.5, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 1.4, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'pro-accounts': {
