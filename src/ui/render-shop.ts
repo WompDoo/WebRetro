@@ -314,6 +314,8 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'spike-frequency-multiplier': (effect) => `Traffic spikes come ${formatFactor(effect.factor)} as often`,
   'spike-on-fire': () => 'Catching fire starts a traffic spike',
   'levels-per-clean': (effect, eraId) => `Cleaning up ${describeCleanup(effect.infection)}: +${effect.levels} ${getFeatureDisplayName(effect.featureId, eraId)} levels each time`,
+  support: (effect, eraId) =>
+    `+$${((effect.adSlots * ERAS_BY_ID[eraId].adValuePerVisitor) / ERAS_BY_ID[eraId].revenuePace).toFixed(PER_VISITOR_DECIMALS)} per visitor from supporters (what ${effect.adSlots} banners would pay), ${formatPercent(effect.lostSharePerAd)} less for every ad`,
   donations: (effect, eraId) => `+$${(effect.amount / ERAS_BY_ID[eraId].revenuePace).toFixed(PER_VISITOR_DECIMALS)} per visitor in donations, ${formatPercent(effect.lostSharePerAd)} less for every ad`,
   subscribers: (effect) => `${formatPercent(effect.share)} of visitors subscribe: steady pay, ads or not, that follows your traffic slowly`,
   'subscriber-churn-multiplier': (effect) => `Subscribers leave ${formatFactor(effect.factor)} as fast`,

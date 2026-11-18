@@ -14,7 +14,7 @@ export const EMPTY_RUN_STATS: RunStats = {
   popupsClosed: 0,
   scamsFallenFor: 0,
   hazards: {},
-  placedAdAfter1997: false,
+  hasPlacedAd: false,
   longestAwayMs: 0,
   hasPokedWithDevTools: false,
 };
@@ -23,7 +23,6 @@ export const EMPTY_RUN_STATS: RunStats = {
 export const HAND_TYPED_GAP_MS = 50;
 /** 2024's code is written by the AI as much as by you: hand-typed keystrokes count before it. */
 const AI_YEAR = 2024;
-const FIRST_YEAR = 1997;
 
 function withRunStats(state: GameState, stats: Partial<RunStats>): GameState {
   return { ...state, runStats: { ...state.runStats, ...stats } };
@@ -69,7 +68,7 @@ export function countHazard(state: GameState, kind: HazardKind): GameState {
 
 /** An ad in 1997 is how every homepage paid its way: only one after it spoils an ad-free web. */
 export function noteAdPlaced(state: GameState): GameState {
-  return ERAS_BY_ID[state.eraId].year > FIRST_YEAR ? withRunStats(state, { placedAdAfter1997: true }) : state;
+  return state.runStats.hasPlacedAd ? state : withRunStats(state, { hasPlacedAd: true });
 }
 
 export function noteTimeAway(state: GameState, awayMs: number): GameState {

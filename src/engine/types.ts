@@ -421,6 +421,8 @@ export type UpgradeEffect =
   | { readonly kind: 'levels-per-clean'; readonly infection: InfectionKind | null; readonly featureId: FeatureId; readonly levels: number }
   /** Donations: money per visitor, less a share for every ad on the page. */
   | { readonly kind: 'donations'; readonly amount: number; readonly lostSharePerAd: number }
+  /** Visitors who chip in: as much per visitor as so many of the era's plain banners would pay, less a share per ad. */
+  | { readonly kind: 'support'; readonly adSlots: number; readonly lostSharePerAd: number }
   /** Subscribers: this share of visitors pays every second, like an ad would. The pool grows slowly and churns slowly. */
   | { readonly kind: 'subscribers'; readonly share: number }
   /** Subscribers leave this many times as fast. */
@@ -731,7 +733,8 @@ export interface RunStats {
   readonly scamsFallenFor: number;
   /** Every hazard that hit the site, by kind. */
   readonly hazards: Readonly<Partial<Record<HazardKind, number>>>;
-  readonly placedAdAfter1997: boolean;
+  /** Placed an ad, any ad, in any era this run. */
+  readonly hasPlacedAd: boolean;
   /** The longest the site ran without you, in one stretch. */
   readonly longestAwayMs: number;
   /** Opened the browser's developer tools, or edited the page's numbers with them. */
