@@ -249,7 +249,7 @@ The classic game is unchanged.
 - **One specialization per era, from 2005, and they stack.** A site might be a video site in 2005, a live-streaming site in 2011, a streaming service in 2018 and a short-video feed in 2024. Or it stays a homepage at any point: that's the classic game.
 - **Unlocked and chosen in the same era.** Choosing is free, takes effect at once, and is permanent after a confirmation. Relaunching without choosing closes that era's chance, and the relaunch screen says so.
 - **Lineage.** Most specializations need a parent taken in an earlier era. Every era from 2011 has one open door with no parent, so skipping 2005 doesn't shut you out. The Serial founder perk (run 3+, about 50 Backlinks) removes lineage; one per era still holds.
-- **Hard on purpose: things money can't buy.** Every unlock has a **lean** ("Photo gallery brings 35% of your visitors": buying everything spreads traffic out, so you hold things back or switch them off). Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
+- **Hard on purpose: things money can't buy.** Every unlock has a **lean**: "40% of this era's spending into the photo gallery". Buying everything spreads money across features, so leaning means holding the rest back, and waiting doesn't help. (A share of *visitors* was the first idea, but visitors per level differ a thousandfold between features in an era: some leans came free, others were impossible.) Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
 - **Lasting restrictions.** Some specializations keep their sacrifice. Photo sharing keeps the Flash intro off, Forum the guestbook, Microblog the blog. Shop and Streaming service run at most 2 ads; Wiki runs none.
 - **Hidden until close, Vampire Survivors style.**
   - **Before anything is in view,** no tab at all. A specialization comes into view when its lean is half way, its parent is held and its era is now.
@@ -262,28 +262,28 @@ The classic game is unchanged.
 
 | Era | Specialization | Like | Needs | Unlock, during its era |
 |---|---|---|---|---|
-| 2005 | 📝 Blog network | Blogger, LiveJournal, WordPress.com | — | Blog brings 40% of visitors · Comments 30 · Learn RSS and tagging |
-| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | Photo gallery brings 35% · Tag cloud 10 · Flash intro switched off |
-| 2005 | 🎬 Video site | YouTube | — | Flash intro brings 35% · Learn the `<EMBED>` tag · ride out a traffic spike |
-| 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | Forum brings 35% · Guestbook switched off · sort the spam 3 times |
-| 2005 | 📚 Wiki *(secret)* | Wikipedia | — | Wiki brings 30% · no ads for 10 minutes |
-| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | Activity feed brings 30% · Share buttons 30 · Sign in with… 10 |
-| 2011 | 💬 Microblog | Twitter | Blog network or Forum | Share buttons bring 35% · on fire 5 times · Blog switched off |
-| 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | Video player brings 35% · Activity feed 10 · ride out 2 traffic spikes |
-| 2011 | 📰 News & viral | HuffPost, BuzzFeed | Blog network or Forum | One-pager brings 25% · Share buttons 30 · win the DDoS minigame |
-| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | Map mashup brings 25% · Sign in with… 10 · responsive design |
+| 2005 | 📝 Blog network | Blogger, LiveJournal, WordPress.com | — | 40% of the era's spending into Blog · Comments 20 · Learn RSS and tagging |
+| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | 40% into Photo gallery · Flash intro switched off · Tag cloud 3 |
+| 2005 | 🎬 Video site | YouTube | — | 40% into Flash intro · Learn the `<EMBED>` tag · ride out a traffic spike |
+| 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | 40% into Forum · Guestbook switched off · sort the spam 3 times |
+| 2005 | 📚 Wiki *(secret)* | Wikipedia | — | 35% into Wiki · no ads for 10 minutes in a row |
+| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | 40% into Activity feed · Share buttons 25 · Sign in with… 5 |
+| 2011 | 💬 Microblog | Twitter | Blog network or Forum | 40% into Share buttons · on fire 5 times · Blog switched off |
+| 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | 40% into Video player · Activity feed 5 · ride out 2 traffic spikes |
+| 2011 | 📰 News & viral | HuffPost, BuzzFeed | Blog network or Forum | 35% into One-pager · Share buttons 25 · fend off a DDoS |
+| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Map mashup · Sign in with… 5 · works on phones |
 | 2011 | 🛒 Online shop | Etsy, Amazon | open door | Photo gallery 40 · Sign in with… 15 · at most 2 ads |
-| 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | Stories bring 35% · Photo gallery 50 · phone load under 2.5 s |
-| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | Video player brings 30% · Pricing table 20 · at most 2 ads |
-| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | Newsletter brings 30% · Pricing table 10 · the honest consent banner |
-| 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | Language switcher 20 · Pricing table brings 25% · Learn OAuth |
-| 2018 | 💼 Professional network | LinkedIn | open door | Pricing table brings 25% · Live chat 15 · Newsletter 15 |
-| 2018 | 🎮 Chat community *(secret)* | Discord | Forum or Live streaming | Community chat brings 30% · Live chat 15 |
-| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | For-you feed brings 40% · AI images 10 |
-| 2024 | 🔎 AI answer engine | Perplexity, AI Overviews | Newsletter, News & viral or Reviews | AI search brings 35% · AI articles 25 · AI answers take 30% of clicks |
-| 2024 | 🎨 AI studio | Midjourney, Canva | Stories app or Photo sharing | AI images bring 35% · Pricing table 20 |
-| 2024 | 🤖 AI companion | Character.AI, Replika | open door | AI chatbot brings 35% · Live chat switched off |
-| 2024 | 🧩 Agent store *(secret)* | GPT Store, WeChat mini-programs | Marketplace or Professional network | Agent store brings 30% |
+| 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | 40% into Stories · Photo gallery 50 · loads in under 2.5 s on a phone |
+| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Video player · Pricing table 15 · at most 2 ads |
+| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 40% into Newsletter · Pricing table 10 · the honest consent banner |
+| 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | 40% into Language switcher · Pricing table 10 · Learn OAuth |
+| 2018 | 💼 Professional network | LinkedIn | open door | 40% into Pricing table · Live chat 10 · Newsletter 10 |
+| 2018 | 🎮 Chat community *(secret)* | Discord | Forum or Live streaming | 40% into Community chat · Live chat 10 |
+| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | 40% into For-you feed · AI images 10 |
+| 2024 | 🔎 AI answer engine | Perplexity, AI Overviews | Newsletter, News & viral or Reviews | 40% into AI search · AI articles 15 · AI answers take 30% of clicks |
+| 2024 | 🎨 AI studio | Midjourney, Canva | Stories app or Photo sharing | 40% into AI images · Pricing table 20 |
+| 2024 | 🤖 AI companion | Character.AI, Replika | open door | 40% into AI chatbot · Live chat switched off |
+| 2024 | 🧩 Agent store *(secret)* | GPT Store, WeChat mini-programs | Marketplace or Professional network | 40% into Agent store |
 
 **Exclusive items: every specialization gets at least one Learn, one Build and one Upgrade**, shown only once you've chosen it, marked with its icon. Items from every specialization you hold stay, which is where the combos come from. The upgrades use mechanics nothing else in the game has:
 

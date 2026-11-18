@@ -198,7 +198,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [lean('flash-intro', 0.4), skill('embed-tag'), stat('spikes-ridden-out', 1)],
     restriction: null,
     eras: {
-      'web2-2005': plan('flash-intro', 15, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)]),
+      'web2-2005': plan('flash-intro', 15, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.3)]),
       'social-2011': plan('video-player', 8, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)]),
       'platform-2018': withEffects(ERA_ITEM[2018], [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)]),
       'ai-2024': plan('for-you-feed', 12, [adValue(1.22), adAnnoyance(1.2), serverLoad(1.6)]),

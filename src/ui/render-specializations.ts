@@ -118,7 +118,7 @@ function renderCard(state: GameState, specializationId: SpecializationId): strin
 
 const HOW_IT_WORKS =
   'Each era from 2005 can make your site something more: one specialization per era, free, for good, and they stack. ' +
-  'They take commitment: lean on one feature until it brings a big share of your visitors, give something up, or pull something off. ' +
+  'They take commitment: put a big share of the era’s money into one feature, give something up, or pull something off. ' +
   'A specialization comes into view here when you’re half way there.';
 
 function renderEraSection(state: GameState, foundIds: readonly SpecializationId[]): string {
