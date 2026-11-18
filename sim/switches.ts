@@ -1,4 +1,4 @@
-import { isSpecializedEra, SPECIALIZATION_IDS, UPGRADES_BY_ID } from '../src/engine';
+import { getEraIndex, SPECIALIZATION_IDS, SPECIALIZATIONS_BY_ID, SPECIALIZATIONS_FROM_RUN, UPGRADES_BY_ID } from '../src/engine';
 import type { BuffId, GameState, SpecializationId, UpgradeId } from '../src/engine';
 
 /**
@@ -54,8 +54,12 @@ export function readSimSpecialization(value: string | undefined): Specialization
 
 export const SIM_SPECIALIZATION: SpecializationId = readSimSpecialization(process.env['SIM_SPECIALIZATION']);
 
-/** Specializations exist only in the test build: a forced one plays it. */
+/**
+ * Specializations exist only in the test build's second run: a forced one plays it from its own era, whatever the
+ * tree says about lineage or unlocks.
+ */
 export function applySimSpecialization(state: GameState, specializationId: SpecializationId): GameState {
-  const isDue = isSpecializedEra(state.eraId) && state.specializationId !== specializationId;
-  return isDue ? { ...state, edition: 'webspecialization', specializationId } : state;
+  const eraId = SPECIALIZATIONS_BY_ID[specializationId].eraId;
+  const isDue = specializationId !== 'homepage' && getEraIndex(state.eraId) >= getEraIndex(eraId) && !state.specializationIds.includes(specializationId);
+  return isDue ? { ...state, edition: 'webspecialization', runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN), specializationIds: [specializationId] } : state;
 }

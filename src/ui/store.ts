@@ -1,5 +1,5 @@
 import { createInitialGameState, EMPTY_LEGACY, ERAS_BY_ID, startNextRun } from '../engine';
-import type { Edition, GameEvent, GameState, GameStep, LegacyState, SpecializationId } from '../engine';
+import type { Edition, GameEvent, GameState, GameStep, LegacyState } from '../engine';
 import type { DeviceView } from './browser-chrome';
 import type { PlaytestSpeed } from './playtest';
 import type { ShopTab } from './render-shop';
@@ -42,10 +42,6 @@ interface UiStore {
   lastSeenNewsId: number;
   /** What the site had when the phone's Site tab was last open; anything added since is news. */
   siteSeen: SiteSeen;
-  /** The Specializations list at the top of the Build tab: open until you fold it. */
-  isSpecializationsOpen: boolean;
-  /** Picked in the relaunch story, applied once the new era starts. Null: keep the current one. */
-  pendingSpecializationId: SpecializationId | null;
   /** The site's color picker, under the browser's toolbar. */
   isColorsOpen: boolean;
   /** The playtest panel: hidden from players unless asked for (?playtest, or five taps on the money). */
@@ -80,8 +76,6 @@ export const store: UiStore = {
   newsCounter: 0,
   lastSeenNewsId: 0,
   siteSeen: { features: [], adCount: 0 },
-  isSpecializationsOpen: true,
-  pendingSpecializationId: null,
   isColorsOpen: false,
   isPlaytestEnabled: false,
   playtestSpeed: 1,

@@ -1,4 +1,8 @@
 import {
+  canPlaceAd,
+  canSwitchFeature,
+  findShownEraId,
+  isFeatureLockedOff,
   calculateAverageMsBetweenFines,
   calculateCertificateRenewalFee,
   canRenewCertificate,
@@ -51,22 +55,23 @@ import {
   MS_PER_SECOND,
   UPGRADES_BY_ID,
 } from '../engine';
-import type { ConsentBanner, ConsentBannerDefinition, DefenseCounterMode, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, UpgradeEffect, UpgradeId } from '../engine';
+import type { ConsentBanner, ConsentBannerDefinition, DefenseCounterMode, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, SpecializationId, UpgradeEffect, UpgradeId } from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
-import { renderSpecializationPanel } from './render-specializations';
+import { calculateSpecializeTabSignature, countChoosable, isSpecializeTabShown, renderSpecializeTab } from './render-specializations';
 import { describeTradeIn } from './retirement';
 import { AD_ICON, CODE_ICON, COOKIE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, LOCK_ICON, OPS_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
-export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security';
+export type ShopTab = 'learn' | 'build' | 'upgrades' | 'security' | 'specialize';
 
-export const SHOP_TABS: readonly ShopTab[] = ['learn', 'build', 'upgrades', 'security'];
+export const SHOP_TABS: readonly ShopTab[] = ['learn', 'build', 'upgrades', 'security', 'specialize'];
 
 const SHOP_TAB_LABELS: Readonly<Record<ShopTab, string>> = {
   learn: 'Learn',
   build: 'Build',
   upgrades: 'Upgrades',
   security: 'Ops',
+  specialize: 'Specialize',
 };
 
 const NEUTRAL_FACTOR = 1;
@@ -98,8 +103,8 @@ export const BUY_AMOUNTS: readonly BuyAmount[] = [1, 5, 10];
 export interface ShopView {
   /** The player's comfort switch for the one-pager's scrolling: a setting, not part of the game. */
   readonly isScrollJackingOn: boolean;
-  /** The test build's Specializations list, open or folded. */
-  readonly isSpecializationsOpen: boolean;
+  /** Specializations found in any run: the Specialize tab shows their cards from the start. */
+  readonly foundSpecializationIds: readonly SpecializationId[];
 }
 
 
@@ -159,8 +164,9 @@ function describeFeatureSwitch(isOn: boolean): string {
   return isOn ? 'Running on your page' : 'Switched off: no visitors, no page weight';
 }
 
-function isSwitchableNow(state: GameState, featureId: FeatureId): boolean {
-  return FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0;
+/** A specialization's sacrifice: switched off for good, said where the switch would be. */
+function renderLockedOff(state: GameState, featureId: FeatureId): string {
+  return isFeatureLockedOff(state, featureId) ? '<p class="shop-effect is-tradeoff">Switched off for good: your specialization gave it up.</p>' : '';
 }
 
 function renderFeatureSwitch(state: GameState, featureId: FeatureId): string {
@@ -169,7 +175,7 @@ function renderFeatureSwitch(state: GameState, featureId: FeatureId): string {
 }
 
 function renderFeatureSwitchIfSwitchable(state: GameState, featureId: FeatureId): string {
-  return isSwitchableNow(state, featureId) ? renderFeatureSwitch(state, featureId) : '';
+  return canSwitchFeature(state, featureId) ? renderFeatureSwitch(state, featureId) : renderLockedOff(state, featureId);
 }
 
 /** The feature whose scrolling the player can switch off without switching off the feature. */
@@ -219,7 +225,7 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView
 }
 
 function renderFeatureGroup(state: GameState, eraId: EraId, view: ShopView): string {
-  const featureIds = getUnlockedFeatureIds(state).filter((featureId) => FEATURES_BY_ID[featureId].eraId === eraId);
+  const featureIds = getUnlockedFeatureIds(state).filter((featureId) => findShownEraId(state, FEATURES_BY_ID[featureId].eraId) === eraId);
   const era = ERAS_BY_ID[eraId];
   return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId, view)).join('')}`;
 }
@@ -233,8 +239,8 @@ function renderRetiredFeatures(state: GameState): string {
 }
 
 function renderBuildTab(state: GameState, view: ShopView): string {
-  const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
-  return `${renderSpecializationPanel(state, view.isSpecializationsOpen)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
+  const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId) && findShownEraId(state, eraId) === eraId).reverse();
+  return `${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
 }
 
 // ---------- Effects ----------
@@ -353,7 +359,7 @@ function renderVisitedGroup(state: GameState, eraId: EraId, upgradeIds: readonly
 function renderVisitedGroups(state: GameState, upgradeIds: readonly UpgradeId[]): string {
   return [...ERA_IDS]
     .reverse()
-    .map((eraId) => ({ eraId, ids: upgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].eraId === eraId) }))
+    .map((eraId) => ({ eraId, ids: upgradeIds.filter((upgradeId) => findShownEraId(state, UPGRADES_BY_ID[upgradeId].eraId) === eraId) }))
     .filter((group) => group.ids.length > 0)
     .map((group) => renderVisitedGroup(state, group.eraId, group.ids))
     .join('');
@@ -652,17 +658,25 @@ const TAB_RENDERERS: Readonly<Record<ShopTab, (state: GameState, view: ShopView)
   build: renderBuildTab,
   upgrades: renderUpgradesTab,
   security: renderSecurityTab,
+  specialize: (state, view) => renderSpecializeTab(state, view.foundSpecializationIds),
 };
 
 export function renderShopBody(state: GameState, tab: ShopTab, view: ShopView): string {
   return TAB_RENDERERS[tab](state, view);
 }
 
-export function renderShopTabs(activeTab: ShopTab): string {
-  return SHOP_TABS.map(
-    (tab) =>
-      `<button type="button" class="shop-tab${tab === activeTab ? ' is-active' : ''}" role="tab" aria-selected="${tab === activeTab}" data-action="shop-tab" data-id="${tab}">${SHOP_TAB_LABELS[tab]}<span class="tab-badge" data-tab-badge="${tab}" hidden></span></button>`,
-  ).join('');
+/** The Specialize tab joins the others from 2005 in the test build's second run. */
+export function isShopTabShown(state: GameState, tab: ShopTab): boolean {
+  return tab !== 'specialize' || isSpecializeTabShown(state);
+}
+
+export function renderShopTabs(activeTab: ShopTab, state: GameState): string {
+  return SHOP_TABS.filter((tab) => isShopTabShown(state, tab))
+    .map(
+      (tab) =>
+        `<button type="button" class="shop-tab${tab === activeTab ? ' is-active' : ''}" role="tab" aria-selected="${tab === activeTab}" data-action="shop-tab" data-id="${tab}">${SHOP_TAB_LABELS[tab]}<span class="tab-badge" data-tab-badge="${tab}" hidden></span></button>`,
+    )
+    .join('');
 }
 
 function countAffordableDefenses(state: GameState): number {
@@ -673,10 +687,6 @@ function countAffordableOps(state: GameState): number {
   return getAvailableOpsIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)).length;
 }
 
-function canPlaceAnotherAd(state: GameState): boolean {
-  return canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state);
-}
-
 const AFFORDABLE_COUNTERS: Readonly<Record<ShopTab, (state: GameState) => number>> = {
   learn: (state) => getAvailableSkillIds(state).filter((skillId) => state.money >= calculateUpgradeCost(state, skillId)).length,
   build: (state) =>
@@ -685,9 +695,10 @@ const AFFORDABLE_COUNTERS: Readonly<Record<ShopTab, (state: GameState) => number
   security: (state) =>
     countAffordableDefenses(state) +
     countAffordableOps(state) +
-    Number(canPlaceAnotherAd(state)) +
+    Number(canPlaceAd(state)) +
     Number(canUpgradeHosting(state)) +
     Number(canRenewCertificate(state)),
+  specialize: countChoosable,
 };
 
 export function countAffordable(state: GameState, tab: ShopTab): number {
@@ -698,9 +709,9 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
   return [
     tab,
     view.isScrollJackingOn,
-    view.isSpecializationsOpen,
-    state.specializationId,
-    state.unlockedSpecializationIds.join(','),
+    // The Specialize tab redraws as you get closer; worked out only while it's open.
+    tab === 'specialize' ? calculateSpecializeTabSignature(state, view.foundSpecializationIds) : state.specializationIds.join(','),
+    isSpecializeTabShown(state),
     state.eraId,
     // A later run lists features the first doesn't have.
     state.runNumber,

@@ -1,3 +1,4 @@
+import { countSpikeRiddenOut } from './era-stats';
 import {
   INFECTION_DIFFICULTY_STEP_MS,
   MAX_INFECTION_DIFFICULTY,
@@ -24,6 +25,7 @@ import {
   isEraUnlocked,
   isFeatureInfected,
   isFeatureOnPage,
+  isSiteDown,
 } from './economy';
 import { formatMoney } from './format';
 import { drawRandoms, interpolateRange } from './random';
@@ -465,9 +467,16 @@ function mergeSteps(previous: GameStep, next: GameStep): GameStep {
   return { state: next.state, events: [...previous.events, ...next.events] };
 }
 
+/** A spike that ends with the site still up has been ridden out: some specializations ask for it. */
+function tickTrafficSpike(state: GameState, deltaMs: number): GameState {
+  const ticked = { ...state, trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs) };
+  const isRiddenOut = state.trafficSpikeRemainingMs > 0 && ticked.trafficSpikeRemainingMs === 0 && !isSiteDown(ticked);
+  return isRiddenOut ? countSpikeRiddenOut(ticked) : ticked;
+}
+
 /** Hazards only tick while the player is watching. Offline progress never spawns them. */
 export function advanceHazards(state: GameState, deltaMs: number): GameStep {
-  const spikeTicked = { ...state, trafficSpikeRemainingMs: Math.max(0, state.trafficSpikeRemainingMs - deltaMs) };
+  const spikeTicked = tickTrafficSpike(state, deltaMs);
   const cleaned = ageAndAutoCleanInfections(spikeTicked, deltaMs);
   return HAZARD_RULES.reduce<GameStep>(
     (step, rule) => mergeSteps(step, tickHazardRule(step.state, rule, deltaMs)),

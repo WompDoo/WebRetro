@@ -32,7 +32,7 @@ import { QUIET_HAZARDS } from './quiet-hazards';
 
 const SEED = 11;
 const NOW = 0;
-const VIEW = { isScrollJackingOn: false, isSpecializationsOpen: true } as const;
+const VIEW = { isScrollJackingOn: false, foundSpecializationIds: [] } as const;
 const AD_BLOCKER_RATE = 0.2;
 const EXPIRED_TRAFFIC = 0.4;
 const NOT_SECURE_TRAFFIC = 0.9;

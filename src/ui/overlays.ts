@@ -5,8 +5,7 @@ import { renderEndingAct } from './ending';
 import type { EndingAct } from './ending';
 import { findEntryStory } from './presentation';
 import { renderRelaunchStory } from './relaunch-story';
-import { renderSpecializationChoice } from './render-specializations';
-import { store } from './store';
+import { renderRelaunchWarning } from './render-specializations';
 
 
 /** Overlays are modal: the first button gets focus, so Enter and Space act on it. */
@@ -28,8 +27,7 @@ export function renderStory(state: GameState): boolean {
 function renderStoryOf(state: GameState, nextEraId: EraId): boolean {
   const story = findEntryStory(state.eraId, nextEraId);
   if (story === null) return false;
-  const choice = renderSpecializationChoice(state, nextEraId, store.pendingSpecializationId ?? state.specializationId);
-  elements.storyCard.innerHTML = renderRelaunchStory(state, nextEraId, story, choice);
+  elements.storyCard.innerHTML = renderRelaunchStory(state, nextEraId, story, renderRelaunchWarning(state));
   return true;
 }
 

@@ -1,3 +1,4 @@
+import { EMPTY_ERA_STATS } from './era-stats';
 import { SAVE_VERSION } from './constants';
 import { DEFAULT_SITE_NAME } from './site-name';
 import { NO_PERKS } from './content/perks';
@@ -108,8 +109,9 @@ export function createInitialGameState(randomSeed: number): GameState {
     legacyPerkLevels: NO_PERKS,
     areBacklinksBanked: false,
     edition: 'classic',
-    specializationId: 'homepage',
+    specializationIds: [],
     unlockedSpecializationIds: [],
+    eraStats: EMPTY_ERA_STATS,
     siteColors: null,
   };
 }

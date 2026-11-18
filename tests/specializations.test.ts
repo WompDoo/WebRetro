@@ -2,30 +2,44 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   advanceSimulation,
+  buyFeature,
+  areBacklinksOn,
   calculateAdValuePerAd,
-  calculateDirectRevenuePerVisitor,
-  findUnlockEra,
-  isUnlockWindowOpen,
-  calculateGateChecks,
+  calculateBacklinksEarned,
+  calculatePerkCost,
   calculateServerLoad,
   calculateSpecializationProgress,
   calculateVisitorsPerSecond,
-  canSpecializeInto,
+  canPlaceAd,
   checkSpecializationUnlocks,
+  chooseSpecialization,
+  cleanInfection,
+  countOnFire,
   createEraRecord,
   createInitialGameState,
   createPlaytestState,
+  EMPTY_LEGACY,
   ERAS_BY_ID,
+  FEATURE_IDS,
   FEATURES_BY_ID,
+  findNextEraId,
+  getUnlockedFeatureIds,
+  isEraUnlocked,
+  isSpecializationInView,
+  isSpecializationOpen,
   listGateRequirements,
-  listSpecializationChoices,
+  listOpenedBy,
+  listOutOfReach,
+  listPerksOf,
   listSpecializationEffects,
-  SPECIALIZATION_IDS,
+  recordFoundSpecializations,
   SPECIALIZATIONS_BY_ID,
-  specialize,
+  tickAdFree,
+  toggleFeature,
+  TREE_IDS,
 } from '../src/engine';
-import type { GameState, SpecializationId } from '../src/engine';
-import { describeSpecializationPath, renderSpecializationChoice, renderSpecializationPanel } from '../src/ui/render-specializations';
+import type { EraId, FeatureId, GameState, SpecializationId } from '../src/engine';
+import { describeSpecializationPath, isSpecializeTabShown, renderRelaunchWarning, renderSpecializationChoiceScreen, renderSpecializeTab } from '../src/ui/render-specializations';
 import { renderSite } from '../src/ui/sites';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
@@ -33,168 +47,228 @@ const SEED = 77;
 /** Below this a focus is a token; above it, a grind. */
 const MIN_FOCUS_LEVEL = 5;
 const MAX_FOCUS_LEVEL = 30;
-const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization' });
-const at = (eraId: 'web2-2005' | 'social-2011' | 'platform-2018' | 'ai-2024', stage: 'start' | 'end' = 'end'): GameState =>
-  testBuild({ ...createPlaytestState(eraId, stage, SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [] });
-const as = (state: GameState, specializationId: SpecializationId): GameState => ({ ...state, specializationId });
-const withLevels = (state: GameState, levels: Partial<GameState['featureLevels']>): GameState => ({ ...state, featureLevels: { ...state.featureLevels, ...levels } });
+
+/** The test build's second site: specializations are on. */
+const secondRun = (state: GameState): GameState => ({ ...state, edition: 'webspecialization', runNumber: 2 });
+const at = (eraId: EraId, stage: 'start' | 'end' = 'end'): GameState =>
+  secondRun({ ...createPlaytestState(eraId, stage, SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [] });
+const holding = (state: GameState, ids: readonly SpecializationId[]): GameState => ({ ...state, specializationIds: ids });
+const NO_LEVELS = Object.fromEntries(FEATURE_IDS.map((featureId) => [featureId, 0])) as GameState['featureLevels'];
+/** Only these features, at these levels: a site that leaned on purpose. */
+const leaning = (state: GameState, levels: Partial<GameState['featureLevels']>): GameState => ({ ...state, featureLevels: { ...NO_LEVELS, ...levels } });
+const switchedOff = (state: GameState, featureIds: readonly FeatureId[]): GameState => ({ ...state, switchedOffFeatureIds: featureIds });
+
+/** This era's spending: what went into each feature, out of a total. */
+const spending = (state: GameState, byFeature: Partial<Record<FeatureId, number>>, total: number): GameState => ({ ...state, eraStats: { ...state.eraStats, spent: total, spentByFeature: byFeature } });
+/** A 2005 photo-sharing site in the making: half the era's money went into the gallery, tags are up, the Flash intro is off. */
+const photosReady = (): GameState => switchedOff(spending(leaning(at('web2-2005'), { 'photo-gallery': 40, 'tag-cloud': 3, 'flash-intro': 1, blog: 16 }), { 'photo-gallery': 500 }, 1000), ['flash-intro']);
+
+describe('the specialization tree: when it opens', () => {
+  it('is the second site’s draw: off in the first run and in the classic game', () => {
+    assert.ok(isSpecializationOpen(at('web2-2005'), 'photos'));
+    assert.ok(!isSpecializationOpen({ ...at('web2-2005'), runNumber: 1 }, 'photos'));
+    assert.ok(!isSpecializationOpen({ ...at('web2-2005'), edition: 'classic' }, 'photos'));
+  });
+
+  it('shows its tab from the start of 2005, not in 1997', () => {
+    assert.ok(isSpecializeTabShown(at('web2-2005', 'start')));
+    assert.ok(!isSpecializeTabShown(at('homepage-1997')));
+    assert.ok(!isSpecializeTabShown({ ...at('web2-2005'), runNumber: 1 }));
+  });
+});
 
 describe('unlocking a specialization', () => {
-  it('happens this run, by building, with a news line', () => {
-    const photos = withLevels(at('web2-2005'), { 'photo-gallery': 35, comments: 20 });
-    const step = checkSpecializationUnlocks(photos);
+  it('takes a lean, a sacrifice or a skill: a site that leaned unlocks, with a news line', () => {
+    const step = checkSpecializationUnlocks(photosReady());
     assert.ok(step.state.unlockedSpecializationIds.includes('photos'));
     assert.match(step.events.map((event) => event.message).join(' '), /New specialization unlocked: Photo sharing/);
     assert.deepEqual(checkSpecializationUnlocks(step.state).events, [], 'once');
   });
 
-  it('shows how far along each condition is', () => {
-    const progress = calculateSpecializationProgress(withLevels(at('web2-2005'), { 'photo-gallery': 9 }), 'photos');
-    assert.deepEqual(progress.map((condition) => [condition.label, condition.current, condition.target, condition.isMet]), [['Photo gallery', 9, 35, false], ['Comments', 5, 20, false]]);
-  });
-
-  it('never happens in the classic game, and a new run starts with none', () => {
-    const classic = { ...withLevels(at('web2-2005'), { 'photo-gallery': 35, comments: 20 }), edition: 'classic' as const };
-    assert.deepEqual(checkSpecializationUnlocks(classic).state.unlockedSpecializationIds, []);
-    assert.deepEqual(createInitialGameState(1).unlockedSpecializationIds, []);
-  });
-
-  it('is checked as the game runs', () => {
-    const ready = withLevels(at('web2-2005'), { 'map-mashup': 20, comments: 20 });
-    assert.ok(advanceSimulation(ready, 100, 'live').state.unlockedSpecializationIds.includes('reviews'));
-  });
-
-  it('takes commitment: a usual end of 2005 has unlocked nothing', () => {
+  it('is out of reach of a player who buys everything: a usual end of 2005 has unlocked nothing', () => {
     assert.deepEqual(checkSpecializationUnlocks(at('web2-2005')).state.unlockedSpecializationIds, []);
   });
 
-  it('has a window: the era its features belong to, since they cost next to nothing in the next era’s money', () => {
-    const late = withLevels(at('social-2011'), { 'photo-gallery': 35, comments: 20 });
-    assert.ok(!checkSpecializationUnlocks(late).state.unlockedSpecializationIds.includes('photos'), 'photos closed with 2005');
-    assert.ok(!isUnlockWindowOpen(late, 'photos'));
-    assert.match(renderSpecializationPanel(late, true), /data-specialization="photos"[\s\S]*?Missed this run/);
-    const social = withLevels(at('social-2011'), { 'activity-feed': 18, 'share-buttons': 25 });
-    assert.ok(checkSpecializationUnlocks(social).state.unlockedSpecializationIds.includes('social'), 'social is a 2011 route');
-    assert.equal(findUnlockEra('video'), 'web2-2005');
-    assert.equal(findUnlockEra('shop'), 'social-2011');
-    assert.ok(isUnlockWindowOpen({ ...at('web2-2005'), eraId: 'crash-2000' }, 'photos'), 'the 2000 crash is still before 2005');
+  it('shows how far along each condition is: the lean as a share of this era’s spending', () => {
+    const [lean, flash, tags] = calculateSpecializationProgress(photosReady(), 'photos');
+    assert.equal(lean?.unit, 'share');
+    assert.equal(lean?.current, 0.5);
+    assert.match(lean?.label ?? '', /40% of this era’s spending into Photo gallery/);
+    assert.deepEqual([tags?.current, tags?.target, flash?.isMet], [3, 3, true]);
+  });
+
+  it('measures the lean in what you spend: buying a feature counts for it, everything else for the total', () => {
+    const state = { ...at('web2-2005'), money: 1e12 };
+    const bought = buyFeature(state, 'photo-gallery');
+    assert.ok((bought.eraStats.spentByFeature['photo-gallery'] ?? 0) > 0);
+    assert.equal(bought.eraStats.spent, bought.eraStats.spentByFeature['photo-gallery']);
+  });
+
+  it('comes into view half way to its lean, or straight away once found in an earlier run', () => {
+    const halfway = spending(at('web2-2005'), { 'photo-gallery': 200 }, 1000);
+    assert.ok(isSpecializationInView(halfway, 'photos', []));
+    assert.ok(!isSpecializationInView(at('web2-2005'), 'photos', []));
+    assert.ok(isSpecializationInView(at('web2-2005'), 'photos', ['photos']), 'found before');
+  });
+
+  it('counts what an era does: catching fire, riding out spikes, sorting spam, a stretch without ads', () => {
+    const state = at('web2-2005');
+    assert.equal(countOnFire(state).eraStats.onFireStarts, 1);
+    const spam: GameState = { ...state, infections: [{ id: 1, kind: 'spam', featureId: 'comments', ageMs: 0, minigameId: 'spam-sort' }] };
+    assert.equal(cleanInfection(spam, 1).state.eraStats.cleanedByKind.spam, 1);
+    assert.equal(tickAdFree({ ...state, adCount: 0 }, 1000).eraStats.adFreeMs, 1000);
+    assert.equal(tickAdFree({ ...state, adCount: 1, eraStats: { ...state.eraStats, adFreeMs: 9000 } }, 1000).eraStats.adFreeMs, 0, 'an ad starts the clock over');
+  });
+
+  it('is checked as the game runs', () => {
+    assert.ok(advanceSimulation(photosReady(), 100, 'live').state.unlockedSpecializationIds.includes('photos'));
+  });
+
+  it('joins a collection that lasts across runs, once', () => {
+    const legacy = recordFoundSpecializations(EMPTY_LEGACY, ['photos']);
+    assert.deepEqual(legacy.foundSpecializationIds, ['photos']);
+    assert.equal(recordFoundSpecializations(legacy, ['photos']), legacy);
   });
 });
 
-describe('specializing', () => {
-  it('is offered at the relaunches into 2011, 2018 and 2024, in the test build', () => {
-    assert.equal(canSpecializeInto(at('web2-2005'), 'social-2011'), true);
-    assert.equal(canSpecializeInto(at('web2-2005'), 'web2-2005'), false, 'not before 2011');
-    assert.equal(canSpecializeInto({ ...at('web2-2005'), edition: 'classic' }, 'social-2011'), false);
+describe('choosing a specialization', () => {
+  const unlocked = (): GameState => checkSpecializationUnlocks(photosReady()).state;
+
+  it('is free, at once, for good, and one per era', () => {
+    const step = chooseSpecialization(unlocked(), 'photos');
+    assert.deepEqual(step.state.specializationIds, ['photos']);
+    assert.equal(step.state.money, unlocked().money);
+    assert.match(step.events[0]?.message ?? '', /Your site is now a photo sharing/);
+    assert.ok(!isSpecializationOpen(step.state, 'video'), 'no second 2005 specialization');
+    assert.equal(chooseSpecialization(at('web2-2005'), 'video').state.specializationIds.length, 0, 'not unlocked: nothing happens');
   });
 
-  it('offers Homepage (no specialization) and whatever this run unlocked', () => {
-    const state = { ...at('web2-2005'), unlockedSpecializationIds: ['video', 'news'] as const };
-    assert.deepEqual(listSpecializationChoices(state), ['homepage', 'video', 'news']);
-    assert.equal(specialize(state, 'video').specializationId, 'video');
-    assert.equal(specialize(state, 'shop').specializationId, 'homepage', 'not unlocked');
+  it('keeps its sacrifice: the Flash intro stays off', () => {
+    const chosen = chooseSpecialization(unlocked(), 'photos').state;
+    assert.equal(toggleFeature(chosen, 'flash-intro'), chosen);
+    assert.ok(chosen.switchedOffFeatureIds.includes('flash-intro'));
   });
 
-  it('asks the checklist for the specialization’s focus from 2011 on', () => {
-    const focus = (state: GameState): string => calculateGateChecks(state).find((check) => check.requirement.kind === 'feature-level')?.requirement.label ?? '';
-    assert.equal(focus(as(at('social-2011'), 'video')), 'Video player level 8');
-    assert.equal(focus(as(at('social-2011'), 'shop')), 'Sign in with… level 5', 'a few above what a player builds anyway');
-    assert.equal(focus(as(at('social-2011'), 'homepage')), 'Like and share buttons level 15');
-    assert.equal(focus(as(at('web2-2005'), 'video')), 'Blog level 15', 'before 2011 every site is a homepage');
+  it('keeps ads few on a shop', () => {
+    const shop = { ...holding(at('social-2011'), ['shop']), adCount: 2, money: 1e30 };
+    assert.ok(!canPlaceAd(shop));
   });
 
-  it('gives every specialization a focus feature of its era for every era it shapes', () => {
-    SPECIALIZATION_IDS.forEach((id) => Object.entries(SPECIALIZATIONS_BY_ID[id].eras).forEach(([, plan]) => assert.ok(plan.focus.length > 0)));
-  });
-});
-
-describe('how a specialization makes money', () => {
-  const base = at('social-2011');
-
-  it('a video site pays more per ad and costs more to serve', () => {
-    assert.ok(calculateAdValuePerAd(as(base, 'video')) > calculateAdValuePerAd(base));
-    assert.ok(calculateServerLoad(as(base, 'video')) > calculateServerLoad(base));
+  it('follows lineage: a 2011 social network grows out of photo sharing or a blog network', () => {
+    assert.ok(!isSpecializationOpen(holding(at('social-2011'), ['video']), 'social'));
+    assert.ok(isSpecializationOpen(holding(at('social-2011'), ['photos']), 'social'));
+    assert.ok(isSpecializationOpen(at('social-2011'), 'shop'), 'the open door needs no parent');
+    const founder = { ...holding(at('social-2011'), ['video']), legacyPerkLevels: { ...at('social-2011').legacyPerkLevels, 'serial-founder': 1 } };
+    assert.ok(isSpecializationOpen(founder, 'social'), 'Serial founder ignores lineage');
   });
 
-  it('a shop sells: money per visitor without ads', () => {
-    assert.equal(calculateDirectRevenuePerVisitor(base), 0);
-    assert.ok(calculateDirectRevenuePerVisitor(as(base, 'shop')) > 0);
+  it('says what it closes and what it opens', () => {
+    const state = at('web2-2005');
+    assert.ok(listOutOfReach(state, 'video').includes('social'), 'a video site never becomes a social network');
+    assert.ok(listOpenedBy('video').includes('live-streaming'));
+    const screen = renderSpecializationChoiceScreen(state, 'video');
+    assert.match(screen, /No other 2005 specialization this run/);
+    assert.match(screen, /Out of reach later:[^<]*Social network/);
+    assert.match(screen, /Still possible this era instead/);
+    assert.match(screen, /data-action="confirm-specialization" data-id="video"/);
   });
 
-  it('a social network starts slow and pays off later', () => {
-    assert.ok(calculateAdValuePerAd(as(base, 'social')) < calculateAdValuePerAd(base));
-    const later = at('ai-2024');
-    assert.ok(calculateAdValuePerAd(as(later, 'social')) > calculateAdValuePerAd(later));
-  });
-
-  it('a microblog brings the most visitors', () => {
-    assert.ok(calculateVisitorsPerSecond(as(base, 'microblog')) > calculateVisitorsPerSecond(base));
+  it('warns at the relaunch when one was unlocked and not chosen', () => {
+    assert.match(renderRelaunchWarning(unlocked()), /You haven’t specialized this era/);
+    assert.equal(renderRelaunchWarning(at('web2-2005')), '');
   });
 });
 
-describe('specializations on screen', () => {
-  it('list every one with its progress in the test build, and nothing in the classic game', () => {
-    const html = renderSpecializationPanel(at('web2-2005'), true);
-    SPECIALIZATION_IDS.forEach((id) => assert.ok(html.includes(SPECIALIZATIONS_BY_ID[id].name), id));
-    assert.match(html, /Photo gallery 5\/35/);
-    assert.match(html, /Builds in 2011/, 'the routes 2011 unlocks say when');
-    assert.match(html, /Unlock by the end of 2005/, 'the routes 2005 unlocks say by when');
-    assert.equal(renderSpecializationPanel({ ...at('web2-2005'), edition: 'classic' }, true), '');
+describe('what a specialization does', () => {
+  it('asks the checklist for its focus, and pays its own way; older ones add a little', () => {
+    const video = holding(at('social-2011'), ['video']);
+    const focus = listGateRequirements(video).find((requirement) => requirement.kind === 'feature-level');
+    assert.equal(focus?.label, 'Video player level 8');
+    assert.ok(calculateAdValuePerAd(video) > calculateAdValuePerAd(at('social-2011')));
+    const stacked = holding(at('platform-2018'), ['video', 'live-streaming']);
+    assert.ok(listSpecializationEffects(stacked).some((effect) => effect.kind === 'feature-traffic-multiplier'), 'the video site keeps a little');
   });
 
-  it('offer only what this run unlocked at the relaunch, and say how many more there are', () => {
-    const html = renderSpecializationChoice({ ...at('web2-2005'), unlockedSpecializationIds: ['photos'] }, 'social-2011', 'photos');
-    assert.match(html, /data-id="photos" aria-pressed="true"/);
-    assert.match(html, /data-id="homepage" aria-pressed="false"/);
-    assert.doesNotMatch(html, /data-id="video"/);
-    assert.match(html, /7 more you haven’t unlocked/);
-  });
-
-  it('end with what the homepage became', () => {
-    const photos2011 = createEraRecord(as(at('social-2011'), 'photos'));
-    const social2018 = createEraRecord(as(at('platform-2018'), 'social'));
-    const ending = { ...as(at('ai-2024'), 'social'), eraRecords: [photos2011, social2018] };
-    assert.equal(describeSpecializationPath(ending), 'Your homepage became a photo-sharing site, then a social network.');
-    assert.equal(describeSpecializationPath(at('ai-2024')), '', 'a site that stayed a homepage says nothing');
-  });
-});
-
-describe('staying a homepage', () => {
-  const classic = (state: GameState): GameState => ({ ...state, edition: 'classic' });
-  const shapedEras = ['social-2011', 'platform-2018', 'ai-2024'] as const;
-
-  it('is the classic game: the same checklist, the same money and the same page in every era a route could change', () => {
-    shapedEras.forEach((eraId) => {
-      const homepage = as(at(eraId), 'homepage');
-      assert.deepEqual(listGateRequirements(homepage), ERAS_BY_ID[eraId].gateRequirements, eraId);
-      assert.deepEqual(listSpecializationEffects(homepage), [], eraId);
-      assert.equal(calculateVisitorsPerSecond(homepage), calculateVisitorsPerSecond(classic(homepage)), eraId);
-      assert.equal(calculateAdValuePerAd(homepage), calculateAdValuePerAd(classic(homepage)), eraId);
-      assert.equal(calculateServerLoad(homepage), calculateServerLoad(classic(homepage)), eraId);
-      assert.equal(renderSite(homepage, 0), `<div class="site-theme">${renderSite(classic(homepage), 0)}</div>`, `${eraId}: the page, unthemed`);
-    });
-  });
-
-  it('is always offered, first, and a specialized site can go back to it', () => {
-    assert.equal(listSpecializationChoices(at('web2-2005'))[0], 'homepage');
-    assert.equal(specialize(as(at('platform-2018'), 'video'), 'homepage').specializationId, 'homepage');
-    assert.match(renderSpecializationChoice(at('web2-2005'), 'social-2011', 'homepage'), /data-id="homepage" aria-pressed="true"[\s\S]*Homepage[\s\S]*No specialization/);
-  });
-
-  it('ends the story as a homepage again, after being something else', () => {
-    const video2011 = createEraRecord(as(at('social-2011'), 'video'));
-    const ending = { ...as(at('ai-2024'), 'homepage'), eraRecords: [createEraRecord(at('web2-2005')), video2011] };
-    assert.equal(describeSpecializationPath(ending), 'Your homepage became a video site, then a homepage again.');
-  });
-});
-
-describe('a route’s focus on the checklist', () => {
-  it('asks for a feature of its own era, at a level that means building it on purpose', () => {
-    SPECIALIZATION_IDS.forEach((id) =>
+  it('gives every specialization a focus of its own era’s features, at a level that means building it', () => {
+    TREE_IDS.forEach((id) =>
       Object.entries(SPECIALIZATIONS_BY_ID[id].eras).forEach(([eraId, plan]) => {
         assert.equal(FEATURES_BY_ID[plan.focus].eraId, eraId, `${id} in ${eraId}`);
         assert.ok(plan.level >= MIN_FOCUS_LEVEL && plan.level <= MAX_FOCUS_LEVEL, `${id} in ${eraId}: level ${plan.level}`);
       }),
     );
+  });
+
+  it('plans every era from its own on', () => {
+    TREE_IDS.forEach((id) => {
+      const { eraId, eras } = SPECIALIZATIONS_BY_ID[id];
+      const later = (['web2-2005', 'social-2011', 'platform-2018', 'ai-2024'] as const).filter((era) => ERAS_BY_ID[era].year >= ERAS_BY_ID[eraId].year);
+      assert.deepEqual(Object.keys(eras).sort(), [...later].sort(), id);
+    });
+  });
+
+  it('ends with what the homepage became', () => {
+    assert.equal(describeSpecializationPath(holding(at('ai-2024'), ['video', 'live-streaming'])), 'Your homepage became a video site in 2005, then a live streaming in 2011.');
+    assert.equal(describeSpecializationPath(at('ai-2024')), '');
+  });
+});
+
+describe('staying a homepage', () => {
+  const classic = (state: GameState): GameState => ({ ...state, edition: 'classic' });
+  const shapedEras = ['web2-2005', 'social-2011', 'platform-2018', 'ai-2024'] as const;
+
+  it('is the classic game: the same checklist, the same money and the same page', () => {
+    shapedEras.forEach((eraId) => {
+      const homepage = at(eraId);
+      assert.deepEqual(listGateRequirements(homepage), ERAS_BY_ID[eraId].gateRequirements, eraId);
+      assert.deepEqual(listSpecializationEffects(homepage), [], eraId);
+      assert.equal(calculateVisitorsPerSecond(homepage), calculateVisitorsPerSecond(classic(homepage)), eraId);
+      assert.equal(calculateServerLoad(homepage), calculateServerLoad(classic(homepage)), eraId);
+      assert.equal(renderSite(homepage, 0), `<div class="site-theme">${renderSite(classic(homepage), 0)}</div>`, `${eraId}: the page, unthemed`);
+    });
+  });
+});
+
+describe('the Specialize tab', () => {
+  it('explains itself and counts what’s been found, showing only what’s in view', () => {
+    const empty = renderSpecializeTab(at('web2-2005'), []);
+    assert.match(empty, /Found 0\/19/);
+    assert.match(empty, /Nothing in view yet/);
+    assert.doesNotMatch(empty, /data-specialization=/);
+    const near = renderSpecializeTab(photosReady(), []);
+    assert.match(near, /data-specialization="photos"/);
+    assert.doesNotMatch(near, /data-specialization="wiki"/, 'secrets stay hidden until near');
+  });
+
+  it('offers Choose… once unlocked', () => {
+    assert.match(renderSpecializeTab(checkSpecializationUnlocks(photosReady()).state, []), /data-action="open-specialization" data-id="photos"/);
+  });
+});
+
+describe('the test build’s runs', () => {
+  it('skips the 2000 crash and brings its content into 1997 from the third run', () => {
+    const third = { ...createInitialGameState(SEED), edition: 'webspecialization' as const, runNumber: 3 };
+    assert.equal(findNextEraId(third), 'web2-2005');
+    assert.ok(isEraUnlocked(third, 'crash-2000'));
+    assert.ok(getUnlockedFeatureIds(third).includes('e-cards'));
+    const classicThird = { ...third, edition: 'classic' as const };
+    assert.equal(findNextEraId(classicThird), 'crash-2000');
+  });
+
+  it('opens Backlinks with the third site: nothing earned at the end of the first', () => {
+    const finished = { ...createPlaytestState('ai-2024', 'end', SEED, 'react'), isGameFinished: true };
+    assert.ok(!areBacklinksOn({ ...finished, edition: 'webspecialization', runNumber: 1 }));
+    assert.equal(calculateBacklinksEarned({ ...finished, edition: 'webspecialization', runNumber: 1 }), 0);
+    assert.ok(areBacklinksOn({ ...finished, edition: 'webspecialization', runNumber: 2 }));
+    assert.ok(areBacklinksOn({ ...finished, edition: 'classic', runNumber: 1 }));
+  });
+
+  it('sells Serial founder for its own price, in the test build only', () => {
+    assert.equal(calculatePerkCost(EMPTY_LEGACY, 'serial-founder'), 50);
+    assert.ok(listPerksOf({ edition: 'webspecialization' }).includes('serial-founder'));
+    assert.ok(!listPerksOf({ edition: 'classic' }).includes('serial-founder'));
+  });
+
+  it('keeps its specializations in the Web Attic', () => {
+    assert.deepEqual(createEraRecord(holding(at('social-2011'), ['video', 'live-streaming'])).site.specializationIds, ['video', 'live-streaming']);
   });
 });

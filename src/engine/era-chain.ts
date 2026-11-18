@@ -23,9 +23,29 @@ export function getErasOfRun(runNumber: number): readonly EraId[] {
   return ERA_IDS.filter((eraId) => isEraInRun(eraId, runNumber));
 }
 
+/**
+ * The test build has no 2000 crash: its first specializations come in 2005, and a detour before them made no sense.
+ * Its content still arrives from the third run, folded into 1997 (see isCrashFolded).
+ */
+const CRASH_ERA_ID: EraId = 'crash-2000';
+
+export function isCrashFolded(state: Pick<GameState, 'edition'>, eraId: EraId): boolean {
+  return eraId === CRASH_ERA_ID && state.edition !== 'classic';
+}
+
+/** Where content of this era shows in this game: the crash's under 1997 in the test build. */
+export function findShownEraId(state: Pick<GameState, 'edition'>, eraId: EraId): EraId {
+  return isCrashFolded(state, eraId) ? 'homepage-1997' : eraId;
+}
+
+/** The eras this game plays, in order: the run's, without the crash in the test build. */
+export function getErasOfGame(state: Pick<GameState, 'edition' | 'runNumber'>): readonly EraId[] {
+  return getErasOfRun(state.runNumber).filter((eraId) => !isCrashFolded(state, eraId));
+}
+
 /** The era after this one in this run, or null in the last era. */
 export function findNextEraId(state: GameState): EraId | null {
-  const eras = getErasOfRun(state.runNumber);
+  const eras = getErasOfGame(state);
   return eras[eras.indexOf(state.eraId) + 1] ?? null;
 }
 

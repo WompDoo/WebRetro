@@ -1,4 +1,4 @@
-import { areSpecializationsOn, ERAS_BY_ID, isSpecializedEra } from '../../engine';
+import { areSpecializationsOn, ERAS_BY_ID, findCurrentSpecialization, isSpecializedEra } from '../../engine';
 import type { EraId, GameState, SpecializationId, SpecializedEraId } from '../../engine';
 import { escapeHtml } from '../dom';
 import { siteBrand } from './site-context';
@@ -24,16 +24,16 @@ interface SignatureItem {
 interface SpecializationLook {
   /** Four short links: they share the header with the site's name, which shortens with an ellipsis when crowded. */
   readonly nav: readonly string[];
-  readonly heroes: Readonly<Record<SpecializedEraId, HeroCopy>>;
+  /** Its era's words, where it has them; elsewhere the hero keeps the era's own. */
+  readonly heroes: Readonly<Partial<Record<SpecializedEraId, HeroCopy>>>;
   readonly blockTitle: string;
   readonly items: readonly SignatureItem[];
   /** The site's color when you haven't picked your own: what a site like this tends to look like. */
   readonly accent: string;
 }
 
-type LookedSpecializationId = Exclude<SpecializationId, 'homepage'>;
-
-const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
+/** The specializations with a page of their own so far; the rest keep the era's page until they get one. */
+const LOOKS: Readonly<Partial<Record<SpecializationId, SpecializationLook>>> = {
   photos: {
     nav: ['Feed', 'Explore', 'Upload', 'Profile'],
     heroes: {
@@ -130,7 +130,7 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
     ],
     accent: '#3B5BDB',
   },
-  streaming: {
+  'live-streaming': {
     nav: ['Live', 'Browse', 'Following', 'Go live'],
     heroes: {
       'social-2011': { title: 'Live now. Chat now.', text: 'Watch people do things, live, and talk about it while they do.', cta: 'Go live' },
@@ -164,10 +164,6 @@ const LOOKS: Readonly<Record<LookedSpecializationId, SpecializationLook>> = {
   },
 };
 
-function isLooked(specializationId: SpecializationId): specializationId is LookedSpecializationId {
-  return specializationId !== 'homepage';
-}
-
 function isLookShownIn(state: GameState, eraId: EraId): eraId is SpecializedEraId {
   return areSpecializationsOn(state) && isSpecializedEra(eraId);
 }
@@ -181,9 +177,14 @@ interface ShownLook {
 /** The look for this page: a specialized era of the test build, on anything but a Homepage. Archived pages keep theirs. */
 function findLook(state: GameState): ShownLook | null {
   const eraId = ERAS_BY_ID[state.eraId].baseEraId;
-  const { specializationId } = state;
-  if (!isLookShownIn(state, eraId) || !isLooked(specializationId)) return null;
-  return { look: LOOKS[specializationId], eraId };
+  const look = LOOKS[findCurrentSpecialization(state)];
+  if (!isLookShownIn(state, eraId) || look === undefined) return null;
+  return { look, eraId };
+}
+
+/** Has a page of its own so far: the rest keep the era's page until they get one. */
+export function hasSpecializationLook(specializationId: SpecializationId): boolean {
+  return LOOKS[specializationId] !== undefined;
 }
 
 function fillBrand(text: string, state: GameState): string {
@@ -201,7 +202,7 @@ export function findHeroCopy(state: GameState): HeroCopy | null {
   const shown = findLook(state);
   if (shown === null) return null;
   const hero = shown.look.heroes[shown.eraId];
-  return { title: fillBrand(hero.title, state), text: fillBrand(hero.text, state), cta: fillBrand(hero.cta, state) };
+  return hero === undefined ? null : { title: fillBrand(hero.title, state), text: fillBrand(hero.text, state), cta: fillBrand(hero.cta, state) };
 }
 
 /** The accent a site like this tends to have, or null for a Homepage and before 2011. */
@@ -212,7 +213,7 @@ export function findSpecializationAccent(state: GameState): string | null {
 
 /** A class on the page's root, for anything the specialization changes in the era's own styles. */
 export function specializationClass(state: GameState): string {
-  return findLook(state) === null ? '' : ` is-spec-${state.specializationId}`;
+  return findLook(state) === null ? '' : ` is-spec-${findCurrentSpecialization(state)}`;
 }
 
 function renderItem(item: SignatureItem): string {
@@ -224,7 +225,7 @@ export function renderSignatureBlock(state: GameState): string {
   const shown = findLook(state);
   if (shown === null) return '';
   const { look } = shown;
-  return `<section class="feature-block spec-block spec-block--${state.specializationId}"><h2 class="feature-heading">${escapeHtml(look.blockTitle)}</h2><ul class="spec-items">${look.items.map(renderItem).join('')}</ul></section>`;
+  return `<section class="feature-block spec-block spec-block--${findCurrentSpecialization(state)}"><h2 class="feature-heading">${escapeHtml(look.blockTitle)}</h2><ul class="spec-items">${look.items.map(renderItem).join('')}</ul></section>`;
 }
 
 /** The navigation's links, the first marked as the page you're on. */

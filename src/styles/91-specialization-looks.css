@@ -11,8 +11,8 @@
 .spec-item-meta { color: #7A7A85; font-size: 12px; }
 
 /* Tiles: a picture on top, words under it. */
-.spec-block:is(.spec-block--photos, .spec-block--video, .spec-block--streaming, .spec-block--shop) .spec-items { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-.spec-block:is(.spec-block--photos, .spec-block--video, .spec-block--streaming, .spec-block--shop) .spec-item-icon {
+.spec-block:is(.spec-block--photos, .spec-block--video, .spec-block--live-streaming, .spec-block--shop) .spec-items { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+.spec-block:is(.spec-block--photos, .spec-block--video, .spec-block--live-streaming, .spec-block--shop) .spec-item-icon {
   display: grid; place-items: center; margin-bottom: 4px; border-radius: 8px; background: var(--site-accent-soft, #EEF2F7); font-size: 38px; line-height: 1;
 }
 .spec-block.spec-block.spec-block--photos .spec-item-icon, .spec-block.spec-block--shop .spec-item-icon { aspect-ratio: 1; }
@@ -24,11 +24,11 @@
   background: var(--site-accent, #E03131); color: var(--site-accent-ink, #FFFFFF); font-size: 14px; transform: translate(-50%, -50%);
 }
 /* Live channels: a colored 16:9 frame with the LIVE badge in its corner. */
-.spec-block.spec-block--streaming .spec-item-icon {
+.spec-block.spec-block--live-streaming .spec-item-icon {
   aspect-ratio: 16 / 9; place-items: start; padding: 6px; background: linear-gradient(135deg, var(--site-accent, #7048E8), var(--site-accent-2, #AE3EC9));
   color: #FFFFFF; font-size: 10px; font-weight: 800; letter-spacing: 0.04em;
 }
-.spec-block.spec-block.spec-block--streaming .spec-item-meta::before { content: "● "; color: #E03131; }
+.spec-block.spec-block.spec-block--live-streaming .spec-item-meta::before { content: "● "; color: #E03131; }
 .spec-block.spec-block--shop .spec-item-meta { color: var(--site-accent-strong, #D9480F); font-size: 16px; font-weight: 800; }
 
 /* Lists: one line of who or what, then the words. */

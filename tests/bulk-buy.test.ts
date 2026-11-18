@@ -4,7 +4,7 @@ import { calculateFeatureLevelsCost, createPlaytestState } from '../src/engine';
 import type { GameState } from '../src/engine';
 import { renderShopBody } from '../src/ui/render-shop';
 
-const VIEW = { isScrollJackingOn: false, isSpecializationsOpen: true } as const;
+const VIEW = { isScrollJackingOn: false, foundSpecializationIds: [] } as const;
 const endOf1997 = (): GameState => createPlaytestState('homepage-1997', 'end', 9, 'react');
 const bulkButton = (html: string, amount: number): RegExpMatchArray | null => html.match(new RegExp(`<button[^>]*data-id="guestbook" data-amount="${amount}"[^>]*>`));
 

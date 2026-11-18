@@ -286,11 +286,11 @@ function renderTabBadges(issues: readonly Issue[]): void {
 }
 
 function readShopView(): ShopView {
-  return { isScrollJackingOn: store.isScrollJackingOn, isSpecializationsOpen: store.isSpecializationsOpen };
+  return { isScrollJackingOn: store.isScrollJackingOn, foundSpecializationIds: store.legacy.foundSpecializationIds };
 }
 
 function renderShop(): void {
-  setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab));
+  setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab, store.game));
   elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab, readShopView());
 }
 

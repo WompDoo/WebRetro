@@ -4,6 +4,7 @@ import { calculateHiredTypingPerSecond, calculateNetRevenuePerSecond, calculateV
 import { advanceHazards } from './hazards';
 import { advanceOpportunities } from './opportunities';
 import { checkMilestones } from './milestones';
+import { tickAdFree } from './era-stats';
 import { checkSpecializationUnlocks } from './specializations';
 import type { GameState, GameStep, SimulationMode } from './types';
 
@@ -40,6 +41,6 @@ export function advanceSimulation(state: GameState, deltaMs: number, mode: Simul
   const produced = applyProduction(prepare(state, mode), deltaMs);
   const advanced = mode === 'live' ? advanceLiveSystems(produced, deltaMs) : { state: produced, events: [] };
   const milestones = checkMilestones(advanced.state);
-  const unlocks = checkSpecializationUnlocks(milestones.state);
+  const unlocks = checkSpecializationUnlocks(tickAdFree(milestones.state, deltaMs));
   return { state: unlocks.state, events: [...advanced.events, ...milestones.events, ...unlocks.events] };
 }

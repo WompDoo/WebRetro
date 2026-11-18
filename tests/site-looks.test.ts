@@ -1,19 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { chooseSiteColors, createEraRecord, createPlaytestState, SPECIALIZATION_IDS } from '../src/engine';
+import { chooseSiteColors, createEraRecord, createPlaytestState, ERAS_BY_ID, SPECIALIZATION_IDS, SPECIALIZATIONS_BY_ID } from '../src/engine';
 import type { EraId, GameState, SiteColors, SpecializationId } from '../src/engine';
 import { calculateLuminance, hexToHsl, hslToHex, mixHex, pickInk, rotateHue } from '../src/ui/color-math';
 import { describeWheelShade, placeOnWheel, readWheelPoint, renderSiteColorsPanel } from '../src/ui/render-site-colors';
 import { buildThemeVariables, findEffectiveColors, SITE_PALETTES, wrapInSiteTheme } from '../src/ui/site-theme';
 import { calculateSiteSignature, renderSite, siteBrand } from '../src/ui/sites';
+import { hasSpecializationLook } from '../src/ui/sites/specialization-look';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
 const SEED = 31;
 const NOW = 0;
-const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization' });
+const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization', runNumber: 2 });
 const at = (eraId: EraId, stage: 'start' | 'end' = 'end'): GameState =>
   testBuild({ ...createPlaytestState(eraId, stage, SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [], isCookieBannerDismissed: true });
-const as = (state: GameState, specializationId: SpecializationId): GameState => ({ ...state, specializationId });
+const as = (state: GameState, specializationId: SpecializationId): GameState => ({ ...state, specializationIds: specializationId === 'homepage' ? [] : [specializationId] });
 const OCEAN: SiteColors = { accent: '#1864AB', background: 'white' };
 
 describe('a specialized site looks the part', () => {
@@ -42,14 +43,19 @@ describe('a specialized site looks the part', () => {
     assert.match(news2024, /<nav class="ai-links"><span>Latest<\/span>/);
   });
 
-  it('has a page for every specialization in every era it shapes', () => {
-    const looked = SPECIALIZATION_IDS.filter((id) => id !== 'homepage');
+  it('has a page for each specialization with a look, in every era from its own on', () => {
+    const looked = SPECIALIZATION_IDS.filter(hasSpecializationLook);
+    assert.ok(looked.length >= 8);
     const eras: readonly EraId[] = ['social-2011', 'platform-2018', 'ai-2024'];
-    eras.forEach((eraId) => looked.forEach((id) => assert.match(renderSite(as(at(eraId), id), NOW), new RegExp(`spec-block--${id}`), `${id} in ${eraId}`)));
+    eras.forEach((eraId) =>
+      looked
+        .filter((id) => ERAS_BY_ID[SPECIALIZATIONS_BY_ID[id].eraId].year <= ERAS_BY_ID[eraId].year)
+        .forEach((id) => assert.match(renderSite(as(at(eraId), id), NOW), new RegExp(`spec-block--${id}`), `${id} in ${eraId}`)),
+    );
   });
 
-  it('is a homepage like everyone’s before 2011', () => {
-    assert.doesNotMatch(renderSite(as(at('web2-2005'), 'video'), NOW), /spec-block/);
+  it('is a homepage like everyone’s in 1997', () => {
+    assert.doesNotMatch(renderSite(as(at('homepage-1997'), 'video'), NOW), /spec-block/);
   });
 
   it('puts the site’s name in the hero', () => {

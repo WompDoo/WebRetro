@@ -1,3 +1,4 @@
+import { countOnFire } from './era-stats';
 import { BUFFS_BY_ID } from './content/buffs';
 import type { ActiveBuff, BuffId, BuffTarget, CodeInputOutcome, GameState } from './types';
 
@@ -64,7 +65,7 @@ function clampHeat(heat: number): number {
 
 /** A full meter sets you on fire and empties: the next fire is earned from zero. */
 function igniteWhenFull(state: GameState): GameState {
-  return state.typingHeat >= FULL_HEAT ? { ...startBuff(state, 'on-fire'), typingHeat: NO_HEAT } : state;
+  return state.typingHeat >= FULL_HEAT ? { ...countOnFire(startBuff(state, 'on-fire')), typingHeat: NO_HEAT } : state;
 }
 
 /** A keystroke warms the meter (a typo cools it). While you're on fire it stays empty: the fire doesn't feed itself. */

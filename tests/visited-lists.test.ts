@@ -6,7 +6,7 @@ import { LEARN_LINKS } from '../src/ui/learn-links';
 import { describeWhatItDid, renderShopBody } from '../src/ui/render-shop';
 
 const SEED = 21;
-const VIEW = { isScrollJackingOn: false, isSpecializationsOpen: true } as const;
+const VIEW = { isScrollJackingOn: false, foundSpecializationIds: [] } as const;
 
 const endOf1997 = (): GameState => createPlaytestState('homepage-1997', 'end', SEED, 'react');
 const startOf2005 = (): GameState => createPlaytestState('web2-2005', 'start', SEED, 'react');

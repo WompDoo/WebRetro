@@ -2,7 +2,7 @@ import {
   advanceEra,
   chooseSiteColors,
   isSiteBackground,
-  specialize,
+  chooseSpecialization,
   SPECIALIZATION_IDS,
   buyDefense,
   buyFeatureLevels,
@@ -45,7 +45,7 @@ import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
 import { createPlaytestHandlers } from './playtest-actions';
-import { describeSpecialization } from './render-specializations';
+import { renderSpecializationChoiceScreen } from './render-specializations';
 import { findPickerColors } from './render-site-colors';
 import { SITE_PALETTES } from './site-theme';
 import { flashMoneyLoss } from './renderer';
@@ -53,7 +53,7 @@ import { describeRetirement } from './retirement';
 import type { Renderer } from './renderer';
 import type { Intro } from './intro';
 import type { MinigameModal } from './minigames/minigame-modal';
-import { MOBILE_TABS, pushMessage, startNewGame, store, updateGame } from './store';
+import { applyStep, MOBILE_TABS, pushMessage, startNewGame, store, updateGame } from './store';
 import type { MobileTab } from './store';
 import { addKeystrokePay } from './typing-income';
 
@@ -144,15 +144,6 @@ export function writeCodeKeystroke(): KeystrokeFeedback {
 }
 
 /** The wipe covers the browser; the era swaps underneath it, halfway through. */
-/** The choice from the relaunch story, once the new era has started: the old era is on record as it was. */
-function applyPendingSpecialization(): void {
-  const pending = store.pendingSpecializationId;
-  store.pendingSpecializationId = null;
-  if (pending === null || pending === store.game.specializationId) return;
-  updateGame((state) => specialize(state, pending));
-  pushMessage(`Your site is now ${describeSpecialization(store.game.specializationId)}.`);
-}
-
 function runEraWipe(): void {
   elements.eraWipe.classList.remove('is-running');
   void elements.eraWipe.offsetWidth;
@@ -164,7 +155,6 @@ function runEraWipe(): void {
     updateGame(advanceEra);
     const era = ERAS_BY_ID[store.game.eraId];
     pushMessage(`Relaunched for ${era.year}: ${era.name}. Your old features got a makeover. ${retirement}`.trim());
-    applyPendingSpecialization();
   }, WIPE_SWAP_DELAY_MS);
   window.setTimeout(() => elements.eraWipe.classList.remove('is-running'), WIPE_DURATION_MS);
 }
@@ -176,7 +166,6 @@ function startMigration(): void {
     updateGame(advanceEra);
     return;
   }
-  store.pendingSpecializationId = null;
   if (renderStory(store.game)) showOverlay(elements.storyOverlay);
 }
 
@@ -285,13 +274,16 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
       runEraWipe();
     },
     'cancel-migration': () => hideOverlay(elements.storyOverlay),
-    'toggle-specializations': () => {
-      store.isSpecializationsOpen = !store.isSpecializationsOpen;
-    },
-    'choose-specialization': withId(isSpecializationId, (id) => {
-      store.pendingSpecializationId = id;
-      renderStory(store.game);
+    /** The Specialize tab's Choose…: the screen that asks before it's for good. */
+    'open-specialization': withId(isSpecializationId, (id) => {
+      elements.specCard.innerHTML = renderSpecializationChoiceScreen(store.game, id);
+      showOverlay(elements.specOverlay);
     }),
+    'confirm-specialization': withId(isSpecializationId, (id) => {
+      applyStep(chooseSpecialization(store.game, id));
+      hideOverlay(elements.specOverlay);
+    }),
+    'cancel-specialization': () => hideOverlay(elements.specOverlay),
     'toggle-colors': () => {
       store.isColorsOpen = !store.isColorsOpen;
     },
