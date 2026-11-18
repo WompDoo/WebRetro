@@ -50,6 +50,10 @@ export interface Renderer {
   readonly startFrames: () => void;
   /** After a reset: render the era chrome and skill chrome again, and allow the end card to show again. */
   readonly forgetRenderedState: () => void;
+  /** The browser's Reload button: the page goes blank while it loads, then comes back. */
+  readonly reloadSite: () => void;
+  /** The browser's Home button: back to the top of the home page, loaded again. */
+  readonly goHome: () => void;
 }
 
 type SignatureKey = 'site' | 'popups' | 'shop' | 'goal' | 'news' | 'skills' | 'issues' | 'colors';
@@ -58,6 +62,8 @@ const SLOW_RENDER_INTERVAL_MS = 250;
 const MIN_RELOAD_MS = 300;
 const MAX_RELOAD_MS = 1_800;
 const RELOAD_MS_PER_SECOND_OF_LOAD = 120;
+/** A reload by hand: the page is blank for the first half of the load, then draws as the progress bar finishes. */
+const BLANK_SHARE_OF_RELOAD = 0.5;
 
 /** Restarts a CSS animation on an element that already has its class. */
 function restartAnimation(element: HTMLElement, className: string): void {
@@ -347,9 +353,29 @@ export function createRenderer(editor: CodeEditor): Renderer {
     if (boot !== null) bootTimer = window.setTimeout(() => setBootPhase(null), boot.durationMs);
   };
 
+  const measureLoadTime = (): number => pickLoadTime(calculateEconomySnapshot(store.game), resolveDeviceView(store.game, store.deviceView));
+
   const reloadPage = (): void => {
-    playReloadProgress(pickLoadTime(calculateEconomySnapshot(store.game), resolveDeviceView(store.game, store.deviceView)));
+    playReloadProgress(measureLoadTime());
     playBoot();
+  };
+
+  let blankTimer = 0;
+
+  /** Drawn from scratch, so a page that had scrolled inside itself or played its intro starts over. */
+  const drawSiteAfterBlank = (): void => {
+    elements.site.classList.remove('is-blank');
+    signatures.site = calculateSiteSignature(store.game);
+    elements.site.innerHTML = renderSite(store.game, Date.now());
+    playBoot();
+  };
+
+  /** Reload: blank for as long as the era's connection takes (a modem takes a while), then the page again. */
+  const reloadSiteByHand = (): void => {
+    window.clearTimeout(blankTimer);
+    const durationMs = playReloadProgress(measureLoadTime());
+    elements.site.classList.add('is-blank');
+    blankTimer = window.setTimeout(drawSiteAfterBlank, durationMs * BLANK_SHARE_OF_RELOAD);
   };
 
   /** Every change reloads the page; the first render is the page loading, so a single-page app boots then too. */
@@ -446,6 +472,11 @@ export function createRenderer(editor: CodeEditor): Renderer {
       signatures.skills = '';
       renderedEraId = '';
       endCardShown = false;
+    },
+    reloadSite: reloadSiteByHand,
+    goHome: () => {
+      elements.site.scrollTop = 0;
+      reloadSiteByHand();
     },
   };
 }

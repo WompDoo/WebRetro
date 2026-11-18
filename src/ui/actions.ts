@@ -313,6 +313,8 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
       updateGame((state) => chooseSiteColors(state, { ...findPickerColors(state), background }));
     }),
     'site-colors-reset': () => updateGame((state) => chooseSiteColors(state, null)),
+    'browser-reload': () => renderer.reloadSite(),
+    'browser-home': () => renderer.goHome(),
     'open-achievements': openAchievements,
     'close-achievements': () => hideOverlay(elements.achievementsOverlay),
     'achievement-detail': (target) => showAchievementDetail(readId(target)),
