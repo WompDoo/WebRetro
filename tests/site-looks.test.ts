@@ -43,15 +43,37 @@ describe('a specialized site looks the part', () => {
     assert.match(news2024, /<nav class="ai-links"><span>Latest<\/span>/);
   });
 
-  it('has a page for each specialization with a look, in every era from its own on', () => {
+  it('has a page for every specialization but the homepage, in every era from its own on', () => {
     const looked = SPECIALIZATION_IDS.filter(hasSpecializationLook);
-    assert.ok(looked.length >= 8);
-    const eras: readonly EraId[] = ['social-2011', 'platform-2018', 'ai-2024'];
+    assert.deepEqual(looked, SPECIALIZATION_IDS.filter((id) => id !== 'homepage'));
+    const eras: readonly EraId[] = ['web2-2005', 'social-2011', 'platform-2018', 'ai-2024'];
     eras.forEach((eraId) =>
       looked
         .filter((id) => ERAS_BY_ID[SPECIALIZATIONS_BY_ID[id].eraId].year <= ERAS_BY_ID[eraId].year)
         .forEach((id) => assert.match(renderSite(as(at(eraId), id), NOW), new RegExp(`spec-block--${id}`), `${id} in ${eraId}`)),
     );
+  });
+
+  it('says what it is under the 2005 logo, in that year’s words', () => {
+    assert.match(renderSite(as(at('web2-2005'), 'forum'), NOW), /<span class="w2-tagline">The community for people like you\.<\/span>/);
+    assert.match(renderSite(as(at('web2-2005'), 'forum'), NOW), /<nav class="w2-nav"><span class="is-active">Forums<\/span>/);
+    assert.doesNotMatch(renderSite(at('web2-2005'), NOW), /w2-tagline/);
+  });
+
+  it('is led by the newest specialization, and keeps a link and a shorter block for each earlier one', () => {
+    const stacked = { ...at('platform-2018'), specializationIds: ['video', 'social', 'stories'] as const };
+    const page = renderSite(stacked, NOW);
+    assert.match(page, /<nav class="lp-links"><span>Stories<\/span><span>Camera<\/span><span>Friends<\/span><span>Videos<\/span><\/nav>/);
+    assert.match(page, /spec-block--stories spec-block--tiles"[\s\S]*spec-block--social spec-block--list is-earlier[\s\S]*spec-block--video spec-block--tiles is-earlier/);
+    const earlierVideos = page.split('spec-block--video')[1] ?? '';
+    assert.equal((earlierVideos.split('</section>')[0]?.match(/class="spec-item"/g) ?? []).length, 2);
+    assert.match(page, /Here today, gone tomorrow\./);
+    assert.equal(findEffectiveColors(stacked)?.accent, '#FAB005');
+  });
+
+  it('keeps the newest’s own link when an earlier one shares its name', () => {
+    const stacked = { ...at('platform-2018'), specializationIds: ['social', 'chat-community'] as const };
+    assert.match(renderSite(stacked, NOW), /<nav class="lp-links"><span>Servers<\/span><span>Friends<\/span><span>Events<\/span><span>Download<\/span><\/nav>/);
   });
 
   it('is a homepage like everyone’s in 1997', () => {
