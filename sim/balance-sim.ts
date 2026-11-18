@@ -36,6 +36,7 @@ import {
 } from '../src/engine';
 import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
 import { applySimSpecialization, applySwitches, SIM_SPECIALIZATION, SWITCHED_OFF } from './switches';
+import { avoidsOffPath, chooseOnPath, describeSpendingShares, SIM_PATH, startSecondRun, steerOnPath } from './path';
 import type { PlayerProfile } from './bot';
 
 
@@ -113,8 +114,31 @@ const SEED_STRIDE = 7_919;
 /** The balance sim plays a first run: the 2000 crash comes with the third. */
 const FIRST_RUN_ERAS = getErasOfRun(1);
 
+/** On a path, the path moves first; whatever it leaves, the bot buys as usual, holding off what would spoil a lean. */
+function decideOnPath(state: GameState, profile: PlayerProfile): GameState {
+  if (SIM_PATH === null) return decide(state, profile);
+  return steerOnPath(state, SIM_PATH) ?? decide(state, profile, avoidsOffPath(state, SIM_PATH));
+}
+
+function chooseAlongPath(state: GameState, now: number, log: Log, name: string): GameState {
+  if (SIM_PATH === null) return state;
+  const chosen = chooseOnPath(state, SIM_PATH);
+  const added = chosen.specializationIds.filter((id) => !state.specializationIds.includes(id));
+  added.forEach((id) => log(`  [${name}] chose ${id} at ${(now / MS_PER_MINUTE).toFixed(1)} min, ${state.eraId}`));
+  return chosen;
+}
+
+function describeUnlocked(state: GameState): string {
+  return state.unlockedSpecializationIds.length === 0 ? 'none' : state.unlockedSpecializationIds.join(', ');
+}
+
+function describePathAtEraEnd(state: GameState): string {
+  if (SIM_PATH === null) return '';
+  return ` · spending: ${describeSpendingShares(state)} · unlocked: ${describeUnlocked(state)} · site: ${state.specializationIds.join('+') || 'homepage'}`;
+}
+
 function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResult {
-  let state = start.state;
+  let state = SIM_PATH === null ? start.state : startSecondRun(start.state);
   let now = start.now;
   let entry2018: EraEntry | null = null;
   let typingDebt = 0;
@@ -135,6 +159,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     typingDebt -= keystrokes;
     state = typeKeystrokes(state, keystrokes);
     state = applySimSpecialization(applySwitches(advanceSimulation(state, TICK_MS, 'live').state, SWITCHED_OFF), SIM_SPECIALIZATION);
+    state = chooseAlongPath(state, now, log, profile.name);
     buffMsThisEra = addBuffTime(buffMsThisEra, state, TICK_MS);
     const reaction = reactToHazards(state, seenAt, now, profile);
     const wasExpired = reaction.state.isCertificateExpired;
@@ -162,7 +187,7 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
     if (now % DECISION_INTERVAL_MS === 0) {
       const before = state.featureLevels;
       const upgradesBefore = state.purchasedUpgradeIds;
-      state = decide(state, profile);
+      state = decideOnPath(state, profile);
       Object.entries(state.featureLevels)
         .filter(([featureId, level]) => level > 0 && before[featureId as keyof typeof before] === 0)
         .forEach(([featureId]) => firstPurchases.set(featureId, now));
@@ -188,7 +213,8 @@ function runProfile(profile: PlayerProfile, start: EraEntry, log: Log): RunResul
         `  [${profile.name}] ${state.eraId} done at ${(now / MS_PER_MINUTE).toFixed(1)} min · ` +
           `${formatCompactNumber(calculateVisitorsPerSecond(state))} visitors/s · ` +
           `${formatMoney(calculateNetRevenuePerSecond(state))}/s · ads ${state.adCount} · ` +
-          `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s (phone ${calculatePhoneLoadTimeSeconds(state).toFixed(1)}s, ${(calculatePerformanceTrafficFactor(state) * 100).toFixed(0)}% wait) · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}`,
+          `upgrades ${state.purchasedUpgradeIds.length} · load ${calculateLoadTimeSeconds(state).toFixed(1)}s (phone ${calculatePhoneLoadTimeSeconds(state).toFixed(1)}s, ${(calculatePerformanceTrafficFactor(state) * 100).toFixed(0)}% wait) · server ${(calculateServerLoad(state) * 100).toFixed(0)}% · hosting tier ${state.hostingTier}` +
+          describePathAtEraEnd(state),
       );
       reportTradeIn(profile.name, state, log);
       state = chooseConsentBanner(advanceEra(state), profile.consentBanner);
