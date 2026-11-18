@@ -398,12 +398,12 @@ describe('traffic that depends on the moment, the era and the site', () => {
     assert.equal(advanceSimulation(site, MINUTE_MS, 'offline').state.eraStats.elapsedMs, site.eraStats.elapsedMs + MINUTE_MS);
   });
 
-  it('network effect: each doubling since the era began, up to two and a half times', () => {
+  it('network effect: each doubling since the era began, up to one and a half times', () => {
     const site = holding('social', ['network-effect']);
     const base = calculateBaseVisitorsPerSecond(site);
     const since = (anchor: number): number => calculateSpecializationTrafficFactor({ ...site, eraStats: { ...site.eraStats, startBaseVisitors: anchor } });
-    assert.equal(Number(since(base / 4).toFixed(PRECISION)), Number((1.15 ** 2).toFixed(PRECISION)));
-    assert.equal(since(base / 1e9), 2.5);
+    assert.equal(Number(since(base / 4).toFixed(PRECISION)), Number((1.1 ** 2).toFixed(PRECISION)));
+    assert.equal(since(base / 1e9), 1.5);
     assert.equal(since(base * 2), 1, 'a site smaller than it began gets nothing');
     assert.equal(since(0), 1, 'nothing to count from');
   });

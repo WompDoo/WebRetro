@@ -198,7 +198,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [lean('flash-intro', 0.4), skill('embed-tag'), stat('spikes-ridden-out', 1)],
     restriction: null,
     eras: {
-      'web2-2005': plan('flash-intro', 15, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.3)]),
+      // Its own channels, not fifteen levels of a 1,200 KB intro: a video site in 2005 is about the videos.
+      'web2-2005': plan('channels', 8, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.3)]),
       'social-2011': plan('video-player', 8, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)]),
       'platform-2018': withEffects(ERA_ITEM[2018], [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)]),
       'ai-2024': plan('for-you-feed', 12, [adValue(1.22), adAnnoyance(1.2), serverLoad(1.6)]),
@@ -254,7 +255,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['photos', 'blog-network'],
     isSecret: false,
-    unlock: [lean('activity-feed', 0.4), feature('share-buttons', 25), feature('social-login', 5)],
+    // A homepage already puts 46% of 2011's building into the activity feed: the lean asks for well beyond that.
+    unlock: [lean('activity-feed', 0.6), feature('share-buttons', 25), feature('social-login', 5)],
     restriction: null,
     eras: {
       'social-2011': plan('activity-feed', 9, [adValue(0.75), traffic(1.2)]),
@@ -398,7 +400,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['news', 'microblog', 'blog-network'],
     isSecret: false,
-    unlock: [lean('newsletter', 0.4), feature('pricing-table', 10), { kind: 'consent', banner: 'honest' }],
+    unlock: [lean('newsletter', 0.5), feature('pricing-table', 10), { kind: 'consent', banner: 'honest' }],
     restriction: null,
     eras: {
       'platform-2018': plan('newsletter', 13, [perVisitor(0.4), adValue(0.9)]),
@@ -468,7 +470,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'ai-2024',
     parents: ['stories', 'streaming-service', 'video'],
     isSecret: false,
-    unlock: [lean('for-you-feed', 0.4), feature('ai-images', 10)],
+    unlock: [lean('for-you-feed', 0.55), feature('ai-images', 10)],
     restriction: null,
     eras: { 'ai-2024': plan('for-you-feed', 12, [adValue(1.25), serverLoad(1.4)]) },
     legacy: keeps('for-you-feed'),

@@ -43,11 +43,14 @@ describe('the sim player who chases a path', () => {
     assert.equal(avoidsOffPath(at2005(), [])(option('feature:blog')), false, 'no path, no holding back');
   });
 
-  it('steps towards the lean: the skill first, then the feature', () => {
-    const rich = { ...at2005(), money: 1e12, featureLevels: NO_LEVELS, purchasedUpgradeIds: at2005().purchasedUpgradeIds.filter((id) => id !== 'learn-jquery') };
+  it('meets the other conditions first and pumps the lean last, so building them doesn’t undo it', () => {
+    const rich = { ...at2005(), money: 1e15, featureLevels: NO_LEVELS };
+    const steps = Array.from({ length: 60 }).reduce<GameState>((state) => steerOnPath(state, ['photos']) ?? state, rich);
+    assert.ok(steps.switchedOffFeatureIds.includes('flash-intro'), 'the sacrifice');
+    assert.ok(steps.featureLevels['tag-cloud'] >= 3, 'the levels');
     const first = steerOnPath(rich, ['photos']);
     assert.ok(first !== null);
-    assert.ok(first.purchasedUpgradeIds.includes('learn-jquery') || first.featureLevels['photo-gallery'] > 0);
+    assert.equal(first.featureLevels['photo-gallery'], 0, 'not the lean, not yet');
   });
 
   it('chooses the specialization the moment it unlocks, and buys its items first', () => {

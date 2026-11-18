@@ -302,7 +302,7 @@ const SOCIAL_UPGRADES = [
     name: 'Network effect',
     description: 'Everyone joins because everyone is there. Each time the site doubles in size this era, all traffic grows again.',
     cost: 10_000_000_000,
-    effects: [{ kind: 'network-effect', perDoubling: 0.15, cap: 2.5 }],
+    effects: [{ kind: 'network-effect', perDoubling: 0.1, cap: 1.5 }],
     requiredFeatureId: 'groups',
   }),
   boost({
@@ -715,7 +715,7 @@ const CHAT_COMMUNITY_UPGRADES = [
     name: 'Server boosts',
     description: 'Members pay to make their server shinier, and invite friends to help. Each time the site doubles this era, all traffic grows again.',
     cost: 1_000_000_000_000,
-    effects: [{ kind: 'network-effect', perDoubling: 0.15, cap: 2.5 }],
+    effects: [{ kind: 'network-effect', perDoubling: 0.1, cap: 1.5 }],
     requiredFeatureId: 'servers',
   }),
   boost({

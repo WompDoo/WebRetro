@@ -71,6 +71,10 @@ function switchOff(state: GameState, featureId: FeatureId): GameState | null {
 }
 
 const MOBILE_FRIENDLY_IDS: readonly UpgradeId[] = UPGRADE_IDS.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].effects.some((effect) => effect.kind === 'mobile-friendly'));
+/** What makes a page load faster: lighter pages, a faster load. */
+const LIGHTER_PAGE_IDS: readonly UpgradeId[] = UPGRADE_IDS.filter((upgradeId) =>
+  UPGRADES_BY_ID[upgradeId].effects.some((effect) => (effect.kind === 'page-weight-multiplier' || effect.kind === 'load-time-multiplier') && effect.factor < 1),
+);
 
 type ConditionStep<K extends SpecializationCondition['kind']> = (state: GameState, condition: Extract<SpecializationCondition, { readonly kind: K }>) => GameState | null;
 
@@ -85,7 +89,7 @@ const STEPS: { readonly [K in SpecializationCondition['kind']]: ConditionStep<K>
   consent: (state, condition) => (state.consentBanner === condition.banner ? null : chooseConsentBanner(state, condition.banner)),
   'era-stat': () => null,
   'mobile-friendly': (state) => MOBILE_FRIENDLY_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
-  'phone-load-under': () => null,
+  'phone-load-under': (state) => LIGHTER_PAGE_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
   'ai-answer-share': () => null,
 };
 
@@ -112,8 +116,16 @@ function buyHeldItems(state: GameState): GameState | null {
 export function steerOnPath(state: GameState, path: readonly TreeSpecializationId[]): GameState | null {
   const target = findPathTarget(state, path);
   const unmet = target === null ? [] : calculateSpecializationProgress(state, target).filter((progress) => !progress.isMet);
-  const stepped = unmet.map((progress) => stepTowards(state, progress.condition)).find((next) => next !== null);
+  const stepped = [...unmet].sort(byLeanLast).map((progress) => stepTowards(state, progress.condition)).find((next) => next !== null);
   return stepped ?? buyHeldItems(state);
+}
+
+/**
+ * Everything else first, the lean last: levels, sacrifices and skills are features too, and building them after the
+ * lean is met would pull the share back under. A player who means it builds them first and then pumps the lean.
+ */
+function byLeanLast(first: { readonly condition: SpecializationCondition }, second: { readonly condition: SpecializationCondition }): number {
+  return Number(first.condition.kind === 'spending-share') - Number(second.condition.kind === 'spending-share');
 }
 
 function findUnmetLean(state: GameState, path: readonly TreeSpecializationId[]): FeatureId | null {
