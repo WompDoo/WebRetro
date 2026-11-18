@@ -36,6 +36,9 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'more-midi-files',
   'bigger-webring',
   'fixed-width-800',
+  'tip-jar',
+  'support-this-site',
+  'fan-club',
   'donate-button',
   'affiliate-links',
   'dancing-hamsters',
@@ -56,6 +59,7 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'syntax-highlighting',
   'perpetual-beta',
   'contextual-text-ads',
+  'pro-accounts',
   'permalinks',
   'ajax-everything',
   'threaded-replies',
@@ -76,6 +80,7 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'git-push-deploys',
   'autoscaling',
   'vendor-prefixes',
+  'pay-what-you-want',
   'learn-vue',
   'learn-react',
   'learn-angular',
@@ -92,6 +97,7 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'growth-hacking',
   'every-font-weight',
   'blockchain-guestbook',
+  'patron-tiers',
   // ---------- Hired help: someone else at the keyboard, one per era ----------
   'hire-little-brother',
   'hire-unpaid-intern',
@@ -127,11 +133,20 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'ai-everything',
   'llms-txt',
   'dark-mode',
+  'supporter-plan',
   'paywall',
   'observability',
   'spot-gpus',
   ...SPECIALIZATION_UPGRADE_IDS,
 ];
+
+/**
+ * The ad-free way to earn: visitors who chip in. Every era has its way to ask, and each pays per visitor, ads or not,
+ * less a quarter for every ad on the page: a site covered in banners looks like it doesn't need the money. So it's one
+ * or the other. Four ads and the support is gone; a site without any is slower than one with a full ad wall, but it
+ * gets to the end.
+ */
+const SUPPORT_LOST_PER_AD = 0.25;
 
 export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
   // ---------- 1997 skills: each one changes the page, the code you type, and what you can build ----------
@@ -1040,6 +1055,83 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     requiredFeatureId: null,
   },
   // ---------- 2000 boosts: money that doesn't come from banners. All of it is gone by 2005 ----------
+  'tip-jar': {
+    id: 'tip-jar',
+    kind: 'boost',
+    eraId: 'homepage-1997',
+    name: 'Tip jar',
+    description: '“Like my site? Mail me a dollar!” and your PO box. A few people actually do. Fewer, if the page is all banners.',
+    cost: 300,
+    pageWeightKb: 1,
+    effects: [{ kind: 'support', adSlots: 0.2, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
+  'support-this-site': {
+    id: 'support-this-site',
+    kind: 'boost',
+    eraId: 'homepage-1997',
+    name: '“Support this site” page',
+    description: 'A whole page on what the site costs you, with a photo of your modem. Regulars send checks.',
+    cost: 4_000,
+    pageWeightKb: 3,
+    effects: [{ kind: 'support', adSlots: 0.6, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
+  'fan-club': {
+    id: 'fan-club',
+    kind: 'boost',
+    eraId: 'homepage-1997',
+    name: 'Fan club',
+    description: 'Five dollars a year by mail gets a secret page, a newsletter and a certificate you printed yourself.',
+    cost: 30_000,
+    pageWeightKb: 4,
+    effects: [{ kind: 'support', adSlots: 1, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
+  'pro-accounts': {
+    id: 'pro-accounts',
+    kind: 'boost',
+    eraId: 'web2-2005',
+    name: 'Pro accounts',
+    description: '$24.95 a year for a star next to your name, unlimited uploads and no banners. Nobody pays to skip banners that aren’t there.',
+    cost: 50_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'support', adSlots: 9, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
+  'pay-what-you-want': {
+    id: 'pay-what-you-want',
+    kind: 'boost',
+    eraId: 'social-2011',
+    name: 'Pay what you want',
+    description: 'Everything free, and a slider for what it’s worth to you. Most pick a dollar. Enough pick twenty.',
+    cost: 3_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'support', adSlots: 3, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
+  'patron-tiers': {
+    id: 'patron-tiers',
+    kind: 'boost',
+    eraId: 'platform-2018',
+    name: 'Patron tiers',
+    description: '$1, $5 or $25 a month: a thank-you, early access, or your name in the credits. Patrons hate ads more than anyone.',
+    cost: 500_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'support', adSlots: 15, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
+  'supporter-plan': {
+    id: 'supporter-plan',
+    kind: 'boost',
+    eraId: 'ai-2024',
+    name: 'Supporter plan',
+    description: 'A monthly plan whose whole pitch is “no ads, ever”. It only sells while that’s true.',
+    cost: 40_000_000_000_000,
+    pageWeightKb: 0,
+    effects: [{ kind: 'support', adSlots: 1, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    requiredFeatureId: null,
+  },
   'donate-button': {
     id: 'donate-button',
     kind: 'boost',
@@ -1546,4 +1638,12 @@ export const UPGRADE_SUNSETS: Readonly<Partial<Record<UpgradeId, EraId>>> = {
   'vendor-prefixes': 'platform-2018',
   'every-font-weight': 'ai-2024',
   'blockchain-guestbook': 'ai-2024',
+  // Support from visitors moves with the times: nobody mails a check to a social network, pro accounts give way to
+  // patrons, and a slider gives way to a plan. Each era's own way to ask replaces an older one, so the ad-free site
+  // keeps pace era by era.
+  'tip-jar': 'social-2011',
+  'support-this-site': 'social-2011',
+  'fan-club': 'social-2011',
+  'pro-accounts': 'platform-2018',
+  'pay-what-you-want': 'ai-2024',
 };

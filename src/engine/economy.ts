@@ -501,9 +501,24 @@ function calculateEndorsementFactor(state: GameState): number {
   return multiplyAll(listEffectsOfKind(state, 'ad-value-per-specialization').map((effect) => NEUTRAL_FACTOR + effect.share * state.specializationIds.length));
 }
 
-/** Donations, less a share for every ad on the page: a site with banners looks like it doesn't need the money. */
+/** What's left of support with this many ads on the page: a site with banners looks like it doesn't need the money. */
+function keepSupportShare(lostSharePerAd: number, adCount: number): number {
+  return Math.max(0, NEUTRAL_FACTOR - lostSharePerAd * adCount);
+}
+
+/** Donations, less a share for every ad on the page. */
 function calculateDonationsPerVisitor(state: GameState): number {
-  return sumAll(listEffectsOfKind(state, 'donations').map((effect) => effect.amount * Math.max(0, NEUTRAL_FACTOR - effect.lostSharePerAd * state.adCount)));
+  return sumAll(listEffectsOfKind(state, 'donations').map((effect) => effect.amount * keepSupportShare(effect.lostSharePerAd, state.adCount)));
+}
+
+/**
+ * Support from visitors, priced in banners: what so many of this era's plain banners would pay a visitor. A banner pays
+ * less every era, and so does what people chip in, so the ad-free way stays a step behind the ads, era after era,
+ * instead of overtaking them once banners got cheap.
+ */
+function calculateSupportPerVisitor(state: GameState): number {
+  const bannerValue = ERAS_BY_ID[state.eraId].adValuePerVisitor;
+  return sumAll(listEffectsOfKind(state, 'support').map((effect) => effect.adSlots * bannerValue * keepSupportShare(effect.lostSharePerAd, state.adCount)));
 }
 
 /** Answer, don't link: the visitors AI answers keep away still pay a share of what they would have. */
@@ -934,9 +949,10 @@ export function calculateAdValuePerAd(state: GameState): number {
   return (era.adValuePerVisitor * factors * calculateBuffFactor(state, 'ad-value')) / era.revenuePace;
 }
 
-/** Money a visitor brings without an ad: the 2000 crash's donate button and affiliate links. At the era's pace. */
+/** Money a visitor brings without an ad: support, donations, the crash's donate button and affiliate links. At the era's pace. */
 export function calculateDirectRevenuePerVisitor(state: GameState): number {
-  return (getEffectSummary(state).directRevenuePerVisitor + calculateDonationsPerVisitor(state)) / ERAS_BY_ID[state.eraId].revenuePace;
+  const perVisitor = getEffectSummary(state).directRevenuePerVisitor + calculateDonationsPerVisitor(state) + calculateSupportPerVisitor(state);
+  return perVisitor / ERAS_BY_ID[state.eraId].revenuePace;
 }
 
 export function calculateRevenuePerVisitor(state: GameState): number {

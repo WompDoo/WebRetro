@@ -7,6 +7,7 @@ import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2005Site } from './site-2005';
 import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
+import { renderSupportLinks } from './support-links';
 
 /**
  * Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no
@@ -143,7 +144,7 @@ function renderBootstrapSite(context: SiteContext): string {
     ${renderSpecializationBand(context)}
     ${renderStoryBand(context)}
     <div class="bs-row"><div class="bs-main">${main === '' ? `<div class="bs-columns">${renderPlaceholderColumns()}</div>` : main}</div><aside class="bs-sidebar">${renderSignInSidebar(context)}${renderSponsoredWell(context)}${sidebar}</aside></div>
-    <footer class="bs-footer">© ${escapeHtml(siteBrand(context.state))} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere</footer>
+    <footer class="bs-footer">© ${escapeHtml(siteBrand(context.state))} ${ERAS_BY_ID[context.eraId].year} · Built with Bootstrap · Follow us everywhere${renderSupportLinks(context.state, 'bs-support')}</footer>
   </div>`;
 }
 

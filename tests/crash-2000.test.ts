@@ -21,6 +21,7 @@ import {
   isFeatureRetired,
   isUpgradeAvailable,
   isUpgradeRetired,
+  UPGRADES_BY_ID,
 } from '../src/engine';
 import type { EraId, EraRecord, GameState, UpgradeId } from '../src/engine';
 import { findEntryStory } from '../src/ui/presentation';
@@ -41,6 +42,12 @@ const startOfCrash = (): GameState => createPlaytestState('crash-2000', 'start',
 const endOfCrash = (): GameState => createPlaytestState('crash-2000', 'end', SEED, 'react');
 const inEra = (eraId: EraId, runNumber: number): GameState => ({ ...createInitialGameState(SEED), eraId, runNumber });
 const CRASH_BOOSTS: readonly UpgradeId[] = ['donate-button', 'affiliate-links', 'dancing-hamsters'];
+const SUPPORT_KINDS: readonly string[] = ['support', 'donations'];
+/** A site without 1997's own ways to ask visitors to chip in: only the crash's buttons are left to pay without ads. */
+const withoutSupport = (state: GameState): GameState => ({
+  ...state,
+  purchasedUpgradeIds: state.purchasedUpgradeIds.filter((upgradeId) => !UPGRADES_BY_ID[upgradeId].effects.some((effect) => SUPPORT_KINDS.includes(effect.kind))),
+});
 
 describe('the crash belongs to the third run', () => {
   it('is skipped by the first two runs and played by the third, between 1997 and 2005', () => {
@@ -81,7 +88,7 @@ describe('the crash itself', () => {
   });
 
   it('earns from the donate button and affiliate links with no ad on the page', () => {
-    const adFree: GameState = { ...startOfCrash(), adCount: 0, money: Number.MAX_SAFE_INTEGER };
+    const adFree: GameState = { ...withoutSupport(startOfCrash()), adCount: 0, money: Number.MAX_SAFE_INTEGER };
     assert.equal(calculateNetRevenuePerSecond(adFree), 0);
     const donating = buyUpgrade(adFree, 'donate-button');
     const both = buyUpgrade(donating, 'affiliate-links');
@@ -90,7 +97,8 @@ describe('the crash itself', () => {
   });
 
   it('types with 1997’s editor and skills: typing pays the same as at the end of 1997', () => {
-    const adFree: GameState = { ...startOfCrash(), adCount: 0 };
+    // Support is priced in each era's banners, so it pays differently in the crash: typing alone is the same.
+    const adFree: GameState = { ...withoutSupport(startOfCrash()), adCount: 0 };
     assert.equal(calculateKeystrokeValue(adFree), calculateKeystrokeValue({ ...adFree, eraId: 'homepage-1997' }));
   });
 

@@ -305,7 +305,7 @@ const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   achievement('popup-blocker', 'ads', '🚫', 'Pop-up blocker', `Close ${POPUPS_CLOSED} pop-ups in one run.`, (state) => state.runStats.popupsClosed >= POPUPS_CLOSED),
   achievement('ad-wall', 'ads', '📢', 'Ad wall', 'Run as many ads as the era allows. Visitors scroll past them looking for the page.', isAdWall),
   achievement('no-ads-no-problem', 'ads', '🕊️', 'No ads, no problem', 'Run the site for ten minutes without a single ad.', (state) => state.eraStats.adFreeMs >= 10 * MS_PER_MINUTE, true),
-  achievement('ad-free-web', 'ads', '🌱', 'Ad-free web', 'Finish a run without placing an ad after 1997. Every homepage had a banner then; nobody needs one after.', finishedWith((state) => !state.runStats.placedAdAfter1997)),
+  achievement('ad-free-web', 'ads', '🌱', 'Ad-free web', 'Finish a run without a single ad. The tip jar, the pro accounts and the patrons paid for all of it.', finishedWith((state) => !state.runStats.hasPlacedAd)),
   achievement('accept-all', 'ads', '✅', 'Accept all', 'Put up a cookie banner whose biggest button says “Accept all”.', (state) => state.consentBanner === 'dark-pattern'),
   achievement('do-not-track', 'ads', '🙅', 'Do Not Track', 'Put up a cookie banner that really asks.', (state) => state.consentBanner === 'honest'),
   achievement('cookie-monster', 'ads', '🍪', 'Cookie monster', 'Get fined over your cookies.', hitBy('privacy-fine')),

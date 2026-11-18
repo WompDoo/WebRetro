@@ -95,13 +95,14 @@ describe('what a run did', () => {
     (['bobby-tables', 'pwned', 'firefighter', 'free-mp3-player'] as const).forEach((id) => assert.ok(ids.includes(id), id));
   });
 
-  it('counts pop-ups closed, and an ad placed after 1997', () => {
+  it('counts pop-ups closed, and an ad placed in any era', () => {
     const withPopup = { ...at('web2-2005'), popups: [{ id: 7, variantRoll: 0, anchorX: 0, anchorY: 0 }] };
     assert.equal(closePopup(withPopup, 7).runStats.popupsClosed, 1);
     assert.equal(closePopup(withPopup, 99).runStats.popupsClosed, 0, 'no such pop-up, nothing closed');
     const rich = { ...at('web2-2005'), adCount: 0, money: 1e12 };
-    assert.equal(placeAd(rich).runStats.placedAdAfter1997, true);
-    assert.equal(placeAd({ ...at('homepage-1997'), adCount: 0, money: 1e12 }).runStats.placedAdAfter1997, false);
+    assert.equal(placeAd(rich).runStats.hasPlacedAd, true);
+    assert.equal(placeAd({ ...at('homepage-1997'), adCount: 0, money: 1e12 }).runStats.hasPlacedAd, true, '1997 counts too');
+    assert.equal(at('web2-2005').runStats.hasPlacedAd, false);
   });
 
   it('remembers the longest time away', () => {
@@ -119,12 +120,12 @@ describe('what a run did', () => {
     assert.ok(earnedBy(finished(at('social-2011'))).includes('jquery-forever'));
   });
 
-  it('rewards a finished run without security, and one without an ad after 1997', () => {
+  it('rewards a finished run without security, and one without a single ad', () => {
     const bare = finished({ ...at('ai-2024'), ownedDefenseIds: [], runStats: EMPTY_RUN_STATS });
     const ids = earnedBy(bare);
     assert.ok(ids.includes('security-through-obscurity'));
     assert.ok(ids.includes('ad-free-web'));
-    assert.ok(!earnedBy(finished({ ...bare, runStats: { ...EMPTY_RUN_STATS, placedAdAfter1997: true } })).includes('ad-free-web'));
+    assert.ok(!earnedBy(finished({ ...bare, runStats: { ...EMPTY_RUN_STATS, hasPlacedAd: true } })).includes('ad-free-web'));
   });
 
   it('counts the tree: a stack, a secret door, a broken combo, Serial founder, a pivot to video', () => {
