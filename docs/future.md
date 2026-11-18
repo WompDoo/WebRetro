@@ -249,7 +249,10 @@ The classic game is unchanged.
 - **One specialization per era, from 2005, and they stack.** A site might be a video site in 2005, a live-streaming site in 2011, a streaming service in 2018 and a short-video feed in 2024. Or it stays a homepage at any point: that's the classic game.
 - **Unlocked and chosen in the same era.** Choosing is free, takes effect at once, and is permanent after a confirmation. Relaunching without choosing closes that era's chance, and the relaunch screen says so.
 - **Lineage.** Most specializations need a parent taken in an earlier era. Every era from 2011 has one open door with no parent, so skipping 2005 doesn't shut you out. The Serial founder perk (run 3+, about 50 Backlinks) removes lineage; one per era still holds.
-- **Hard on purpose: things money can't buy.** Every unlock has a **lean**: "40% of this era's spending into the photo gallery". Buying everything spreads money across features, so leaning means holding the rest back, and waiting doesn't help. (A share of *visitors* was the first idea, but visitors per level differ a thousandfold between features in an era: some leans came free, others were impossible.) Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
+- **Hard on purpose: things money can't buy.** Every unlock has a **lean**: "40% of what you build this era into the photo gallery". Buying everything spreads money across features, so leaning means holding the rest back, and waiting doesn't help. Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
+  - **Why features only.** A lean is one feature's share of the era's *feature* spending. Measured against all spending, hosting, skills and boosts (things every site needs) pulled every lean down, and a player who leaned spent the era waiting. (A share of *visitors* was the first idea, but visitors per level differ a thousandfold between features in an era: some leans came free, others were impossible.)
+  - **The floor.** The share counts against at least half the era's migration budget in feature spending. Without it, the first level of anything bought at an era's start was 100% of what had been built.
+  - **What natural play builds** (the balance bot playing the second run without aiming, biggest share per era): 2005 comments 36%, 2011 activity feed 46%, 2018 newsletter 27%, 2024 for-you feed 32%. Leans on those features sit well above: social 60%, newsletter platform 50%, short-video feed 55%. That bot unlocks nothing in any era.
 - **Lasting restrictions.** Some specializations keep their sacrifice. Photo sharing keeps the Flash intro off, Forum the guestbook, Microblog the blog. Shop and Streaming service run at most 2 ads; Wiki runs none.
 - **Hidden until close, Vampire Survivors style.**
   - **Before anything is in view,** no tab at all. A specialization comes into view when its lean is half way, its parent is held and its era is now.
@@ -267,19 +270,19 @@ The classic game is unchanged.
 | 2005 | 🎬 Video site | YouTube | — | 40% into Flash intro · Learn the `<EMBED>` tag · ride out a traffic spike |
 | 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | 40% into Forum · Guestbook switched off · sort the spam 3 times |
 | 2005 | 📚 Wiki *(secret)* | Wikipedia | — | 35% into Wiki · no ads for 10 minutes in a row |
-| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | 40% into Activity feed · Share buttons 25 · Sign in with… 5 |
+| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | 60% into Activity feed · Share buttons 25 · Sign in with… 5 |
 | 2011 | 💬 Microblog | Twitter | Blog network or Forum | 40% into Share buttons · on fire 5 times · Blog switched off |
 | 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | 40% into Video player · Activity feed 5 · ride out 2 traffic spikes |
 | 2011 | 📰 News & viral | HuffPost, BuzzFeed | Blog network or Forum | 35% into One-pager · Share buttons 25 · fend off a DDoS |
 | 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Map mashup · Sign in with… 5 · works on phones |
 | 2011 | 🛒 Online shop | Etsy, Amazon | open door | Photo gallery 40 · Sign in with… 15 · at most 2 ads |
 | 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | 40% into Stories · Photo gallery 50 · loads in under 2.5 s on a phone |
-| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Video player · Pricing table 15 · at most 2 ads |
-| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 40% into Newsletter · Pricing table 10 · the honest consent banner |
+| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 30% into Video player · Pricing table 10 · at most 2 ads |
+| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 50% into Newsletter · Pricing table 10 · the honest consent banner |
 | 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | 40% into Language switcher · Pricing table 10 · Learn OAuth |
 | 2018 | 💼 Professional network | LinkedIn | open door | 40% into Pricing table · Live chat 10 · Newsletter 10 |
 | 2018 | 🎮 Chat community *(secret)* | Discord | Forum or Live streaming | 40% into Community chat · Live chat 10 |
-| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | 40% into For-you feed · AI images 10 |
+| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | 55% into For-you feed · AI images 10 |
 | 2024 | 🔎 AI answer engine | Perplexity, AI Overviews | Newsletter, News & viral or Reviews | 40% into AI search · AI articles 15 · AI answers take 30% of clicks |
 | 2024 | 🎨 AI studio | Midjourney, Canva | Stories app or Photo sharing | 40% into AI images · Pricing table 20 |
 | 2024 | 🤖 AI companion | Character.AI, Replika | open door | 40% into AI chatbot · Live chat switched off |
