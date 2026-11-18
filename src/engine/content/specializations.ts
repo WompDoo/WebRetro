@@ -8,7 +8,7 @@ import type { ConsentBanner, FeatureId, SpecializationId, SpecializedEraId, Upgr
  * one open door.
  *
  * Unlocks ask for what money can't simply buy:
- * - a lean: a share of the era's spending put into one feature. Buying everything spreads money across features, so
+ * - a lean: a share of what the era builds put into one feature. Buying everything spreads money across features, so
  *   leaning means holding the rest back, and waiting doesn't help;
  * - a sacrifice: a feature switched off, few ads, a consent choice;
  * - a skill: on fire, minigames won, traffic spikes ridden out;

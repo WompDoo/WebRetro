@@ -31,13 +31,13 @@ describe('the sim player who chases a path', () => {
     assert.equal(findPathTarget({ ...at2005(), specializationIds: ['photos'] }, path), null);
   });
 
-  it('holds off on other features, boosts and skills while a lean is short, and keeps the site running', () => {
-    const state = { ...at2005(), eraStats: { ...at2005().eraStats, spent: 100, spentByFeature: { blog: 100 } } };
+  it('holds off on other features while a lean is short, and buys everything else as usual', () => {
+    const state = { ...at2005(), eraStats: { ...at2005().eraStats, spentByFeature: { blog: 100 } } };
     const avoids = avoidsOffPath(state, ['photos']);
     assert.equal(avoids(option('feature:photo-gallery')), false);
     assert.equal(avoids(option('skill:learn-jquery')), false);
     assert.equal(avoids(option('feature:blog')), true);
-    assert.equal(avoids(option('boost:cdn')), true);
+    assert.equal(avoids(option('boost:cdn')), false);
     assert.equal(avoids(option('ad')), false);
     assert.equal(avoids(option('hosting:vps')), false);
     assert.equal(avoidsOffPath(at2005(), [])(option('feature:blog')), false, 'no path, no holding back');
@@ -60,7 +60,7 @@ describe('the sim player who chases a path', () => {
   });
 
   it('describes where the era’s money went, biggest first', () => {
-    const state = { ...at2005(), eraStats: { ...at2005().eraStats, spent: 100, spentByFeature: { blog: 20, forum: 70, wiki: 10 } } };
+    const state = { ...at2005(), eraStats: { ...at2005().eraStats, spentByFeature: { blog: 20, forum: 70, wiki: 10 } } };
     assert.equal(describeSpendingShares(state), 'forum 70%, blog 20%, wiki 10%');
   });
 });

@@ -614,8 +614,7 @@ export interface EraStats {
   readonly cleanedByKind: Readonly<Partial<Record<InfectionKind, number>>>;
   /** How long the site has run without a single ad, right up to now. */
   readonly adFreeMs: number;
-  /** Everything spent this era, and what of it went into each feature: the lean a specialization asks for. */
-  readonly spent: number;
+  /** What was spent on each feature this era: a specialization's lean is one feature's share of it. */
   readonly spentByFeature: Readonly<Partial<Record<FeatureId, number>>>;
   /** How long the era has run, offline too: what grows all era grows with this. */
   readonly elapsedMs: number;

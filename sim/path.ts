@@ -122,11 +122,11 @@ function findUnmetLean(state: GameState, path: readonly TreeSpecializationId[]):
   return leans.find((condition) => calculateSpendingShare(state, condition.featureId) < condition.share)?.featureId ?? null;
 }
 
-const DILUTING_PREFIXES: readonly string[] = ['feature:', 'boost:', 'skill:', 'ops:'];
+const DILUTING_PREFIXES: readonly string[] = ['feature:'];
 
 /**
- * While a lean is short, spending anywhere else pushes it further away: the bot holds off on other features, boosts,
- * skills and ops. Ads, hosting and switches stay, so the site keeps running.
+ * While a lean is short, building anything else pushes it further away: the bot holds off on other features. A lean is
+ * a share of what's built, so skills, boosts, ops, ads and hosting don't spoil it.
  */
 export function avoidsOffPath(state: GameState, path: readonly TreeSpecializationId[]): (option: PurchaseOption) => boolean {
   const lean = findUnmetLean(state, path);
