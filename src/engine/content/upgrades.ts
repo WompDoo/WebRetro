@@ -1,4 +1,5 @@
 import type { EraId, UpgradeDefinition, UpgradeId } from '../types';
+import { SPECIALIZATION_UPGRADE_IDS, SPECIALIZATION_UPGRADES } from './specialization-items';
 
 /** Skills first, in the order a 1997 developer would learn them; then boosts. */
 export const UPGRADE_IDS: readonly UpgradeId[] = [
@@ -129,6 +130,7 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
   'paywall',
   'observability',
   'spot-gpus',
+  ...SPECIALIZATION_UPGRADE_IDS,
 ];
 
 export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
@@ -1522,6 +1524,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     effects: [{ kind: 'global-traffic-multiplier', factor: 1.15 }],
     requiredFeatureId: null,
   },
+  ...SPECIALIZATION_UPGRADES,
 };
 
 /**

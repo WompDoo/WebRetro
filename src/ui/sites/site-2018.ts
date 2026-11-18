@@ -1,4 +1,4 @@
-import { ERAS_BY_ID, findChosenFramework, isMobileFriendly } from '../../engine';
+import { ERAS_BY_ID, findChosenFramework, isMobileFriendly, SPECIALIZATION_FEATURE_IDS } from '../../engine';
 import type { EraId, FeatureId, FrameworkId, GameState } from '../../engine';
 import { escapeHtml } from '../dom';
 import { describeBuiltWith, FRAMEWORK_PRESENTATION } from '../framework-presentation';
@@ -11,7 +11,7 @@ import { render2011Site } from './site-2011';
 import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
 
 /** Under the hero: what the old site still has, as sections of the landing page. */
-const LANDING_SECTIONS: readonly FeatureId[] = ['video-player', 'blog', 'photo-gallery', 'activity-feed', 'community-chat', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
+const LANDING_SECTIONS: readonly FeatureId[] = [...SPECIALIZATION_FEATURE_IDS, 'video-player', 'blog', 'photo-gallery', 'activity-feed', 'community-chat', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
 const NAV_ITEMS: readonly string[] = ['Product', 'Pricing', 'Blog', 'Careers'];
 /** "Trusted by": made-up companies, as every landing page's were to everyone outside them. */
 const TRUSTED_BY: readonly string[] = ['Brightloop', 'Quantly', 'Stackwise', 'Paperkite', 'Blinko'];

@@ -367,22 +367,99 @@ const VUE_CODE: EraCode = {
   closing: ['  </div>', '</template>', '', '<script>', 'export default {', "  name: 'App',", '  data() {', '    return { posts: [], stories: [], plans: [] };', '  },', '  async created() {', "    this.posts = await fetch('/api/posts').then(response => response.json());", '  }', '};', '</script>', '', '<style scoped>', '#app { font-family: Avenir, Helvetica, Arial, sans-serif; }', '</style>', ''],
 };
 
+/**
+ * A specialization's own skill writes a file of its own, whatever the era's editor looks like: the code of the kind
+ * of site you've become, in the language of the year you became it.
+ */
+const SPECIALIZATION_SKILL_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<string, readonly string[]>>>>> = {
+  'learn-multi-user-blogs': {
+    'blogs.php': ['<?php // one install, a thousand blogs', '$blog = mysql_fetch_array(mysql_query("SELECT * FROM blogs WHERE host = \'" . $_SERVER["HTTP_HOST"] . "\'"));', 'include("themes/" . $blog["theme"] . "/header.php");', '?>'],
+  },
+  'learn-exif': {
+    'upload.php': ['<?php', '$exif = exif_read_data($_FILES["photo"]["tmp_name"]);', 'echo "Taken with a " . $exif["Model"] . " at f/" . $exif["FNumber"];', 'imagecopyresampled($thumb, $photo, 0, 0, 0, 0, 100, 75, $width, $height);', '?>'],
+  },
+  'learn-flash-video': {
+    'player.as': ['var stream:NetStream = new NetStream(connection);', 'video.attachNetStream(stream);', 'stream.play("uploads/cat_piano.flv"); // 320x240, and proud of it'],
+  },
+  'learn-mod-tools': {
+    'modcp.php': ['<?php if ($user["is_mod"]) {', '  mysql_query("UPDATE topics SET sticky = 1, locked = 1 WHERE id = " . (int)$_GET["t"]);', '} // with great power comes great sticky ?>'],
+  },
+  'learn-wiki-markup': {
+    'wiki.php': ['<?php // two apostrophes for italics, three for bold', '$html = wiki_render($page["text"]); // [[links]], {{templates}}, == headings ==', '$history[] = array("user" => $ip, "summary" => "rv vandalism");', '?>'],
+  },
+  'learn-social-graph': {
+    'graph.js': ['db.friends.find({ user: me }).forEach(function (friend) { suggest(friend.friends); });', "// friends of friends of friends: that's everyone, eventually"],
+  },
+  'learn-hashtags': {
+    'hashtags.js': ['var tags = post.text.match(/#\\w+/g) || [];', "tags.forEach(function (tag) { redis.zincrby('trending', 1, tag); });"],
+  },
+  'learn-live-video': {
+    'stream.js': ['var ingest = rtmp.createServer({ port: 1935 });', "ingest.on('publish', function (stream) { transcode(stream, ['720p', '480p', '360p']); });", '// twelve seconds of delay. Chat is already arguing about it.'],
+  },
+  'learn-headline-testing': {
+    'headlines.js': ["var headline = Math.random() < 0.5 ? 'Cat sits on keyboard' : 'You won\u2019t believe what this cat did';", "track('click', { variant: headline }); // B wins. B always wins."],
+  },
+  'learn-geolocation': {
+    'checkin.js': ['navigator.geolocation.getCurrentPosition(function (position) {', "  $.post('/checkin', { lat: position.coords.latitude, lng: position.coords.longitude });", '});'],
+  },
+  'learn-shopping-cart': {
+    'cart.js': ["export const addToCart = item => ({ type: 'ADD_TO_CART', item });", '// abandoned carts get three emails. The third one has a discount.'],
+  },
+  'learn-vertical-video': {
+    'stories.css': ['.story { aspect-ratio: 9 / 16; height: 100vh; }', '/* hold the phone the wrong way, on purpose */'],
+  },
+  'learn-adaptive-streaming': {
+    'manifest.m3u8': ['#EXTM3U', '#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=640x360', '360p.m3u8', '#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080', '1080p.m3u8'],
+  },
+  'learn-deliverability': {
+    'dns.txt': ['{site}.com. TXT "v=spf1 include:mail.example ~all"', '_dmarc.{site}.com. TXT "v=DMARC1; p=quarantine"', '; and still the Promotions tab'],
+  },
+  'learn-escrow': {
+    'payouts.js': ['await escrow.hold(order.total);', "order.on('delivered', () => escrow.release(order.total * (1 - TAKE_RATE)));"],
+  },
+  'learn-recruiting-tools': {
+    'search.js': ["const candidates = await people.search({ title: 'engineer', openToWork: true });", "candidates.forEach(candidate => message(candidate, 'Exciting opportunity! (unpaid)'));"],
+  },
+  'learn-bots-and-webhooks': {
+    'bot.js': ["client.on('message', message => {", "  if (message.content === '!roll') message.reply('🎲 ' + rollDie());", '});'],
+  },
+  'learn-remixing': {
+    'remix.js': ['const duet = splitScreen(original, await camera.record());', 'duet.audio = original.audio; // the sound everyone uses this week'],
+  },
+  'learn-citations': {
+    'answer.js': ['const answer = await model.generate({ prompt, documents, cite: true });', "answer.sources.forEach((source, index) => render('[' + (index + 1) + ']', source.url));"],
+  },
+  'learn-style-models': {
+    'train_style.py': ['style = train_adapter(base_model, images=forty_pictures, rank=8)', 'pipe.load_adapter(style)  # now everything comes out in one style'],
+  },
+  'learn-fine-tuning': {
+    'finetune.jsonl': ['{"messages": [{"role": "user", "content": "Hi"}, {"role": "assistant", "content": "Ahoy, matey!"}]}'],
+  },
+  'learn-tool-calling': {
+    'tools.json': ['{ "name": "book_table", "parameters": { "restaurant": "string", "time": "string" } }', '{ "name": "pay", "parameters": { "amount": "number" } }'],
+  },
+};
+
+function withSpecializationFiles(code: EraCode): EraCode {
+  return { ...code, files: { ...SPECIALIZATION_SKILL_FILES, ...code.files } };
+}
+
 const ERA_CODE: Readonly<Record<EraId, EraCode>> = {
   'homepage-1997': HOMEPAGE_CODE,
   // The crash is typed in 1997's editor: same file, same tags.
   'crash-2000': HOMEPAGE_CODE,
-  'web2-2005': WEB2_CODE,
-  'social-2011': SOCIAL_CODE,
-  'platform-2018': PLATFORM_CODE,
+  'web2-2005': withSpecializationFiles(WEB2_CODE),
+  'social-2011': withSpecializationFiles(SOCIAL_CODE),
+  'platform-2018': withSpecializationFiles(PLATFORM_CODE),
   // A 2024 site without a framework is rare: it keeps 2018's page code, AI files and all.
-  'ai-2024': PLATFORM_CODE,
+  'ai-2024': withSpecializationFiles(PLATFORM_CODE),
 };
 
 /** Once a framework is picked, its code replaces the era's: the rewrite starts from an empty main file. */
 const FRAMEWORK_CODE: Readonly<Record<FrameworkId, EraCode>> = {
-  react: REACT_CODE,
-  angular: ANGULAR_CODE,
-  vue: VUE_CODE,
+  react: withSpecializationFiles(REACT_CODE),
+  angular: withSpecializationFiles(ANGULAR_CODE),
+  vue: withSpecializationFiles(VUE_CODE),
 };
 
 function codeFor(state: GameState): EraCode {

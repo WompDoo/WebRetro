@@ -5,7 +5,7 @@ import type { BuffDefinition, BuffId } from '../types';
  * Buffs: the good kind of trouble. Each one multiplies one number for a short while, and all of them share one look
  * (a chip with a countdown, and whatever they boost on fire). Earned at the keyboard, never offline.
  */
-export const BUFF_IDS: readonly BuffId[] = ['on-fire', 'quick-fix', 'sponsor-slot', 'launch-day'];
+export const BUFF_IDS: readonly BuffId[] = ['on-fire', 'quick-fix', 'sponsor-slot', 'launch-day', 'live-event', 'black-friday'];
 
 export const BUFFS_BY_ID: Readonly<Record<BuffId, BuffDefinition>> = {
   // Earned by typing without typos: the heat meter fills, and for fifteen seconds every keystroke pays triple. A burst,
@@ -19,4 +19,8 @@ export const BUFFS_BY_ID: Readonly<Record<BuffId, BuffDefinition>> = {
   // Won by hitting the launch window three times before the launch slips: for 45 seconds, half as many visitors
   // again come to see it. Offers are split between this and the sponsor, so each comes about every eight minutes.
   'launch-day': { id: 'launch-day', name: 'Launch day', icon: '🚀', target: 'traffic', factor: 1.5, durationMs: 45_000 },
+  // A live streaming site's scheduled stream: every two minutes, half a minute of twice the visitors. Not won, booked.
+  'live-event': { id: 'live-event', name: 'Live event', icon: '🔴', target: 'traffic', factor: 2, durationMs: 30_000 },
+  // An online shop's sale, every five minutes: for 45 seconds every banner pays triple.
+  'black-friday': { id: 'black-friday', name: 'Black Friday', icon: '🏷️', target: 'ad-value', factor: 3, durationMs: 45_000 },
 };

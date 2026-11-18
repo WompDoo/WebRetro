@@ -5,7 +5,7 @@ import type { EraStats, FeatureId, GameState, InfectionKind } from './types';
  * riding out a traffic spike, sorting the spam, a stretch without ads. It starts over at every relaunch, since an
  * unlock belongs to its era.
  */
-export const EMPTY_ERA_STATS: EraStats = { onFireStarts: 0, spikesRiddenOut: 0, cleanedByKind: {}, adFreeMs: 0, spent: 0, spentByFeature: {} };
+export const EMPTY_ERA_STATS: EraStats = { onFireStarts: 0, spikesRiddenOut: 0, cleanedByKind: {}, adFreeMs: 0, spent: 0, spentByFeature: {}, elapsedMs: 0, startBaseVisitors: 0 };
 
 function withStats(state: GameState, stats: Partial<EraStats>): GameState {
   return { ...state, eraStats: { ...state.eraStats, ...stats } };
@@ -27,6 +27,16 @@ export function countCleaned(state: GameState, kind: InfectionKind): GameState {
 /** The clock without ads: it runs while there are none and starts over the moment one goes up. */
 export function tickAdFree(state: GameState, deltaMs: number): GameState {
   return withStats(state, { adFreeMs: state.adCount === 0 ? state.eraStats.adFreeMs + deltaMs : 0 });
+}
+
+/** The era's clock runs offline too: the long tail grows while you sleep. */
+export function tickEraClock(state: GameState, deltaMs: number): GameState {
+  return withStats(state, { elapsedMs: state.eraStats.elapsedMs + deltaMs });
+}
+
+/** A new era starts its stats from zero, remembering how big the site was as it began. */
+export function startEraStats(state: GameState, startBaseVisitors: number): GameState {
+  return { ...state, eraStats: { ...EMPTY_ERA_STATS, startBaseVisitors } };
 }
 
 /** Every purchase counts towards the era's spending. */

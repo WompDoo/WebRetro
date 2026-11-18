@@ -1,4 +1,4 @@
-import { ERAS_BY_ID, getActiveUpgradeIds, isFeaturePluginDead } from '../../engine';
+import { ERAS_BY_ID, getActiveUpgradeIds, isFeaturePluginDead, SPECIALIZATION_FEATURE_IDS } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml } from '../dom';
 import { listAds, renderAdPicture, renderAdText } from './ads';
@@ -12,7 +12,7 @@ import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass
  * Bootstrap 2's span8: one column of content. What retired in 2011 (counter, badge, webring, tags, Flash intro) has no
  * place here. In 2018, before a framework rewrites the site, the new features squeeze in here too.
  */
-const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'video-player', 'blog', 'pricing-table', 'comments', 'photo-gallery', 'forum', 'community-chat'];
+const BOOTSTRAP_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'video-player', 'blog', 'pricing-table', 'comments', 'photo-gallery', 'forum', 'community-chat', ...SPECIALIZATION_FEATURE_IDS];
 /** The span4 sidebar: small widgets, each in a well. */
 /** Sign in with… isn't listed: its buttons go in the sign-in box. Maps were sidebar widgets. */
 const BOOTSTRAP_SIDEBAR_FEATURES: readonly FeatureId[] = ['deal-of-the-day', 'share-buttons', 'activity-feed', 'newsletter', 'guestbook', 'map-mashup', 'midi-player'];

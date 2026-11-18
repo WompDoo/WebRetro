@@ -53,6 +53,8 @@ export function restoreGameState(value: unknown, fallbackSeed: number): GameStat
     purchasedUpgradeIds: restored.purchasedUpgradeIds.filter(isKnownUpgrade),
     eraRecords: restored.eraRecords.map((record) => withKnownContent(record, initial.featureLevels)),
     legacyPerkLevels: { ...initial.legacyPerkLevels, ...restored.legacyPerkLevels },
+    // Era stats added since: they start at zero.
+    eraStats: { ...initial.eraStats, ...restored.eraStats },
   };
 }
 

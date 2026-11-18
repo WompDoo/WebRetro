@@ -2,7 +2,8 @@ import { EMPTY_ERA_STATS } from './era-stats';
 import { SAVE_VERSION } from './constants';
 import { DEFAULT_SITE_NAME } from './site-name';
 import { NO_PERKS } from './content/perks';
-import type { FeatureId, GameState, HazardKind } from './types';
+import { SPECIALIZATION_FEATURE_IDS } from './content/specialization-items';
+import type { FeatureId, GameState, HazardKind, SpecializationFeatureId } from './types';
 
 const FIRST_ENTITY_ID = 1;
 
@@ -62,6 +63,7 @@ const EMPTY_FEATURE_LEVELS: Readonly<Record<FeatureId, number>> = {
   'deal-of-the-day': 0,
   'community-chat': 0,
   'agent-store': 0,
+  ...(Object.fromEntries(SPECIALIZATION_FEATURE_IDS.map((featureId) => [featureId, 0])) as Record<SpecializationFeatureId, number>),
 };
 
 /** The first sponsor turns up after a few minutes of play, once there are banners to sponsor. */
@@ -112,6 +114,8 @@ export function createInitialGameState(randomSeed: number): GameState {
     specializationIds: [],
     unlockedSpecializationIds: [],
     eraStats: EMPTY_ERA_STATS,
+    itemClocksMs: {},
+    subscriptionRevenuePerSecond: 0,
     siteColors: null,
   };
 }

@@ -44,3 +44,6 @@
 
 /* ---------- The ending's line about what the homepage became ---------- */
 .ending-path { margin: 12px 0 0; font-weight: 700; text-align: center; }
+
+/* ---------- A specialization's own items in the shop: they wear its icon ---------- */
+.spec-item-badge { display: inline-block; margin-left: 4px; padding: 0 7px; border: 1.5px solid #FF8A1F; border-radius: 999px; background: rgba(255, 138, 31, 0.12); color: var(--ink); font: 600 11px/1.6 var(--font-body); white-space: nowrap; vertical-align: 1px; }

@@ -1,4 +1,5 @@
-import { countCleaned, countFeatureSpending, countSpending, EMPTY_ERA_STATS } from './era-stats';
+import { countCleaned, countFeatureSpending, countSpending, startEraStats } from './era-stats';
+import { breakNewsOnFire, publishFromTyping, rewardCleanup } from './specialization-hooks';
 import { canSwitchAnyFeature, findAdLimit, isFeatureLockedOff } from './specializations';
 import { heatUp, startBuff } from './buffs';
 import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
@@ -7,6 +8,7 @@ import { DEFENSES_BY_ID } from './content/defenses';
 import { ERAS_BY_ID } from './content/eras';
 import { FEATURES_BY_ID, getFeatureDisplayName } from './content/features';
 import {
+  calculateBaseVisitorsPerSecond,
   calculateBugChance,
   calculateKeystrokeValue,
   calculateNextAdCost,
@@ -81,7 +83,8 @@ function writeFreshLine(state: GameState): CodeInputResult {
  */
 export function writeCode(state: GameState): CodeInputResult {
   const result = state.hasPendingBug ? rewriteBuggedLine(state) : writeFreshLine(state);
-  return { ...result, state: heatUp(result.state, result.outcome) };
+  const typed = publishFromTyping(result.state);
+  return { ...result, state: breakNewsOnFire(typed, heatUp(typed, result.outcome)) };
 }
 
 export function canBuyFeature(state: GameState, featureId: FeatureId): boolean {
@@ -281,7 +284,7 @@ function withQuickFixBonus(state: GameState, infection: Infection): GameStep {
 export function cleanInfection(state: GameState, infectionId: number): GameStep {
   const infection = findInfection(state, infectionId);
   if (infection === null) return { state, events: [] };
-  const cleaned = countCleaned({ ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) }, infection.kind);
+  const cleaned = rewardCleanup(countCleaned({ ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) }, infection.kind), infection.kind);
   const bonus = withQuickFixBonus(cleaned, infection);
   return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }
@@ -302,7 +305,8 @@ function enterEra(state: GameState, eraId: EraId): GameState {
 /** The relaunch pays for itself, and pays back a share of what the retiring features earned. */
 function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): GameState {
   const payout = calculateRetirementPayout(state, nextEraId);
-  return earn({ ...enterEra(spend(state, migrationCost), nextEraId), eraStats: EMPTY_ERA_STATS }, payout);
+  const entered = enterEra(spend(state, migrationCost), nextEraId);
+  return earn(startEraStats(entered, calculateBaseVisitorsPerSecond(entered)), payout);
 }
 
 /**

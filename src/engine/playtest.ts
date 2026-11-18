@@ -5,6 +5,7 @@ import { FEATURE_IDS, FEATURES_BY_ID, getCoreFeatureIdsOfEra, getFeatureFirstRun
 import { findFrameworkPickedBy, findFrameworkRenderedBy } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADES_BY_ID } from './content/upgrades';
+import { findItemOwner } from './content/specialization-items';
 import {
   calculateDemandVisitorsPerSecond,
   calculateHiredTypingPerSecond,
@@ -76,10 +77,15 @@ function isOtherFramework(upgradeId: UpgradeId, framework: FrameworkId): boolean
   return owner !== null && owner !== framework;
 }
 
+/** Everyone's items, not a specialization's own: a preset site is a homepage. */
+function isEveryonesUpgrade(upgradeId: UpgradeId, framework: FrameworkId): boolean {
+  return !isOtherFramework(upgradeId, framework) && findItemOwner(upgradeId) === null;
+}
+
 /** Everything from earlier eras, and at the end of an era everything from it too, with one framework. */
 function learnedFor(eraId: EraId, stage: PlaytestStage, framework: FrameworkId): GameState['purchasedUpgradeIds'] {
   const counts = (upgradeEra: EraId): boolean => (stage === 'end' ? isUpTo(upgradeEra, eraId) : isBefore(upgradeEra, eraId));
-  return UPGRADE_IDS.filter((upgradeId) => counts(UPGRADES_BY_ID[upgradeId].eraId) && !isOtherFramework(upgradeId, framework));
+  return UPGRADE_IDS.filter((upgradeId) => counts(UPGRADES_BY_ID[upgradeId].eraId) && isEveryonesUpgrade(upgradeId, framework));
 }
 
 /** Every earlier era's defense, upgraded where it can be: an upgrade replaces what it upgrades. */
@@ -95,7 +101,7 @@ function levelsFor(eraId: EraId, stage: PlaytestStage): GameState['featureLevels
     if (isBefore(featureEra, eraId)) return EARLIER_ERA_FEATURE_LEVEL;
     return featureEra === eraId && stage === 'end' ? STARTING_CURRENT_ERA_LEVEL : 0;
   };
-  const isFirstRunFeature = (featureId: FeatureId): boolean => getFeatureFirstRun(featureId) === 1;
+  const isFirstRunFeature = (featureId: FeatureId): boolean => getFeatureFirstRun(featureId) === 1 && findItemOwner(featureId) === null;
   return Object.fromEntries(FEATURE_IDS.map((featureId) => [featureId, isFirstRunFeature(featureId) ? levelOf(featureId) : 0])) as GameState['featureLevels'];
 }
 

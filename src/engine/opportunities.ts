@@ -1,7 +1,7 @@
 import { startBuff } from './buffs';
 import { BUFFS_BY_ID } from './content/buffs';
 import { FEATURE_IDS } from './content/features';
-import { canUseAds } from './economy';
+import { calculateOfferFrequencyFactor, canUseAds } from './economy';
 import { drawRandoms } from './random';
 import type { BuffId, BuffMinigameId, GameEvent, GameState, GameStep, Opportunity, OpportunityKind } from './types';
 
@@ -71,8 +71,9 @@ function offer(state: GameState): GameState {
   return drawGap({ ...state, opportunity, nextEntityId: state.nextEntityId + 1, randomSeed: draws.nextSeed });
 }
 
+/** Influencers bring offers sooner: the countdown runs faster. */
 function countDownToOffer(state: GameState, deltaMs: number): GameStep {
-  const countdown = state.opportunityCountdownMs - deltaMs;
+  const countdown = state.opportunityCountdownMs - deltaMs * calculateOfferFrequencyFactor(state);
   return { state: countdown > 0 ? { ...state, opportunityCountdownMs: countdown } : offer(state), events: [] };
 }
 

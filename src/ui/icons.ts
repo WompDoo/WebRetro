@@ -54,6 +54,51 @@ export const FEATURE_ICONS: Readonly<Record<FeatureId, string>> = {
   'deal-of-the-day': svg('<path d="M3 12 12 3h8v8l-9 9Z"/><circle cx="16" cy="7" r="1.5"/>'),
   'community-chat': svg('<path d="M3 5h12v8H8l-4 3v-3H3Z"/><path d="M9 13v2h7l4 3v-3h1V7h-4"/>'),
   'agent-store': svg('<path d="M4 8h16l-1 12H5Z"/><path d="M9 8a3 3 0 0 1 6 0"/><path d="m12 12 .6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6Z"/>'),
+  // ---------- Specializations' own features ----------
+  // Two pens: many writers.
+  'member-blogs': svg('<path d="M3 20h3l9-9-3-3-9 9Z"/><path d="M12 20h3l6-6-3-3-3 3"/>'),
+  // Three photos fanned out.
+  'photo-groups': svg('<rect x="3" y="8" width="12" height="12" rx="1"/><path d="M7 8V5h12v12h-4"/><path d="m3 17 4-4 4 4"/>'),
+  // A play button on a stack of channels.
+  channels: svg('<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M7 3h10"/><path d="m10 10 5 2.5-5 2.5Z"/>'),
+  // Boards inside a board.
+  subforums: svg('<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M8 13h10M8 16h7"/><circle cx="5.5" cy="14.5" r=".8"/>'),
+  // Two speech marks: the argument behind the article.
+  'talk-pages': svg('<path d="M4 4h16v12H10l-4 4v-4H4Z"/><path d="M9 8v3M13 8v3"/>'),
+  // Three people.
+  groups: svg('<circle cx="12" cy="8" r="3"/><circle cx="5" cy="10" r="2"/><circle cx="19" cy="10" r="2"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6M1.5 18c0-2 1.5-3.5 3.5-3.5M22.5 18c0-2-1.5-3.5-3.5-3.5"/>'),
+  // A hash.
+  'trending-topics': svg('<path d="M9 3 7 21M17 3l-2 18M4 9h17M3 15h17"/>'),
+  // A grinning face.
+  'emotes-and-raids': svg('<circle cx="12" cy="12" r="9"/><path d="M8 14c1 2 2.4 3 4 3s3-1 4-3"/><path d="M9 9h.01M15 9h.01"/>'),
+  // A numbered list.
+  listicles: svg('<path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 6h1v-2M4 12h2l-2 2h2M4 17h2v2H4"/>'),
+  // A pin with a tick.
+  'check-ins': svg('<path d="M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11Z"/><path d="m9.5 10 2 2 3-3.5"/>'),
+  // A price tag on a box.
+  'product-listings': svg('<path d="M3 7l9-4 9 4v10l-9 4-9-4Z"/><path d="m3 7 9 4 9-4M12 11v10"/>'),
+  // A face with dog ears.
+  'filters-and-lenses': svg('<circle cx="12" cy="14" r="6"/><path d="M7 10 5 4l5 3.5M17 10l2-6-5 3.5"/><path d="M10 14h.01M14 14h.01"/>'),
+  // A clapperboard.
+  originals: svg('<rect x="3" y="9" width="18" height="11" rx="1"/><path d="m3 9 2-5 16 2-1 3"/><path d="m8 4.5 2 4M13 5l2 4"/>'),
+  // An envelope with a dollar sign.
+  'paid-newsletters': svg('<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 6 9-6"/><path d="M12 13v5"/>'),
+  // Bars going up.
+  'seller-dashboards': svg('<path d="M4 20V10M10 20V6M16 20v-8M3 20h18"/><path d="M20 4l-4 4"/>'),
+  // A briefcase.
+  'job-board': svg('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>'),
+  // A server icon with a dot: a community's place.
+  servers: svg('<circle cx="12" cy="12" r="9"/><path d="M8 10h8M8 14h5"/>'),
+  // Two screens side by side.
+  'duets-and-remixes': svg('<rect x="3" y="4" width="8" height="16" rx="1"/><rect x="13" y="4" width="8" height="16" rx="1"/><path d="m6 10 3 2-3 2ZM16 10l3 2-3 2Z"/>'),
+  // Numbered references.
+  'sources-panel': svg('<path d="M5 4h10l4 4v12H5Z"/><path d="M8 12h1M8 16h1M12 12h4M12 16h4"/>'),
+  // A picture frame with a sparkle.
+  'prompt-gallery': svg('<rect x="3" y="4" width="18" height="16" rx="1"/><path d="m3 17 5-5 4 4 3-3 6 6"/><path d="m16 7 .5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5Z"/>'),
+  // A face in a speech bubble.
+  characters: svg('<path d="M4 4h16v12H10l-4 4v-4H4Z"/><circle cx="12" cy="9" r="2.5"/><path d="M8.5 14c.8-1.3 2-2 3.5-2s2.7.7 3.5 2"/>'),
+  // A robot's head.
+  'agent-listings': svg('<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16h5"/><circle cx="12" cy="3.5" r="1"/>'),
 };
 
 export const DEFENSE_ICONS: Readonly<Record<DefenseId, string>> = {
