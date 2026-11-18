@@ -45,3 +45,4 @@ export * from './era-stats';
 export * from './specialization-hooks';
 export * from './specialization-clocks';
 export * from './content/specialization-items';
+export * from './content/achievements';

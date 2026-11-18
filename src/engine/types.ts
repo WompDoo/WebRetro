@@ -710,6 +710,26 @@ export type PerkId = 'muscle-memory' | 'regulars' | 'known-tags' | 'early-warnin
  * What survives from one site to the next: unspent Backlinks, the perks bought with them, and how many runs were
  * finished. Saved on its own, apart from the game: Start over clears a game, never the legacy.
  */
+/** What a player has done, across every run in this browser. */
+export type AchievementId =
+  | 'first-visitor'
+  | 'quit-day-job'
+  | 'on-fire'
+  | 'rode-it-out'
+  | 'clean-sweep'
+  | 'no-ads-no-problem'
+  | 'web-2-0'
+  | 'the-whole-web'
+  | 'second-site'
+  | 'specialist'
+  | 'full-stack'
+  | 'secret-door'
+  | 'collector'
+  | 'serial-founder'
+  | 'broken-combo'
+  | 'trillionaire';
+
+
 export interface LegacyState {
   readonly version: number;
   readonly backlinks: number;
@@ -717,6 +737,8 @@ export interface LegacyState {
   readonly finishedRuns: number;
   /** Every specialization ever unlocked, in any run: their cards show from the start next time. */
   readonly foundSpecializationIds: readonly SpecializationId[];
+  /** Every achievement earned, in any run: once earned, it stays. */
+  readonly achievementIds: readonly AchievementId[];
 }
 
 /** The parts of the game that decide how the page looks: enough to show an old page again. */

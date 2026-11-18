@@ -5,7 +5,8 @@ import { applyEraStartPerks, OLD_SAVINGS_PER_LEVEL } from './era-start';
 import { createInitialGameState } from './state';
 import { ERAS_BY_ID } from './content/eras';
 import { SPECIALIZATION_IDS } from './content/specializations';
-import type { GameState, LegacyState, PerkId, SpecializationId } from './types';
+import { ACHIEVEMENT_IDS, ACHIEVEMENTS_BY_ID } from './content/achievements';
+import type { AchievementId, GameState, LegacyState, PerkId, SpecializationId } from './types';
 
 /**
  * Prestige: the ending is a relaunch too, and 1997 is the next era. A finished run earns Backlinks, the legacy keeps
@@ -13,7 +14,7 @@ import type { GameState, LegacyState, PerkId, SpecializationId } from './types';
  */
 
 export const LEGACY_VERSION = 1;
-export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0, perkLevels: NO_PERKS, finishedRuns: 0, foundSpecializationIds: [] };
+export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0, perkLevels: NO_PERKS, finishedRuns: 0, foundSpecializationIds: [], achievementIds: [] };
 
 /** Visitors below this many orders of magnitude earn nothing: one Backlink for each one past it. */
 const VISITOR_MAGNITUDE_THRESHOLD = 10;
@@ -76,6 +77,22 @@ export function recordFoundSpecializations(legacy: LegacyState, unlockedIds: rea
   return newlyFound.length === 0 ? legacy : { ...legacy, foundSpecializationIds: [...legacy.foundSpecializationIds, ...newlyFound] };
 }
 
+/** Achievements are a test-build system for now: the classic game neither checks nor shows them. */
+export function areAchievementsOn(state: GameState): boolean {
+  return state.edition !== 'classic';
+}
+
+/** Whatever the game has just earned joins the legacy, for good. The same legacy back when nothing new was earned. */
+export function recordAchievements(legacy: LegacyState, state: GameState): LegacyState {
+  if (!areAchievementsOn(state)) return legacy;
+  const earned = ACHIEVEMENT_IDS.filter((id) => !legacy.achievementIds.includes(id) && ACHIEVEMENTS_BY_ID[id].isEarned(state, legacy));
+  return earned.length === 0 ? legacy : { ...legacy, achievementIds: [...legacy.achievementIds, ...earned] };
+}
+
+function readAchievementIds(value: unknown): readonly AchievementId[] {
+  return Array.isArray(value) ? ACHIEVEMENT_IDS.filter((id) => value.includes(id)) : [];
+}
+
 function readFoundSpecializations(value: unknown): readonly SpecializationId[] {
   return Array.isArray(value) ? SPECIALIZATION_IDS.filter((id) => value.includes(id)) : [];
 }
@@ -133,5 +150,6 @@ export function restoreLegacy(value: unknown): LegacyState {
     perkLevels: readPerkLevels(value['perkLevels']),
     finishedRuns: readCount(value['finishedRuns']),
     foundSpecializationIds: readFoundSpecializations(value['foundSpecializationIds']),
+    achievementIds: readAchievementIds(value['achievementIds']),
   };
 }
