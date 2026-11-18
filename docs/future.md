@@ -478,19 +478,27 @@ need the money. Four ads and it's gone, so an ad player never benefits.
 
 | Era | Item | Pays like | Like |
 |---|---|---|---|
-| 1997 | Tip jar ("Like my site? Mail me a dollar!") | SLOTS_TIP banners | Late-'90s "send a dollar to my PO box" lines |
-| 1997 | "Support this site" page | SLOTS_SUPPORT banners | Homepages' "what this site costs me" pages |
-| 1997 | Fan club (mailed-in $5 a year) | SLOTS_FAN banners | Fan clubs with a members-only page and a newsletter |
-| 2005 | Pro accounts ($24.95 a year, no banners) | SLOTS_PRO banners | Flickr Pro, LiveJournal paid accounts |
-| 2011 | Pay what you want | SLOTS_PWYW banners | Humble Bundle, Radiohead's *In Rainbows* |
-| 2018 | Patron tiers ($1 / $5 / $25 a month) | SLOTS_PATRON banners | Patreon |
-| 2024 | Supporter plan ("no ads, ever") | SLOTS_SUPPORTER banners | YouTube Premium, Substack |
+| 1997 | Tip jar ("Like my site? Mail me a dollar!") | 0.2 banners | Late-'90s "send a dollar to my PO box" lines |
+| 1997 | "Support this site" page | 0.6 banners | Homepages' "what this site costs me" pages |
+| 1997 | Fan club (mailed-in $5 a year) | 1 banner | Fan clubs with a members-only page and a newsletter |
+| 2005 | Pro accounts ($24.95 a year, no banners) | 9 banners | Flickr Pro, LiveJournal paid accounts |
+| 2011 | Pay what you want | 3 banners | Humble Bundle, Radiohead's *In Rainbows* |
+| 2018 | Patron tiers ($1 / $5 / $25 a month) | 15 banners | Patreon |
+| 2024 | Supporter plan ("no ads, ever") | 1 banner | YouTube Premium, Substack |
 
 **Priced in banners, not dollars.** An item pays what so many of the era's plain banners would, per visitor. A
 banner pays less every era ($0.15 a visitor in 1997, $0.04 in 2024), and a flat donation didn't: the first version
 paid fixed amounts, and by 2018 the ad-free site was nearly as fast as one full of ads. In banners, support falls
-with the ads and stays a step behind them in every era. They stack: what a run asked for in 1997 still pays in 2024,
-at 2024's banner prices.
+with the ads and stays a step behind them in every era.
+
+**Each era's way to ask replaces an older one.** Kept forever, the support carried into 2018 beat the ads there while
+2005 needed more than it had, so the ways to ask retire like dated features: the 1997 three in 2011 (nobody mails a
+check to a social network), pro accounts in 2018, pay what you want in 2024.
+
+**Affordable when the era starts.** Pro accounts cost $50K: an ad-free site arrives in 2005 with 1997's support worth
+little at 2005's banner prices, down on a server it can't yet replace (it has far more visitors per dollar than a site
+whose banners drive a fifth of them off). It needs the new era's support first, the way an ad player's first ad is
+free.
 
 **On the page.** 1997's three are badges by the "Best viewed at 800×600" one; later eras put theirs in the footer,
 next to the copyright. Only this era's: a 2018 page doesn't still ask for checks by mail.
@@ -498,9 +506,19 @@ next to the copyright. Only this era's: a 2018 page doesn't still ask for checks
 **The sim found a bot bug on the way.** The balance bot values a site's first feature together with its first ad
 ("a first feature earns nothing without an ad"). An ad-free player never places that ad, and with support on the
 page the imaginary ad made every feature look like a loss, so the bot saved instead of building and stalled in
-1997. It now values the first ad only for a player who places ads, on a page that earns nothing without one.
+1997. It now values the first ad only for a player who places ads, on a page that earns nothing without one. The
+balance bot's own run doesn't change: same 243 minutes, era for era.
 
-RESULTS_PLACEHOLDER
+**Tuned with the sim's ad-free player** against the balance bot, which runs a full ad wall (`npm run players`):
+
+| | 1997 | 2005 | 2011 | 2018 | 2024 | Whole run |
+|---|---|---|---|---|---|---|
+| Ads (balance bot) | 26m | 52m | 51m | 64m | 51m | 243m |
+| No ads | 35m | 69m | 83m | 85m | 58m | 330m (1.36×) |
+
+Slower in every era, by a third overall, and it finishes: before, it stayed in 1997 for good at $0 a second. The
+balance bot's run doesn't change, since its ads cost it all the support: it never buys any. "Ad-free web" is now a
+finished run without a single ad, in any era.
 
 ## 6. Known issues, from the sweeps
 
