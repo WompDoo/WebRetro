@@ -209,7 +209,7 @@ function renderCredits(state: GameState): string {
     </div>`;
 }
 
-function pluralizeBacklinks(count: number): string {
+export function pluralizeBacklinks(count: number): string {
   return `${count} ${count === 1 ? 'Backlink' : 'Backlinks'}`;
 }
 

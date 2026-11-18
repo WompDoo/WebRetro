@@ -3,7 +3,7 @@ import type { Edition, SimulationMode } from '../engine';
 import { createAchievementToaster } from './achievement-toast';
 import { attachBadgeTooltip } from './badge-tooltip';
 import { greetInConsole, watchForDevTools } from './dev-tools-watch';
-import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
+import { createActionHandlers, createClickHandler, createKeydownHandler, showAchievementsButton, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, introElements, minigameElements } from './elements';
 import { createIntro } from './intro';
@@ -64,18 +64,13 @@ function tick(): void {
  */
 function recordFound(): void {
   const found = recordFoundSpecializations(store.legacy, store.game.unlockedSpecializationIds);
-  // Playtest jumps eras and hands out money: nothing it does counts as an achievement.
-  const recorded = store.isPlaytestEnabled ? found : recordAchievements(found, store.game);
+  // A run the playtest tools changed earns nothing (the engine checks); having them switched on changes nothing.
+  const recorded = recordAchievements(found, store.game);
   if (recorded === store.legacy) return;
   toaster.announce(recorded.achievementIds.filter((id) => !store.legacy.achievementIds.includes(id)));
   store.legacy = recorded;
   writeLegacy();
   showAchievementsButton();
-}
-
-/** The test build's achievements button shows once there's something in it: from the first achievement. */
-function showAchievementsButton(): void {
-  elements.achievementsButton.hidden = !isTestBuild(store.edition) || store.legacy.achievementIds.length === 0;
 }
 
 /** Opening the developer tools is a secret achievement; editing a number with them gets a word, too. */

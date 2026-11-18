@@ -141,6 +141,18 @@ export function writePreferences(): void {
 const BACKUP_STORAGE_KEY = 'under-construction:save-backup';
 const PLAYTEST_FLAG_KEY = 'under-construction:playtest';
 
+/** Everything this edition keeps in the browser. The other edition's keys are its own, and stay. */
+const ALL_STORAGE_KEYS: readonly string[] = [SAVE_STORAGE_KEY, LEGACY_STORAGE_KEY, PREFERENCES_STORAGE_KEY, BACKUP_STORAGE_KEY, PLAYTEST_FLAG_KEY];
+
+/** Options, Delete all my data: this edition's save, legacy, settings, playtest backup and flag. */
+export function deleteStoredData(): void {
+  try {
+    ALL_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(storageKey(key)));
+  } catch {
+    // Storage can be blocked (private windows, previews): there was nothing kept to delete.
+  }
+}
+
 /** Before the first playtest jump, your own game is copied aside so you can come back to it. */
 export function backUpOwnGameOnce(): void {
   try {
