@@ -45,6 +45,7 @@ import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
 import { createPlaytestHandlers } from './playtest-actions';
+import { renderAchievementsPage } from './render-achievements';
 import { renderSpecializationChoiceScreen } from './render-specializations';
 import { findPickerColors } from './render-site-colors';
 import { SITE_PALETTES } from './site-theme';
@@ -223,6 +224,14 @@ function buyUpgradeAndAnnounce(upgradeId: UpgradeId): void {
 }
 
 /** Every clickable thing in the game carries data-action; this maps each action to what it does. */
+/** The achievements page, drawn as it is now: it doesn't update while open, there's nothing to watch. */
+function openAchievements(): void {
+  elements.achievementsCard.innerHTML = renderAchievementsPage(store.game, store.legacy);
+  showOverlay(elements.achievementsOverlay);
+  // Opening focuses the button at the bottom; the page starts at the top.
+  elements.achievementsCard.scrollTop = 0;
+}
+
 export function createActionHandlers({ minigame, renderer, intro }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
   return {
     'buy-feature': (target) => {
@@ -296,6 +305,8 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
       updateGame((state) => chooseSiteColors(state, { ...findPickerColors(state), background }));
     }),
     'site-colors-reset': () => updateGame((state) => chooseSiteColors(state, null)),
+    'open-achievements': openAchievements,
+    'close-achievements': () => hideOverlay(elements.achievementsOverlay),
     'open-reset': () => showOverlay(elements.resetOverlay),
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),
