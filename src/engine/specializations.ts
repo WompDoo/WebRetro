@@ -7,13 +7,11 @@ import type { EraStatId, SpecializationCondition, SpecializationDefinition, Spec
 import { UPGRADES_BY_ID } from './content/upgrades';
 import {
   calculateAiAnswerShare,
-  calculateBaseVisitorsPerSecond,
-  calculateFeatureVisitorsPerSecond,
   calculatePhoneLoadTimeSeconds,
   isFeatureSwitchedOff,
   isMobileFriendly,
 } from './economy';
-import { countCleanedOf } from './era-stats';
+import { calculateSpendingShare, countCleanedOf } from './era-stats';
 import type { EraGateRequirement, EraId, FeatureId, GameEvent, GameState, GameStep, SpecializationId, SpecializedEraId, UpgradeEffect } from './types';
 
 /**
@@ -104,12 +102,6 @@ function readStat(state: GameState, statId: EraStatId): number {
   return stats[statId];
 }
 
-/** A feature's share of every visitor the site's features bring right now. */
-export function calculateVisitorShare(state: GameState, featureId: FeatureId): number {
-  const total = calculateBaseVisitorsPerSecond(state);
-  return total > 0 ? calculateFeatureVisitorsPerSecond(state, featureId) / total : 0;
-}
-
 /** Fewer is the goal: at most this many ads. */
 function measureAds(state: GameState, condition: SpecializationCondition, count: number): ConditionProgress {
   const label = count === 0 ? 'No ads' : `At most ${count} ads`;
@@ -129,8 +121,8 @@ type Measures = { readonly [K in SpecializationCondition['kind']]: (state: GameS
 const MEASURES: Measures = {
   'feature-level': (state, condition) => progress(condition, FEATURES_BY_ID[condition.featureId].name, 'level', state.featureLevels[condition.featureId], condition.level),
   skill: (state, condition) => flag(condition, UPGRADES_BY_ID[condition.upgradeId].name, state.purchasedUpgradeIds.includes(condition.upgradeId)),
-  'visitor-share': (state, condition) =>
-    progress(condition, `${FEATURES_BY_ID[condition.featureId].name} brings ${Math.round(condition.share * 100)}% of your visitors`, 'share', calculateVisitorShare(state, condition.featureId), condition.share),
+  'spending-share': (state, condition) =>
+    progress(condition, `${Math.round(condition.share * 100)}% of this era’s spending into ${FEATURES_BY_ID[condition.featureId].name}`, 'share', calculateSpendingShare(state, condition.featureId), condition.share),
   'switched-off': (state, condition) => flag(condition, `${FEATURES_BY_ID[condition.featureId].name} switched off`, isFeatureSwitchedOff(state, condition.featureId)),
   'max-ads': (state, condition) => measureAds(state, condition, condition.count),
   'ad-free-minutes': (state, condition) => progress(condition, `No ads for ${condition.minutes} minutes in a row`, 'minutes', state.eraStats.adFreeMs / MS_PER_MINUTE, condition.minutes),

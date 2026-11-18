@@ -182,6 +182,11 @@ function findLook(state: GameState): ShownLook | null {
   return { look, eraId };
 }
 
+/** Has a page of its own so far: the rest keep the era's page until they get one. */
+export function hasSpecializationLook(specializationId: SpecializationId): boolean {
+  return LOOKS[specializationId] !== undefined;
+}
+
 function fillBrand(text: string, state: GameState): string {
   return escapeHtml(text.replaceAll('{brand}', siteBrand(state)));
 }

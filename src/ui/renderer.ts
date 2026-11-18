@@ -286,11 +286,11 @@ function renderTabBadges(issues: readonly Issue[]): void {
 }
 
 function readShopView(): ShopView {
-  return { buyAmount: store.buyAmount, isScrollJackingOn: store.isScrollJackingOn, isSpecializationsOpen: store.isSpecializationsOpen };
+  return { isScrollJackingOn: store.isScrollJackingOn, foundSpecializationIds: store.legacy.foundSpecializationIds };
 }
 
 function renderShop(): void {
-  setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab));
+  setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab, store.game));
   elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab, readShopView());
 }
 
@@ -311,6 +311,8 @@ function describeSwitch(isOn: boolean): 'on' | 'off' {
 function updateShopAffordability(): void {
   elements.shopBody.querySelectorAll<HTMLButtonElement>('button[data-cost]').forEach((button) => {
     button.disabled = store.game.money < Number(button.dataset['cost']);
+    // Bulk buttons show only while you could pay for them.
+    if (button.dataset['bulk'] !== undefined) button.hidden = button.disabled;
   });
   SHOP_TABS.forEach((tab) => {
     const badge = elements.shopTabs.querySelector<HTMLElement>(`[data-tab-badge="${tab}"]`);

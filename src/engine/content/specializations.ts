@@ -8,8 +8,8 @@ import type { ConsentBanner, FeatureId, SpecializationId, SpecializedEraId, Upgr
  * one open door.
  *
  * Unlocks ask for what money can't simply buy:
- * - a lean: one feature brings a share of all your visitors. Buying everything spreads traffic out, so you hold
- *   things back or switch them off;
+ * - a lean: a share of the era's spending put into one feature. Buying everything spreads money across features, so
+ *   leaning means holding the rest back, and waiting doesn't help;
  * - a sacrifice: a feature switched off, few ads, a consent choice;
  * - a skill: on fire, minigames won, traffic spikes ridden out;
  * - a build: a level.
@@ -25,7 +25,7 @@ export type EraStatId = 'on-fire' | 'spikes-ridden-out' | 'spam-cleaned' | 'ddos
 export type SpecializationCondition =
   | { readonly kind: 'feature-level'; readonly featureId: FeatureId; readonly level: number }
   | { readonly kind: 'skill'; readonly upgradeId: UpgradeId }
-  | { readonly kind: 'visitor-share'; readonly featureId: FeatureId; readonly share: number }
+  | { readonly kind: 'spending-share'; readonly featureId: FeatureId; readonly share: number }
   | { readonly kind: 'switched-off'; readonly featureId: FeatureId }
   | { readonly kind: 'max-ads'; readonly count: number }
   | { readonly kind: 'ad-free-minutes'; readonly minutes: number }
@@ -101,7 +101,7 @@ export const SPECIALIZATION_IDS: readonly SpecializationId[] = [
 
 const feature = (featureId: FeatureId, level: number): SpecializationCondition => ({ kind: 'feature-level', featureId, level });
 const skill = (upgradeId: UpgradeId): SpecializationCondition => ({ kind: 'skill', upgradeId });
-const lean = (featureId: FeatureId, share: number): SpecializationCondition => ({ kind: 'visitor-share', featureId, share });
+const lean = (featureId: FeatureId, share: number): SpecializationCondition => ({ kind: 'spending-share', featureId, share });
 const off = (featureId: FeatureId): SpecializationCondition => ({ kind: 'switched-off', featureId });
 const maxAds = (count: number): SpecializationCondition => ({ kind: 'max-ads', count });
 const stat = (statId: EraStatId, count: number): SpecializationCondition => ({ kind: 'era-stat', stat: statId, count });
@@ -157,7 +157,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,
-    unlock: [lean('blog', 0.4), feature('comments', 30), skill('learn-rss')],
+    unlock: [lean('blog', 0.4), feature('comments', 20), skill('learn-rss')],
     restriction: null,
     eras: {
       'web2-2005': plan('blog', 15, [adValue(1.15)]),
@@ -176,7 +176,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,
-    unlock: [lean('photo-gallery', 0.35), feature('tag-cloud', 10), off('flash-intro')],
+    unlock: [lean('photo-gallery', 0.4), off('flash-intro'), feature('tag-cloud', 3)],
     restriction: keepsOff('flash-intro'),
     eras: {
       'web2-2005': plan('photo-gallery', 15, [adAnnoyance(0.7), serverLoad(1.2)]),
@@ -195,7 +195,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,
-    unlock: [lean('flash-intro', 0.35), skill('embed-tag'), stat('spikes-ridden-out', 1)],
+    unlock: [lean('flash-intro', 0.4), skill('embed-tag'), stat('spikes-ridden-out', 1)],
     restriction: null,
     eras: {
       'web2-2005': plan('flash-intro', 15, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)]),
@@ -214,7 +214,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,
-    unlock: [lean('forum', 0.35), off('guestbook'), stat('spam-cleaned', 3)],
+    unlock: [lean('forum', 0.4), off('guestbook'), stat('spam-cleaned', 3)],
     restriction: keepsOff('guestbook'),
     eras: {
       'web2-2005': plan('forum', 15, [traffic(1.2), adValue(0.85)]),
@@ -233,7 +233,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: true,
-    unlock: [lean('wiki', 0.3), { kind: 'ad-free-minutes', minutes: 10 }],
+    unlock: [lean('wiki', 0.35), { kind: 'ad-free-minutes', minutes: 10 }],
     restriction: keepsAdsAtMost(0),
     eras: {
       'web2-2005': plan('wiki', 15, [perVisitor(0.6), traffic(1.15)]),
@@ -254,7 +254,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['photos', 'blog-network'],
     isSecret: false,
-    unlock: [lean('activity-feed', 0.3), feature('share-buttons', 30), feature('social-login', 10)],
+    unlock: [lean('activity-feed', 0.4), feature('share-buttons', 25), feature('social-login', 5)],
     restriction: null,
     eras: {
       'social-2011': plan('activity-feed', 9, [adValue(0.75), traffic(1.2)]),
@@ -272,7 +272,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['blog-network', 'forum'],
     isSecret: false,
-    unlock: [lean('share-buttons', 0.35), stat('on-fire', 5), off('blog')],
+    unlock: [lean('share-buttons', 0.4), stat('on-fire', 5), off('blog')],
     restriction: keepsOff('blog'),
     eras: {
       'social-2011': plan('activity-feed', 9, [traffic(1.4), adValue(0.8)]),
@@ -290,7 +290,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['video'],
     isSecret: false,
-    unlock: [lean('video-player', 0.35), feature('activity-feed', 10), stat('spikes-ridden-out', 2)],
+    unlock: [lean('video-player', 0.4), feature('activity-feed', 5), stat('spikes-ridden-out', 2)],
     restriction: null,
     eras: {
       'social-2011': plan('video-player', 8, [adValue(0.95), serverLoad(1.3), perVisitor(0.3)]),
@@ -308,7 +308,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['blog-network', 'forum'],
     isSecret: false,
-    unlock: [lean('one-pager', 0.25), feature('share-buttons', 30), stat('ddos-cleaned', 1)],
+    unlock: [lean('one-pager', 0.35), feature('share-buttons', 25), stat('ddos-cleaned', 1)],
     restriction: null,
     eras: {
       'social-2011': plan('activity-feed', 9, [adValue(1.15)]),
@@ -326,7 +326,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['forum', 'photos'],
     isSecret: false,
-    unlock: [lean('map-mashup', 0.25), feature('social-login', 10), { kind: 'mobile-friendly' }],
+    unlock: [lean('map-mashup', 0.35), feature('social-login', 5), { kind: 'mobile-friendly' }],
     restriction: null,
     eras: {
       'social-2011': plan('social-login', 5, [adValue(0.9), perVisitor(0.3)]),
@@ -364,7 +364,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['social', 'photos'],
     isSecret: false,
-    unlock: [lean('stories', 0.35), feature('photo-gallery', 50), { kind: 'phone-load-under', seconds: 2.5 }],
+    unlock: [lean('stories', 0.4), feature('photo-gallery', 50), { kind: 'phone-load-under', seconds: 2.5 }],
     restriction: null,
     eras: {
       'platform-2018': plan('stories', 15, [adValue(1.2), adAnnoyance(0.8)]),
@@ -381,7 +381,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['live-streaming', 'video'],
     isSecret: false,
-    unlock: [lean('video-player', 0.3), feature('pricing-table', 20), maxAds(2)],
+    unlock: [lean('video-player', 0.35), feature('pricing-table', 15), maxAds(2)],
     restriction: keepsAdsAtMost(2),
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.6), serverLoad(1.4)]),
@@ -398,7 +398,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['news', 'microblog', 'blog-network'],
     isSecret: false,
-    unlock: [lean('newsletter', 0.3), feature('pricing-table', 10), { kind: 'consent', banner: 'honest' }],
+    unlock: [lean('newsletter', 0.4), feature('pricing-table', 10), { kind: 'consent', banner: 'honest' }],
     restriction: null,
     eras: {
       'platform-2018': plan('newsletter', 13, [perVisitor(0.4), adValue(0.9)]),
@@ -415,7 +415,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['shop', 'reviews'],
     isSecret: false,
-    unlock: [lean('pricing-table', 0.25), feature('language-switcher', 20), skill('learn-oauth')],
+    unlock: [lean('language-switcher', 0.4), feature('pricing-table', 10), skill('learn-oauth')],
     restriction: null,
     eras: {
       'platform-2018': plan('language-switcher', 14, [perVisitor(0.5), adValue(0.85)]),
@@ -432,7 +432,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: [],
     isSecret: false,
-    unlock: [lean('pricing-table', 0.25), feature('live-chat', 15), feature('newsletter', 15)],
+    unlock: [lean('pricing-table', 0.4), feature('live-chat', 10), feature('newsletter', 10)],
     restriction: null,
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.35), adValue(0.95)]),
@@ -449,7 +449,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['forum', 'live-streaming'],
     isSecret: true,
-    unlock: [lean('community-chat', 0.3), feature('live-chat', 15)],
+    unlock: [lean('community-chat', 0.4), feature('live-chat', 10)],
     restriction: null,
     eras: {
       'platform-2018': plan('community-chat', 10, [traffic(1.2), adValue(0.85), perVisitor(0.2)]),
@@ -482,7 +482,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'ai-2024',
     parents: ['newsletter', 'news', 'reviews'],
     isSecret: false,
-    unlock: [lean('ai-search', 0.35), feature('ai-articles', 25), { kind: 'ai-answer-share', share: 0.3 }],
+    unlock: [lean('ai-search', 0.4), feature('ai-articles', 15), { kind: 'ai-answer-share', share: 0.3 }],
     restriction: null,
     eras: { 'ai-2024': plan('ai-search', 15, [adValue(1.1)]) },
     legacy: keeps('ai-search'),
@@ -496,7 +496,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'ai-2024',
     parents: ['stories', 'photos'],
     isSecret: false,
-    unlock: [lean('ai-images', 0.35), feature('pricing-table', 20)],
+    unlock: [lean('ai-images', 0.4), feature('pricing-table', 20)],
     restriction: null,
     eras: { 'ai-2024': plan('ai-images', 12, [perVisitor(0.3), serverLoad(1.3)]) },
     legacy: keeps('ai-images'),
@@ -510,7 +510,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'ai-2024',
     parents: [],
     isSecret: false,
-    unlock: [lean('ai-chatbot', 0.35), off('live-chat')],
+    unlock: [lean('ai-chatbot', 0.4), off('live-chat')],
     restriction: keepsOff('live-chat'),
     eras: { 'ai-2024': plan('ai-chatbot', 15, [perVisitor(0.35), serverLoad(1.3)]) },
     legacy: keeps('ai-chatbot'),
@@ -524,7 +524,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'ai-2024',
     parents: ['marketplace', 'professional'],
     isSecret: true,
-    unlock: [lean('agent-store', 0.3)],
+    unlock: [lean('agent-store', 0.4)],
     restriction: null,
     eras: { 'ai-2024': plan('agent-store', 10, [perVisitor(0.4)]) },
     legacy: keeps('agent-store'),

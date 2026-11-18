@@ -1,4 +1,4 @@
-import { countCleaned, EMPTY_ERA_STATS } from './era-stats';
+import { countCleaned, countFeatureSpending, countSpending, EMPTY_ERA_STATS } from './era-stats';
 import { canSwitchAnyFeature, findAdLimit, isFeatureLockedOff } from './specializations';
 import { heatUp, startBuff } from './buffs';
 import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
@@ -53,7 +53,7 @@ function earn(state: GameState, amount: number): GameState {
 }
 
 function spend(state: GameState, amount: number): GameState {
-  return { ...state, money: state.money - amount };
+  return countSpending({ ...state, money: state.money - amount }, amount);
 }
 
 function rewriteBuggedLine(state: GameState): CodeInputResult {
@@ -91,7 +91,8 @@ export function canBuyFeature(state: GameState, featureId: FeatureId): boolean {
 export function buyFeature(state: GameState, featureId: FeatureId): GameState {
   if (!canBuyFeature(state, featureId)) return state;
   const levels = { ...state.featureLevels, [featureId]: state.featureLevels[featureId] + 1 };
-  return { ...spend(state, calculateNextFeatureCost(state, featureId)), featureLevels: levels };
+  const cost = calculateNextFeatureCost(state, featureId);
+  return { ...countFeatureSpending(spend(state, cost), featureId, cost), featureLevels: levels };
 }
 
 export function canBuyFeatureLevels(state: GameState, featureId: FeatureId, count: number): boolean {

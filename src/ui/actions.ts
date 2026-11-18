@@ -114,6 +114,12 @@ function isBuyAmount(value: string): value is `${BuyAmount}` {
   return BUY_AMOUNTS.some((amount) => String(amount) === value);
 }
 
+/** A bulk button's levels; any other buy button buys one. */
+function readBuyAmount(target: HTMLElement): BuyAmount {
+  const amount = target.dataset['amount'] ?? '';
+  return isBuyAmount(amount) ? BUY_AMOUNT_VALUES[amount] : 1;
+}
+
 function isDeviceView(value: string): value is DeviceView {
   return (DEVICE_VIEWS as readonly string[]).includes(value);
 }
@@ -219,10 +225,10 @@ function buyUpgradeAndAnnounce(upgradeId: UpgradeId): void {
 /** Every clickable thing in the game carries data-action; this maps each action to what it does. */
 export function createActionHandlers({ minigame, renderer, intro }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
   return {
-    'buy-feature': withId(isFeatureId, (id) => updateGame((state) => buyFeatureLevels(state, id, store.buyAmount))),
-    'buy-amount': withId(isBuyAmount, (amount) => {
-      store.buyAmount = BUY_AMOUNT_VALUES[amount];
-    }),
+    'buy-feature': (target) => {
+      const id = readId(target);
+      if (isFeatureId(id)) updateGame((state) => buyFeatureLevels(state, id, readBuyAmount(target)));
+    },
     'buy-upgrade': withId(isUpgradeId, buyUpgradeAndAnnounce),
     'buy-defense': withId(isDefenseId, (id) => updateGame((state) => buyDefense(state, id))),
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),

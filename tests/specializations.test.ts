@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   advanceSimulation,
+  buyFeature,
   areBacklinksOn,
   calculateAdValuePerAd,
   calculateBacklinksEarned,
@@ -57,8 +58,10 @@ const NO_LEVELS = Object.fromEntries(FEATURE_IDS.map((featureId) => [featureId, 
 const leaning = (state: GameState, levels: Partial<GameState['featureLevels']>): GameState => ({ ...state, featureLevels: { ...NO_LEVELS, ...levels } });
 const switchedOff = (state: GameState, featureIds: readonly FeatureId[]): GameState => ({ ...state, switchedOffFeatureIds: featureIds });
 
-/** A 2005 photo-sharing site in the making: the gallery is most of the traffic, tags are up, the Flash intro is off. */
-const photosReady = (): GameState => switchedOff(leaning(at('web2-2005'), { 'photo-gallery': 60, 'tag-cloud': 10, 'flash-intro': 1, blog: 1 }), ['flash-intro']);
+/** This era's spending: what went into each feature, out of a total. */
+const spending = (state: GameState, byFeature: Partial<Record<FeatureId, number>>, total: number): GameState => ({ ...state, eraStats: { ...state.eraStats, spent: total, spentByFeature: byFeature } });
+/** A 2005 photo-sharing site in the making: half the era's money went into the gallery, tags are up, the Flash intro is off. */
+const photosReady = (): GameState => switchedOff(spending(leaning(at('web2-2005'), { 'photo-gallery': 40, 'tag-cloud': 3, 'flash-intro': 1, blog: 16 }), { 'photo-gallery': 500 }, 1000), ['flash-intro']);
 
 describe('the specialization tree: when it opens', () => {
   it('is the second site’s draw: off in the first run and in the classic game', () => {
@@ -86,15 +89,23 @@ describe('unlocking a specialization', () => {
     assert.deepEqual(checkSpecializationUnlocks(at('web2-2005')).state.unlockedSpecializationIds, []);
   });
 
-  it('shows how far along each condition is: the lean as a share of visitors', () => {
-    const [lean, tags, flash] = calculateSpecializationProgress(photosReady(), 'photos');
+  it('shows how far along each condition is: the lean as a share of this era’s spending', () => {
+    const [lean, flash, tags] = calculateSpecializationProgress(photosReady(), 'photos');
     assert.equal(lean?.unit, 'share');
-    assert.ok((lean?.current ?? 0) >= 0.35, `photo gallery share ${lean?.current}`);
-    assert.deepEqual([tags?.current, tags?.target, flash?.isMet], [10, 10, true]);
+    assert.equal(lean?.current, 0.5);
+    assert.match(lean?.label ?? '', /40% of this era’s spending into Photo gallery/);
+    assert.deepEqual([tags?.current, tags?.target, flash?.isMet], [3, 3, true]);
+  });
+
+  it('measures the lean in what you spend: buying a feature counts for it, everything else for the total', () => {
+    const state = { ...at('web2-2005'), money: 1e12 };
+    const bought = buyFeature(state, 'photo-gallery');
+    assert.ok((bought.eraStats.spentByFeature['photo-gallery'] ?? 0) > 0);
+    assert.equal(bought.eraStats.spent, bought.eraStats.spentByFeature['photo-gallery']);
   });
 
   it('comes into view half way to its lean, or straight away once found in an earlier run', () => {
-    const halfway = leaning(at('web2-2005'), { 'photo-gallery': 20, blog: 20 });
+    const halfway = spending(at('web2-2005'), { 'photo-gallery': 200 }, 1000);
     assert.ok(isSpecializationInView(halfway, 'photos', []));
     assert.ok(!isSpecializationInView(at('web2-2005'), 'photos', []));
     assert.ok(isSpecializationInView(at('web2-2005'), 'photos', ['photos']), 'found before');
@@ -103,8 +114,8 @@ describe('unlocking a specialization', () => {
   it('counts what an era does: catching fire, riding out spikes, sorting spam, a stretch without ads', () => {
     const state = at('web2-2005');
     assert.equal(countOnFire(state).eraStats.onFireStarts, 1);
-    const spam = { ...state, infections: [{ id: 1, kind: 'spam' as const, featureId: 'comments' as const, ageMs: 0, cleanAttempts: 0 }] };
-    assert.equal(cleanInfection(spam as GameState, 1).state.eraStats.cleanedByKind.spam, 1);
+    const spam: GameState = { ...state, infections: [{ id: 1, kind: 'spam', featureId: 'comments', ageMs: 0, minigameId: 'spam-sort' }] };
+    assert.equal(cleanInfection(spam, 1).state.eraStats.cleanedByKind.spam, 1);
     assert.equal(tickAdFree({ ...state, adCount: 0 }, 1000).eraStats.adFreeMs, 1000);
     assert.equal(tickAdFree({ ...state, adCount: 1, eraStats: { ...state.eraStats, adFreeMs: 9000 } }, 1000).eraStats.adFreeMs, 0, 'an ad starts the clock over');
   });

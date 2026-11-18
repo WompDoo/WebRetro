@@ -16,8 +16,8 @@ const withOnePager = (level: number, switchedOff: boolean): GameState => ({
   featureLevels: { ...base.featureLevels, 'one-pager': level },
   switchedOffFeatureIds: switchedOff ? ['one-pager'] : [],
 });
-const jacking: ShopView = { buyAmount: 1, isScrollJackingOn: true, isSpecializationsOpen: true };
-const reading: ShopView = { buyAmount: 1, isScrollJackingOn: false, isSpecializationsOpen: true };
+const jacking: ShopView = { isScrollJackingOn: true, foundSpecializationIds: [] };
+const reading: ShopView = { isScrollJackingOn: false, foundSpecializationIds: [] };
 const SWITCH = 'data-action="toggle-scroll-jacking"';
 
 describe('the scroll-jacking switch', () => {

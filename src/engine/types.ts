@@ -470,6 +470,9 @@ export interface EraStats {
   readonly cleanedByKind: Readonly<Partial<Record<InfectionKind, number>>>;
   /** How long the site has run without a single ad, right up to now. */
   readonly adFreeMs: number;
+  /** Everything spent this era, and what of it went into each feature: the lean a specialization asks for. */
+  readonly spent: number;
+  readonly spentByFeature: Readonly<Partial<Record<FeatureId, number>>>;
 }
 
 /** Behind the page: plain white, a whisper of your accent color, or warm cream. Each keeps every era readable. */

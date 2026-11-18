@@ -103,7 +103,7 @@ const INVARIANTS: readonly Invariant[] = [
 /** Everything the player reads, as text. */
 function renderEverything(state: GameState): readonly string[] {
   const economy = calculateEconomySnapshot(state);
-  const view = { buyAmount: 1, isScrollJackingOn: true, isSpecializationsOpen: true } as const;
+  const view = { isScrollJackingOn: true, foundSpecializationIds: [] } as const;
   return [
     renderSite(state, 0),
     ...SHOP_TABS.map((tab) => renderShopBody(state, tab, view)),
