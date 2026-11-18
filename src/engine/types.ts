@@ -739,6 +739,8 @@ export interface RunStats {
   readonly longestAwayMs: number;
   /** Opened the browser's developer tools, or edited the page's numbers with them. */
   readonly hasPokedWithDevTools: boolean;
+  /** The playtest tools changed this run (jumped an era, handed out money, ...): it earns no achievements. */
+  readonly usedPlaytest: boolean;
 }
 
 /** What a player has done, across every run in this browser. */

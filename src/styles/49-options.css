@@ -1,0 +1,20 @@
+/* ---------- Options: a row per setting, the one that can't be undone last and behind a second step ---------- */
+.overlay-card.options-card { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.options-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.options-head h2 { margin: 0; }
+.options-row { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-top: 2px solid var(--line-soft); }
+.options-text { flex: 1; min-width: 0; }
+.options-text h3 { margin: 0 0 3px; font-size: 15px; }
+.options-text p { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.45; }
+.options-row > button { flex: none; }
+/* The second step: it says exactly what goes, and keeping is the button you meet first. */
+.options-row.is-confirm { flex-wrap: wrap; margin-top: 2px; padding: 14px; border: 2px solid var(--hazard); border-radius: 8px; background: rgba(229, 72, 77, 0.08); }
+.options-row.is-confirm h3 { color: var(--hazard); }
+.options-confirm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+@media (max-width: 520px) {
+  .options-row { flex-direction: column; align-items: stretch; }
+  .options-confirm-actions { margin-left: 0; }
+}
+
+/* The achievements window, when this run can't earn any. */
+.achievements-notice { margin: 0 0 10px; padding: 8px 12px; border: 2px dashed var(--caution); border-radius: 6px; color: var(--ink); font-size: 13px; }

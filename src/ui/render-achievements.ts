@@ -135,9 +135,16 @@ export function renderBadgeDetail(state: GameState, legacy: LegacyState, id: str
   return isAchievementId(id) ? describeAchievement(state, legacy, id) : describeSpecializationById(legacy, id);
 }
 
+/** A run the playtest tools changed earns nothing: the window says so, rather than looking broken. */
+function renderPlaytestNotice(state: GameState): string {
+  return state.runStats.usedPlaytest
+    ? '<p class="achievements-notice">🧪 This run used the playtest tools, so it doesn’t earn achievements. Your next run does.</p>'
+    : '';
+}
+
 export function renderAchievementsPage(state: GameState, legacy: LegacyState): string {
   const rows = ACHIEVEMENT_CATEGORIES.map((category) => renderCategoryRow(state, legacy, category)).join('');
   return `<header class="achievements-head"><h2 id="achievements-heading">Achievements</h2><span class="achievements-total">${countEarnedAchievements(legacy)} / ${ACHIEVEMENT_IDS.length} earned</span><button type="button" class="ghost-button" data-action="close-achievements">Close</button></header>
-    <div class="badge-rows">${rows}${renderSpecializationsRow(state, legacy)}</div>
+    ${renderPlaytestNotice(state)}<div class="badge-rows">${rows}${renderSpecializationsRow(state, legacy)}</div>
     <p class="badge-detail" data-achievement-detail>${DETAIL_HINT}</p>`;
 }

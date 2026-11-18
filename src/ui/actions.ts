@@ -32,6 +32,7 @@ import {
   UPGRADE_IDS,
   writeCode,
   findChosenFramework,
+  EMPTY_LEGACY,
 } from '../engine';
 import type { ConsentBanner, DefenseId, EraId, FeatureId, FrameworkId, PerkId, SpecializationId, UpgradeId } from '../engine';
 import { DEVICE_VIEWS } from './browser-chrome';
@@ -41,11 +42,14 @@ import { elements } from './elements';
 import { FRAMEWORK_PRESENTATION } from './framework-presentation';
 import { isEndingAct } from './ending';
 import { hideOverlay, renderStory, showArchiveYear, showEnding, showOverlay } from './overlays';
-import { clearSave, writeLegacy, writePreferences, writeSave } from './persistence';
+import { isTestBuild } from './edition';
+import { clearSave, deleteStoredData, writeLegacy, writePreferences, writeSave } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
-import { createPlaytestHandlers } from './playtest-actions';
+import { createPlaytestHandlers, setPlaytestEnabled } from './playtest-actions';
+import { renderOptions } from './render-options';
+import type { OptionsView } from './render-options';
 import { renderAchievementsPage, renderBadgeDetail } from './render-achievements';
 import { renderSpecializationChoiceScreen } from './render-specializations';
 import { findPickerColors } from './render-site-colors';
@@ -213,6 +217,33 @@ function resetGame(renderer: Renderer, intro: Intro): void {
   intro.show();
 }
 
+/** The test build's achievements button shows once there's something in it: from the first achievement. */
+export function showAchievementsButton(): void {
+  elements.achievementsButton.hidden = !isTestBuild(store.edition) || store.legacy.achievementIds.length === 0;
+}
+
+function showOptions(view: OptionsView): void {
+  const context = { state: store.game, legacy: store.legacy, isPlaytestEnabled: store.isPlaytestEnabled, isTestBuild: isTestBuild(store.edition) };
+  elements.optionsCard.innerHTML = renderOptions(context, view);
+  showOverlay(elements.optionsOverlay);
+}
+
+/**
+ * Delete all my data: this edition's storage goes, and the page starts over from nothing, as on a first visit. In
+ * memory, not with a reload: a reload would save the old game on its way out.
+ */
+function deleteAllData(renderer: Renderer, intro: Intro): void {
+  deleteStoredData();
+  store.legacy = EMPTY_LEGACY;
+  store.isScrollJackingOn = true;
+  setPlaytestEnabled(false);
+  startNewGame();
+  renderer.forgetRenderedState();
+  [elements.optionsOverlay, elements.endOverlay].forEach(hideOverlay);
+  showAchievementsButton();
+  intro.show();
+}
+
 /** The framework wars: the moment you pick a side, someone posts that it's dead. */
 function announceFrameworkPick(before: FrameworkId | null): void {
   const after = findChosenFramework(store.game);
@@ -318,7 +349,19 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'open-achievements': openAchievements,
     'close-achievements': () => hideOverlay(elements.achievementsOverlay),
     'achievement-detail': (target) => showAchievementDetail(readId(target)),
-    'open-reset': () => showOverlay(elements.resetOverlay),
+    'open-options': () => showOptions('menu'),
+    'close-options': () => hideOverlay(elements.optionsOverlay),
+    'ask-delete-data': () => showOptions('confirm-delete'),
+    'cancel-delete-data': () => showOptions('menu'),
+    'confirm-delete-data': () => deleteAllData(renderer, intro),
+    'options-playtest-off': () => {
+      setPlaytestEnabled(false);
+      showOptions('menu');
+    },
+    'open-reset': () => {
+      hideOverlay(elements.optionsOverlay);
+      showOverlay(elements.resetOverlay);
+    },
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),
     'keep-playing': () => hideOverlay(elements.endOverlay),

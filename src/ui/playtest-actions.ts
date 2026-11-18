@@ -19,6 +19,7 @@ import {
   unlockPlaytestSpecializations,
   startBuff,
   startPlaytestTrafficSpike,
+  notePlaytestUsed,
 } from '../engine';
 import type { BuffId, EraId, FrameworkId, GameState, MinigameId, OpportunityKind, PlaytestStage, SpecializationId } from '../engine';
 import { elements } from './elements';
@@ -124,7 +125,24 @@ function playMinigame(minigameId: MinigameId, minigame: MinigameModal): void {
   minigame.open(result.infectionId);
 }
 
+/** Opening, closing and switching off the tools, or restoring your own game, leave the run as it was. */
+const HANDS_OFF_ACTIONS: ReadonlySet<string> = new Set(['open-playtest', 'close-playtest', 'disable-playtest', 'playtest-restore']);
+
+/** Every other tool changes the run: it earns no achievements from then on. */
+function markingRunChanged(action: string, handler: ActionHandler): ActionHandler {
+  if (HANDS_OFF_ACTIONS.has(action)) return handler;
+  return (target) => {
+    handler(target);
+    updateGame(notePlaytestUsed);
+  };
+}
+
 export function createPlaytestHandlers(renderer: Renderer, minigame: MinigameModal): Readonly<Record<string, ActionHandler>> {
+  const tools = createPlaytestTools(renderer, minigame);
+  return Object.fromEntries(Object.entries(tools).map(([action, handler]) => [action, markingRunChanged(action, handler)]));
+}
+
+function createPlaytestTools(renderer: Renderer, minigame: MinigameModal): Readonly<Record<string, ActionHandler>> {
   return {
     'open-playtest': () => openPlaytestPanel(),
     'close-playtest': () => hideOverlay(elements.playtestOverlay),

@@ -92,9 +92,14 @@ export function areAchievementsOn(state: GameState): boolean {
   return state.edition !== 'classic';
 }
 
+/** A run the playtest tools changed (an era jumped, money handed out) earns nothing: the next one does. */
+export function canEarnAchievements(state: GameState): boolean {
+  return areAchievementsOn(state) && !state.runStats.usedPlaytest;
+}
+
 /** Whatever the game has just earned joins the legacy, for good. The same legacy back when nothing new was earned. */
 export function recordAchievements(legacy: LegacyState, state: GameState): LegacyState {
-  if (!areAchievementsOn(state)) return legacy;
+  if (!canEarnAchievements(state)) return legacy;
   const earned = ACHIEVEMENT_IDS.filter((id) => !legacy.achievementIds.includes(id) && ACHIEVEMENTS_BY_ID[id].isEarned(state, legacy));
   return earned.length === 0 ? legacy : { ...legacy, achievementIds: [...legacy.achievementIds, ...earned] };
 }

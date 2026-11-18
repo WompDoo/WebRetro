@@ -17,6 +17,7 @@ export const EMPTY_RUN_STATS: RunStats = {
   hasPlacedAd: false,
   longestAwayMs: 0,
   hasPokedWithDevTools: false,
+  usedPlaytest: false,
 };
 
 /** One keystroke a tick is as fast as a hand types: anything faster is a script, and counts once. */
@@ -73,6 +74,11 @@ export function noteAdPlaced(state: GameState): GameState {
 
 export function noteTimeAway(state: GameState, awayMs: number): GameState {
   return awayMs > state.runStats.longestAwayMs ? withRunStats(state, { longestAwayMs: awayMs }) : state;
+}
+
+/** A playtest tool changed this run: from now on it earns no achievements. The next run starts clean. */
+export function notePlaytestUsed(state: GameState): GameState {
+  return state.runStats.usedPlaytest ? state : withRunStats(state, { usedPlaytest: true });
 }
 
 /** The developer tools opened, or a number on the page was edited with them. The game's own numbers don't change. */
