@@ -12,7 +12,9 @@ import {
   listOpenedBy,
   listOpenSpecializations,
   listOutOfReach,
+  SPECIALIZATION_ITEMS,
   SPECIALIZATIONS_BY_ID,
+  UPGRADES_BY_ID,
   TREE_IDS,
 } from '../engine';
 import type { ConditionProgress, EraId, GameState, SpecializationId } from '../engine';
@@ -208,12 +210,20 @@ function describeFocus(state: GameState, specializationId: SpecializationId): st
 }
 
 /** Asks before it's for good: what it does, what it closes, what it opens, and what else is possible this era. */
+/** What only this kind of site gets: its own skill, feature and upgrades, which stay once it's chosen. */
+function describeOwnItems(specializationId: SpecializationId): string {
+  if (specializationId === 'homepage') return '';
+  const items = SPECIALIZATION_ITEMS[specializationId];
+  const upgrades = items.upgrades.map((upgradeId) => UPGRADES_BY_ID[upgradeId].name).join(' and ');
+  return `<li>Only for sites like this: learn ${escapeHtml(UPGRADES_BY_ID[items.learn].name.replace(/^Learn /, ''))}, build ${escapeHtml(FEATURES_BY_ID[items.build].name)}, and get ${escapeHtml(upgrades)}.</li>`;
+}
+
 export function renderSpecializationChoiceScreen(state: GameState, specializationId: SpecializationId): string {
   const definition = SPECIALIZATIONS_BY_ID[specializationId];
   return `<h2 id="spec-choice-heading"><span aria-hidden="true">${definition.icon}</span> Become ${escapeHtml(describeArticle(specializationId))}?</h2>
     <p>${escapeHtml(definition.pitch)}</p>
     <h3 class="spec-choice-heading">What it does</h3>
-    <ul class="spec-choice-list"><li>${escapeHtml(definition.money)}</li>${describeFocus(state, specializationId)}<li>It takes effect at once, costs nothing, and lasts the rest of the run.</li></ul>
+    <ul class="spec-choice-list"><li>${escapeHtml(definition.money)}</li>${describeFocus(state, specializationId)}${describeOwnItems(specializationId)}<li>It takes effect at once, costs nothing, and lasts the rest of the run.</li></ul>
     <h3 class="spec-choice-heading">What it closes</h3>
     ${renderCloses(state, specializationId)}
     <h3 class="spec-choice-heading">What it opens later</h3>

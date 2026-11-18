@@ -53,6 +53,7 @@ import {
 } from '../src/engine';
 import type { EraId, FeatureId, GameState, InfectionKind, SpecializationUpgradeId, TreeSpecializationId, UpgradeId } from '../src/engine';
 import { renderShopBody } from '../src/ui/render-shop';
+import { renderSpecializationChoiceScreen } from '../src/ui/render-specializations';
 import { renderSite } from '../src/ui/sites';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
@@ -249,6 +250,11 @@ describe('each specialization’s own items', () => {
     const video = withoutUpgrade(holding('video'), 'learn-flash-video');
     const { icon, name } = SPECIALIZATIONS_BY_ID.video;
     assert.ok(renderShopBody(video, 'learn', NO_VIEW).includes(`${icon} ${name}</span>`));
+  });
+
+  it('are named on the choice screen, before you commit', () => {
+    const screen = renderSpecializationChoiceScreen(at('web2-2005'), 'video');
+    assert.match(screen, /Only for sites like this: learn Flash video, build Channels, and get Going viral and Embed anywhere\./);
   });
 
   it('show on the page from the first level, with a list that grows', () => {
