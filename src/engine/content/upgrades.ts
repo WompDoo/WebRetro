@@ -1096,7 +1096,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: '$24.95 a year for a star next to your name, unlimited uploads and no banners. Nobody pays to skip banners that aren’t there.',
     cost: 1_500_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'support', adSlots: 6, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 12, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'pay-what-you-want': {
@@ -1107,7 +1107,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'Everything free, and a slider for what it’s worth to you. Most pick a dollar. Enough pick twenty.',
     cost: 3_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'support', adSlots: 2.5, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 2, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'patron-tiers': {
@@ -1118,7 +1118,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: '$1, $5 or $25 a month: a thank-you, early access, or your name in the credits. Patrons hate ads more than anyone.',
     cost: 500_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'support', adSlots: 1, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 6, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'supporter-plan': {
@@ -1129,7 +1129,7 @@ export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
     description: 'A monthly plan whose whole pitch is “no ads, ever”. It only sells while that’s true.',
     cost: 40_000_000_000_000,
     pageWeightKb: 0,
-    effects: [{ kind: 'support', adSlots: 1, lostSharePerAd: SUPPORT_LOST_PER_AD }],
+    effects: [{ kind: 'support', adSlots: 7, lostSharePerAd: SUPPORT_LOST_PER_AD }],
     requiredFeatureId: null,
   },
   'donate-button': {
@@ -1638,4 +1638,10 @@ export const UPGRADE_SUNSETS: Readonly<Partial<Record<UpgradeId, EraId>>> = {
   'vendor-prefixes': 'platform-2018',
   'every-font-weight': 'ai-2024',
   'blockchain-guestbook': 'ai-2024',
+  // Support from visitors moves with the times: nobody mails a check to a social network, and pro accounts give way
+  // to patrons. Each era's own way to ask replaces the one before it, so the ad-free site keeps pace era by era.
+  'tip-jar': 'social-2011',
+  'support-this-site': 'social-2011',
+  'fan-club': 'social-2011',
+  'pro-accounts': 'platform-2018',
 };
