@@ -140,7 +140,7 @@ const SCENARIOS: Readonly<Record<SpecializationUpgradeId, Scenario>> = {
   'live-posting': onFire,
   'fail-whale': inSpike,
   'learn-live-video': asIs,
-  'live-events': played(2 * MINUTE_MS),
+  'live-events': played(3 * MINUTE_MS),
   'subs-and-tips': subscribedFor(MINUTE_MS),
   'learn-headline-testing': asIs,
   clickbait: inSpike,
@@ -398,12 +398,12 @@ describe('traffic that depends on the moment, the era and the site', () => {
     assert.equal(advanceSimulation(site, MINUTE_MS, 'offline').state.eraStats.elapsedMs, site.eraStats.elapsedMs + MINUTE_MS);
   });
 
-  it('network effect: each doubling since the era began, up to one and a half times', () => {
+  it('network effect: each doubling since the era began, up to a quarter more', () => {
     const site = holding('social', ['network-effect']);
     const base = calculateBaseVisitorsPerSecond(site);
     const since = (anchor: number): number => calculateSpecializationTrafficFactor({ ...site, eraStats: { ...site.eraStats, startBaseVisitors: anchor } });
-    assert.equal(Number(since(base / 4).toFixed(PRECISION)), Number((1.1 ** 2).toFixed(PRECISION)));
-    assert.equal(since(base / 1e9), 1.5);
+    assert.equal(Number(since(base / 4).toFixed(PRECISION)), Number((1.05 ** 2).toFixed(PRECISION)));
+    assert.equal(since(base / 1e9), 1.25);
     assert.equal(since(base * 2), 1, 'a site smaller than it began gets nothing');
     assert.equal(since(0), 1, 'nothing to count from');
   });
@@ -429,15 +429,15 @@ describe('traffic that depends on the moment, the era and the site', () => {
 });
 
 describe('spikes, offers and events', () => {
-  it('going viral and clickbait each double how often spikes come, and stack', () => {
-    assert.equal(calculateSpikeFrequencyFactor(holding('video', ['going-viral'])), 2);
+  it('going viral and clickbait each bring spikes half again as often, and stack', () => {
+    assert.equal(calculateSpikeFrequencyFactor(holding('video', ['going-viral'])), 1.5);
     const both = withUpgrades(holding('news', ['clickbait']), ['going-viral']);
-    assert.equal(calculateSpikeFrequencyFactor(both), 4);
+    assert.equal(calculateSpikeFrequencyFactor(both), 2.25);
   });
 
-  it('surge pricing: every visitor pays triple during a spike', () => {
+  it('surge pricing: every visitor pays half again during a spike', () => {
     const site = holding('marketplace', ['surge-pricing']);
-    assert.equal(Number((calculateRevenuePerVisitor(inSpike(site)) / calculateRevenuePerVisitor(site)).toFixed(PRECISION)), 3);
+    assert.equal(Number((calculateRevenuePerVisitor(inSpike(site)) / calculateRevenuePerVisitor(site)).toFixed(PRECISION)), 1.5);
   });
 
   it('breaking news: catching fire starts a spike, but never a second one on top', () => {
@@ -454,9 +454,9 @@ describe('spikes, offers and events', () => {
     assert.equal(advanceSimulation(site, 10_000, 'live').state.opportunityCountdownMs, MINUTE_MS - 20_000);
   });
 
-  it('live events start themselves every two minutes, at the keyboard only', () => {
+  it('live events start themselves every three minutes, at the keyboard only', () => {
     const site = holding('live-streaming', ['live-events']);
-    assert.ok(advanceSimulation(site, 2 * MINUTE_MS, 'live').state.buffs.some((buff) => buff.id === 'live-event'));
+    assert.ok(advanceSimulation(site, 3 * MINUTE_MS, 'live').state.buffs.some((buff) => buff.id === 'live-event'));
     assert.deepEqual(advanceSimulation(site, 10 * MINUTE_MS, 'offline').state.buffs, []);
   });
 

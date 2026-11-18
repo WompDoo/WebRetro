@@ -19,7 +19,7 @@ export const BUFFS_BY_ID: Readonly<Record<BuffId, BuffDefinition>> = {
   // Won by hitting the launch window three times before the launch slips: for 45 seconds, half as many visitors
   // again come to see it. Offers are split between this and the sponsor, so each comes about every eight minutes.
   'launch-day': { id: 'launch-day', name: 'Launch day', icon: '🚀', target: 'traffic', factor: 1.5, durationMs: 45_000 },
-  // A live streaming site's scheduled stream: every two minutes, half a minute of twice the visitors. Not won, booked.
+  // A live streaming site's scheduled stream: every three minutes, half a minute of twice the visitors. Not won, booked.
   'live-event': { id: 'live-event', name: 'Live event', icon: '🔴', target: 'traffic', factor: 2, durationMs: 30_000 },
   // An online shop's sale, every five minutes: for 45 seconds every banner pays triple.
   'black-friday': { id: 'black-friday', name: 'Black Friday', icon: '🏷️', target: 'ad-value', factor: 3, durationMs: 45_000 },

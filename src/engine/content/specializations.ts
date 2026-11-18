@@ -329,7 +329,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     parents: ['forum', 'photos'],
     isSecret: false,
     // A lean on its own era's feature: an old feature's levels are cheap next to the era's, and a lean on one is a grind.
-    unlock: [lean('social-login', 0.35), feature('map-mashup', 40), { kind: 'mobile-friendly' }],
+    unlock: [lean('social-login', 0.35), feature('map-mashup', 30), { kind: 'mobile-friendly' }],
     restriction: null,
     eras: {
       'social-2011': plan('social-login', 5, [adValue(0.9), perVisitor(0.3)]),
