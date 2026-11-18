@@ -1,5 +1,6 @@
 import { countCleaned, countFeatureSpending, startEraStats } from './era-stats';
 import { breakNewsOnFire, publishFromTyping, rewardCleanup } from './specialization-hooks';
+import { countCleanup, countHandTyped, countPopupClosed, countScam, countTypo, noteAdPlaced } from './run-stats';
 import { canSwitchAnyFeature, findAdLimit, isFeatureLockedOff } from './specializations';
 import { heatUp, startBuff } from './buffs';
 import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
@@ -81,9 +82,15 @@ function writeFreshLine(state: GameState): CodeInputResult {
  * One keystroke or click in the editor. A typo earns nothing; the next keystroke rewrites it and earns. Every
  * keystroke moves the heat meter: clean ones warm it, typos cool it, and a full meter sets you on fire.
  */
+/** For the achievements: a hand-paced keystroke before 2024, and a typo. */
+function countKeystroke(before: GameState, result: CodeInputResult): GameState {
+  const counted = countHandTyped(before, result.state);
+  return result.outcome === 'bugged-line' ? countTypo(counted) : counted;
+}
+
 export function writeCode(state: GameState): CodeInputResult {
   const result = state.hasPendingBug ? rewriteBuggedLine(state) : writeFreshLine(state);
-  const typed = publishFromTyping(result.state);
+  const typed = publishFromTyping(countKeystroke(state, result));
   return { ...result, state: breakNewsOnFire(typed, heatUp(typed, result.outcome)) };
 }
 
@@ -148,7 +155,7 @@ export function canPlaceAd(state: GameState): boolean {
 
 export function placeAd(state: GameState): GameState {
   if (!canPlaceAd(state)) return state;
-  return { ...spend(state, calculateNextAdCost(state)), adCount: state.adCount + 1 };
+  return noteAdPlaced({ ...spend(state, calculateNextAdCost(state)), adCount: state.adCount + 1 });
 }
 
 export function removeAd(state: GameState): GameState {
@@ -236,7 +243,8 @@ export function renewCertificate(state: GameState): GameState {
 }
 
 export function closePopup(state: GameState, popupId: number): GameState {
-  return { ...state, popups: state.popups.filter((popup) => popup.id !== popupId) };
+  if (!state.popups.some((popup) => popup.id === popupId)) return state;
+  return countPopupClosed({ ...state, popups: state.popups.filter((popup) => popup.id !== popupId) });
 }
 
 export interface PopupScamResult {
@@ -248,7 +256,7 @@ export interface PopupScamResult {
 export function fallForPopupScam(state: GameState, popupId: number): PopupScamResult {
   if (!state.popups.some((popup) => popup.id === popupId)) return { state, moneyLost: 0 };
   const moneyLost = state.money * POPUP_SCAM_MONEY_SHARE;
-  return { state: closePopup(spend(state, moneyLost), popupId), moneyLost };
+  return { state: countScam(closePopup(spend(state, moneyLost), popupId)), moneyLost };
 }
 
 const CLEANUP_MESSAGES: Readonly<Record<MinigameId, (featureName: string) => string>> = {
@@ -284,7 +292,8 @@ function withQuickFixBonus(state: GameState, infection: Infection): GameStep {
 export function cleanInfection(state: GameState, infectionId: number): GameStep {
   const infection = findInfection(state, infectionId);
   if (infection === null) return { state, events: [] };
-  const cleaned = rewardCleanup(countCleaned({ ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) }, infection.kind), infection.kind);
+  const remaining = { ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) };
+  const cleaned = rewardCleanup(countCleanup(countCleaned(remaining, infection.kind), infection.minigameId), infection.kind);
   const bonus = withQuickFixBonus(cleaned, infection);
   return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }

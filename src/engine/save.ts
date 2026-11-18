@@ -55,6 +55,7 @@ export function restoreGameState(value: unknown, fallbackSeed: number): GameStat
     legacyPerkLevels: { ...initial.legacyPerkLevels, ...restored.legacyPerkLevels },
     // Era stats added since: they start at zero.
     eraStats: { ...initial.eraStats, ...restored.eraStats },
+    runStats: { ...initial.runStats, ...restored.runStats },
   };
 }
 

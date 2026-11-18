@@ -1,5 +1,6 @@
 import { countSpikeRiddenOut } from './era-stats';
 import { rewardCleanup } from './specialization-hooks';
+import { countHazard } from './run-stats';
 import {
   INFECTION_DIFFICULTY_STEP_MS,
   MAX_INFECTION_DIFFICULTY,
@@ -413,7 +414,7 @@ function spawnHazard(state: GameState, rule: HazardRule): GameStep {
   const draws = drawRandoms(state.randomSeed, ROLLS_PER_SPAWN);
   const nextIntervalMs = interpolateRange(rule.intervalRangeMs, rollAt(draws.values, 0));
   const seeded = { ...state, randomSeed: draws.nextSeed, nextEntityId: state.nextEntityId + 1 };
-  const spawned = rule.spawn(seeded, draws.values.slice(1), state.nextEntityId);
+  const spawned = rule.spawn(countHazard(seeded, rule.kind), draws.values.slice(1), state.nextEntityId);
   return { state: withHazardCountdown(spawned.state, rule.kind, nextIntervalMs), events: spawned.events };
 }
 

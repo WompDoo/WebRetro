@@ -5,7 +5,7 @@ import { applyEraStartPerks, OLD_SAVINGS_PER_LEVEL } from './era-start';
 import { createInitialGameState } from './state';
 import { ERAS_BY_ID } from './content/eras';
 import { SPECIALIZATION_IDS } from './content/specializations';
-import { ACHIEVEMENT_IDS, ACHIEVEMENTS_BY_ID } from './content/achievements';
+import { ACHIEVEMENT_IDS, ACHIEVEMENTS_BY_ID } from './achievements';
 import type { AchievementId, GameState, LegacyState, PerkId, SpecializationId } from './types';
 
 /**
@@ -14,7 +14,7 @@ import type { AchievementId, GameState, LegacyState, PerkId, SpecializationId } 
  */
 
 export const LEGACY_VERSION = 1;
-export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0, perkLevels: NO_PERKS, finishedRuns: 0, foundSpecializationIds: [], achievementIds: [] };
+export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0, perkLevels: NO_PERKS, finishedRuns: 0, foundSpecializationIds: [], achievementIds: [], handTypedKeystrokes: 0 };
 
 /** Visitors below this many orders of magnitude earn nothing: one Backlink for each one past it. */
 const VISITOR_MAGNITUDE_THRESHOLD = 10;
@@ -75,6 +75,16 @@ export function calculatePerkCost(legacy: LegacyState, perkId: PerkId): number {
 export function recordFoundSpecializations(legacy: LegacyState, unlockedIds: readonly SpecializationId[]): LegacyState {
   const newlyFound = unlockedIds.filter((id) => !legacy.foundSpecializationIds.includes(id));
   return newlyFound.length === 0 ? legacy : { ...legacy, foundSpecializationIds: [...legacy.foundSpecializationIds, ...newlyFound] };
+}
+
+/**
+ * A run's hand-typed keystrokes join the legacy's when it ends or is started over, once: the run's count goes back to
+ * zero, so banking twice adds nothing.
+ */
+export function bankHandTyped(legacy: LegacyState, state: GameState): BankedRun {
+  const typed = state.runStats.handTypedKeystrokes;
+  if (typed === 0) return { legacy, state };
+  return { legacy: { ...legacy, handTypedKeystrokes: legacy.handTypedKeystrokes + typed }, state: { ...state, runStats: { ...state.runStats, handTypedKeystrokes: 0 } } };
 }
 
 /** Achievements are a test-build system for now: the classic game neither checks nor shows them. */
@@ -151,5 +161,6 @@ export function restoreLegacy(value: unknown): LegacyState {
     finishedRuns: readCount(value['finishedRuns']),
     foundSpecializationIds: readFoundSpecializations(value['foundSpecializationIds']),
     achievementIds: readAchievementIds(value['achievementIds']),
+    handTypedKeystrokes: readCount(value['handTypedKeystrokes']),
   };
 }

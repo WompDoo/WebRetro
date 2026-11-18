@@ -1,4 +1,5 @@
 import { ERAS_BY_ID } from './content/eras';
+import { countRunOnFire } from './run-stats';
 import type { EraStats, FeatureId, GameState, InfectionKind } from './types';
 
 /**
@@ -13,7 +14,7 @@ function withStats(state: GameState, stats: Partial<EraStats>): GameState {
 }
 
 export function countOnFire(state: GameState): GameState {
-  return withStats(state, { onFireStarts: state.eraStats.onFireStarts + 1 });
+  return countRunOnFire(withStats(state, { onFireStarts: state.eraStats.onFireStarts + 1 }));
 }
 
 export function countSpikeRiddenOut(state: GameState): GameState {
