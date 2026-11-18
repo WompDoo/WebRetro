@@ -21,6 +21,7 @@ import {
   isFeatureRetired,
   isUpgradeAvailable,
   isUpgradeRetired,
+  UPGRADES_BY_ID,
 } from '../src/engine';
 import type { EraId, EraRecord, GameState, UpgradeId } from '../src/engine';
 import { findEntryStory } from '../src/ui/presentation';
@@ -81,7 +82,10 @@ describe('the crash itself', () => {
   });
 
   it('earns from the donate button and affiliate links with no ad on the page', () => {
-    const adFree: GameState = { ...startOfCrash(), adCount: 0, money: Number.MAX_SAFE_INTEGER };
+    // Without 1997's own ways to ask for support either: only the crash's buttons are left to pay.
+    const start = startOfCrash();
+    const withoutSupport = start.purchasedUpgradeIds.filter((upgradeId) => !UPGRADES_BY_ID[upgradeId].effects.some((effect) => effect.kind === 'donations'));
+    const adFree: GameState = { ...start, adCount: 0, money: Number.MAX_SAFE_INTEGER, purchasedUpgradeIds: withoutSupport };
     assert.equal(calculateNetRevenuePerSecond(adFree), 0);
     const donating = buyUpgrade(adFree, 'donate-button');
     const both = buyUpgrade(donating, 'affiliate-links');

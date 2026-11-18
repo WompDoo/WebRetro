@@ -9,6 +9,7 @@ import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { renderBootScreen, renderLegalWall } from './site-2018';
 import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
+import { renderSupportLinks } from './support-links';
 
 /**
  * 2024: the relaunch asked an AI for a redesign, and got the page every 2024 startup had. Big type with a gradient,
@@ -110,7 +111,7 @@ export function render2024Site(context: SiteContext): string {
     ${renderFeatureBlocks(context, ['newsletter']).join('')}
     ${renderAccountBand(context)}
     ${renderSponsoredResults(context)}
-    <footer class="ai-footer">© 2024 ${brand}, Inc. · ${escapeHtml(describeBuiltWith(context.state))} · AI can make mistakes. Check important info.</footer>
+    <footer class="ai-footer">© 2024 ${brand}, Inc. · ${escapeHtml(describeBuiltWith(context.state))} · AI can make mistakes. Check important info.${renderSupportLinks(context.state, 'ai-support')}</footer>
     ${renderLegalWall(context)}
     ${renderCornerDock(context)}
   </div>`;

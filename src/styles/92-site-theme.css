@@ -58,3 +58,10 @@
 .site-theme.is-themed .site-2024.is-dark { --ai-gradient: linear-gradient(90deg, var(--site-light-3), var(--site-accent-light) 50%, var(--site-light-2)); }
 .site-theme.is-themed .site-2024 .fake-link { color: var(--site-accent-strong); }
 .site-theme.is-themed .site-2024.is-dark .fake-link { color: var(--site-accent-light); }
+
+/* Each era's way to ask visitors to chip in, in its footer: the ad-free way to earn. */
+.w2-support, .bs-support, .lp-support, .ai-support { font-weight: 700; white-space: nowrap; }
+.w2-support { color: #CC6600; }
+.bs-support { color: #468847; }
+.lp-support { color: #6C5CE7; }
+.ai-support { color: #2F9E44; }

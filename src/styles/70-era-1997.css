@@ -170,3 +170,7 @@
 .webmail-button { padding: 2px 8px; background: #C0C0C0; border: 2px outset #FFFFFF; font-weight: 700; }
 .badge97.is-donate { background: linear-gradient(#FFF6C8, #E0B000); color: #5A3A00; }
 .badge97.is-affiliate { background: #FFFFFF; color: #CC6600; border-color: #CC6600; }
+/* The ad-free way to earn: asking for it, 1997 style. */
+.badge97.is-tip { background: #FFFFCC; color: #996600; border-color: #CC9900; }
+.badge97.is-support { background: linear-gradient(#FFCCEE, #FF66AA); color: #660033; }
+.badge97.is-fan-club { background: #000066; color: #FFDD00; animation: blink 1.6s steps(1) infinite; }

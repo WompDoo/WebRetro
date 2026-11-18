@@ -122,6 +122,9 @@ const FOOTER_BADGES: readonly (readonly [UpgradeId, string])[] = [
   ['fixed-width-800', '<span class="badge97 is-800">Best viewed at 800×600</span>'],
   ['donate-button', '<span class="badge97 is-donate">☕ Keep this site alive! Donate</span>'],
   ['affiliate-links', '<span class="badge97 is-affiliate">📚 Buy my favorite books here!</span>'],
+  ['tip-jar', '<span class="badge97 is-tip">🫙 Like my site? Mail me a dollar!</span>'],
+  ['support-this-site', '<span class="badge97 is-support">💌 Support this site!</span>'],
+  ['fan-club', '<span class="badge97 is-fan-club">⭐ Join my fan club!</span>'],
 ];
 
 /** Only what's still in fashion: the 800×600 badge and the donate button leave with their boosts in 2005. */
