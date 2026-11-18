@@ -1,4 +1,4 @@
-import { countCleaned, countFeatureSpending, countSpending, startEraStats } from './era-stats';
+import { countCleaned, countFeatureSpending, startEraStats } from './era-stats';
 import { breakNewsOnFire, publishFromTyping, rewardCleanup } from './specialization-hooks';
 import { canSwitchAnyFeature, findAdLimit, isFeatureLockedOff } from './specializations';
 import { heatUp, startBuff } from './buffs';
@@ -55,7 +55,7 @@ function earn(state: GameState, amount: number): GameState {
 }
 
 function spend(state: GameState, amount: number): GameState {
-  return countSpending({ ...state, money: state.money - amount }, amount);
+  return { ...state, money: state.money - amount };
 }
 
 function rewriteBuggedLine(state: GameState): CodeInputResult {

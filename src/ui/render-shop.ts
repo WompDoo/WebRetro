@@ -319,7 +319,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'subscriber-churn-multiplier': (effect) => `Subscribers leave ${formatFactor(effect.factor)} as fast`,
   'scheduled-buff': (effect) => `Every ${formatSeconds(effect.everyMs)}: ${describeBuff(effect.buffId)}`,
   'phone-revenue-multiplier': (effect) => `Phone visitors pay ${formatFactor(effect.factor)}`,
-  'revenue-per-feature-level': (effect) => `Every visitor pays +${formatPercent(effect.share)} for each feature level on the page`,
+  'revenue-per-feature-level': (effect) => `Every visitor pays +${formatPercent(effect.share)} for each level of this era’s features`,
   'ad-value-per-specialization': (effect) => `Ads pay +${formatPercent(effect.share)} for every specialization you’ve held`,
   'offer-frequency-multiplier': (effect) => `Offers come ${formatFactor(effect.factor)} as often`,
   'ai-answers-pay': (effect) => `Visitors kept away by AI answers still pay ${formatPercent(effect.share)} of what they would have`,

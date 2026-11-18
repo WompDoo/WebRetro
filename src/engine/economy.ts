@@ -471,9 +471,17 @@ export function calculateSpecializationTrafficFactor(state: GameState): number {
   return multiplyAll([...network, ...levels, ...moments.map((effect) => calculateMomentFactor(state, effect))]);
 }
 
-/** Every level of every feature on the page. */
+function isFeatureOfThisEra(state: GameState, featureId: FeatureId): boolean {
+  return ERAS_BY_ID[FEATURES_BY_ID[featureId].eraId].baseEraId === ERAS_BY_ID[state.eraId].baseEraId;
+}
+
+/**
+ * Every level of this era's features on the page: breadth is what you've built lately. Counting every level since 1997
+ * paid twice over by 2024, for hundreds of levels of guestbooks and hit counters.
+ */
 function countLevelsOnPage(state: GameState): number {
-  return sumAll(FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId)).map((featureId) => state.featureLevels[featureId]));
+  const counted = FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId) && isFeatureOfThisEra(state, featureId));
+  return sumAll(counted.map((featureId) => state.featureLevels[featureId]));
 }
 
 function calculatePhoneRevenueFactor(state: GameState, effect: EffectOfKind<'phone-revenue-multiplier'>): number {

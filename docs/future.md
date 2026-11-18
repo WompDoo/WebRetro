@@ -249,7 +249,10 @@ The classic game is unchanged.
 - **One specialization per era, from 2005, and they stack.** A site might be a video site in 2005, a live-streaming site in 2011, a streaming service in 2018 and a short-video feed in 2024. Or it stays a homepage at any point: that's the classic game.
 - **Unlocked and chosen in the same era.** Choosing is free, takes effect at once, and is permanent after a confirmation. Relaunching without choosing closes that era's chance, and the relaunch screen says so.
 - **Lineage.** Most specializations need a parent taken in an earlier era. Every era from 2011 has one open door with no parent, so skipping 2005 doesn't shut you out. The Serial founder perk (run 3+, about 50 Backlinks) removes lineage; one per era still holds.
-- **Hard on purpose: things money can't buy.** Every unlock has a **lean**: "40% of this era's spending into the photo gallery". Buying everything spreads money across features, so leaning means holding the rest back, and waiting doesn't help. (A share of *visitors* was the first idea, but visitors per level differ a thousandfold between features in an era: some leans came free, others were impossible.) Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
+- **Hard on purpose: things money can't buy.** Every unlock has a **lean**: "40% of what you build this era into the photo gallery". Buying everything spreads money across features, so leaning means holding the rest back, and waiting doesn't help. Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
+  - **Why features only.** A lean is one feature's share of the era's *feature* spending. Measured against all spending, hosting, skills and boosts (things every site needs) pulled every lean down, and a player who leaned spent the era waiting. (A share of *visitors* was the first idea, but visitors per level differ a thousandfold between features in an era: some leans came free, others were impossible.)
+  - **The floor.** The share counts against at least half the era's migration budget in feature spending. Without it, the first level of anything bought at an era's start was 100% of what had been built.
+  - **What natural play builds** (the balance bot playing the second run without aiming, biggest share per era): 2005 comments 36%, 2011 activity feed 46%, 2018 newsletter 27%, 2024 for-you feed 32%. Leans on those features sit well above: social 60%, newsletter platform 50%, short-video feed 55%. That bot unlocks nothing in any era.
 - **Lasting restrictions.** Some specializations keep their sacrifice. Photo sharing keeps the Flash intro off, Forum the guestbook, Microblog the blog. Shop and Streaming service run at most 2 ads; Wiki runs none.
 - **Hidden until close, Vampire Survivors style.**
   - **Before anything is in view,** no tab at all. A specialization comes into view when its lean is half way, its parent is held and its era is now.
@@ -263,23 +266,23 @@ The classic game is unchanged.
 | Era | Specialization | Like | Needs | Unlock, during its era |
 |---|---|---|---|---|
 | 2005 | 📝 Blog network | Blogger, LiveJournal, WordPress.com | — | 40% of the era's spending into Blog · Comments 20 · Learn RSS and tagging |
-| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | 40% into Photo gallery · Flash intro switched off · Tag cloud 3 |
+| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | 40% into Photo gallery · Flash intro switched off · Tag cloud 1 |
 | 2005 | 🎬 Video site | YouTube | — | 40% into Flash intro · Learn the `<EMBED>` tag · ride out a traffic spike |
 | 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | 40% into Forum · Guestbook switched off · sort the spam 3 times |
 | 2005 | 📚 Wiki *(secret)* | Wikipedia | — | 35% into Wiki · no ads for 10 minutes in a row |
-| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | 40% into Activity feed · Share buttons 25 · Sign in with… 5 |
+| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | 60% into Activity feed · Share buttons 25 · Sign in with… 5 |
 | 2011 | 💬 Microblog | Twitter | Blog network or Forum | 40% into Share buttons · on fire 5 times · Blog switched off |
 | 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | 40% into Video player · Activity feed 5 · ride out 2 traffic spikes |
 | 2011 | 📰 News & viral | HuffPost, BuzzFeed | Blog network or Forum | 35% into One-pager · Share buttons 25 · fend off a DDoS |
-| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Map mashup · Sign in with… 5 · works on phones |
+| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Sign in with… · Map mashup 30 · works on phones |
 | 2011 | 🛒 Online shop | Etsy, Amazon | open door | Photo gallery 40 · Sign in with… 15 · at most 2 ads |
 | 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | 40% into Stories · Photo gallery 50 · loads in under 2.5 s on a phone |
-| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Video player · Pricing table 15 · at most 2 ads |
-| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 40% into Newsletter · Pricing table 10 · the honest consent banner |
+| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Pricing table · Video player 30 · at most 2 ads |
+| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 50% into Newsletter · Pricing table 10 · the honest consent banner |
 | 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | 40% into Language switcher · Pricing table 10 · Learn OAuth |
-| 2018 | 💼 Professional network | LinkedIn | open door | 40% into Pricing table · Live chat 10 · Newsletter 10 |
+| 2018 | 💼 Professional network | LinkedIn | open door | 35% into Pricing table · Live chat 10 · Newsletter 10 |
 | 2018 | 🎮 Chat community *(secret)* | Discord | Forum or Live streaming | 40% into Community chat · Live chat 10 |
-| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | 40% into For-you feed · AI images 10 |
+| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | 55% into For-you feed · AI images 10 |
 | 2024 | 🔎 AI answer engine | Perplexity, AI Overviews | Newsletter, News & viral or Reviews | 40% into AI search · AI articles 15 · AI answers take 30% of clicks |
 | 2024 | 🎨 AI studio | Midjourney, Canva | Stories app or Photo sharing | 40% into AI images · Pricing table 20 |
 | 2024 | 🤖 AI companion | Character.AI, Replika | open door | 40% into AI chatbot · Live chat switched off |
@@ -296,34 +299,34 @@ The classic game is unchanged.
 - **The moment:** traffic or pay that depends on being on fire, typing, idle or in a spike.
 - **Going viral:** spikes come more often; catching fire can start one.
 - **Subscribers:** a share of visitors pays every second, ads or not. The pool rises over about three minutes and churns over about fifteen, so it outlasts an outage.
-- **Scheduled events:** a live event every two minutes, a Black Friday every five.
-- **Breadth pays:** every feature level on the page adds to what a visitor pays.
+- **Scheduled events:** a live event every three minutes, a Black Friday every five.
+- **Breadth pays:** every level of this era's features adds to what a visitor pays.
 - **Everything else:** donations that shrink with every ad, phone visitors who pay double, ads that pay more per specialization held, offers twice as often, AI answers that pay for the visitors they keep, hires that type twice as fast, and an agent that buys the best-value feature level every five seconds.
 
 | Specialization | Learn → Build | Upgrades |
 |---|---|---|
 | Blog network | Learn multi-user blogs → Member blogs | Write every day (every 300 keystrokes, +1 Blog level) · The long tail (member blogs +5% a minute, up to ×3) |
 | Photo sharing | Learn thumbnails & EXIF → Groups & pools | Users upload (the gallery levels itself every 30 s) · Explore page (busiest feature ×1.3) |
-| Video site | Learn Flash video → Channels | Going viral (spikes ×2 as often, every visitor pays ×2 during one) · Embed anywhere (channels ×2, all traffic ×1.1) |
+| Video site | Learn Flash video → Channels | Going viral (spikes ×1.5 as often, every visitor pays ×1.5 during one) · Embed anywhere (channels ×2, all traffic ×1.1) |
 | Forum community | Learn mod tools → Subforums | Volunteer mods (spam clears itself, every cleanup +2 Forum levels) · Post counts (on fire: forum and subforums ×2) |
 | Wiki | Learn wiki markup → Talk pages | Edit-a-thon (the era's smallest feature levels itself every 20 s) · Donation drive (donations per visitor, 25% less per ad) |
-| Social network | Learn the social graph → Groups | Network effect (×1.15 per doubling, up to ×2.5) · People you may know (+0.5% traffic per Share-buttons level) |
+| Social network | Learn the social graph → Groups | Network effect (×1.05 per doubling, up to ×1.25) · People you may know (+0.5% traffic per Share-buttons level) |
 | Microblog | Learn hashtags → Trending topics | Live-posting (on fire: all traffic ×1.5) · Fail whale (stays up to ×1.5 the load, trending topics ×3 in a spike) |
-| Live streaming | Learn live video → Emotes & raids | Live events (every 2 min: traffic ×2 for 30 s) · Subs and tips (25% subscribe) |
-| News & viral | Learn headline testing → Listicles | Clickbait (spikes ×2 as often, pay ×1.5 during one) · Breaking news (catching fire starts a spike) |
-| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×2) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
-| Online shop (2011) | Learn the shopping cart → Product listings | Customers also bought (+0.2% pay per feature level) · Black Friday (every 5 min: ads ×3 for 45 s) |
+| Live streaming | Learn live video → Emotes & raids | Live events (every 3 min: traffic ×2 for 30 s) · Subs and tips (25% subscribe) |
+| News & viral | Learn headline testing → Listicles | Clickbait (spikes ×1.5 as often, pay ×1.25 during one) · Breaking news (catching fire starts a spike) |
+| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×1.3) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
+| Online shop (2011) | Learn the shopping cart → Product listings | Customers also bought (+0.2% pay per level of this era's features) · Black Friday (every 5 min: ads ×3 for 45 s) |
 | Stories app | Learn vertical video → Filters & lenses | Disappearing stories (filters ×3 while you type, ×0.5 when you stop) · Influencers (offers ×2 as often) |
 | Streaming service | Learn adaptive streaming → Originals | Subscriptions (40% subscribe) · Binge autoplay (load time ×0.5) |
 | Newsletter platform | Learn email deliverability → Paid newsletters | Writers' fund (every 250 keystrokes +1 Paid newsletters, 15% subscribe) · Tracking pixels (ads ×1.5, fines ×2) |
-| Marketplace | Learn escrow payments → Seller dashboards | Take rate (features cost ×0.85) · Surge pricing (every visitor pays ×3 in a spike) |
+| Marketplace | Learn escrow payments → Seller dashboards | Take rate (features cost ×0.85) · Surge pricing (every visitor pays ×1.5 in a spike) |
 | Professional network | Learn recruiting tools → Job board | Endorsements (ads +15% per specialization held) · Premium messages (25% subscribe) |
 | Chat community | Learn bots & webhooks → Servers | Server boosts (network effect) · Mod bots (a DDoS clears itself, every cleanup +2 Servers levels) |
 | Short-video feed | Learn video remixing → Duets & remixes | The algorithm (busiest feature ×3, the rest ×0.7) · Infinite scroll (load time ×0.4) |
 | AI answer engine | Learn citations → Sources panel | Answer, don't link (kept-away visitors pay 60%) · Sponsored answers (pay per visitor, but answers keep ×1.3 more away) |
 | AI studio | Learn style models → Prompt gallery | GPU farm (the smallest feature levels itself every 8 s, upkeep 25%) · Credits (30% subscribe) |
 | AI companion | Learn fine-tuning → Characters | It remembers you (20% subscribe, churn ×0.1) · Talks while you sleep (hires type ×2) |
-| Agent store | Learn tool calling → Agent listings | Agents buy for you (best-value level every 5 s) · Tool-use fees (+0.15% pay per feature level) |
+| Agent store | Learn tool calling → Agent listings | Agents buy for you (best-value level every 5 s) · Tool-use fees (+0.15% pay per level of this era's features) |
 
 Changed from the plan while building: Password crackdown was dropped (a one-off conversion with nothing to keep doing), Fail whale became overload tolerance plus a spike bonus, the three 2024 skills were renamed so they don't repeat 2024's own (retrieval, recommendation and diffusion skills already exist), and the agent store got a second upgrade. The numbers are first guesses: PR 4's path-chasing sim player tunes them. Today's sim bot scores purchases by their immediate income, so it never buys the boosts that pay over time; it learns to in PR 4.
 
@@ -337,7 +340,30 @@ Changed from the plan while building: Password crackdown was dropped (a one-off 
 1. **The tree engine and the Specialize tab:** run gating, lineage, one per era, the choice screen, reveal and collection, Serial founder, crash removal.
 2. **The new mechanics and every specialization's items.** (built)
 3. **Pages for every specialization**, and combined pages for stacks.
-4. **Balance:** a sim player that chases a path, then a design sweep of the pages and their combos.
+4. **Balance:** a sim player that chases a path, then a design sweep of the pages and their combos. (built)
+
+**How the tree is balanced (built).** `SIM_PATH=photos,social,stories,ai-studio npm run sim` plays the test build's second run chasing a path; `SIM_PATH=natural` plays it without aiming. The path player plays like someone who means it: it builds the economy and the level conditions first, and once only the lean and the sacrifices are left and the lean's shortfall is about three minutes of income, it holds other features back, makes the sacrifices and pumps the lean. It chooses the specialization the moment it unlocks and buys its items first. Each era's report adds where the money went, what unlocked and what the site is. The bot values boosts that pay over time by the income they make a minute later.
+
+Results, active player, one seed, minutes per era:
+
+| Path | 2005 | 2011 | 2018 | 2024 | Total |
+|---|---|---|---|---|---|
+| Homepage (natural: unlocks nothing) | 36.6 | 34.2 | 39.4 | 32.1 | 159.9 |
+| Photos → social → AI studio (stories never unlocks: a phone page under 2.5 s is out of the bot's reach) | 36.4 | 38.4 | 30.5 | 23.7 | 146.6 (−8%) |
+| Video → live streaming → streaming service → short-video | 39.2 | 27.3 | 59.3 | 33.1 | 176.5 (+10%) |
+| Forum → reviews → marketplace → agent store | 38.1 | 37.4 | 30.5 | 17.2 | 140.8 (−12%) |
+
+Every path ends within 12% of a homepage, every 2005 unlock costs its era 0–7%, and a player who doesn't aim unlocks nothing. Two spreads are known and left for play-testing: video's 2018 (+51%: the streaming service's unlock takes most of the era) and the forum path's 2024 (−46%: four specializations' items together).
+
+What the tuning found, in order:
+
+- **A lean measures what you build, against a floor.** Against all spending, hosting and skills spoiled every lean; with no floor, the first level of anything at an era's start was 100%.
+- **A lean is on its own era's feature.** An older feature's levels are cheap next to the era's, so a lean on one is a grind (streaming on the 2011 video player cost the video path two hours of 2018).
+- **Natural play sets the thresholds.** Leans on features a homepage builds anyway sit 15–25 points above it.
+- **Spikes stack.** Surge pricing at ×3 on a spike's ×5 crowd doubled average income; spike multipliers are now ×1.25–1.5.
+- **Permanent multipliers are always maxed.** A network effect's cap is reached by every mid-era site, so the cap is the bonus: ×1.25.
+- **Money models tuned before the items pay twice with them.** Marketplace, reviews and agent store pay less per visitor.
+- **Breadth counts this era.** Counting every level since 1997 paid ×1.9 by 2024.
 
 ### Specializations v1: what's live now (replaced by the tree)
 

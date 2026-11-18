@@ -3,6 +3,7 @@
  * sim plays it with neutral policies; the player-types sim plays the same bot as different kinds of people.
  */
 import {
+  advanceSimulation,
   buyDefense,
   buyFeature,
   buyUpgrade,
@@ -46,12 +47,14 @@ import {
   renewCertificate,
   toggleFeature,
   upgradeHosting,
+  UPGRADES_BY_ID,
   writeCode,
   type ConsentBanner,
   type FrameworkId,
   type BuffMinigameId,
   type GameState,
   type Infection,
+  type UpgradeEffect,
   type UpgradeId,
 } from '../src/engine';
 import { isSwitchedOffPurchase, SWITCHED_OFF } from './switches';
@@ -166,7 +169,22 @@ export function isGateFeature(state: GameState, featureId: string): boolean {
   return notBuiltYet || levelMissing;
 }
 
-export function listOptions(state: GameState, profile: PlayerProfile): readonly PurchaseOption[] {
+/**
+ * Boosts that pay over time (features that level themselves, the long tail, subscribers, an agent that shops) show
+ * nothing the moment they're bought: the bot values them by the income they'd make a minute later.
+ */
+const PAYS_OVER_TIME: readonly UpgradeEffect['kind'][] = ['auto-level', 'traffic-growth', 'subscribers', 'auto-buyer'];
+const PROJECTION_MS = 60_000;
+
+function paysOverTime(upgradeId: UpgradeId): boolean {
+  return UPGRADES_BY_ID[upgradeId].effects.some((effect) => PAYS_OVER_TIME.includes(effect.kind));
+}
+
+/** A purchase a path or a switch rules out on top of the player's own policy. */
+export type ExtraAvoid = (option: PurchaseOption) => boolean;
+const AVOIDS_NOTHING: ExtraAvoid = () => false;
+
+export function listOptions(state: GameState, profile: PlayerProfile, extraAvoids: ExtraAvoid = AVOIDS_NOTHING): readonly PurchaseOption[] {
   const features = getUnlockedFeatureIds(state)
     .filter((featureId) => isFeatureBuildable(state, featureId))
     .map<PurchaseOption>((featureId) => {
@@ -197,7 +215,8 @@ export function listOptions(state: GameState, profile: PlayerProfile): readonly 
   const boosts = getRevealedBoostIds(state).filter((upgradeId) => !isSwitchedOffPurchase(upgradeId, SWITCHED_OFF)).map<PurchaseOption>((upgradeId) => {
     const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
     const cost = calculateUpgradeCost(state, upgradeId);
-    return { label: `boost:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply: apply };
+    const valueApply = paysOverTime(upgradeId) ? (current: GameState): GameState => advanceSimulation(apply(current), PROJECTION_MS, 'offline').state : apply;
+    return { label: `boost:${upgradeId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canBuyUpgrade(current, upgradeId), valueCost: cost, valueApply };
   });
   const ops = getAvailableOpsIds(state).map<PurchaseOption>((upgradeId) => {
     const apply = (current: GameState): GameState => buyUpgrade(current, upgradeId);
@@ -226,7 +245,7 @@ export function listOptions(state: GameState, profile: PlayerProfile): readonly 
     const apply = (current: GameState): GameState => toggleFeature(current, featureId);
     return { label: `switch:${featureId}`, cost: 0, isRequiredForGate: false, apply, canApply: () => true, valueCost: 0, valueApply: apply };
   });
-  return [...features, ...skills, ...boosts, ...ops, ...ads, ...defenses, ...hosting, ...switches].filter((option) => !PLAYER_POLICIES[profile.policy].avoids(option, state));
+  return [...features, ...skills, ...boosts, ...ops, ...ads, ...defenses, ...hosting, ...switches].filter((option) => !PLAYER_POLICIES[profile.policy].avoids(option, state) && !extraAvoids(option));
 }
 
 export function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
@@ -250,9 +269,9 @@ export function improvesTimeToBudget(state: GameState, option: PurchaseOption, p
   return (remaining + option.cost) / effectiveIncome(after, profile) < remaining / income;
 }
 
-function decideByPayback(state: GameState, profile: PlayerProfile): GameState {
+function decideByPayback(state: GameState, profile: PlayerProfile, extraAvoids: ExtraAvoid): GameState {
   const savingOnly = isOnlySavingForMigration(state);
-  const options = listOptions(state, profile).filter(
+  const options = listOptions(state, profile, extraAvoids).filter(
     (option) => !savingOnly || (option.canApply(state) && improvesTimeToBudget(state, option, profile)),
   );
   const ranked = [...options].sort((a, b) => scoreOption(state, a, profile) - scoreOption(state, b, profile));
@@ -266,16 +285,16 @@ function decideByPayback(state: GameState, profile: PlayerProfile): GameState {
 }
 
 /** Whatever is cheapest and affordable, useful or not. Feature switches are left alone: they're not purchases. */
-function decideCheapestFirst(state: GameState, profile: PlayerProfile): GameState {
-  const affordable = listOptions(state, profile).filter((option) => !option.label.startsWith('switch:') && option.canApply(state));
+function decideCheapestFirst(state: GameState, profile: PlayerProfile, extraAvoids: ExtraAvoid): GameState {
+  const affordable = listOptions(state, profile, extraAvoids).filter((option) => !option.label.startsWith('switch:') && option.canApply(state));
   const [cheapest] = [...affordable].sort((first, second) => first.cost - second.cost);
   return cheapest === undefined ? state : cheapest.apply(state);
 }
 
 /** Once only the savings are left on the checklist, everyone saves: the shopaholic reads it too. */
-export function decide(state: GameState, profile: PlayerProfile): GameState {
+export function decide(state: GameState, profile: PlayerProfile, extraAvoids: ExtraAvoid = AVOIDS_NOTHING): GameState {
   const isShopping = PLAYER_POLICIES[profile.policy].choosing === 'cheapest-first' && !isOnlySavingForMigration(state);
-  return isShopping ? decideCheapestFirst(state, profile) : decideByPayback(state, profile);
+  return isShopping ? decideCheapestFirst(state, profile, extraAvoids) : decideByPayback(state, profile, extraAvoids);
 }
 
 export function minigameDurationMs(infection: Infection): number {

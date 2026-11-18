@@ -8,7 +8,7 @@ import type { ConsentBanner, FeatureId, SpecializationId, SpecializedEraId, Upgr
  * one open door.
  *
  * Unlocks ask for what money can't simply buy:
- * - a lean: a share of the era's spending put into one feature. Buying everything spreads money across features, so
+ * - a lean: a share of what the era builds put into one feature. Buying everything spreads money across features, so
  *   leaning means holding the rest back, and waiting doesn't help;
  * - a sacrifice: a feature switched off, few ads, a consent choice;
  * - a skill: on fire, minigames won, traffic spikes ridden out;
@@ -176,7 +176,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,
-    unlock: [lean('photo-gallery', 0.4), off('flash-intro'), feature('tag-cloud', 3)],
+    unlock: [lean('photo-gallery', 0.4), off('flash-intro'), feature('tag-cloud', 1)],
     restriction: keepsOff('flash-intro'),
     eras: {
       'web2-2005': plan('photo-gallery', 15, [adAnnoyance(0.7), serverLoad(1.2)]),
@@ -198,7 +198,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [lean('flash-intro', 0.4), skill('embed-tag'), stat('spikes-ridden-out', 1)],
     restriction: null,
     eras: {
-      'web2-2005': plan('flash-intro', 15, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.3)]),
+      // Its own channels, not fifteen levels of a 1,200 KB intro: a video site in 2005 is about the videos.
+      'web2-2005': plan('channels', 8, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.3)]),
       'social-2011': plan('video-player', 8, [adValue(1.3), adAnnoyance(1.2), serverLoad(1.6)]),
       'platform-2018': withEffects(ERA_ITEM[2018], [adValue(1.4), adAnnoyance(1.2), serverLoad(1.6)]),
       'ai-2024': plan('for-you-feed', 12, [adValue(1.22), adAnnoyance(1.2), serverLoad(1.6)]),
@@ -254,7 +255,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['photos', 'blog-network'],
     isSecret: false,
-    unlock: [lean('activity-feed', 0.4), feature('share-buttons', 25), feature('social-login', 5)],
+    // A homepage already puts 46% of 2011's building into the activity feed: the lean asks for well beyond that.
+    unlock: [lean('activity-feed', 0.6), feature('share-buttons', 25), feature('social-login', 5)],
     restriction: null,
     eras: {
       'social-2011': plan('activity-feed', 9, [adValue(0.75), traffic(1.2)]),
@@ -326,12 +328,13 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'social-2011',
     parents: ['forum', 'photos'],
     isSecret: false,
-    unlock: [lean('map-mashup', 0.35), feature('social-login', 5), { kind: 'mobile-friendly' }],
+    // A lean on its own era's feature: an old feature's levels are cheap next to the era's, and a lean on one is a grind.
+    unlock: [lean('social-login', 0.35), feature('map-mashup', 30), { kind: 'mobile-friendly' }],
     restriction: null,
     eras: {
       'social-2011': plan('social-login', 5, [adValue(0.9), perVisitor(0.3)]),
-      'platform-2018': plan('language-switcher', 14, [adValue(1.0), perVisitor(0.45)]),
-      'ai-2024': plan('ai-search', 15, [adValue(1.0), perVisitor(0.5)]),
+      'platform-2018': plan('language-switcher', 14, [adValue(1.0), perVisitor(0.3)]),
+      'ai-2024': plan('ai-search', 15, [adValue(1.0), perVisitor(0.35)]),
     },
     legacy: keeps('map-mashup'),
   },
@@ -381,7 +384,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['live-streaming', 'video'],
     isSecret: false,
-    unlock: [lean('video-player', 0.35), feature('pricing-table', 15), maxAds(2)],
+    unlock: [lean('pricing-table', 0.35), feature('video-player', 30), maxAds(2)],
     restriction: keepsAdsAtMost(2),
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.6), serverLoad(1.4)]),
@@ -398,7 +401,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['news', 'microblog', 'blog-network'],
     isSecret: false,
-    unlock: [lean('newsletter', 0.4), feature('pricing-table', 10), { kind: 'consent', banner: 'honest' }],
+    unlock: [lean('newsletter', 0.5), feature('pricing-table', 10), { kind: 'consent', banner: 'honest' }],
     restriction: null,
     eras: {
       'platform-2018': plan('newsletter', 13, [perVisitor(0.4), adValue(0.9)]),
@@ -418,8 +421,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [lean('language-switcher', 0.4), feature('pricing-table', 10), skill('learn-oauth')],
     restriction: null,
     eras: {
-      'platform-2018': plan('language-switcher', 14, [perVisitor(0.5), adValue(0.85)]),
-      'ai-2024': plan('ai-chatbot', 15, [perVisitor(0.45), adValue(0.85)]),
+      'platform-2018': plan('language-switcher', 14, [perVisitor(0.3), adValue(0.85)]),
+      'ai-2024': plan('ai-chatbot', 15, [perVisitor(0.3), adValue(0.85)]),
     },
     legacy: keeps('language-switcher'),
   },
@@ -432,7 +435,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: [],
     isSecret: false,
-    unlock: [lean('pricing-table', 0.4), feature('live-chat', 10), feature('newsletter', 10)],
+    unlock: [lean('pricing-table', 0.35), feature('live-chat', 10), feature('newsletter', 10)],
     restriction: null,
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.35), adValue(0.95)]),
@@ -468,7 +471,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'ai-2024',
     parents: ['stories', 'streaming-service', 'video'],
     isSecret: false,
-    unlock: [lean('for-you-feed', 0.4), feature('ai-images', 10)],
+    unlock: [lean('for-you-feed', 0.55), feature('ai-images', 10)],
     restriction: null,
     eras: { 'ai-2024': plan('for-you-feed', 12, [adValue(1.25), serverLoad(1.4)]) },
     legacy: keeps('for-you-feed'),
@@ -526,7 +529,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     isSecret: true,
     unlock: [lean('agent-store', 0.4)],
     restriction: null,
-    eras: { 'ai-2024': plan('agent-store', 10, [perVisitor(0.4)]) },
+    eras: { 'ai-2024': plan('agent-store', 10, [perVisitor(0.25)]) },
     legacy: keeps('agent-store'),
   },
 };

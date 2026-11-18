@@ -122,7 +122,7 @@ const MEASURES: Measures = {
   'feature-level': (state, condition) => progress(condition, FEATURES_BY_ID[condition.featureId].name, 'level', state.featureLevels[condition.featureId], condition.level),
   skill: (state, condition) => flag(condition, UPGRADES_BY_ID[condition.upgradeId].name, state.purchasedUpgradeIds.includes(condition.upgradeId)),
   'spending-share': (state, condition) =>
-    progress(condition, `${Math.round(condition.share * 100)}% of this era’s spending into ${FEATURES_BY_ID[condition.featureId].name}`, 'share', calculateSpendingShare(state, condition.featureId), condition.share),
+    progress(condition, `${Math.round(condition.share * 100)}% of what you build this era into ${FEATURES_BY_ID[condition.featureId].name}`, 'share', calculateSpendingShare(state, condition.featureId), condition.share),
   'switched-off': (state, condition) => flag(condition, `${FEATURES_BY_ID[condition.featureId].name} switched off`, isFeatureSwitchedOff(state, condition.featureId)),
   'max-ads': (state, condition) => measureAds(state, condition, condition.count),
   'ad-free-minutes': (state, condition) => progress(condition, `No ads for ${condition.minutes} minutes in a row`, 'minutes', state.eraStats.adFreeMs / MS_PER_MINUTE, condition.minutes),
