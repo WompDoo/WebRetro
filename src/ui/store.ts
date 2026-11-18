@@ -2,7 +2,7 @@ import { createInitialGameState, EMPTY_LEGACY, ERAS_BY_ID, startNextRun } from '
 import type { Edition, GameEvent, GameState, GameStep, LegacyState, SpecializationId } from '../engine';
 import type { DeviceView } from './browser-chrome';
 import type { PlaytestSpeed } from './playtest';
-import type { BuyAmount, ShopTab } from './render-shop';
+import type { ShopTab } from './render-shop';
 import { withEdition } from './edition';
 import { captureSiteSeen, countNewOnSite } from './site-news';
 import type { SiteSeen } from './site-news';
@@ -24,8 +24,6 @@ interface UiStore {
   /** Backlinks and perks from finished runs. Saved apart from the game. */
   legacy: LegacyState;
   shopTab: ShopTab;
-  /** Levels per click in the Build tab. */
-  buyAmount: BuyAmount;
   /** The editor tab picked by the player; null means the era's main file. */
   editorFile: string | null;
   mobileTab: MobileTab;
@@ -73,7 +71,6 @@ export const store: UiStore = {
   edition: 'classic',
   legacy: EMPTY_LEGACY,
   shopTab: 'learn',
-  buyAmount: 1,
   editorFile: null,
   mobileTab: 'code',
   deviceView: 'desktop',

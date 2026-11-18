@@ -96,44 +96,46 @@ export const BUY_AMOUNTS: readonly BuyAmount[] = [1, 5, 10];
 
 /** What the shop shows besides the game state. */
 export interface ShopView {
-  readonly buyAmount: BuyAmount;
   /** The player's comfort switch for the one-pager's scrolling: a setting, not part of the game. */
   readonly isScrollJackingOn: boolean;
   /** The test build's Specializations list, open or folded. */
   readonly isSpecializationsOpen: boolean;
 }
 
-function renderBuyAmountPicker(buyAmount: BuyAmount): string {
-  const options = BUY_AMOUNTS.map(
-    (amount) => `<button type="button" class="buy-amount-option${amount === buyAmount ? ' is-active' : ''}" data-action="buy-amount" data-id="${amount}" aria-pressed="${amount === buyAmount}">${amount}×</button>`,
-  ).join('');
-  return `<div class="buy-amount" role="group" aria-label="Levels per click"><span class="buy-amount-label">Buy</span>${options}</div>`;
-}
 
 /** Only from 2005, when visitors start timing the page: before that, kilobytes are nobody's business. */
 function describeAddedWeight(state: GameState, weightKb: number, suffix: string): string {
   return ERAS_BY_ID[state.eraId].hasPageWeight && weightKb > 0 ? ` · +${weightKb} KB${suffix}` : '';
 }
 
-function renderBuildableEffect(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
+function renderBuildableEffect(state: GameState, featureId: FeatureId): string {
   const perLevel =
-    buyAmount * calculateFeatureVisitorsPerLevel(state, featureId) * calculateGlobalTrafficFactor(state) * calculateAdTrafficFactor(state);
+    calculateFeatureVisitorsPerLevel(state, featureId) * calculateGlobalTrafficFactor(state) * calculateAdTrafficFactor(state);
   const currentLine = state.featureLevels[featureId] > 0 ? ` · now ${formatCompactNumber(calculateFeatureVisitorsPerSecond(state, featureId))}/s` : '';
   const definition = FEATURES_BY_ID[featureId];
   // Page weight is the base weight once the feature exists, plus its per-level weight for every level.
-  const weightKb = buyAmount * definition.pageWeightKbPerLevel + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
-  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${describeAddedWeight(state, weightKb, '')}</p>${describeNetLoss(state, featureId, buyAmount)}`;
+  const weightKb = definition.pageWeightKbPerLevel + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
+  return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${describeAddedWeight(state, weightKb, '')}</p>${describeNetLoss(state, featureId)}`;
 }
 
 /** Said out loud when it happens: more of this feature now costs more visitors in load time than it brings. */
-function describeNetLoss(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
-  const net = calculateFeatureLevelsNetVisitors(state, featureId, buyAmount);
+function describeNetLoss(state: GameState, featureId: FeatureId): string {
+  const net = calculateFeatureLevelsNetVisitors(state, featureId, 1);
   return net < 0 ? `<p class="shop-effect is-tradeoff">But its weight slows the page: −${formatCompactNumber(-net)} visitors/s overall</p>` : '';
 }
 
-function renderFeatureBuyButton(state: GameState, featureId: FeatureId, buyAmount: BuyAmount): string {
-  const cost = calculateFeatureLevelsCost(state, featureId, buyAmount);
-  return buyButton('buy-feature', featureId, cost, buyAmount === 1 ? undefined : `${buyAmount}× ${formatMoney(cost)}`);
+/** Several levels in one click: offered once you could pay for them, so the early game keeps one button per row. */
+const BULK_AMOUNTS: readonly BuyAmount[] = [5, 10];
+
+function renderBulkButton(state: GameState, featureId: FeatureId, amount: BuyAmount): string {
+  const cost = calculateFeatureLevelsCost(state, featureId, amount);
+  const label = `${amount} levels for ${formatMoney(cost)}`;
+  return `<button type="button" class="buy-button buy-bulk" data-action="buy-feature" data-id="${featureId}" data-amount="${amount}" data-cost="${cost}" data-bulk title="${label}" aria-label="${label}"${state.money < cost ? ' hidden' : ''}>×${amount}</button>`;
+}
+
+function renderFeatureBuyButtons(state: GameState, featureId: FeatureId): string {
+  const single = buyButton('buy-feature', featureId, calculateFeatureLevelsCost(state, featureId, 1));
+  return `<div class="buy-group">${single}<div class="buy-bulk-row">${BULK_AMOUNTS.map((amount) => renderBulkButton(state, featureId, amount)).join('')}</div></div>`;
 }
 
 function toggleButtonClass(isOn: boolean): string {
@@ -196,14 +198,13 @@ function renderScrollJackingSwitchIfShown(state: GameState, featureId: FeatureId
 }
 
 function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView): string {
-  const { buyAmount } = view;
   const level = state.featureLevels[featureId];
   const isBuildable = isFeatureBuildable(state, featureId);
   const levelChip = level > 0 ? `<span class="level-chip">Lv ${level}</span>` : '<span class="level-chip is-new">New</span>';
   const effect = isBuildable
-    ? renderBuildableEffect(state, featureId, buyAmount)
+    ? renderBuildableEffect(state, featureId)
     : `<p class="shop-effect is-requirement">Requires: ${escapeHtml(skillName(FEATURES_BY_ID[featureId].requiredSkillId))}</p>`;
-  const button = isBuildable ? renderFeatureBuyButton(state, featureId, buyAmount) : lockedButton();
+  const button = isBuildable ? renderFeatureBuyButtons(state, featureId) : lockedButton();
   const toggle = renderFeatureSwitchIfSwitchable(state, featureId) + renderScrollJackingSwitchIfShown(state, featureId, view);
   return `<article class="shop-row${isBuildable ? '' : ' is-locked'}">
     <div class="shop-icon">${FEATURE_ICONS[featureId]}</div>
@@ -233,7 +234,7 @@ function renderRetiredFeatures(state: GameState): string {
 
 function renderBuildTab(state: GameState, view: ShopView): string {
   const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
-  return `${renderSpecializationPanel(state, view.isSpecializationsOpen)}${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
+  return `${renderSpecializationPanel(state, view.isSpecializationsOpen)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
 }
 
 // ---------- Effects ----------
@@ -696,7 +697,6 @@ export function countAffordable(state: GameState, tab: ShopTab): number {
 export function calculateShopSignature(state: GameState, tab: ShopTab, view: ShopView): string {
   return [
     tab,
-    view.buyAmount,
     view.isScrollJackingOn,
     view.isSpecializationsOpen,
     state.specializationId,
