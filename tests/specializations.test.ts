@@ -40,6 +40,9 @@ import {
   toggleFeature,
   TREE_IDS,
   upgradeHosting,
+  EMPTY_RUN_STATS,
+  placeAd,
+  removeAd,
 } from '../src/engine';
 import type { EraId, FeatureId, GameState, SpecializationId } from '../src/engine';
 import { describeSpecializationPath, isSpecializeTabShown, renderRelaunchWarning, renderSpecializationChoiceScreen, renderSpecializeTab } from '../src/ui/render-specializations';
@@ -98,6 +101,17 @@ describe('unlocking a specialization', () => {
     assert.equal(lean?.current, 0.5);
     assert.match(lean?.label ?? '', /40% of what you build this era into Photo gallery/);
     assert.deepEqual([tags?.current, tags?.target, flash?.isMet], [3, 1, true]);
+  });
+
+  it('asks the wiki for a run without a single ad: one ad, ever, and it isn’t this run', () => {
+    const adFree: GameState = { ...secondRun(at('web2-2005')), adCount: 0, runStats: EMPTY_RUN_STATS };
+    const neverAnAd = (state: GameState) => calculateSpecializationProgress(state, 'wiki').find((progress) => progress.condition.kind === 'never-an-ad');
+    assert.equal(neverAnAd(adFree)?.isMet, true);
+    assert.equal(neverAnAd(adFree)?.label, 'Never an ad, all run');
+    const placedOnce = removeAd(placeAd({ ...adFree, money: 1e12 }));
+    assert.equal(placedOnce.adCount, 0, 'taken down again');
+    assert.equal(neverAnAd(placedOnce)?.isMet, false, 'an ad that went up and came down still counts');
+    assert.equal(neverAnAd({ ...adFree, adCount: 3 })?.isMet, false, 'ads on the page, however they got there');
   });
 
   it('measures the lean in what you build: a feature’s levels count for it, and nothing else spoils it', () => {

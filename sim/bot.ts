@@ -186,7 +186,7 @@ export type ExtraAvoid = (option: PurchaseOption) => boolean;
 const AVOIDS_NOTHING: ExtraAvoid = () => false;
 
 /** The label the ad option has, so a policy that avoids ads can be asked whether it would place the first one. */
-const AD_LABEL = 'ad';
+export const AD_LABEL = 'ad';
 
 /** A player who'd place the first ad, on a page that earns nothing per visitor without one. */
 function wouldNeedFirstAd(state: GameState, profile: PlayerProfile): boolean {

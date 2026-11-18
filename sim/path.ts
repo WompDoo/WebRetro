@@ -90,7 +90,8 @@ const STEPS: { readonly [K in SpecializationCondition['kind']]: ConditionStep<K>
   'spending-share': (state, condition) => buildTowards(state, condition.featureId),
   'switched-off': (state, condition) => switchOff(state, condition.featureId),
   'max-ads': (state, condition) => (state.adCount > condition.count ? removeAd(state) : null),
-  'ad-free-minutes': (state) => (state.adCount > 0 ? removeAd(state) : null),
+  // Nothing to do once an ad went up: a path through it avoids ads from the start (see avoidsAdsAllRun).
+  'never-an-ad': () => null,
   consent: (state, condition) => (state.consentBanner === condition.banner ? null : chooseConsentBanner(state, condition.banner)),
   'era-stat': () => null,
   'mobile-friendly': (state) => MOBILE_FRIENDLY_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
@@ -115,7 +116,7 @@ function buyHeldItems(state: GameState): GameState | null {
 }
 
 /** What a committed player leaves for the end: the lean, and the sacrifices that would cost income all era. */
-const LAST_KINDS: readonly SpecializationCondition['kind'][] = ['spending-share', 'switched-off', 'max-ads', 'ad-free-minutes', 'consent'];
+const LAST_KINDS: readonly SpecializationCondition['kind'][] = ['spending-share', 'switched-off', 'max-ads', 'consent'];
 
 function isLeftForLast(condition: SpecializationCondition): boolean {
   return LAST_KINDS.includes(condition.kind);
@@ -189,6 +190,11 @@ export function avoidsOffPath(state: GameState, path: readonly TreeSpecializatio
   const leanSkill = FEATURES_BY_ID[lean].requiredSkillId;
   const onPath = [`feature:${lean}`, `skill:${leanSkill ?? ''}`];
   return (option) => DILUTING_PREFIXES.some((prefix) => option.label.startsWith(prefix)) && !onPath.includes(option.label);
+}
+
+/** A path through a specialization that asks for a run without a single ad (the wiki) never places one, from 1997 on. */
+export function avoidsAdsAllRun(path: readonly TreeSpecializationId[]): boolean {
+  return path.some((id) => SPECIALIZATIONS_BY_ID[id].unlock.some((condition) => condition.kind === 'never-an-ad'));
 }
 
 const SHARE_PERCENT = 100;

@@ -28,7 +28,8 @@ export type SpecializationCondition =
   | { readonly kind: 'spending-share'; readonly featureId: FeatureId; readonly share: number }
   | { readonly kind: 'switched-off'; readonly featureId: FeatureId }
   | { readonly kind: 'max-ads'; readonly count: number }
-  | { readonly kind: 'ad-free-minutes'; readonly minutes: number }
+  /** Not a single ad all run, from 1997 on: the wiki's way, which support from visitors makes possible. */
+  | { readonly kind: 'never-an-ad' }
   | { readonly kind: 'consent'; readonly banner: ConsentBanner }
   | { readonly kind: 'era-stat'; readonly stat: EraStatId; readonly count: number }
   | { readonly kind: 'mobile-friendly' }
@@ -234,7 +235,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'web2-2005',
     parents: [],
     isSecret: true,
-    unlock: [lean('wiki', 0.35), { kind: 'ad-free-minutes', minutes: 10 }],
+    unlock: [lean('wiki', 0.35), { kind: 'never-an-ad' }],
     restriction: keepsAdsAtMost(0),
     eras: {
       'web2-2005': plan('wiki', 15, [perVisitor(0.6), traffic(1.15)]),
