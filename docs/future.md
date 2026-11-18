@@ -277,7 +277,7 @@ The classic game is unchanged.
 | 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | 35% into Sign in with… · Map mashup 30 · works on phones |
 | 2011 | 🛒 Online shop | Etsy, Amazon | open door | Photo gallery 40 · Sign in with… 15 · at most 2 ads |
 | 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | 40% into Stories · Photo gallery 50 · loads in under 2.5 s on a phone |
-| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Pricing table · Video player 40 · at most 2 ads |
+| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | 35% into Pricing table · Video player 30 · at most 2 ads |
 | 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | 50% into Newsletter · Pricing table 10 · the honest consent banner |
 | 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | 40% into Language switcher · Pricing table 10 · Learn OAuth |
 | 2018 | 💼 Professional network | LinkedIn | open door | 35% into Pricing table · Live chat 10 · Newsletter 10 |
@@ -314,7 +314,7 @@ The classic game is unchanged.
 | Microblog | Learn hashtags → Trending topics | Live-posting (on fire: all traffic ×1.5) · Fail whale (stays up to ×1.5 the load, trending topics ×3 in a spike) |
 | Live streaming | Learn live video → Emotes & raids | Live events (every 3 min: traffic ×2 for 30 s) · Subs and tips (25% subscribe) |
 | News & viral | Learn headline testing → Listicles | Clickbait (spikes ×1.5 as often, pay ×1.25 during one) · Breaking news (catching fire starts a spike) |
-| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×1.5) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
+| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×1.3) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
 | Online shop (2011) | Learn the shopping cart → Product listings | Customers also bought (+0.2% pay per level of this era's features) · Black Friday (every 5 min: ads ×3 for 45 s) |
 | Stories app | Learn vertical video → Filters & lenses | Disappearing stories (filters ×3 while you type, ×0.5 when you stop) · Influencers (offers ×2 as often) |
 | Streaming service | Learn adaptive streaming → Originals | Subscriptions (40% subscribe) · Binge autoplay (load time ×0.5) |

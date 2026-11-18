@@ -333,8 +333,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     restriction: null,
     eras: {
       'social-2011': plan('social-login', 5, [adValue(0.9), perVisitor(0.3)]),
-      'platform-2018': plan('language-switcher', 14, [adValue(1.0), perVisitor(0.45)]),
-      'ai-2024': plan('ai-search', 15, [adValue(1.0), perVisitor(0.5)]),
+      'platform-2018': plan('language-switcher', 14, [adValue(1.0), perVisitor(0.3)]),
+      'ai-2024': plan('ai-search', 15, [adValue(1.0), perVisitor(0.35)]),
     },
     legacy: keeps('map-mashup'),
   },
@@ -384,7 +384,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['live-streaming', 'video'],
     isSecret: false,
-    unlock: [lean('pricing-table', 0.35), feature('video-player', 40), maxAds(2)],
+    unlock: [lean('pricing-table', 0.35), feature('video-player', 30), maxAds(2)],
     restriction: keepsAdsAtMost(2),
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.6), serverLoad(1.4)]),
@@ -421,8 +421,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     unlock: [lean('language-switcher', 0.4), feature('pricing-table', 10), skill('learn-oauth')],
     restriction: null,
     eras: {
-      'platform-2018': plan('language-switcher', 14, [perVisitor(0.5), adValue(0.85)]),
-      'ai-2024': plan('ai-chatbot', 15, [perVisitor(0.45), adValue(0.85)]),
+      'platform-2018': plan('language-switcher', 14, [perVisitor(0.3), adValue(0.85)]),
+      'ai-2024': plan('ai-chatbot', 15, [perVisitor(0.3), adValue(0.85)]),
     },
     legacy: keeps('language-switcher'),
   },
@@ -529,7 +529,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     isSecret: true,
     unlock: [lean('agent-store', 0.4)],
     restriction: null,
-    eras: { 'ai-2024': plan('agent-store', 10, [perVisitor(0.4)]) },
+    eras: { 'ai-2024': plan('agent-store', 10, [perVisitor(0.25)]) },
     legacy: keeps('agent-store'),
   },
 };

@@ -502,10 +502,10 @@ describe('money that isn’t banners', () => {
     assert.equal(added(5), 0);
   });
 
-  it('elite reviewers: phone visitors pay half again, so every visitor pays more by the phone share', () => {
+  it('elite reviewers: phone visitors pay a third more, so every visitor pays more by the phone share', () => {
     const site = holding('reviews', ['elite-reviewers']);
     const gain = calculateRevenuePerVisitor(site) / calculateRevenuePerVisitor(withoutUpgrade(site, 'elite-reviewers'));
-    assert.ok(gain > 1.1 && gain < 1.5, String(gain));
+    assert.ok(gain > 1.05 && gain < 1.3, String(gain));
   });
 
   it('customers also bought: every level of this era’s features adds a fifth of a percent, not the levels of 1997', () => {
