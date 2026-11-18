@@ -6,6 +6,7 @@ import { advanceOpportunities } from './opportunities';
 import { checkMilestones } from './milestones';
 import { tickAdFree, tickEraClock } from './era-stats';
 import { tickItemClocks, updateSubscriptions } from './specialization-clocks';
+import { noteTimeAway } from './run-stats';
 import { checkSpecializationUnlocks } from './specializations';
 import type { GameState, GameStep, SimulationMode } from './types';
 
@@ -30,8 +31,8 @@ function advanceLiveSystems(state: GameState, deltaMs: number): GameStep {
 }
 
 /** Buffs are for the player at the keyboard: an offline catch-up runs without them, or one buff would pay for hours. */
-function prepare(state: GameState, mode: SimulationMode): GameState {
-  return mode === 'live' ? state : withoutBuffs(state);
+function prepare(state: GameState, mode: SimulationMode, deltaMs: number): GameState {
+  return mode === 'live' ? state : noteTimeAway(withoutBuffs(state), deltaMs);
 }
 
 /**
@@ -39,7 +40,7 @@ function prepare(state: GameState, mode: SimulationMode): GameState {
  * background tabs and closed tabs both catch up correctly. Offline mode is production only.
  */
 export function advanceSimulation(state: GameState, deltaMs: number, mode: SimulationMode): GameStep {
-  const produced = applyProduction(prepare(state, mode), deltaMs);
+  const produced = applyProduction(prepare(state, mode, deltaMs), deltaMs);
   const advanced = mode === 'live' ? advanceLiveSystems(produced, deltaMs) : { state: produced, events: [] };
   const milestones = checkMilestones(advanced.state);
   const unlocks = checkSpecializationUnlocks(tickAdFree(milestones.state, deltaMs));

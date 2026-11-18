@@ -16,6 +16,7 @@ import {
   ERAS_BY_ID,
   findNextEraId,
   bankBacklinks,
+  bankHandTyped,
   buyPerk,
   PERK_IDS,
   fallForPopupScam,
@@ -45,7 +46,7 @@ import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
 import type { BuyAmount, ShopTab } from './render-shop';
 import { createPlaytestHandlers } from './playtest-actions';
-import { renderAchievementsPage } from './render-achievements';
+import { renderAchievementsPage, renderBadgeDetail } from './render-achievements';
 import { renderSpecializationChoiceScreen } from './render-specializations';
 import { findPickerColors } from './render-site-colors';
 import { SITE_PALETTES } from './site-theme';
@@ -181,7 +182,8 @@ function fallForScam(popupId: number): void {
 
 /** A finished run pays its Backlinks in before anything replaces it: finishing always counts. */
 function bankFinishedRun(): void {
-  const banked = bankBacklinks(store.legacy, store.game);
+  const backlinks = bankBacklinks(store.legacy, store.game);
+  const banked = bankHandTyped(backlinks.legacy, backlinks.state);
   store.legacy = banked.legacy;
   store.game = banked.state;
   writeLegacy();
@@ -228,8 +230,14 @@ function buyUpgradeAndAnnounce(upgradeId: UpgradeId): void {
 function openAchievements(): void {
   elements.achievementsCard.innerHTML = renderAchievementsPage(store.game, store.legacy);
   showOverlay(elements.achievementsOverlay);
-  // Opening focuses the button at the bottom; the page starts at the top.
+  // Opening focuses the close button; the window starts at the top.
   elements.achievementsCard.scrollTop = 0;
+}
+
+/** Tapped or clicked: what the icon is, in the bar under the icons. A phone has no hover. */
+function showAchievementDetail(id: string): void {
+  const detail = elements.achievementsCard.querySelector<HTMLElement>('[data-achievement-detail]');
+  if (detail !== null) detail.innerHTML = renderBadgeDetail(store.legacy, id);
 }
 
 export function createActionHandlers({ minigame, renderer, intro }: ActionDependencies): Readonly<Record<string, ActionHandler>> {
@@ -307,6 +315,7 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'site-colors-reset': () => updateGame((state) => chooseSiteColors(state, null)),
     'open-achievements': openAchievements,
     'close-achievements': () => hideOverlay(elements.achievementsOverlay),
+    'achievement-detail': (target) => showAchievementDetail(readId(target)),
     'open-reset': () => showOverlay(elements.resetOverlay),
     'cancel-reset': () => hideOverlay(elements.resetOverlay),
     'confirm-reset': () => resetGame(renderer, intro),

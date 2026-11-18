@@ -1,4 +1,5 @@
 import { EMPTY_ERA_STATS } from './era-stats';
+import { EMPTY_RUN_STATS } from './run-stats';
 import { SAVE_VERSION } from './constants';
 import { DEFAULT_SITE_NAME } from './site-name';
 import { NO_PERKS } from './content/perks';
@@ -114,6 +115,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     specializationIds: [],
     unlockedSpecializationIds: [],
     eraStats: EMPTY_ERA_STATS,
+    runStats: EMPTY_RUN_STATS,
     itemClocksMs: {},
     subscriptionRevenuePerSecond: 0,
     siteColors: null,

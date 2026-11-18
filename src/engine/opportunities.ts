@@ -1,4 +1,5 @@
 import { startBuff } from './buffs';
+import { countMinigameWon } from './run-stats';
 import { BUFFS_BY_ID } from './content/buffs';
 import { FEATURE_IDS } from './content/features';
 import { calculateOfferFrequencyFactor, canUseAds } from './economy';
@@ -106,5 +107,5 @@ export function claimOpportunity(state: GameState, opportunityId: number): GameS
   const opportunity = findOpportunity(state, opportunityId);
   if (opportunity === null) return { state, events: [] };
   const definition = OPPORTUNITIES_BY_KIND[opportunity.kind];
-  return { state: { ...startBuff(state, definition.buffId), opportunity: null }, events: [{ kind: 'opportunity', message: definition.won }] };
+  return { state: countMinigameWon({ ...startBuff(state, definition.buffId), opportunity: null }, definition.minigameId), events: [{ kind: 'opportunity', message: definition.won }] };
 }

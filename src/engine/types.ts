@@ -695,6 +695,8 @@ export interface GameState {
   /** Unlocked this run, each during its own era: a new run starts with none. */
   readonly unlockedSpecializationIds: readonly SpecializationId[];
   readonly eraStats: EraStats;
+  /** What this whole run has done, across relaunches: the achievements read it. A new run starts it over. */
+  readonly runStats: RunStats;
   /** How far each specialization upgrade with a schedule is towards its next go: a level, a buff, a purchase. */
   readonly itemClocksMs: Readonly<Partial<Record<UpgradeId, number>>>;
   /** What subscribers pay a second. It follows the site slowly: up as it grows, down as subscribers churn. */
@@ -710,24 +712,123 @@ export type PerkId = 'muscle-memory' | 'regulars' | 'known-tags' | 'early-warnin
  * What survives from one site to the next: unspent Backlinks, the perks bought with them, and how many runs were
  * finished. Saved on its own, apart from the game: Start over clears a game, never the legacy.
  */
+/** What a whole run has done, from 1997 to the end, for the achievements. */
+export interface RunStats {
+  /** Keystrokes typed by hand before 2024, at most one a tick: what a person can type, not a hire or a script. */
+  readonly handTypedKeystrokes: number;
+  readonly typos: number;
+  readonly onFireStarts: number;
+  readonly cleanups: number;
+  readonly minigamesWon: readonly AnyMinigameId[];
+  readonly popupsClosed: number;
+  readonly scamsFallenFor: number;
+  /** Every hazard that hit the site, by kind. */
+  readonly hazards: Readonly<Partial<Record<HazardKind, number>>>;
+  readonly placedAdAfter1997: boolean;
+  /** The longest the site ran without you, in one stretch. */
+  readonly longestAwayMs: number;
+}
+
 /** What a player has done, across every run in this browser. */
 export type AchievementId =
+  | 'hello-world'
   | 'first-visitor'
+  | 'visitor-1000'
+  | 'sign-my-guestbook'
+  | 'under-construction'
+  | 'webring'
+  | 'autoplay'
+  | 'blink'
+  | 'view-source'
+  | 'dot-com'
+  | 'hamster-dance'
+  | 'sparkle-trail'
   | 'quit-day-job'
-  | 'on-fire'
-  | 'rode-it-out'
-  | 'clean-sweep'
-  | 'no-ads-no-problem'
   | 'web-2-0'
+  | 'social-web'
+  | 'platform-play'
+  | 'now-with-ai'
   | 'the-whole-web'
+  | 'speedrun'
+  | 'forever-under-construction'
   | 'second-site'
+  | 'serial-webmaster'
+  | 'typist'
+  | 'touch-typist'
+  | 'mechanical-keyboard'
+  | 'worn-out-e'
+  | 'on-fire'
+  | 'ten-x-engineer'
+  | 'this-is-fine'
+  | 'not-a-bug'
+  | 'do-it-yourself'
+  | 'ramen-profitable'
+  | 'dot-com-millionaire'
+  | 'unicorn'
+  | 'trillionaire'
+  | 'bigger-than-the-world'
+  | 'quadrillionaire'
+  | 'a-million-a-second'
+  | 'money-printer'
+  | 'everyone-on-earth'
+  | 'galactic'
+  | 'rode-it-out'
+  | 'slashdotted'
+  | 'fail-whale'
+  | 'bobby-tables'
+  | 'pwned'
+  | 'denial-of-fun'
+  | 'works-on-my-machine'
+  | 'not-private'
+  | 'glue-on-pizza'
+  | 'robots-txt'
+  | 'clean-sweep'
+  | 'firefighter'
+  | 'seen-it-all'
+  | 'security-through-obscurity'
+  | 'free-mp3-player'
+  | 'popup-blocker'
+  | 'ad-wall'
+  | 'no-ads-no-problem'
+  | 'ad-free-web'
+  | 'accept-all'
+  | 'do-not-track'
+  | 'cookie-monster'
+  | 'enshittification'
+  | 'own-metal'
+  | 'someone-elses-computer'
+  | 'yaml-engineer'
+  | 'gpu-rich'
+  | 'page-bloat'
+  | 'lighthouse-100'
+  | 'pinch-to-zoom-no-more'
+  | 'heaviest-object'
+  | 'hydration-error'
+  | 'renews-itself'
+  | 'web3'
+  | 'prompt-engineer'
+  | 'ai-slop'
+  | 'react-developer'
+  | 'angular-developer'
+  | 'vue-developer'
+  | 'framework-wars-veteran'
+  | 'jquery-forever'
   | 'specialist'
+  | 'explorer'
   | 'full-stack'
-  | 'secret-door'
   | 'collector'
+  | 'just-a-homepage'
+  | 'pivot-to-video'
+  | 'move-fast'
+  | 'secret-door'
   | 'serial-founder'
   | 'broken-combo'
-  | 'trillionaire';
+  | 'make-it-pop'
+  | 'idle-game'
+  | 'touch-grass'
+  | 'sponsored-content'
+  | 'ship-it'
+  | 'link-farm';
 
 
 export interface LegacyState {
@@ -739,6 +840,8 @@ export interface LegacyState {
   readonly foundSpecializationIds: readonly SpecializationId[];
   /** Every achievement earned, in any run: once earned, it stays. */
   readonly achievementIds: readonly AchievementId[];
+  /** Keystrokes typed by hand before 2024, in the runs before this one. */
+  readonly handTypedKeystrokes: number;
 }
 
 /** The parts of the game that decide how the page looks: enough to show an old page again. */

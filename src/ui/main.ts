@@ -57,7 +57,9 @@ function tick(): void {
  * into the legacy as they happen. A newly earned achievement makes the news.
  */
 function recordFound(): void {
-  const recorded = recordAchievements(recordFoundSpecializations(store.legacy, store.game.unlockedSpecializationIds), store.game);
+  const found = recordFoundSpecializations(store.legacy, store.game.unlockedSpecializationIds);
+  // Playtest jumps eras and hands out money: nothing it does counts as an achievement.
+  const recorded = store.isPlaytestEnabled ? found : recordAchievements(found, store.game);
   if (recorded === store.legacy) return;
   announceAchievements(recorded.achievementIds.filter((id) => !store.legacy.achievementIds.includes(id)));
   store.legacy = recorded;
