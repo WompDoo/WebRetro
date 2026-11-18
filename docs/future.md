@@ -340,7 +340,30 @@ Changed from the plan while building: Password crackdown was dropped (a one-off 
 1. **The tree engine and the Specialize tab:** run gating, lineage, one per era, the choice screen, reveal and collection, Serial founder, crash removal.
 2. **The new mechanics and every specialization's items.** (built)
 3. **Pages for every specialization**, and combined pages for stacks.
-4. **Balance:** a sim player that chases a path, then a design sweep of the pages and their combos.
+4. **Balance:** a sim player that chases a path, then a design sweep of the pages and their combos. (built)
+
+**How the tree is balanced (built).** `SIM_PATH=photos,social,stories,ai-studio npm run sim` plays the test build's second run chasing a path; `SIM_PATH=natural` plays it without aiming. The path player plays like someone who means it: it builds the economy and the level conditions first, and once only the lean and the sacrifices are left and the lean's shortfall is about three minutes of income, it holds other features back, makes the sacrifices and pumps the lean. It chooses the specialization the moment it unlocks and buys its items first. Each era's report adds where the money went, what unlocked and what the site is. The bot values boosts that pay over time by the income they make a minute later.
+
+Results, active player, one seed, minutes per era:
+
+| Path | 2005 | 2011 | 2018 | 2024 | Total |
+|---|---|---|---|---|---|
+| Homepage (natural: unlocks nothing) | 36.6 | 34.2 | 39.4 | 32.1 | 159.9 |
+| Photos → social → AI studio (stories never unlocks: a phone page under 2.5 s is out of the bot's reach) | 36.4 | 38.4 | 30.5 | 23.7 | 146.6 (−8%) |
+| Video → live streaming → streaming service → short-video | 39.2 | 27.3 | 59.3 | 33.1 | 176.5 (+10%) |
+| Forum → reviews → marketplace → agent store | 38.1 | 37.4 | 30.5 | 17.2 | 140.8 (−12%) |
+
+Every path ends within 12% of a homepage, every 2005 unlock costs its era 0–7%, and a player who doesn't aim unlocks nothing. Two spreads are known and left for play-testing: video's 2018 (+51%: the streaming service's unlock takes most of the era) and the forum path's 2024 (−46%: four specializations' items together).
+
+What the tuning found, in order:
+
+- **A lean measures what you build, against a floor.** Against all spending, hosting and skills spoiled every lean; with no floor, the first level of anything at an era's start was 100%.
+- **A lean is on its own era's feature.** An older feature's levels are cheap next to the era's, so a lean on one is a grind (streaming on the 2011 video player cost the video path two hours of 2018).
+- **Natural play sets the thresholds.** Leans on features a homepage builds anyway sit 15–25 points above it.
+- **Spikes stack.** Surge pricing at ×3 on a spike's ×5 crowd doubled average income; spike multipliers are now ×1.25–1.5.
+- **Permanent multipliers are always maxed.** A network effect's cap is reached by every mid-era site, so the cap is the bonus: ×1.25.
+- **Money models tuned before the items pay twice with them.** Marketplace, reviews and agent store pay less per visitor.
+- **Breadth counts this era.** Counting every level since 1997 paid ×1.9 by 2024.
 
 ### Specializations v1: what's live now (replaced by the tree)
 
