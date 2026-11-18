@@ -45,11 +45,11 @@
     <section class="browser" aria-label="Your website">
       <div class="browser-titlebar"><span id="browser-title">My Homepage!!! - Web Navigator</span><span class="window-buttons" aria-hidden="true"><i></i><i></i><i></i></span></div>
       <div class="browser-toolbar">
-        <div class="browser-buttons" aria-hidden="true">
-          <span class="browser-button">◀ Back</span>
-          <span class="browser-button is-optional">Forward ▶</span>
-          <span class="browser-button is-optional">Reload</span>
-          <span class="browser-button is-optional">Home</span>
+        <div class="browser-buttons">
+          <span class="browser-button" aria-hidden="true">◀ Back</span>
+          <span class="browser-button is-optional" aria-hidden="true">Forward ▶</span>
+          <button type="button" class="browser-button browser-reload" data-action="browser-reload" title="Reload"><span class="browser-button-icon" aria-hidden="true">↻</span><span class="browser-button-text">Reload</span></button>
+          <button type="button" class="browser-button browser-home is-optional" data-action="browser-home" title="Home">Home</button>
         </div>
         <div class="browser-address" aria-hidden="true"><span class="browser-address-label">Location:</span><span class="browser-url" id="browser-url">http://</span></div>
         <div class="device-switch" id="device-switch" role="group" aria-label="Show your site on" hidden>

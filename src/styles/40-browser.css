@@ -5,6 +5,17 @@
 .browser-toolbar { display: flex; align-items: center; gap: 6px; padding: 5px 8px; font-size: 12px; }
 .browser-buttons { display: flex; gap: 4px; flex: none; }
 .browser-button { padding: 2px 8px; }
+/* Reload and Home work: Reload blanks the page for as long as the era's connection takes, Home goes back to the top. */
+button.browser-button { font: inherit; color: inherit; cursor: pointer; }
+button.browser-button:hover { filter: brightness(0.94); }
+.browser-button-icon { display: none; font-size: 15px; line-height: 1; }
+/* Chrome, from 2011: the reload arrow alone. It never had a Home button unless you asked for one. */
+:is([data-era="2011"], [data-era="2018"], [data-era="2024"]) .browser-reload .browser-button-icon { display: inline; }
+:is([data-era="2011"], [data-era="2018"], [data-era="2024"]) .browser-reload .browser-button-text { display: none; }
+:is([data-era="2011"], [data-era="2018"], [data-era="2024"]) button.browser-button:hover { filter: none; background: rgba(0, 0, 0, 0.07); }
+/* While the request is out, the page is blank. */
+.site.is-blank { background: #FFFFFF; }
+.site.is-blank > * { visibility: hidden; }
 .browser-address { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; }
 .browser-address-label { flex: none; }
 .browser-url { flex: 1; min-width: 0; padding: 3px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -18,6 +29,8 @@
 .site { height: 100%; overflow-y: auto; overscroll-behavior: contain; container-type: inline-size; isolation: isolate; }
 @media (max-width: 520px) {
   .browser-button.is-optional { display: none; }
+  .browser-reload .browser-button-icon { display: inline; }
+  .browser-reload .browser-button-text { display: none; }
   .browser-viewport { height: 440px; }
 }
 
@@ -26,6 +39,7 @@
 [data-era="1997"] .window-buttons i { background: #C0C0C0; border: 2px outset #FFFFFF; }
 [data-era="1997"] .browser-toolbar { border-bottom: 2px groove #FFFFFF; }
 [data-era="1997"] .browser-button { background: #C0C0C0; border: 2px outset #FFFFFF; }
+[data-era="1997"] button.browser-button:active { border-style: inset; }
 [data-era="1997"] .browser-url { background: #FFFFFF; border: 2px inset #808080; font-family: Arial, sans-serif; }
 [data-era="1997"] .browser-statusbar { border-top: 2px groove #FFFFFF; }
 [data-era="2005"] .browser { background: linear-gradient(#F2F2F2, #DCDCDC); font-family: 'Lucida Grande', 'Trebuchet MS', Verdana, sans-serif; color: #333333; }
