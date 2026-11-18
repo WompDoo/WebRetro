@@ -300,7 +300,7 @@ The classic game is unchanged.
 - **Going viral:** spikes come more often; catching fire can start one.
 - **Subscribers:** a share of visitors pays every second, ads or not. The pool rises over about three minutes and churns over about fifteen, so it outlasts an outage.
 - **Scheduled events:** a live event every two minutes, a Black Friday every five.
-- **Breadth pays:** every feature level on the page adds to what a visitor pays.
+- **Breadth pays:** every level of this era's features adds to what a visitor pays.
 - **Everything else:** donations that shrink with every ad, phone visitors who pay double, ads that pay more per specialization held, offers twice as often, AI answers that pay for the visitors they keep, hires that type twice as fast, and an agent that buys the best-value feature level every five seconds.
 
 | Specialization | Learn → Build | Upgrades |
@@ -314,8 +314,8 @@ The classic game is unchanged.
 | Microblog | Learn hashtags → Trending topics | Live-posting (on fire: all traffic ×1.5) · Fail whale (stays up to ×1.5 the load, trending topics ×3 in a spike) |
 | Live streaming | Learn live video → Emotes & raids | Live events (every 2 min: traffic ×2 for 30 s) · Subs and tips (25% subscribe) |
 | News & viral | Learn headline testing → Listicles | Clickbait (spikes ×2 as often, pay ×1.5 during one) · Breaking news (catching fire starts a spike) |
-| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×2) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
-| Online shop (2011) | Learn the shopping cart → Product listings | Customers also bought (+0.2% pay per feature level) · Black Friday (every 5 min: ads ×3 for 45 s) |
+| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×1.5) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
+| Online shop (2011) | Learn the shopping cart → Product listings | Customers also bought (+0.2% pay per level of this era's features) · Black Friday (every 5 min: ads ×3 for 45 s) |
 | Stories app | Learn vertical video → Filters & lenses | Disappearing stories (filters ×3 while you type, ×0.5 when you stop) · Influencers (offers ×2 as often) |
 | Streaming service | Learn adaptive streaming → Originals | Subscriptions (40% subscribe) · Binge autoplay (load time ×0.5) |
 | Newsletter platform | Learn email deliverability → Paid newsletters | Writers' fund (every 250 keystrokes +1 Paid newsletters, 15% subscribe) · Tracking pixels (ads ×1.5, fines ×2) |
@@ -326,7 +326,7 @@ The classic game is unchanged.
 | AI answer engine | Learn citations → Sources panel | Answer, don't link (kept-away visitors pay 60%) · Sponsored answers (pay per visitor, but answers keep ×1.3 more away) |
 | AI studio | Learn style models → Prompt gallery | GPU farm (the smallest feature levels itself every 8 s, upkeep 25%) · Credits (30% subscribe) |
 | AI companion | Learn fine-tuning → Characters | It remembers you (20% subscribe, churn ×0.1) · Talks while you sleep (hires type ×2) |
-| Agent store | Learn tool calling → Agent listings | Agents buy for you (best-value level every 5 s) · Tool-use fees (+0.15% pay per feature level) |
+| Agent store | Learn tool calling → Agent listings | Agents buy for you (best-value level every 5 s) · Tool-use fees (+0.15% pay per level of this era's features) |
 
 Changed from the plan while building: Password crackdown was dropped (a one-off conversion with nothing to keep doing), Fail whale became overload tolerance plus a spike bonus, the three 2024 skills were renamed so they don't repeat 2024's own (retrieval, recommendation and diffusion skills already exist), and the agent store got a second upgrade. The numbers are first guesses: PR 4's path-chasing sim player tunes them. Today's sim bot scores purchases by their immediate income, so it never buys the boosts that pay over time; it learns to in PR 4.
 

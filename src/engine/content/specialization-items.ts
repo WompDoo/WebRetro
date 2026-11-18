@@ -450,9 +450,9 @@ const REVIEWS_UPGRADES = [
     id: 'elite-reviewers',
     eraId: 'social-2011',
     name: 'Elite reviewers',
-    description: 'A badge for the people who review everything, from their phones, standing in the restaurant. Phone visitors pay double.',
+    description: 'A badge for the people who review everything, from their phones, standing in the restaurant. Phone visitors pay half again.',
     cost: 8_000_000_000,
-    effects: [{ kind: 'phone-revenue-multiplier', factor: 2 }],
+    effects: [{ kind: 'phone-revenue-multiplier', factor: 1.5 }],
     requiredFeatureId: 'check-ins',
   }),
   boost({

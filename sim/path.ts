@@ -13,6 +13,7 @@ import {
   FEATURES_BY_ID,
   isFeatureSwitchedOff,
   isSpecializationOpen,
+  LEAN_FLOOR_SHARE_OF_BUDGET,
   removeAd,
   SPECIALIZATION_ITEMS,
   SPECIALIZATIONS_BY_ID,
@@ -113,14 +114,52 @@ function buyHeldItems(state: GameState): GameState | null {
   return featureId === undefined ? null : buyFeature(state, featureId);
 }
 
-/**
- * The path's move before the usual shopping: a step towards the next specialization's unlock, or one of the held
- * specializations' items. Null leaves the choice to the bot.
- */
-export function steerOnPath(state: GameState, path: readonly TreeSpecializationId[]): GameState | null {
+/** What a committed player leaves for the end: the lean, and the sacrifices that would cost income all era. */
+const LAST_KINDS: readonly SpecializationCondition['kind'][] = ['spending-share', 'switched-off', 'max-ads', 'ad-free-minutes', 'consent'];
+
+function isLeftForLast(condition: SpecializationCondition): boolean {
+  return LAST_KINDS.includes(condition.kind);
+}
+
+function listUnmet(state: GameState, path: readonly TreeSpecializationId[]): readonly SpecializationCondition[] {
   const target = findPathTarget(state, path);
-  const unmet = target === null ? [] : calculateSpecializationProgress(state, target).filter((progress) => !progress.isMet);
-  const stepped = [...unmet].sort(byLeanLast).map((progress) => stepTowards(state, progress.condition)).find((next) => next !== null);
+  return target === null ? [] : calculateSpecializationProgress(state, target).filter((progress) => !progress.isMet).map((progress) => progress.condition);
+}
+
+/** How much more the lean feature needs before its share reaches the target, the floor included. */
+export function calculateLeanShortfall(state: GameState, featureId: FeatureId, share: number): number {
+  const spent = state.eraStats.spentByFeature[featureId] ?? 0;
+  const total = Object.values(state.eraStats.spentByFeature).reduce((sum, value) => sum + value, 0);
+  const floor = ERAS_BY_ID[state.eraId].migrationCost * LEAN_FLOOR_SHARE_OF_BUDGET;
+  return Math.max(0, (share * total - spent) / (1 - share), share * floor - spent);
+}
+
+function findShortfall(state: GameState, unmet: readonly SpecializationCondition[]): number {
+  const lean = unmet.find((condition): condition is Extract<SpecializationCondition, { readonly kind: 'spending-share' }> => condition.kind === 'spending-share');
+  return lean === undefined ? 0 : calculateLeanShortfall(state, lean.featureId, lean.share);
+}
+
+/** The lean is pumped once its shortfall is about this much income or less: a few minutes of holding back. */
+export const PUMP_WINDOW_SECONDS = 180;
+
+/**
+ * A committed player builds the economy first, then pumps: once only the lean and the sacrifices are left, and the
+ * lean's shortfall is a few minutes of income, it holds other features back and makes the sacrifices. Starting the lean
+ * from an era's first second starved the site: 2005 took 87 minutes on the photos path, for 14 gallery levels.
+ */
+export function isPumping(state: GameState, path: readonly TreeSpecializationId[], incomePerSecond: number): boolean {
+  const unmet = listUnmet(state, path);
+  const isOnlyLastLeft = unmet.length > 0 && unmet.every(isLeftForLast);
+  return isOnlyLastLeft && findShortfall(state, unmet) <= state.money + incomePerSecond * PUMP_WINDOW_SECONDS;
+}
+
+/**
+ * The path's move before the usual shopping: a step towards the next specialization's unlock (the builds while
+ * building, everything once pumping), or one of the held specializations' items. Null leaves the choice to the bot.
+ */
+export function steerOnPath(state: GameState, path: readonly TreeSpecializationId[], isPumpingNow: boolean): GameState | null {
+  const due = listUnmet(state, path).filter((condition) => isPumpingNow || !isLeftForLast(condition));
+  const stepped = [...due].sort(byLeanLast).map((condition) => stepTowards(state, condition)).find((next) => next !== null);
   return stepped ?? buyHeldItems(state);
 }
 
@@ -128,8 +167,8 @@ export function steerOnPath(state: GameState, path: readonly TreeSpecializationI
  * Everything else first, the lean last: levels, sacrifices and skills are features too, and building them after the
  * lean is met would pull the share back under. A player who means it builds them first and then pumps the lean.
  */
-function byLeanLast(first: { readonly condition: SpecializationCondition }, second: { readonly condition: SpecializationCondition }): number {
-  return Number(first.condition.kind === 'spending-share') - Number(second.condition.kind === 'spending-share');
+function byLeanLast(first: SpecializationCondition, second: SpecializationCondition): number {
+  return Number(first.kind === 'spending-share') - Number(second.kind === 'spending-share');
 }
 
 function findUnmetLean(state: GameState, path: readonly TreeSpecializationId[]): FeatureId | null {

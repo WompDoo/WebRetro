@@ -502,15 +502,17 @@ describe('money that isn’t banners', () => {
     assert.equal(added(5), 0);
   });
 
-  it('elite reviewers: phone visitors pay double, so every visitor pays more by the phone share', () => {
+  it('elite reviewers: phone visitors pay half again, so every visitor pays more by the phone share', () => {
     const site = holding('reviews', ['elite-reviewers']);
     const gain = calculateRevenuePerVisitor(site) / calculateRevenuePerVisitor(withoutUpgrade(site, 'elite-reviewers'));
-    assert.ok(gain > 1.2 && gain < 2, String(gain));
+    assert.ok(gain > 1.1 && gain < 1.5, String(gain));
   });
 
-  it('customers also bought: every feature level on the page adds a fifth of a percent', () => {
+  it('customers also bought: every level of this era’s features adds a fifth of a percent, not the levels of 1997', () => {
     const site = holding('shop', ['customers-also-bought']);
-    const levels = FEATURE_IDS.filter((featureId) => isFeatureOnPage(site, featureId)).reduce((total, featureId) => total + site.featureLevels[featureId], 0);
+    const ofThisEra = FEATURE_IDS.filter((featureId) => isFeatureOnPage(site, featureId) && ERAS_BY_ID[FEATURES_BY_ID[featureId].eraId].baseEraId === 'social-2011');
+    const levels = ofThisEra.reduce((total, featureId) => total + site.featureLevels[featureId], 0);
+    assert.ok(site.featureLevels.guestbook > 0, 'old levels on the page that don’t count');
     const gain = calculateRevenuePerVisitor(site) / calculateRevenuePerVisitor(withoutUpgrade(site, 'customers-also-bought'));
     assert.equal(Number(gain.toFixed(PRECISION)), Number((1 + 0.002 * levels).toFixed(PRECISION)));
   });

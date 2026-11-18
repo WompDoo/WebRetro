@@ -33,11 +33,12 @@ import {
   type EraId,
   type FrameworkId,
   type GameState,
+  type TreeSpecializationId,
 } from '../src/engine';
 import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
 import { applySimSpecialization, applySwitches, SIM_SPECIALIZATION, SWITCHED_OFF } from './switches';
-import { avoidsOffPath, chooseOnPath, describeSpendingShares, SIM_PATH, startSecondRun, steerOnPath } from './path';
-import type { PlayerProfile } from './bot';
+import { avoidsOffPath, chooseOnPath, describeSpendingShares, isPumping, SIM_PATH, startSecondRun, steerOnPath } from './path';
+import type { ExtraAvoid, PlayerProfile } from './bot';
 
 
 /** Where a run is when it relaunches into an era: the other frameworks' runs start from here. */
@@ -117,7 +118,13 @@ const FIRST_RUN_ERAS = getErasOfRun(1);
 /** On a path, the path moves first; whatever it leaves, the bot buys as usual, holding off what would spoil a lean. */
 function decideOnPath(state: GameState, profile: PlayerProfile): GameState {
   if (SIM_PATH === null) return decide(state, profile);
-  return steerOnPath(state, SIM_PATH) ?? decide(state, profile, avoidsOffPath(state, SIM_PATH));
+  const pumping = isPumping(state, SIM_PATH, effectiveIncome(state, profile));
+  return steerOnPath(state, SIM_PATH, pumping) ?? decide(state, profile, pathAvoids(state, SIM_PATH, pumping));
+}
+
+/** Only while pumping does the path hold other features back: building the economy first is the point. */
+function pathAvoids(state: GameState, path: readonly TreeSpecializationId[], pumping: boolean): ExtraAvoid {
+  return pumping ? avoidsOffPath(state, path) : () => false;
 }
 
 function chooseAlongPath(state: GameState, now: number, log: Log, name: string): GameState {

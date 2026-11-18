@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createPlaytestState, FEATURE_IDS } from '../src/engine';
+import { createPlaytestState, ERAS_BY_ID, FEATURE_IDS, LEAN_FLOOR_SHARE_OF_BUDGET } from '../src/engine';
 import type { GameState } from '../src/engine';
 import type { PurchaseOption } from '../sim/bot';
-import { avoidsOffPath, chooseOnPath, describeSpendingShares, findPathTarget, readSimPath, startSecondRun, steerOnPath } from '../sim/path';
+import { avoidsOffPath, calculateLeanShortfall, chooseOnPath, describeSpendingShares, findPathTarget, isPumping, readSimPath, startSecondRun, steerOnPath } from '../sim/path';
 import { QUIET_HAZARDS } from './quiet-hazards';
 
 const SEED = 9;
@@ -43,21 +43,36 @@ describe('the sim player who chases a path', () => {
     assert.equal(avoidsOffPath(at2005(), [])(option('feature:blog')), false, 'no path, no holding back');
   });
 
-  it('meets the other conditions first and pumps the lean last, so building them doesn’t undo it', () => {
+  it('builds first: levels and skills while the economy grows, no lean and no sacrifice yet', () => {
     const rich = { ...at2005(), money: 1e15, featureLevels: NO_LEVELS };
-    const steps = Array.from({ length: 60 }).reduce<GameState>((state) => steerOnPath(state, ['photos']) ?? state, rich);
-    assert.ok(steps.switchedOffFeatureIds.includes('flash-intro'), 'the sacrifice');
-    assert.ok(steps.featureLevels['tag-cloud'] >= 1, 'the levels');
-    const first = steerOnPath(rich, ['photos']);
-    assert.ok(first !== null);
-    assert.equal(first.featureLevels['photo-gallery'], 0, 'not the lean, not yet');
+    const built = Array.from({ length: 30 }).reduce<GameState>((state) => steerOnPath(state, ['photos'], false) ?? state, rich);
+    assert.ok(built.featureLevels['tag-cloud'] >= 1, 'the levels');
+    assert.ok(!built.switchedOffFeatureIds.includes('flash-intro'), 'no sacrifice yet');
+    assert.equal(built.featureLevels['photo-gallery'], 0, 'no lean yet');
+  });
+
+  it('pumps once only the lean and the sacrifices are left and the shortfall is a few minutes of income', () => {
+    const ready = { ...at2005(), featureLevels: { ...NO_LEVELS, 'tag-cloud': 1 }, eraStats: { ...at2005().eraStats, spentByFeature: { 'tag-cloud': 1e8 } } };
+    assert.equal(isPumping({ ...ready, money: 0 }, ['photos'], 1), false, 'too far to pump');
+    assert.equal(isPumping({ ...ready, money: 1e12 }, ['photos'], 1), true);
+    const pumped = Array.from({ length: 60 }).reduce<GameState>((state) => steerOnPath(state, ['photos'], true) ?? state, { ...ready, money: 1e15 });
+    assert.ok(pumped.switchedOffFeatureIds.includes('flash-intro'), 'the sacrifice');
+    assert.ok(pumped.featureLevels['photo-gallery'] > 0, 'the lean');
+    assert.equal(isPumping(at2005(), [], 1), false, 'no path, nothing to pump');
+  });
+
+  it('works out the lean’s shortfall against the era’s building, and against the floor', () => {
+    const state = { ...at2005(), eraStats: { ...at2005().eraStats, spentByFeature: { blog: 6e8, 'photo-gallery': 0 } } };
+    assert.equal(calculateLeanShortfall(state, 'photo-gallery', 0.4), (0.4 * 6e8) / 0.6);
+    const early = { ...at2005(), eraStats: { ...at2005().eraStats, spentByFeature: {} } };
+    assert.equal(calculateLeanShortfall(early, 'photo-gallery', 0.4), 0.4 * ERAS_BY_ID['web2-2005'].migrationCost * LEAN_FLOOR_SHARE_OF_BUDGET);
   });
 
   it('chooses the specialization the moment it unlocks, and buys its items first', () => {
     const unlocked = { ...at2005(), unlockedSpecializationIds: ['photos'] as const, money: 1e12 };
     const chosen = chooseOnPath(unlocked, ['photos']);
     assert.deepEqual(chosen.specializationIds, ['photos']);
-    const shopping = steerOnPath(chosen, ['photos']);
+    const shopping = steerOnPath(chosen, ['photos'], false);
     assert.ok(shopping !== null);
     assert.ok(shopping.purchasedUpgradeIds.includes('learn-exif'));
   });
