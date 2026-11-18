@@ -10,6 +10,7 @@ import {
   calculateServerLoad,
   calculateSpecializationProgress,
   calculateSpendingShare,
+  LEAN_FLOOR_SHARE_OF_BUDGET,
   calculateVisitorsPerSecond,
   canPlaceAd,
   checkSpecializationUnlocks,
@@ -63,7 +64,7 @@ const switchedOff = (state: GameState, featureIds: readonly FeatureId[]): GameSt
 /** This era's spending: what went into each feature, out of a total. */
 const spending = (state: GameState, byFeature: Partial<Record<FeatureId, number>>): GameState => ({ ...state, eraStats: { ...state.eraStats, spentByFeature: byFeature } });
 /** A 2005 photo-sharing site in the making: half the era's money went into the gallery, tags are up, the Flash intro is off. */
-const photosReady = (): GameState => switchedOff(spending(leaning(at('web2-2005'), { 'photo-gallery': 40, 'tag-cloud': 3, 'flash-intro': 1, blog: 16 }), { 'photo-gallery': 500, blog: 500 }), ['flash-intro']);
+const photosReady = (): GameState => switchedOff(spending(leaning(at('web2-2005'), { 'photo-gallery': 40, 'tag-cloud': 3, 'flash-intro': 1, blog: 16 }), { 'photo-gallery': 5e8, blog: 5e8 }), ['flash-intro']);
 
 describe('the specialization tree: when it opens', () => {
   it('is the second site’s draw: off in the first run and in the classic game', () => {
@@ -101,15 +102,22 @@ describe('unlocking a specialization', () => {
 
   it('measures the lean in what you build: a feature’s levels count for it, and nothing else spoils it', () => {
     const state = { ...at('web2-2005'), money: 1e12 };
-    const bought = buyFeature(state, 'photo-gallery');
-    assert.ok((bought.eraStats.spentByFeature['photo-gallery'] ?? 0) > 0);
-    assert.equal(calculateSpendingShare(bought, 'photo-gallery'), 1);
+    const bought = spending(buyFeature(state, 'photo-gallery'), { 'photo-gallery': 4e8, blog: 6e8 });
+    assert.equal(calculateSpendingShare(bought, 'photo-gallery'), 0.4);
     const hosted = upgradeHosting(bought);
-    assert.equal(calculateSpendingShare(hosted, 'photo-gallery'), 1, 'hosting is something every site needs');
+    assert.equal(calculateSpendingShare(hosted, 'photo-gallery'), 0.4, 'hosting is something every site needs');
+    assert.ok((buyFeature(state, 'photo-gallery').eraStats.spentByFeature['photo-gallery'] ?? 0) > 0, 'a level counts for its feature');
+  });
+
+  it('counts a lean against half the era’s budget while little has been built: one early level isn’t a commitment', () => {
+    const early = spending(at('web2-2005'), { 'agent-store': 1e6 });
+    const budget = ERAS_BY_ID['web2-2005'].migrationCost;
+    assert.equal(calculateSpendingShare(early, 'agent-store'), 1e6 / (budget * LEAN_FLOOR_SHARE_OF_BUDGET));
+    assert.ok(calculateSpendingShare(early, 'agent-store') < 0.01);
   });
 
   it('comes into view half way to its lean, or straight away once found in an earlier run', () => {
-    const halfway = spending(at('web2-2005'), { 'photo-gallery': 200, blog: 800 });
+    const halfway = spending(at('web2-2005'), { 'photo-gallery': 2e8, blog: 8e8 });
     assert.ok(isSpecializationInView(halfway, 'photos', []));
     assert.ok(!isSpecializationInView(at('web2-2005'), 'photos', []));
     assert.ok(isSpecializationInView(at('web2-2005'), 'photos', ['photos']), 'found before');

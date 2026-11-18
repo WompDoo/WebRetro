@@ -1,3 +1,4 @@
+import { ERAS_BY_ID } from './content/eras';
 import type { EraStats, FeatureId, GameState, InfectionKind } from './types';
 
 /**
@@ -46,12 +47,20 @@ export function countFeatureSpending(state: GameState, featureId: FeatureId, amo
 }
 
 /**
+ * A lean counts against at least this share of the era's migration budget in features: without it, the first level
+ * of anything bought at an era's start would be 100% of what was built, and every lean would be met in a minute.
+ */
+export const LEAN_FLOOR_SHARE_OF_BUDGET = 0.5;
+
+/**
  * What share of this era's feature spending went into one feature. Only features count: a hosting upgrade or a skill
- * is something every site needs, and shouldn't spoil a lean. What you build is the choice.
+ * is something every site needs, and shouldn't spoil a lean. What you build is the choice, and it has to be real
+ * building: the share is of the era's building, or of half its migration budget while there's been less than that.
  */
 export function calculateSpendingShare(state: GameState, featureId: FeatureId): number {
   const total = Object.values(state.eraStats.spentByFeature).reduce((sum, spent) => sum + spent, 0);
-  return total > 0 ? (state.eraStats.spentByFeature[featureId] ?? 0) / total : 0;
+  const floor = ERAS_BY_ID[state.eraId].migrationCost * LEAN_FLOOR_SHARE_OF_BUDGET;
+  return (state.eraStats.spentByFeature[featureId] ?? 0) / Math.max(total, floor);
 }
 
 export function countCleanedOf(state: GameState, kind: InfectionKind): number {

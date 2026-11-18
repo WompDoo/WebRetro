@@ -6,12 +6,15 @@ import {
   canBuyFeature,
   canBuyUpgrade,
   canChooseSpecialization,
+  canSwitchFeature,
   chooseConsentBanner,
   chooseSpecialization,
   ERAS_BY_ID,
   FEATURE_IDS,
   FEATURES_BY_ID,
+  isFeatureOnPage,
   isFeatureSwitchedOff,
+  isSpecializationOpen,
   removeAd,
   SPECIALIZATION_ITEMS,
   SPECIALIZATIONS_BY_ID,
@@ -41,10 +44,13 @@ export function startSecondRun(state: GameState): GameState {
   return { ...state, edition: 'webspecialization', runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN) };
 }
 
-/** The path's specialization for this era, while the site doesn't hold it yet. */
+function isOfEra(id: TreeSpecializationId, state: GameState): boolean {
+  return SPECIALIZATIONS_BY_ID[id].eraId === ERAS_BY_ID[state.eraId].baseEraId;
+}
+
+/** The path's specialization for this era: one the site doesn't hold yet, and whose door is open to it. */
 export function findPathTarget(state: GameState, path: readonly TreeSpecializationId[]): TreeSpecializationId | null {
-  const eraId = ERAS_BY_ID[state.eraId].baseEraId;
-  return path.find((id) => SPECIALIZATIONS_BY_ID[id].eraId === eraId && !state.specializationIds.includes(id)) ?? null;
+  return path.find((id) => isOfEra(id, state) && !state.specializationIds.includes(id) && isSpecializationOpen(state, id)) ?? null;
 }
 
 /** Chosen the moment it unlocks: the player who aims at a specialization doesn't wait. */
@@ -70,6 +76,17 @@ function switchOff(state: GameState, featureId: FeatureId): GameState | null {
   return state.featureLevels[featureId] === 0 ? buildTowards(state, featureId) : toggleFeature(state, featureId);
 }
 
+function calculateWeightKb(state: GameState, featureId: FeatureId): number {
+  return FEATURES_BY_ID[featureId].pageWeightKb + FEATURES_BY_ID[featureId].pageWeightKbPerLevel * state.featureLevels[featureId];
+}
+
+/** The second run's sacrifice tool: the heaviest feature on the page goes, if it can be switched off at all. */
+function switchOffHeaviest(state: GameState): GameState | null {
+  const candidates = FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId) && canSwitchFeature(state, featureId) && !isFeatureSwitchedOff(state, featureId));
+  const [heaviest] = [...candidates].sort((first, second) => calculateWeightKb(state, second) - calculateWeightKb(state, first));
+  return heaviest === undefined ? null : toggleFeature(state, heaviest);
+}
+
 const MOBILE_FRIENDLY_IDS: readonly UpgradeId[] = UPGRADE_IDS.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].effects.some((effect) => effect.kind === 'mobile-friendly'));
 /** What makes a page load faster: lighter pages, a faster load. */
 const LIGHTER_PAGE_IDS: readonly UpgradeId[] = UPGRADE_IDS.filter((upgradeId) =>
@@ -89,7 +106,7 @@ const STEPS: { readonly [K in SpecializationCondition['kind']]: ConditionStep<K>
   consent: (state, condition) => (state.consentBanner === condition.banner ? null : chooseConsentBanner(state, condition.banner)),
   'era-stat': () => null,
   'mobile-friendly': (state) => MOBILE_FRIENDLY_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
-  'phone-load-under': (state) => LIGHTER_PAGE_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? null,
+  'phone-load-under': (state) => LIGHTER_PAGE_IDS.map((upgradeId) => buyIfAffordable(state, upgradeId)).find((bought) => bought !== null) ?? switchOffHeaviest(state),
   'ai-answer-share': () => null,
 };
 
@@ -153,7 +170,8 @@ const TOP_SHARES = 4;
 
 /** Where this era's money went, biggest first: what a lean would have to beat. */
 export function describeSpendingShares(state: GameState): string {
-  const shares = FEATURE_IDS.map((featureId) => ({ featureId, share: calculateSpendingShare(state, featureId) })).filter((entry) => entry.share > 0);
+  const total = Object.values(state.eraStats.spentByFeature).reduce((sum, spent) => sum + spent, 0);
+  const shares = FEATURE_IDS.map((featureId) => ({ featureId, share: (state.eraStats.spentByFeature[featureId] ?? 0) / Math.max(total, 1) })).filter((entry) => entry.share > 0);
   const top = [...shares].sort((first, second) => second.share - first.share).slice(0, TOP_SHARES);
   return top.map((entry) => `${entry.featureId} ${Math.round(entry.share * SHARE_PERCENT)}%`).join(', ');
 }

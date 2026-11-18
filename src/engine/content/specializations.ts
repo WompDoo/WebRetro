@@ -383,7 +383,7 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     eraId: 'platform-2018',
     parents: ['live-streaming', 'video'],
     isSecret: false,
-    unlock: [lean('video-player', 0.35), feature('pricing-table', 15), maxAds(2)],
+    unlock: [lean('video-player', 0.3), feature('pricing-table', 10), maxAds(2)],
     restriction: keepsAdsAtMost(2),
     eras: {
       'platform-2018': plan('pricing-table', 14, [perVisitor(0.6), serverLoad(1.4)]),
