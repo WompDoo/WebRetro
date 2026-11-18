@@ -8,6 +8,7 @@ import {
   FEATURE_IDS,
   FEATURES_BY_ID,
   findFrameworkPickedBy,
+  findItemOwner,
   findFrameworkRenderedBy,
   UPGRADE_IDS,
   UPGRADES_BY_ID,
@@ -57,7 +58,8 @@ function observe(state: GameState): readonly string[] {
 }
 
 describe('every buyable thing keeps its promise', () => {
-  UPGRADE_IDS.filter((upgradeId) => CONDITIONAL_UPGRADES[upgradeId] === undefined).forEach((upgradeId) => {
+  // A specialization's own items are proven one by one, in a site that holds it: specialization-items.test.ts.
+  UPGRADE_IDS.filter((upgradeId) => CONDITIONAL_UPGRADES[upgradeId] === undefined && findItemOwner(upgradeId) === null).forEach((upgradeId) => {
     it(`${upgradeId} changes something you can measure or see in its own era`, () => {
       const end = endOfEra(upgradeId);
       const before = observe(withUpgrade(end, upgradeId, false));

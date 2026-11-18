@@ -285,44 +285,47 @@ The classic game is unchanged.
 | 2024 | 🤖 AI companion | Character.AI, Replika | open door | 40% into AI chatbot · Live chat switched off |
 | 2024 | 🧩 Agent store *(secret)* | GPT Store, WeChat mini-programs | Marketplace or Professional network | 40% into Agent store |
 
-**Exclusive items: every specialization gets at least one Learn, one Build and one Upgrade**, shown only once you've chosen it, marked with its icon. Items from every specialization you hold stay, which is where the combos come from. The upgrades use mechanics nothing else in the game has:
+**Exclusive items (built): every specialization has its own Learn, Build and two Upgrades**, offered only while the site holds it, marked with its icon in the shop. They stay for the rest of the run, so a stack keeps every specialization's items, which is where the combos come from. Each skill writes its own file into the editor, and each feature has a block on every era's page. Exclusive features are never on an era's checklist, so a homepage finishes every era as before. Prices sit at the middle of the item's era, since a specialization unlocks about halfway through. The boosts use 22 effect kinds nothing else in the game has:
 
-- **Users build it:** a feature levels itself.
-- **Typing publishes:** keystrokes add levels.
-- **Network effect:** traffic grows with each doubling of visitors.
-- **Going viral:** spikes come more often and pay.
-- **Subscribers:** a paying pool that churns slowly.
-- **The algorithm:** the biggest feature grows, the rest shrink.
-- **Moderation economy:** infections and spam become levels.
-- **Live events:** scheduled traffic bursts.
-- **Compute:** pay per second and the site builds itself.
-- **Breadth pays:** money per feature level.
-- **Auto-buyer.**
+- **Users build it:** a feature gains a level every so often, offline too; or the era's smallest feature does.
+- **Typing publishes:** every so many of your keystrokes, a feature gains a level.
+- **Moderation pays:** each infection cleaned up, by you or by itself, gives a feature levels.
+- **The long tail:** a feature's traffic grows minute by minute through the era, up to a cap.
+- **Network effect:** all traffic grows with each doubling of the site since the era began, up to a cap.
+- **The algorithm:** the busiest feature gets more, every other one less.
+- **The moment:** traffic or pay that depends on being on fire, typing, idle or in a spike.
+- **Going viral:** spikes come more often; catching fire can start one.
+- **Subscribers:** a share of visitors pays every second, ads or not. The pool rises over about three minutes and churns over about fifteen, so it outlasts an outage.
+- **Scheduled events:** a live event every two minutes, a Black Friday every five.
+- **Breadth pays:** every feature level on the page adds to what a visitor pays.
+- **Everything else:** donations that shrink with every ad, phone visitors who pay double, ads that pay more per specialization held, offers twice as often, AI answers that pay for the visitors they keep, hires that type twice as fast, and an agent that buys the best-value feature level every five seconds.
 
 | Specialization | Learn → Build | Upgrades |
 |---|---|---|
-| Blog network | Learn multi-user blogs → Member blogs | Write daily (every 400 keystrokes, +1 Blog level) · Long tail (blog traffic grows all era) |
-| Photo sharing | Learn thumbnails & EXIF → Groups & pools | Users upload (the gallery levels itself) · Explore page (your most-visited feature ×1.3) |
-| Video site | Learn Flash video → Channels | Going viral (spikes 2× as often, ×3 pay while you stay up) · Embed anywhere (a share of every feature's visitors watch a video) |
-| Forum community | Learn mod tools → Subforums | Volunteer mods (forum infections clean themselves, +1 level each) · Post counts (on fire: forum traffic ×2) |
-| Wiki | Learn wiki markup → Talk pages | Edit-a-thon (every feature slowly levels itself) · Donation drive (money that grows the fewer ads you run) |
-| Social network | Learn the social graph → Groups | Network effect · People you may know (each Share-buttons level adds site-wide traffic) |
-| Microblog | Learn hashtags → Trending topics | Live-posting (on fire, keystrokes bring visitors) · Fail whale (outages cost no visitors and end in a spike) |
-| Live streaming | Learn live video → Emotes & raids | Live events · Subs & tips (subscribers) |
-| News & viral | Learn headline testing → Listicles | Clickbait (spikes ×2 as often, ads ×1.5 during them) · Breaking news (a long on-fire streak triggers a spike) |
-| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×2) · Fake-review filter (spam wins add levels) |
-| Online shop | Learn the shopping cart → Product listings | Customers also bought (breadth pays) · Black Friday (a sale event every few minutes) |
-| Stories app | Learn vertical video → Filters & lenses | Disappearing stories (story traffic decays unless you keep typing) · Influencers (sponsor offers 2× as often) |
-| Streaming service | Learn adaptive streaming → Originals | Subscriptions · Binge autoplay (load time stops mattering) · Password crackdown (one-time: traffic into subscribers) |
-| Newsletter platform | Learn email deliverability → Paid newsletters | Writers' fund (typing publishes, subscribers) · Tracking pixels (ads pay more, fines bigger) |
-| Marketplace | Learn escrow payments → Seller dashboards | Take rate (a share of what you spend comes back) · Surge pricing (revenue per visitor ×3 during spikes) |
-| Professional network | Learn recruiting tools → Job board | Endorsements (+money for every specialization you've held) · Premium messages (subscribers) |
-| Chat community | Learn bots & webhooks → Servers | Server boosts (network effect) · Mod bots (moderation economy) |
-| Short-video feed | Learn recommendation models → Duets & remixes | The algorithm (biggest feature ×3, the rest ×0.7) · Infinite scroll (load time stops mattering) |
-| AI answer engine | Learn retrieval → Sources panel | Answer, don't link (AI answers pay you instead of taking clicks) · Sponsored answers |
-| AI studio | Learn diffusion models → Prompt gallery | GPU farm (compute: +1 level to every feature every 20 s while it burns money) · Credits (subscribers) |
-| AI companion | Learn fine-tuning → Characters | It remembers you (subscribers that almost never leave) · Talks while you sleep (hires type ×2) |
-| Agent store | Learn tool calling → Agent listings | Agents buy for you (auto-buyer) |
+| Blog network | Learn multi-user blogs → Member blogs | Write every day (every 300 keystrokes, +1 Blog level) · The long tail (member blogs +5% a minute, up to ×3) |
+| Photo sharing | Learn thumbnails & EXIF → Groups & pools | Users upload (the gallery levels itself every 30 s) · Explore page (busiest feature ×1.3) |
+| Video site | Learn Flash video → Channels | Going viral (spikes ×2 as often, every visitor pays ×2 during one) · Embed anywhere (channels ×2, all traffic ×1.1) |
+| Forum community | Learn mod tools → Subforums | Volunteer mods (spam clears itself, every cleanup +2 Forum levels) · Post counts (on fire: forum and subforums ×2) |
+| Wiki | Learn wiki markup → Talk pages | Edit-a-thon (the era's smallest feature levels itself every 20 s) · Donation drive (donations per visitor, 25% less per ad) |
+| Social network | Learn the social graph → Groups | Network effect (×1.15 per doubling, up to ×2.5) · People you may know (+0.5% traffic per Share-buttons level) |
+| Microblog | Learn hashtags → Trending topics | Live-posting (on fire: all traffic ×1.5) · Fail whale (stays up to ×1.5 the load, trending topics ×3 in a spike) |
+| Live streaming | Learn live video → Emotes & raids | Live events (every 2 min: traffic ×2 for 30 s) · Subs and tips (25% subscribe) |
+| News & viral | Learn headline testing → Listicles | Clickbait (spikes ×2 as often, pay ×1.5 during one) · Breaking news (catching fire starts a spike) |
+| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×2) · Fake-review filter (each spam cleanup, +3 Check-ins levels) |
+| Online shop (2011) | Learn the shopping cart → Product listings | Customers also bought (+0.2% pay per feature level) · Black Friday (every 5 min: ads ×3 for 45 s) |
+| Stories app | Learn vertical video → Filters & lenses | Disappearing stories (filters ×3 while you type, ×0.5 when you stop) · Influencers (offers ×2 as often) |
+| Streaming service | Learn adaptive streaming → Originals | Subscriptions (40% subscribe) · Binge autoplay (load time ×0.5) |
+| Newsletter platform | Learn email deliverability → Paid newsletters | Writers' fund (every 250 keystrokes +1 Paid newsletters, 15% subscribe) · Tracking pixels (ads ×1.5, fines ×2) |
+| Marketplace | Learn escrow payments → Seller dashboards | Take rate (features cost ×0.85) · Surge pricing (every visitor pays ×3 in a spike) |
+| Professional network | Learn recruiting tools → Job board | Endorsements (ads +15% per specialization held) · Premium messages (25% subscribe) |
+| Chat community | Learn bots & webhooks → Servers | Server boosts (network effect) · Mod bots (a DDoS clears itself, every cleanup +2 Servers levels) |
+| Short-video feed | Learn video remixing → Duets & remixes | The algorithm (busiest feature ×3, the rest ×0.7) · Infinite scroll (load time ×0.4) |
+| AI answer engine | Learn citations → Sources panel | Answer, don't link (kept-away visitors pay 60%) · Sponsored answers (pay per visitor, but answers keep ×1.3 more away) |
+| AI studio | Learn style models → Prompt gallery | GPU farm (the smallest feature levels itself every 8 s, upkeep 25%) · Credits (30% subscribe) |
+| AI companion | Learn fine-tuning → Characters | It remembers you (20% subscribe, churn ×0.1) · Talks while you sleep (hires type ×2) |
+| Agent store | Learn tool calling → Agent listings | Agents buy for you (best-value level every 5 s) · Tool-use fees (+0.15% pay per feature level) |
+
+Changed from the plan while building: Password crackdown was dropped (a one-off conversion with nothing to keep doing), Fail whale became overload tolerance plus a spike bonus, the three 2024 skills were renamed so they don't repeat 2024's own (retrieval, recommendation and diffusion skills already exist), and the agent store got a second upgrade. The numbers are first guesses: PR 4's path-chasing sim player tunes them. Today's sim bot scores purchases by their immediate income, so it never buys the boosts that pay over time; it learns to in PR 4.
 
 **The 2000 crash leaves the test build.** Its content moves, still from run 3:
 
@@ -332,7 +335,7 @@ The classic game is unchanged.
 **Order of work:**
 
 1. **The tree engine and the Specialize tab:** run gating, lineage, one per era, the choice screen, reveal and collection, Serial founder, crash removal.
-2. **The new mechanics and every specialization's items.**
+2. **The new mechanics and every specialization's items.** (built)
 3. **Pages for every specialization**, and combined pages for stacks.
 4. **Balance:** a sim player that chases a path, then a design sweep of the pages and their combos.
 

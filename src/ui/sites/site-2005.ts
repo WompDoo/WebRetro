@@ -1,4 +1,4 @@
-import { getActiveUpgradeIds } from '../../engine';
+import { getActiveUpgradeIds, SPECIALIZATION_FEATURE_IDS } from '../../engine';
 import type { FeatureId, GameState, UpgradeId } from '../../engine';
 import { escapeHtml, pickCyclic } from '../dom';
 import { BANNER_ADS, CONTEXTUAL_TEXT_ADS, TEXT_ADS } from '../presentation';
@@ -16,10 +16,10 @@ import type { HomepageContent, HomepageSkills } from './site-1997';
  * build in those eras still needs a place on it: the language switcher in the header, the rest at the top and the
  * bottom of the main column.
  */
-const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat'];
+const WEB2_MAIN_FEATURES: readonly FeatureId[] = ['stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat', ...SPECIALIZATION_FEATURE_IDS];
 const WEB2_SIDEBAR_FEATURES: readonly FeatureId[] = ['social-login', 'deal-of-the-day', 'share-buttons', 'hit-counter', 'under-construction', 'guestbook', 'tag-cloud', 'midi-player', 'custom-cursor', 'webring'];
 const LEGACY_SIDEBAR_FEATURES: readonly FeatureId[] = ['midi-player', 'hit-counter', 'custom-cursor', 'webring', 'tag-cloud', 'share-buttons', 'social-login'];
-const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat', 'deal-of-the-day', 'under-construction', 'guestbook'];
+const LEGACY_MAIN_FEATURES: readonly FeatureId[] = ['language-switcher', 'stories', 'flash-intro', 'one-pager', 'video-player', 'blog', 'activity-feed', 'comments', 'forum', 'wiki', 'photo-gallery', 'map-mashup', 'pricing-table', 'newsletter', 'community-chat', 'deal-of-the-day', 'under-construction', 'guestbook', ...SPECIALIZATION_FEATURE_IDS];
 const NAV_ITEMS: readonly string[] = ['Home', 'Blog', 'Tags', 'About'];
 const STANDARDS_BADGES: readonly string[] = ['W3C XHTML 1.0', 'W3C CSS', 'RSS 2.0', 'PHP powered', 'MySQL', 'Get the fox browser'];
 

@@ -6,6 +6,7 @@ import { SITE_CONTENT } from '../site-content';
 import type { MessageCopy } from '../presentation';
 import { describeNextCursorTier, findShownCursorTier, toCursorImage } from '../cursors';
 import { renderInfectionOverlay } from './infections';
+import { SPECIALIZATION_FEATURE_RENDERERS } from './specialization-features';
 import { formatMinutesAndSeconds, heading, is1997, levelOf, siteBrand, toWholeSeconds } from './site-context';
 import type { FeatureRenderer, SiteContext } from './site-context';
 
@@ -614,6 +615,7 @@ const FEATURE_RENDERERS: Readonly<Record<FeatureId, FeatureRenderer>> = {
   'deal-of-the-day': renderDealOfTheDay,
   'community-chat': renderCommunityChat,
   'agent-store': renderAgentStore,
+  ...SPECIALIZATION_FEATURE_RENDERERS,
 };
 
 interface DeadFeatureCopy {

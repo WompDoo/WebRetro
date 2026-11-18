@@ -20,9 +20,10 @@ import type { ClientRenderingCost, PriceBreak } from './content/frameworks';
 import { getEraHostingTiers } from './content/hosting';
 import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades';
 import { listPerkEffects } from './content/perks';
-import { calculateBuffFactor } from './buffs';
+import { calculateBuffFactor, isBuffActive } from './buffs';
+import { findItemOwner } from './content/specialization-items';
 import { isCrashFolded, isEraInRun } from './era-chain';
-import { listSpecializationEffects } from './specializations';
+import { areSpecializationsOn, listSpecializationEffects } from './specializations';
 import type {
   DefenseDefinition,
   DefenseId,
@@ -33,6 +34,8 @@ import type {
   FrameworkId,
   InfectionKind,
   GameState,
+  SiteMoment,
+  SpecializationId,
   HostingTierDefinition,
   UpgradeEffect,
   UpgradeId,
@@ -139,6 +142,8 @@ interface EffectSummary {
   /** How long until each kind of infection clears up by itself, where something does that. */
   readonly autoCleanAfterMs: Readonly<Partial<Record<InfectionKind, number>>>;
   readonly kinds: ReadonlySet<UpgradeEffect['kind']>;
+  /** Every effect by kind, for the specializations' mechanics: each reads its own few. */
+  readonly byKind: ReadonlyMap<UpgradeEffect['kind'], readonly UpgradeEffect[]>;
 }
 
 function isFactorEffect(effect: UpgradeEffect): effect is FactorEffect {
@@ -215,7 +220,9 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     keystrokeRevenueShare: sumAll(effects.flatMap((effect) => (effect.kind === 'keystroke-revenue-share' ? [effect.share] : []))),
     typingFactor: multiplyTypingFactors(thisEraEffects),
     typoReduction: sumTypoReductions(thisEraEffects),
-    autoKeystrokesPerSecond: sumAll(thisEraEffects.flatMap((effect) => (effect.kind === 'auto-keystrokes' ? [effect.perSecond] : []))),
+    autoKeystrokesPerSecond:
+      sumAll(thisEraEffects.flatMap((effect) => (effect.kind === 'auto-keystrokes' ? [effect.perSecond] : []))) *
+      multiplyAll(effects.flatMap((effect) => (effect.kind === 'auto-keystroke-multiplier' ? [effect.factor] : []))),
     upkeepShare: sumAll(effects.flatMap((effect) => (effect.kind === 'revenue-upkeep-share' ? [effect.share] : []))),
     quickFixWindowFactor: multiplyEffectFactors(effects, 'quick-fix-window-multiplier'),
     overloadTolerance: multiplyEffectFactors(effects, 'overload-tolerance-multiplier'),
@@ -224,7 +231,29 @@ function summarizeEffects(effects: readonly UpgradeEffect[], thisEraEffects: rea
     directRevenuePerVisitor: sumAll(effects.flatMap((effect) => (effect.kind === 'direct-revenue-per-visitor' ? [effect.amount] : []))),
     autoCleanAfterMs: collectAutoCleans(effects),
     kinds: new Set(effects.map((effect) => effect.kind)),
+    byKind: groupByKind(effects),
   };
+}
+
+function groupByKind(effects: readonly UpgradeEffect[]): ReadonlyMap<UpgradeEffect['kind'], readonly UpgradeEffect[]> {
+  return effects.reduce((groups, effect) => groups.set(effect.kind, [...(groups.get(effect.kind) ?? []), effect]), new Map<UpgradeEffect['kind'], readonly UpgradeEffect[]>());
+}
+
+type EffectOfKind<K extends UpgradeEffect['kind']> = Extract<UpgradeEffect, { readonly kind: K }>;
+
+const NO_EFFECTS: readonly UpgradeEffect[] = [];
+
+/**
+ * Every working effect of one kind: what the site has bought, its perks and its specializations. The summary groups
+ * them by kind, so every effect in a group is of that kind: no filtering on the way out, read as often as it is.
+ */
+export function listEffectsOfKind<K extends UpgradeEffect['kind']>(state: GameState, kind: K): readonly EffectOfKind<K>[] {
+  return (getEffectSummary(state).byKind.get(kind) ?? NO_EFFECTS) as readonly EffectOfKind<K>[];
+}
+
+function hasEffectOfKinds(state: GameState, kinds: readonly UpgradeEffect['kind'][]): boolean {
+  const present = getEffectSummary(state).kinds;
+  return kinds.some((kind) => present.has(kind));
 }
 
 type PerkLevels = GameState['legacyPerkLevels'];
@@ -268,11 +297,17 @@ function summaryKey(state: GameState): string {
   return `${state.eraId}|${state.runNumber}|${state.edition}|${state.specializationIds.join(',')}`;
 }
 
-function getEffectSummary(state: GameState): EffectSummary {
+function lookUpEffectSummary(state: GameState): EffectSummary {
   const byEra = findSummariesOf(state);
   const cached = byEra.get(summaryKey(state));
   return cached === undefined ? summarizePurchases(state, byEra) : cached;
 }
+
+/**
+ * Read for every feature, many times per state: remembered per state as well, so the second read is one lookup instead
+ * of building the era's key again. The specializations' mechanics read it a few times per feature.
+ */
+const getEffectSummary = memoizeByState(lookUpEffectSummary);
 
 function readFactor(state: GameState, kind: FactorKind): number {
   return getEffectSummary(state).factors[kind];
@@ -352,7 +387,149 @@ function getDefenseTrafficFactors(state: GameState, featureId: FeatureId | null)
 
 function calculateFeatureUpgradeFactor(state: GameState, featureId: FeatureId): number {
   const upgradeFactor = getEffectSummary(state).featureFactors.get(featureId) ?? NEUTRAL_FACTOR;
-  return upgradeFactor * multiplyAll(getDefenseTrafficFactors(state, featureId));
+  return upgradeFactor * multiplyAll(getDefenseTrafficFactors(state, featureId)) * calculateFeatureMomentFactor(state, featureId);
+}
+
+// ---------- Specializations: what holding one opens, and the mechanics only they have ----------
+
+/** The site holds this specialization: chosen in its era, kept for the rest of the run. */
+function holdsSpecialization(state: GameState, specializationId: SpecializationId): boolean {
+  return areSpecializationsOn(state) && state.specializationIds.includes(specializationId);
+}
+
+/** A specialization's own item is there only while the site holds that specialization; everything else always is. */
+export function isItemOfHeldSpecialization(state: GameState, itemId: FeatureId | UpgradeId): boolean {
+  const owner = findItemOwner(itemId);
+  return owner === null || holdsSpecialization(state, owner);
+}
+
+/** Still typing: a keystroke within the last two seconds. */
+export const TYPING_MOMENT_MS = 2_000;
+const MS_PER_MINUTE = 60_000;
+
+const MOMENT_CHECKS: Readonly<Record<SiteMoment, (state: GameState) => boolean>> = {
+  'on-fire': (state) => isBuffActive(state, 'on-fire'),
+  typing: (state) => state.msSinceKeystroke < TYPING_MOMENT_MS,
+  idle: (state) => state.msSinceKeystroke >= TYPING_MOMENT_MS,
+  spike: (state) => state.trafficSpikeRemainingMs > 0,
+};
+
+export function isMomentNow(state: GameState, moment: SiteMoment): boolean {
+  return MOMENT_CHECKS[moment](state);
+}
+
+function calculateMomentFactor(state: GameState, effect: { readonly factor: number; readonly moment: SiteMoment }): number {
+  return isMomentNow(state, effect.moment) ? effect.factor : NEUTRAL_FACTOR;
+}
+
+/** The long tail: a share more for every minute of the era, up to the cap. */
+function calculateGrowthFactor(state: GameState, effect: EffectOfKind<'traffic-growth'>): number {
+  return Math.min(effect.cap, NEUTRAL_FACTOR + effect.perMinute * (state.eraStats.elapsedMs / MS_PER_MINUTE));
+}
+
+const FEATURE_MOMENT_KINDS: readonly UpgradeEffect['kind'][] = ['moment-traffic', 'traffic-growth'];
+
+/** What the moment and the era's long tail do to one feature's traffic. Most sites have neither: a quick no. */
+function calculateFeatureMomentFactor(state: GameState, featureId: FeatureId): number {
+  if (!hasEffectOfKinds(state, FEATURE_MOMENT_KINDS)) return NEUTRAL_FACTOR;
+  const moments = listEffectsOfKind(state, 'moment-traffic').filter((effect) => effect.featureId === featureId);
+  const growth = listEffectsOfKind(state, 'traffic-growth').filter((effect) => effect.featureId === featureId);
+  return multiplyAll([...moments.map((effect) => calculateMomentFactor(state, effect)), ...growth.map((effect) => calculateGrowthFactor(state, effect))]);
+}
+
+/** The algorithm's favourite: the feature that brings the most visitors before it picks. Null without an algorithm. */
+const findAlgorithmFavourite = memoizeByState((state: GameState): FeatureId | null => {
+  if (listEffectsOfKind(state, 'algorithm').length === 0) return null;
+  const traffic = FEATURE_IDS.map((featureId) => ({ featureId, visitors: calculateRawFeatureVisitorsPerSecond(state, featureId) }));
+  return traffic.reduce((best, candidate) => (candidate.visitors > best.visitors ? candidate : best)).featureId;
+});
+
+function calculateAlgorithmFactor(state: GameState, featureId: FeatureId): number {
+  const favourite = findAlgorithmFavourite(state);
+  if (favourite === null) return NEUTRAL_FACTOR;
+  return multiplyAll(listEffectsOfKind(state, 'algorithm').map((effect) => (featureId === favourite ? effect.topFactor : effect.restFactor)));
+}
+
+/** Each doubling of the site since the era began: all traffic grows again, up to the cap. */
+function calculateNetworkFactor(state: GameState, effect: EffectOfKind<'network-effect'>): number {
+  const anchor = state.eraStats.startBaseVisitors;
+  if (anchor <= 0) return NEUTRAL_FACTOR;
+  const doublings = Math.max(0, Math.log2(calculateBaseVisitorsPerSecond(state) / anchor));
+  return Math.min(effect.cap, (NEUTRAL_FACTOR + effect.perDoubling) ** doublings);
+}
+
+function calculateLevelTrafficFactor(state: GameState, effect: EffectOfKind<'traffic-per-level'>): number {
+  const levels = isFeatureOnPage(state, effect.sourceFeatureId) ? state.featureLevels[effect.sourceFeatureId] : 0;
+  return NEUTRAL_FACTOR + effect.perLevel * levels;
+}
+
+/** What the site's specializations do to all traffic: its network, the levels it counts, the moment. */
+export function calculateSpecializationTrafficFactor(state: GameState): number {
+  const network = listEffectsOfKind(state, 'network-effect').map((effect) => calculateNetworkFactor(state, effect));
+  const levels = listEffectsOfKind(state, 'traffic-per-level').map((effect) => calculateLevelTrafficFactor(state, effect));
+  const moments = listEffectsOfKind(state, 'moment-traffic').filter((effect) => effect.featureId === null);
+  return multiplyAll([...network, ...levels, ...moments.map((effect) => calculateMomentFactor(state, effect))]);
+}
+
+/** Every level of every feature on the page. */
+function countLevelsOnPage(state: GameState): number {
+  return sumAll(FEATURE_IDS.filter((featureId) => isFeatureOnPage(state, featureId)).map((featureId) => state.featureLevels[featureId]));
+}
+
+function calculatePhoneRevenueFactor(state: GameState, effect: EffectOfKind<'phone-revenue-multiplier'>): number {
+  return NEUTRAL_FACTOR + calculatePhoneShareOfDemand(state) * (effect.factor - NEUTRAL_FACTOR);
+}
+
+/** What the specializations do to every visitor's pay: the moment, phones, the breadth of the site. */
+function calculateSpecializationRevenueFactor(state: GameState): number {
+  const moments = listEffectsOfKind(state, 'moment-revenue').map((effect) => calculateMomentFactor(state, effect));
+  const phones = listEffectsOfKind(state, 'phone-revenue-multiplier').map((effect) => calculatePhoneRevenueFactor(state, effect));
+  const breadth = listEffectsOfKind(state, 'revenue-per-feature-level').map((effect) => NEUTRAL_FACTOR + effect.share * countLevelsOnPage(state));
+  return multiplyAll([...moments, ...phones, ...breadth]);
+}
+
+/** Endorsements: ads pay more for every specialization the site has held. */
+function calculateEndorsementFactor(state: GameState): number {
+  return multiplyAll(listEffectsOfKind(state, 'ad-value-per-specialization').map((effect) => NEUTRAL_FACTOR + effect.share * state.specializationIds.length));
+}
+
+/** Donations, less a share for every ad on the page: a site with banners looks like it doesn't need the money. */
+function calculateDonationsPerVisitor(state: GameState): number {
+  return sumAll(listEffectsOfKind(state, 'donations').map((effect) => effect.amount * Math.max(0, NEUTRAL_FACTOR - effect.lostSharePerAd * state.adCount)));
+}
+
+/** Answer, don't link: the visitors AI answers keep away still pay a share of what they would have. */
+function calculateAiAnswerRevenuePerSecond(state: GameState): number {
+  const share = sumAll(listEffectsOfKind(state, 'ai-answers-pay').map((effect) => effect.share));
+  const aiShare = Math.min(calculateAiAnswerShare(state), MAX_AI_ANSWER_SHARE);
+  const keptAway = (calculateVisitorsPerSecond(state) * aiShare) / (NEUTRAL_FACTOR - aiShare);
+  return keptAway * calculateRevenuePerVisitor(state) * share;
+}
+
+/** However many answers an AI gives, some people still click: never more than this share is kept away. */
+const MAX_AI_ANSWER_SHARE = 0.9;
+
+/** A subscriber pays this many ad views' worth a second: more than a visitor's banners do, and ads or not. */
+export const SUBSCRIPTION_PRICE_IN_AD_VIEWS = 3;
+
+/** What subscribers would pay a second if every visitor who would subscribe had: the pool grows towards it. */
+export function calculateSubscriptionTarget(state: GameState): number {
+  const share = sumAll(listEffectsOfKind(state, 'subscribers').map((effect) => effect.share));
+  if (share === 0) return 0;
+  const era = ERAS_BY_ID[state.eraId];
+  return calculateUsualVisitorsPerSecond(state) * share * SUBSCRIPTION_PRICE_IN_AD_VIEWS * (era.adValuePerVisitor / era.revenuePace);
+}
+
+export function calculateSubscriberChurnFactor(state: GameState): number {
+  return multiplyAll(listEffectsOfKind(state, 'subscriber-churn-multiplier').map((effect) => effect.factor));
+}
+
+export function calculateSpikeFrequencyFactor(state: GameState): number {
+  return multiplyAll(listEffectsOfKind(state, 'spike-frequency-multiplier').map((effect) => effect.factor));
+}
+
+export function calculateOfferFrequencyFactor(state: GameState): number {
+  return multiplyAll(listEffectsOfKind(state, 'offer-frequency-multiplier').map((effect) => effect.factor));
 }
 
 function calculateSynergyFactor(state: GameState, definition: FeatureDefinition): number {
@@ -455,9 +632,28 @@ function findEraBefore(eraId: EraId): EraId {
   return ERA_IDS[Math.max(0, getEraIndex(eraId) - 1)] ?? eraId;
 }
 
+/** Up and running: not infected, not switched off. */
+function isFeatureWorking(state: GameState, featureId: FeatureId): boolean {
+  return !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId);
+}
+
+/** Not left behind by its era: its plugin still runs, and it hasn't retired. */
+function isFeatureCurrent(state: GameState, featureId: FeatureId): boolean {
+  return !isFeaturePluginDead(state, featureId) && !isFeatureRetired(state, featureId);
+}
+
+/** Built, working and current. Most features aren't built at any one time: the level is checked first, and cheapest. */
+function isFeatureProducing(state: GameState, featureId: FeatureId): boolean {
+  return state.featureLevels[featureId] > 0 && isFeatureWorking(state, featureId) && isFeatureCurrent(state, featureId);
+}
+
+/** Visitors a feature brings before the algorithm picks its favourite. */
+function calculateRawFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
+  return isFeatureProducing(state, featureId) ? calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] : NO_TRAFFIC;
+}
+
 export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
-  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId) && !isFeatureRetired(state, featureId);
-  return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * (isProducing ? NEUTRAL_FACTOR : NO_TRAFFIC);
+  return calculateRawFeatureVisitorsPerSecond(state, featureId) * calculateAlgorithmFactor(state, featureId);
 }
 
 export const calculateBaseVisitorsPerSecond = memoizeByState((state: GameState): number => {
@@ -584,6 +780,7 @@ export const calculateDemandVisitorsPerSecond = memoizeByState((state: GameState
     calculateMobileTrafficFactor(state) *
     calculateRenderingTrafficFactor(state) *
     calculateSecurityTrafficFactor(state) *
+    calculateSpecializationTrafficFactor(state) *
     (NEUTRAL_FACTOR - calculateAiAnswerShare(state))
   );
 });
@@ -725,16 +922,17 @@ export function calculateAdValuePerAd(state: GameState): number {
   const defenseFactors = getEnabledDefenses(state).map((defense) => defense.adValueFactor);
   const era = ERAS_BY_ID[state.eraId];
   const consentFactor = CONSENT_BANNERS_BY_ID[state.consentBanner].adValueFactor;
-  return (era.adValuePerVisitor * readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors) * consentFactor * calculateBuffFactor(state, 'ad-value')) / era.revenuePace;
+  const factors = readFactor(state, 'ad-value-multiplier') * multiplyAll(defenseFactors) * consentFactor * calculateEndorsementFactor(state);
+  return (era.adValuePerVisitor * factors * calculateBuffFactor(state, 'ad-value')) / era.revenuePace;
 }
 
 /** Money a visitor brings without an ad: the 2000 crash's donate button and affiliate links. At the era's pace. */
 export function calculateDirectRevenuePerVisitor(state: GameState): number {
-  return getEffectSummary(state).directRevenuePerVisitor / ERAS_BY_ID[state.eraId].revenuePace;
+  return (getEffectSummary(state).directRevenuePerVisitor + calculateDonationsPerVisitor(state)) / ERAS_BY_ID[state.eraId].revenuePace;
 }
 
 export function calculateRevenuePerVisitor(state: GameState): number {
-  return state.adCount * calculateAdValuePerAd(state) + calculateDirectRevenuePerVisitor(state);
+  return (state.adCount * calculateAdValuePerAd(state) + calculateDirectRevenuePerVisitor(state)) * calculateSpecializationRevenueFactor(state);
 }
 
 /**
@@ -812,12 +1010,14 @@ function calculateSecurityTrafficFactor(state: GameState): number {
   return isMarkedNotSecure(state) ? NOT_SECURE_TRAFFIC_FACTOR : NEUTRAL_FACTOR;
 }
 
+/**
+ * What the site brings in a second: its visitors' pay, what AI answers pay for the visitors they keep, and the
+ * subscribers. Running costs come off all of it.
+ */
 export const calculateNetRevenuePerSecond = memoizeByState((state: GameState): number => {
-  return (
-    calculateVisitorsPerSecond(state) *
-    calculateRevenuePerVisitor(state) *
-    (NEUTRAL_FACTOR - calculateUpkeepShare(state))
-  );
+  const visitorRevenue = calculateVisitorsPerSecond(state) * calculateRevenuePerVisitor(state);
+  const grossRevenue = visitorRevenue + calculateAiAnswerRevenuePerSecond(state) + state.subscriptionRevenuePerSecond;
+  return grossRevenue * (NEUTRAL_FACTOR - calculateUpkeepShare(state));
 });
 
 export const calculateEconomySnapshot = memoizeByState((state: GameState): EconomySnapshot => {
@@ -874,7 +1074,7 @@ export function isSkillLearned(state: GameState, skillId: UpgradeId | null): boo
 /** The feature's era has arrived and you've learned the skill it needs. */
 /** A later run's feature doesn't exist yet in the run before it. */
 export function isFeatureInThisRun(state: GameState, featureId: FeatureId): boolean {
-  return state.runNumber >= getFeatureFirstRun(featureId);
+  return state.runNumber >= getFeatureFirstRun(featureId) && isItemOfHeldSpecialization(state, featureId);
 }
 
 function isFeatureOfThisTime(state: GameState, featureId: FeatureId): boolean {
@@ -906,7 +1106,7 @@ function isRequiredFeatureOwned(state: GameState, upgradeId: UpgradeId): boolean
 }
 
 function isUpgradeCurrent(state: GameState, upgradeId: UpgradeId): boolean {
-  return isFrameworkUpgradeOpen(state, upgradeId) && !isUpgradeRetired(state, upgradeId);
+  return isFrameworkUpgradeOpen(state, upgradeId) && !isUpgradeRetired(state, upgradeId) && isItemOfHeldSpecialization(state, upgradeId);
 }
 
 function isUpgradeOnOffer(state: GameState, upgradeId: UpgradeId): boolean {

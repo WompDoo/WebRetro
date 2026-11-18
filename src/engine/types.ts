@@ -39,7 +39,33 @@ export type FeatureId =
   | 'wiki'
   | 'deal-of-the-day'
   | 'community-chat'
-  | 'agent-store';
+  | 'agent-store'
+  | SpecializationFeatureId;
+
+/** Each specialization's own feature: built only while you hold that specialization. */
+export type SpecializationFeatureId =
+  | 'member-blogs'
+  | 'photo-groups'
+  | 'channels'
+  | 'subforums'
+  | 'talk-pages'
+  | 'groups'
+  | 'trending-topics'
+  | 'emotes-and-raids'
+  | 'listicles'
+  | 'check-ins'
+  | 'product-listings'
+  | 'filters-and-lenses'
+  | 'originals'
+  | 'paid-newsletters'
+  | 'seller-dashboards'
+  | 'job-board'
+  | 'servers'
+  | 'duets-and-remixes'
+  | 'sources-panel'
+  | 'prompt-gallery'
+  | 'characters'
+  | 'agent-listings';
 
 export type UpgradeId =
   | 'img-tag'
@@ -164,7 +190,77 @@ export type UpgradeId =
   | 'hire-junior-developer'
   | 'hire-gig-freelancer'
   | 'hire-bootcamp-team'
-  | 'hire-ai-agent';
+  | 'hire-ai-agent'
+  | SpecializationUpgradeId;
+
+/** Each specialization's own skill and boosts: offered only while you hold that specialization. */
+export type SpecializationUpgradeId =
+  | 'learn-multi-user-blogs'
+  | 'write-every-day'
+  | 'long-tail'
+  | 'learn-exif'
+  | 'users-upload'
+  | 'explore-page'
+  | 'learn-flash-video'
+  | 'going-viral'
+  | 'embed-anywhere'
+  | 'learn-mod-tools'
+  | 'volunteer-mods'
+  | 'post-counts'
+  | 'learn-wiki-markup'
+  | 'edit-a-thon'
+  | 'donation-drive'
+  | 'learn-social-graph'
+  | 'network-effect'
+  | 'people-you-may-know'
+  | 'learn-hashtags'
+  | 'live-posting'
+  | 'fail-whale'
+  | 'learn-live-video'
+  | 'live-events'
+  | 'subs-and-tips'
+  | 'learn-headline-testing'
+  | 'clickbait'
+  | 'breaking-news'
+  | 'learn-geolocation'
+  | 'elite-reviewers'
+  | 'fake-review-filter'
+  | 'learn-shopping-cart'
+  | 'customers-also-bought'
+  | 'black-friday'
+  | 'learn-vertical-video'
+  | 'disappearing-stories'
+  | 'influencers'
+  | 'learn-adaptive-streaming'
+  | 'subscriptions'
+  | 'binge-autoplay'
+  | 'learn-deliverability'
+  | 'writers-fund'
+  | 'tracking-pixels'
+  | 'learn-escrow'
+  | 'take-rate'
+  | 'surge-pricing'
+  | 'learn-recruiting-tools'
+  | 'endorsements'
+  | 'premium-messages'
+  | 'learn-bots-and-webhooks'
+  | 'server-boosts'
+  | 'mod-bots'
+  | 'learn-remixing'
+  | 'the-algorithm'
+  | 'infinite-scroll'
+  | 'learn-citations'
+  | 'answer-dont-link'
+  | 'sponsored-answers'
+  | 'learn-style-models'
+  | 'gpu-farm'
+  | 'credits'
+  | 'learn-fine-tuning'
+  | 'it-remembers-you'
+  | 'talks-while-you-sleep'
+  | 'learn-tool-calling'
+  | 'agents-buy-for-you'
+  | 'tool-use-fees';
 
 /** Skills are what the developer learns: they unlock features and change the page. Boosts are multipliers. */
 /** Skills are learned, boosts are bought, ops are how you run the site: they live in the Ops tab. */
@@ -292,7 +388,55 @@ export type UpgradeEffect =
    * Someone else types for you: this many keystrokes a second, paid like yours (typos included, the on-fire bonus
    * not), offline too. Era-bound like typing skills: each era hires its own help.
    */
-  | { readonly kind: 'auto-keystrokes'; readonly perSecond: number };
+  | { readonly kind: 'auto-keystrokes'; readonly perSecond: number }
+  // ---------- Specializations' own mechanics: nothing else in the game does these. ----------
+  /** Users build it: every so often a feature gains a level for free. Null: whichever built feature has the fewest. */
+  | { readonly kind: 'auto-level'; readonly featureId: FeatureId | null; readonly everyMs: number }
+  /** Typing publishes: every so many of your keystrokes, the feature gains a level. */
+  | { readonly kind: 'keystrokes-level'; readonly featureId: FeatureId; readonly keystrokes: number }
+  /** The long tail: the feature's traffic grows minute by minute through the era, up to a cap. */
+  | { readonly kind: 'traffic-growth'; readonly featureId: FeatureId; readonly perMinute: number; readonly cap: number }
+  /** Network effect: all traffic grows with each doubling of the site since the era began, up to a cap. */
+  | { readonly kind: 'network-effect'; readonly perDoubling: number; readonly cap: number }
+  /** Every level of one feature adds a share to all traffic. */
+  | { readonly kind: 'traffic-per-level'; readonly sourceFeatureId: FeatureId; readonly perLevel: number }
+  /** The algorithm: the feature that brings the most visitors gets more, every other one gets less. */
+  | { readonly kind: 'algorithm'; readonly topFactor: number; readonly restFactor: number }
+  /** Traffic that depends on the moment: on fire, typing, idle, in a spike. Null: all traffic. */
+  | { readonly kind: 'moment-traffic'; readonly featureId: FeatureId | null; readonly factor: number; readonly moment: SiteMoment }
+  /** Revenue per visitor that depends on the moment. */
+  | { readonly kind: 'moment-revenue'; readonly factor: number; readonly moment: SiteMoment }
+  /** Traffic spikes come this many times as often. */
+  | { readonly kind: 'spike-frequency-multiplier'; readonly factor: number }
+  /** Catching fire starts a traffic spike, if none is running. */
+  | { readonly kind: 'spike-on-fire' }
+  /** Moderation pays: each infection of this kind cleaned up (null: any kind) gives the feature levels. */
+  | { readonly kind: 'levels-per-clean'; readonly infection: InfectionKind | null; readonly featureId: FeatureId; readonly levels: number }
+  /** Donations: money per visitor, less a share for every ad on the page. */
+  | { readonly kind: 'donations'; readonly amount: number; readonly lostSharePerAd: number }
+  /** Subscribers: this share of visitors pays every second, like an ad would. The pool grows slowly and churns slowly. */
+  | { readonly kind: 'subscribers'; readonly share: number }
+  /** Subscribers leave this many times as fast. */
+  | { readonly kind: 'subscriber-churn-multiplier'; readonly factor: number }
+  /** Every so often, a buff starts by itself: a live event, a sale. */
+  | { readonly kind: 'scheduled-buff'; readonly buffId: BuffId; readonly everyMs: number }
+  /** Phone visitors pay this many times as much. */
+  | { readonly kind: 'phone-revenue-multiplier'; readonly factor: number }
+  /** Breadth pays: revenue per visitor grows with every feature level on the page. */
+  | { readonly kind: 'revenue-per-feature-level'; readonly share: number }
+  /** Ads pay more for every specialization the site has held. */
+  | { readonly kind: 'ad-value-per-specialization'; readonly share: number }
+  /** Offers turn up this many times as often. */
+  | { readonly kind: 'offer-frequency-multiplier'; readonly factor: number }
+  /** The visitors AI answers keep away pay you this share of what they would have paid. */
+  | { readonly kind: 'ai-answers-pay'; readonly share: number }
+  /** Hired help types this many times as fast. */
+  | { readonly kind: 'auto-keystroke-multiplier'; readonly factor: number }
+  /** Agents buy for you: every so often, the cheapest feature level you can afford. */
+  | { readonly kind: 'auto-buyer'; readonly everyMs: number };
+
+/** A moment some specializations' traffic or revenue depends on. */
+export type SiteMoment = 'on-fire' | 'typing' | 'idle' | 'spike';
 
 export interface UpgradeDefinition {
   readonly id: UpgradeId;
@@ -473,6 +617,10 @@ export interface EraStats {
   /** Everything spent this era, and what of it went into each feature: the lean a specialization asks for. */
   readonly spent: number;
   readonly spentByFeature: Readonly<Partial<Record<FeatureId, number>>>;
+  /** How long the era has run, offline too: what grows all era grows with this. */
+  readonly elapsedMs: number;
+  /** Visitors the features brought when the era began: what a network effect counts doublings from. */
+  readonly startBaseVisitors: number;
 }
 
 /** Behind the page: plain white, a whisper of your accent color, or warm cream. Each keeps every era readable. */
@@ -548,6 +696,10 @@ export interface GameState {
   /** Unlocked this run, each during its own era: a new run starts with none. */
   readonly unlockedSpecializationIds: readonly SpecializationId[];
   readonly eraStats: EraStats;
+  /** How far each specialization upgrade with a schedule is towards its next go: a level, a buff, a purchase. */
+  readonly itemClocksMs: Readonly<Partial<Record<UpgradeId, number>>>;
+  /** What subscribers pay a second. It follows the site slowly: up as it grows, down as subscribers churn. */
+  readonly subscriptionRevenuePerSecond: number;
   /** Null: the era's own look. The test build lets you pick; the classic game never does. */
   readonly siteColors: SiteColors | null;
 }
@@ -595,7 +747,7 @@ export interface GameStep {
 }
 
 /** A short boost: what it multiplies, by how much, for how long. */
-export type BuffId = 'on-fire' | 'quick-fix' | 'sponsor-slot' | 'launch-day';
+export type BuffId = 'on-fire' | 'quick-fix' | 'sponsor-slot' | 'launch-day' | 'live-event' | 'black-friday';
 export type BuffTarget = 'typing' | 'traffic' | 'ad-value';
 
 export interface BuffDefinition {

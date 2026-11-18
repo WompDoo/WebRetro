@@ -161,3 +161,7 @@
 /* The AI's next suggestion, greyed out after the caret: any key accepts the whole block. */
 .code-ghost { opacity: 0.45; font-style: italic; }
 .code-line.is-suggestion::before { content: ""; }
+
+/* ---------- Specializations' own features: a list that grows with the level (shared by every era's page) ---------- */
+.spec-feature-list { display: grid; gap: 4px; margin: 0 0 6px; padding: 0; list-style: none; }
+.spec-feature-list li { padding: 4px 8px; border: 1px solid rgba(127, 127, 127, 0.3); border-radius: 6px; font-size: 13.5px; overflow-wrap: anywhere; }

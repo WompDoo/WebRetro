@@ -32,6 +32,9 @@ import {
   calculateServerLoadPerVisitor,
   getHostingTier,
   getNextHostingTier,
+  BUFFS_BY_ID,
+  findItemOwner,
+  SPECIALIZATIONS_BY_ID,
   ERA_IDS,
   ERAS_BY_ID,
   FEATURE_IDS,
@@ -55,7 +58,24 @@ import {
   MS_PER_SECOND,
   UPGRADES_BY_ID,
 } from '../engine';
-import type { ConsentBanner, ConsentBannerDefinition, DefenseCounterMode, DefenseDefinition, DefenseId, EraId, FeatureId, GameState, HazardKind, SpecializationId, UpgradeEffect, UpgradeId } from '../engine';
+import type {
+  BuffId,
+  BuffTarget,
+  ConsentBanner,
+  ConsentBannerDefinition,
+  DefenseCounterMode,
+  DefenseDefinition,
+  DefenseId,
+  EraId,
+  FeatureId,
+  GameState,
+  HazardKind,
+  InfectionKind,
+  SiteMoment,
+  SpecializationId,
+  UpgradeEffect,
+  UpgradeId,
+} from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
 import { calculateSpecializeTabSignature, countChoosable, isSpecializeTabShown, renderSpecializeTab } from './render-specializations';
@@ -203,6 +223,14 @@ function renderScrollJackingSwitchIfShown(state: GameState, featureId: FeatureId
   return isScrollJackingSwitchShown(state, featureId) ? renderScrollJackingSwitch(view.isScrollJackingOn) : '';
 }
 
+/** A specialization's own item wears its icon: only sites like yours get this. */
+function renderSpecializationBadge(itemId: FeatureId | UpgradeId): string {
+  const owner = findItemOwner(itemId);
+  if (owner === null) return '';
+  const specialization = SPECIALIZATIONS_BY_ID[owner];
+  return ` <span class="spec-item-badge" title="Only for a ${escapeHtml(specialization.name.toLowerCase())}">${specialization.icon} ${escapeHtml(specialization.name)}</span>`;
+}
+
 function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView): string {
   const level = state.featureLevels[featureId];
   const isBuildable = isFeatureBuildable(state, featureId);
@@ -215,7 +243,7 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView
   return `<article class="shop-row${isBuildable ? '' : ' is-locked'}">
     <div class="shop-icon">${FEATURE_ICONS[featureId]}</div>
     <div class="shop-info">
-      <h3 class="shop-name">${escapeHtml(getFeatureDisplayName(featureId, state.eraId))} ${levelChip}</h3>
+      <h3 class="shop-name">${escapeHtml(getFeatureDisplayName(featureId, state.eraId))} ${levelChip}${renderSpecializationBadge(featureId)}</h3>
       <p class="shop-desc">${escapeHtml(FEATURES_BY_ID[featureId].description)}</p>
       ${effect}
       ${toggle}
@@ -275,7 +303,71 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'privacy-fine-multiplier': (effect) => `Privacy fines ${formatFactor(effect.factor)}`,
   'ai-answer-share-multiplier': (effect) => `Visitors kept away by AI answers ${formatFactor(effect.factor)}`,
   'direct-revenue-per-visitor': (effect, eraId) => `+$${(effect.amount / ERAS_BY_ID[eraId].revenuePace).toFixed(PER_VISITOR_DECIMALS)} per visitor, ads or not`,
+  'auto-level': (effect, eraId) => `Every ${formatSeconds(effect.everyMs)}, ${describeLevelTarget(effect.featureId, eraId)} gains a level, offline too`,
+  'keystrokes-level': (effect, eraId) => `Every ${effect.keystrokes} keystrokes you type: +1 ${getFeatureDisplayName(effect.featureId, eraId)} level`,
+  'traffic-growth': (effect, eraId) => `${getFeatureDisplayName(effect.featureId, eraId)} traffic +${formatPercent(effect.perMinute)} a minute all era, up to ${formatFactor(effect.cap)}`,
+  'network-effect': (effect) => `All traffic ${formatFactor(NEUTRAL_FACTOR + effect.perDoubling)} each time your site doubles this era, up to ${formatFactor(effect.cap)}`,
+  'traffic-per-level': (effect, eraId) => `All traffic +${formatPercent(effect.perLevel)} for every ${getFeatureDisplayName(effect.sourceFeatureId, eraId)} level`,
+  algorithm: (effect) => `Your busiest feature’s traffic ${formatFactor(effect.topFactor)}${describeRestOfAlgorithm(effect.restFactor)}`,
+  'moment-traffic': (effect, eraId) => `${describeTrafficOf(effect.featureId, eraId)} traffic ${formatFactor(effect.factor)} ${MOMENT_LABELS[effect.moment]}`,
+  'moment-revenue': (effect) => `Every visitor pays ${formatFactor(effect.factor)} ${MOMENT_LABELS[effect.moment]}`,
+  'spike-frequency-multiplier': (effect) => `Traffic spikes come ${formatFactor(effect.factor)} as often`,
+  'spike-on-fire': () => 'Catching fire starts a traffic spike',
+  'levels-per-clean': (effect, eraId) => `Cleaning up ${describeCleanup(effect.infection)}: +${effect.levels} ${getFeatureDisplayName(effect.featureId, eraId)} levels each time`,
+  donations: (effect, eraId) => `+$${(effect.amount / ERAS_BY_ID[eraId].revenuePace).toFixed(PER_VISITOR_DECIMALS)} per visitor in donations, ${formatPercent(effect.lostSharePerAd)} less for every ad`,
+  subscribers: (effect) => `${formatPercent(effect.share)} of visitors subscribe: steady pay, ads or not, that follows your traffic slowly`,
+  'subscriber-churn-multiplier': (effect) => `Subscribers leave ${formatFactor(effect.factor)} as fast`,
+  'scheduled-buff': (effect) => `Every ${formatSeconds(effect.everyMs)}: ${describeBuff(effect.buffId)}`,
+  'phone-revenue-multiplier': (effect) => `Phone visitors pay ${formatFactor(effect.factor)}`,
+  'revenue-per-feature-level': (effect) => `Every visitor pays +${formatPercent(effect.share)} for each feature level on the page`,
+  'ad-value-per-specialization': (effect) => `Ads pay +${formatPercent(effect.share)} for every specialization you’ve held`,
+  'offer-frequency-multiplier': (effect) => `Offers come ${formatFactor(effect.factor)} as often`,
+  'ai-answers-pay': (effect) => `Visitors kept away by AI answers still pay ${formatPercent(effect.share)} of what they would have`,
+  'auto-keystroke-multiplier': (effect) => `Hired help types ${formatFactor(effect.factor)} as fast`,
+  'auto-buyer': (effect) => `Every ${formatSeconds(effect.everyMs)}, buys the feature level with the most visitors for the money`,
 };
+
+const MOMENT_LABELS: Readonly<Record<SiteMoment, string>> = {
+  'on-fire': 'while you’re on fire',
+  typing: 'while you keep typing',
+  idle: 'when you stop typing',
+  spike: 'during a traffic spike',
+};
+
+const BUFF_TARGET_LABELS: Readonly<Record<BuffTarget, string>> = {
+  typing: 'typing pays',
+  traffic: 'traffic',
+  'ad-value': 'ads pay',
+};
+
+const SECONDS_PER_MINUTE = 60;
+
+/** "20 s" under a minute, "2 min" from a minute on. */
+function formatSeconds(ms: number): string {
+  const seconds = Math.round(ms / MS_PER_SECOND);
+  return seconds < SECONDS_PER_MINUTE ? `${seconds} s` : `${Math.round(seconds / SECONDS_PER_MINUTE)} min`;
+}
+
+function describeLevelTarget(featureId: FeatureId | null, eraId: EraId): string {
+  return featureId === null ? 'your smallest feature this era' : getFeatureDisplayName(featureId, eraId);
+}
+
+function describeTrafficOf(featureId: FeatureId | null, eraId: EraId): string {
+  return featureId === null ? 'All' : getFeatureDisplayName(featureId, eraId);
+}
+
+function describeRestOfAlgorithm(restFactor: number): string {
+  return restFactor === NEUTRAL_FACTOR ? '' : `, every other feature’s ${formatFactor(restFactor)}`;
+}
+
+function describeCleanup(infection: InfectionKind | null): string {
+  return infection === null ? 'any trouble' : HAZARD_NAMES[infection];
+}
+
+function describeBuff(buffId: BuffId): string {
+  const buff = BUFFS_BY_ID[buffId];
+  return `${buff.name}, ${BUFF_TARGET_LABELS[buff.target]} ${formatFactor(buff.factor)} for ${formatSeconds(buff.durationMs)}`;
+}
 
 function describeOneEffect(effect: UpgradeEffect, eraId: EraId): string {
   const describe = EFFECT_DESCRIPTIONS[effect.kind] as (value: UpgradeEffect, era: EraId) => string;
@@ -400,7 +492,7 @@ function renderSkillRow(state: GameState, skillId: UpgradeId): string {
   return `<article class="shop-row">
     <div class="shop-icon">${LEARN_ICON}</div>
     <div class="shop-info">
-      <h3 class="shop-name">${escapeHtml(skill.name)}</h3>
+      <h3 class="shop-name">${escapeHtml(skill.name)}${renderSpecializationBadge(skillId)}</h3>
       <p class="shop-desc">${escapeHtml(skill.description)}</p>
       ${describeUnlocks(state, skillId)}
       <p class="shop-effect">${escapeHtml(describeUpgradeEffects(skill.effects, state.eraId) + describeUpgradeWeight(state, skillId))}</p>
@@ -442,7 +534,7 @@ function renderUpgradeRow(state: GameState, upgradeId: UpgradeId, icon: string):
   return `<article class="shop-row">
     <div class="shop-icon">${icon}</div>
     <div class="shop-info">
-      <h3 class="shop-name">${escapeHtml(upgrade.name)}</h3>
+      <h3 class="shop-name">${escapeHtml(upgrade.name)}${renderSpecializationBadge(upgradeId)}</h3>
       <p class="shop-desc">${escapeHtml(upgrade.description)}</p>
       <p class="shop-effect">${escapeHtml(describeUpgradeEffects(upgrade.effects, state.eraId) + describeUpgradeWeight(state, upgradeId))}</p>
       ${describeEraBound(upgradeId)}

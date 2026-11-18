@@ -1,5 +1,6 @@
 import type { EraId, FeatureDefinition, FeatureId } from '../types';
 import { ERA_IDS } from './era-ids';
+import { findItemOwner, SPECIALIZATION_FEATURE_IDS, SPECIALIZATION_FEATURES } from './specialization-items';
 
 /** Shop and page order. Within an era, roughly by price. */
 export const FEATURE_IDS: readonly FeatureId[] = [
@@ -38,6 +39,7 @@ export const FEATURE_IDS: readonly FeatureId[] = [
   'deal-of-the-day',
   'community-chat',
   'agent-store',
+  ...SPECIALIZATION_FEATURE_IDS,
 ];
 
 export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
@@ -617,6 +619,7 @@ export const FEATURES_BY_ID: Readonly<Record<FeatureId, FeatureDefinition>> = {
     pluginDiesIn: null,
     sunsetIn: null,
   },
+  ...SPECIALIZATION_FEATURES,
 };
 
 /**
@@ -643,9 +646,9 @@ export function getFeatureIdsOfEra(eraId: EraId): readonly FeatureId[] {
   return FEATURE_IDS.filter((id) => FEATURES_BY_ID[id].eraId === eraId);
 }
 
-/** The era's features every run has: what its checklist asks you to build. */
+/** The era's features every run and every site has: what its checklist asks you to build. A specialization's own isn't one. */
 export function getCoreFeatureIdsOfEra(eraId: EraId): readonly FeatureId[] {
-  return getFeatureIdsOfEra(eraId).filter((id) => getFeatureFirstRun(id) === FIRST_RUN);
+  return getFeatureIdsOfEra(eraId).filter((id) => getFeatureFirstRun(id) === FIRST_RUN && findItemOwner(id) === null);
 }
 
 /** The newest name the feature got in this era or an earlier one: a 2011 rename carries into 2018. Null if none. */

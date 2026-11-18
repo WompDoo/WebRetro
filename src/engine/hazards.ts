@@ -1,4 +1,5 @@
 import { countSpikeRiddenOut } from './era-stats';
+import { rewardCleanup } from './specialization-hooks';
 import {
   INFECTION_DIFFICULTY_STEP_MS,
   MAX_INFECTION_DIFFICULTY,
@@ -14,6 +15,7 @@ import { ERAS_BY_ID } from './content/eras';
 import { FEATURE_IDS, getFeatureDisplayName } from './content/features';
 import { FRAMEWORKS_BY_ID } from './content/frameworks';
 import {
+  calculateSpikeFrequencyFactor,
   calculateFeatureVisitorsPerSecond,
   calculateNetRevenuePerSecond,
   calculatePrivacyFineFactor,
@@ -216,7 +218,7 @@ const TRAFFIC_SPIKE_RULE: HazardRule = {
   kind: 'traffic-spike',
   intervalRangeMs: [150_000, 300_000],
   isActive: (state) => ERAS_BY_ID[state.eraId].hasServerLoad && state.featureLevels.blog > 0 && state.trafficSpikeRemainingMs <= 0,
-  countdownSpeed: () => NORMAL_SPEED,
+  countdownSpeed: (state) => calculateSpikeFrequencyFactor(state),
   spawn: (state) => ({
     state: { ...state, trafficSpikeRemainingMs: TRAFFIC_SPIKE_DURATION_MS },
     events: hazardEvent(
@@ -460,7 +462,8 @@ function ageAndAutoCleanInfections(state: GameState, deltaMs: number): GameStep 
   const agedState = { ...state, infections: aged };
   const autoCleaned = aged.filter((infection) => isAutoCleaned(agedState, infection));
   const events = autoCleaned.map<GameEvent>((infection) => ({ kind: 'defense', message: describeAutoClean(infection, state.eraId) }));
-  return { state: { ...agedState, infections: aged.filter((infection) => !isAutoCleaned(agedState, infection)) }, events };
+  const remaining: GameState = { ...agedState, infections: aged.filter((infection) => !isAutoCleaned(agedState, infection)) };
+  return { state: autoCleaned.reduce<GameState>((current, infection) => rewardCleanup(current, infection.kind), remaining), events };
 }
 
 function mergeSteps(previous: GameStep, next: GameStep): GameStep {
