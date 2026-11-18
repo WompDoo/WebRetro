@@ -231,7 +231,112 @@ One bundle serves both: the page's `game-edition` meta sets `state.edition`, and
 `areSpecializationsOn(state)`. The classic game never sees a specialization, a route's money or a theme, whatever a
 save says.
 
-### Specializations: what your site becomes
+### Specializations v2: the tree (decided, being built)
+
+v1 (below) turned out too easy: every condition was money, and since the player decides when to relaunch, waiting a
+few minutes bought any route. v2 is a tree you commit to, era by era.
+
+**Playthroughs (test build).** Each run opens a new system:
+
+- **Run 1:** the game as it has always been.
+- **Run 2:** specializations.
+- **Run 3:** Backlinks and perks, including the lineage-breaking **Serial founder**. The 2000 crash's content arrives this run, moved into 1997 and 2005.
+
+The classic game is unchanged.
+
+**The rules**
+
+- **One specialization per era, from 2005, and they stack.** A site might be a video site in 2005, a live-streaming site in 2011, a streaming service in 2018 and a short-video feed in 2024. Or it stays a homepage at any point: that's the classic game.
+- **Unlocked and chosen in the same era.** Choosing is free, takes effect at once, and is permanent after a confirmation. Relaunching without choosing closes that era's chance, and the relaunch screen says so.
+- **Lineage.** Most specializations need a parent taken in an earlier era. Every era from 2011 has one open door with no parent, so skipping 2005 doesn't shut you out. The Serial founder perk (run 3+, about 50 Backlinks) removes lineage; one per era still holds.
+- **Hard on purpose: things money can't buy.** Every unlock has a **lean** ("Photo gallery brings 35% of your visitors": buying everything spreads traffic out, so you hold things back or switch them off). Add one or two of: a **sacrifice** (a feature switched off, few ads, a consent choice), a **skill** (on fire N times, a minigame won N times, a traffic spike ridden out without going down), or a **build** (a level). Thresholds come from the sims: a player who buys everything gets none.
+- **Lasting restrictions.** Some specializations keep their sacrifice. Photo sharing keeps the Flash intro off, Forum the guestbook, Microblog the blog. Shop and Streaming service run at most 2 ads; Wiki runs none.
+- **Hidden until close, Vampire Survivors style.**
+  - **Before anything is in view,** no tab at all. A specialization comes into view when its lean is half way, its parent is held and its era is now.
+  - **Then the Specialize tab appears,** a fifth shop tab: "Specializations found: 1/19", your site's stack, and the cards in view with their conditions.
+  - **Found ones stay in a collection** across runs, and their cards show from the start next run.
+- **The choice screen** says what the specialization does (money, page, exclusive items), what it stops (no other specialization this era, the later ones it puts out of reach, its lasting restriction) and what it opens. It also shows **one or two other specializations of this era that are still locked**, with how close you are, so the first one available isn't the automatic pick.
+- **Money:** the newest specialization's model in full; each older one a small bonus. **Page:** the newest leads (hero, nav, color, checklist focus); each older one keeps its block as a section and one nav link, in the current era's style.
+
+**The tree** (the "Like" column is for us; the game uses parody names)
+
+| Era | Specialization | Like | Needs | Unlock, during its era |
+|---|---|---|---|---|
+| 2005 | 📝 Blog network | Blogger, LiveJournal, WordPress.com | — | Blog brings 40% of visitors · Comments 30 · Learn RSS and tagging |
+| 2005 | 📷 Photo sharing | Flickr, Photobucket | — | Photo gallery brings 35% · Tag cloud 10 · Flash intro switched off |
+| 2005 | 🎬 Video site | YouTube | — | Flash intro brings 35% · Learn the `<EMBED>` tag · ride out a traffic spike |
+| 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | Forum brings 35% · Guestbook switched off · sort the spam 3 times |
+| 2005 | 📚 Wiki *(secret)* | Wikipedia | — | Wiki brings 30% · no ads for 10 minutes |
+| 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | Activity feed brings 30% · Share buttons 30 · Sign in with… 10 |
+| 2011 | 💬 Microblog | Twitter | Blog network or Forum | Share buttons bring 35% · on fire 5 times · Blog switched off |
+| 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | Video player brings 35% · Activity feed 10 · ride out 2 traffic spikes |
+| 2011 | 📰 News & viral | HuffPost, BuzzFeed | Blog network or Forum | One-pager brings 25% · Share buttons 30 · win the DDoS minigame |
+| 2011 | ⭐ Reviews & local | Yelp, TripAdvisor, Foursquare | Forum or Photo sharing | Map mashup brings 25% · Sign in with… 10 · responsive design |
+| 2011 | 🛒 Online shop | Etsy, Amazon | open door | Photo gallery 40 · Sign in with… 15 · at most 2 ads |
+| 2018 | 📸 Stories app | Instagram, Snapchat | Social network or Photo sharing | Stories bring 35% · Photo gallery 50 · phone load under 2.5 s |
+| 2018 | 🎞️ Streaming service | Netflix, YouTube Premium | Live streaming or Video site | Video player brings 30% · Pricing table 20 · at most 2 ads |
+| 2018 | ✉️ Newsletter platform | Substack, Medium | News & viral, Microblog or Blog network | Newsletter brings 30% · Pricing table 10 · the honest consent banner |
+| 2018 | 🧳 Marketplace | Airbnb, Amazon Marketplace, Uber | Online shop or Reviews | Language switcher 20 · Pricing table brings 25% · Learn OAuth |
+| 2018 | 💼 Professional network | LinkedIn | open door | Pricing table brings 25% · Live chat 15 · Newsletter 15 |
+| 2018 | 🎮 Chat community *(secret)* | Discord | Forum or Live streaming | Community chat brings 30% · Live chat 15 |
+| 2024 | 📱 Short-video feed | TikTok, Reels | Stories app, Streaming service or Video site | For-you feed brings 40% · AI images 10 |
+| 2024 | 🔎 AI answer engine | Perplexity, AI Overviews | Newsletter, News & viral or Reviews | AI search brings 35% · AI articles 25 · AI answers take 30% of clicks |
+| 2024 | 🎨 AI studio | Midjourney, Canva | Stories app or Photo sharing | AI images bring 35% · Pricing table 20 |
+| 2024 | 🤖 AI companion | Character.AI, Replika | open door | AI chatbot brings 35% · Live chat switched off |
+| 2024 | 🧩 Agent store *(secret)* | GPT Store, WeChat mini-programs | Marketplace or Professional network | Agent store brings 30% |
+
+**Exclusive items: every specialization gets at least one Learn, one Build and one Upgrade**, shown only once you've chosen it, marked with its icon. Items from every specialization you hold stay, which is where the combos come from. The upgrades use mechanics nothing else in the game has:
+
+- **Users build it:** a feature levels itself.
+- **Typing publishes:** keystrokes add levels.
+- **Network effect:** traffic grows with each doubling of visitors.
+- **Going viral:** spikes come more often and pay.
+- **Subscribers:** a paying pool that churns slowly.
+- **The algorithm:** the biggest feature grows, the rest shrink.
+- **Moderation economy:** infections and spam become levels.
+- **Live events:** scheduled traffic bursts.
+- **Compute:** pay per second and the site builds itself.
+- **Breadth pays:** money per feature level.
+- **Auto-buyer.**
+
+| Specialization | Learn → Build | Upgrades |
+|---|---|---|
+| Blog network | Learn multi-user blogs → Member blogs | Write daily (every 400 keystrokes, +1 Blog level) · Long tail (blog traffic grows all era) |
+| Photo sharing | Learn thumbnails & EXIF → Groups & pools | Users upload (the gallery levels itself) · Explore page (your most-visited feature ×1.3) |
+| Video site | Learn Flash video → Channels | Going viral (spikes 2× as often, ×3 pay while you stay up) · Embed anywhere (a share of every feature's visitors watch a video) |
+| Forum community | Learn mod tools → Subforums | Volunteer mods (forum infections clean themselves, +1 level each) · Post counts (on fire: forum traffic ×2) |
+| Wiki | Learn wiki markup → Talk pages | Edit-a-thon (every feature slowly levels itself) · Donation drive (money that grows the fewer ads you run) |
+| Social network | Learn the social graph → Groups | Network effect · People you may know (each Share-buttons level adds site-wide traffic) |
+| Microblog | Learn hashtags → Trending topics | Live-posting (on fire, keystrokes bring visitors) · Fail whale (outages cost no visitors and end in a spike) |
+| Live streaming | Learn live video → Emotes & raids | Live events · Subs & tips (subscribers) |
+| News & viral | Learn headline testing → Listicles | Clickbait (spikes ×2 as often, ads ×1.5 during them) · Breaking news (a long on-fire streak triggers a spike) |
+| Reviews & local | Learn geolocation → Check-ins | Elite reviewers (phone visitors pay ×2) · Fake-review filter (spam wins add levels) |
+| Online shop | Learn the shopping cart → Product listings | Customers also bought (breadth pays) · Black Friday (a sale event every few minutes) |
+| Stories app | Learn vertical video → Filters & lenses | Disappearing stories (story traffic decays unless you keep typing) · Influencers (sponsor offers 2× as often) |
+| Streaming service | Learn adaptive streaming → Originals | Subscriptions · Binge autoplay (load time stops mattering) · Password crackdown (one-time: traffic into subscribers) |
+| Newsletter platform | Learn email deliverability → Paid newsletters | Writers' fund (typing publishes, subscribers) · Tracking pixels (ads pay more, fines bigger) |
+| Marketplace | Learn escrow payments → Seller dashboards | Take rate (a share of what you spend comes back) · Surge pricing (revenue per visitor ×3 during spikes) |
+| Professional network | Learn recruiting tools → Job board | Endorsements (+money for every specialization you've held) · Premium messages (subscribers) |
+| Chat community | Learn bots & webhooks → Servers | Server boosts (network effect) · Mod bots (moderation economy) |
+| Short-video feed | Learn recommendation models → Duets & remixes | The algorithm (biggest feature ×3, the rest ×0.7) · Infinite scroll (load time stops mattering) |
+| AI answer engine | Learn retrieval → Sources panel | Answer, don't link (AI answers pay you instead of taking clicks) · Sponsored answers |
+| AI studio | Learn diffusion models → Prompt gallery | GPU farm (compute: +1 level to every feature every 20 s while it burns money) · Credits (subscribers) |
+| AI companion | Learn fine-tuning → Characters | It remembers you (subscribers that almost never leave) · Talks while you sleep (hires type ×2) |
+| Agent store | Learn tool calling → Agent listings | Agents buy for you (auto-buyer) |
+
+**The 2000 crash leaves the test build.** Its content moves, still from run 3:
+
+- **To 1997:** E-cards, Free email, Learn sendmail, Dancing hamsters, and the unpaid intern as 1997's second hire.
+- **To 2005:** the Donate button and Affiliate links.
+
+**Order of work:**
+
+1. **The tree engine and the Specialize tab:** run gating, lineage, one per era, the choice screen, reveal and collection, Serial founder, crash removal.
+2. **The new mechanics and every specialization's items.**
+3. **Pages for every specialization**, and combined pages for stacks.
+4. **Balance:** a sim player that chases a path, then a design sweep of the pages and their combos.
+
+### Specializations v1: what's live now (replaced by the tree)
 
 **Decided:** 1997 is a personal homepage for everyone, because that's how the web started. From the relaunch out of
 2005 on, each relaunch (into 2011, 2018 and 2024) lets you **specialize, or specialize again**, into any route you've
