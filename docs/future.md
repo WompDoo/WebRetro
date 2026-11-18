@@ -269,7 +269,7 @@ The classic game is unchanged.
 | 2005 | 📷 Photo sharing | Flickr, Photobucket | — | 40% into Photo gallery · Flash intro switched off · Tag cloud 1 |
 | 2005 | 🎬 Video site | YouTube | — | 40% into Flash intro · Learn the `<EMBED>` tag · ride out a traffic spike |
 | 2005 | 🗨️ Forum community | Something Awful, phpBB boards, Digg | — | 40% into Forum · Guestbook switched off · sort the spam 3 times |
-| 2005 | 📚 Wiki *(secret)* | Wikipedia | — | 35% into Wiki · no ads for 10 minutes in a row |
+| 2005 | 📚 Wiki *(secret)* | Wikipedia | — | 35% into Wiki · never an ad, all run (support from visitors pays for it, section 5b) |
 | 2011 | 👥 Social network | Facebook, MySpace | Photo sharing or Blog network | 60% into Activity feed · Share buttons 25 · Sign in with… 5 |
 | 2011 | 💬 Microblog | Twitter | Blog network or Forum | 40% into Share buttons · on fire 5 times · Blog switched off |
 | 2011 | 📡 Live streaming | Justin.tv, Twitch | Video site | 40% into Video player · Activity feed 5 · ride out 2 traffic spikes |

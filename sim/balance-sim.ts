@@ -35,9 +35,9 @@ import {
   type GameState,
   type TreeSpecializationId,
 } from '../src/engine';
-import { claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
+import { AD_LABEL, claimOfferWhenNoticed, decide, effectiveIncome, reactToHazards, renewWhenNoticed, typeKeystrokes, underlyingIncome } from './bot';
 import { applySimSpecialization, applySwitches, SIM_SPECIALIZATION, SWITCHED_OFF } from './switches';
-import { avoidsOffPath, chooseOnPath, describeSpendingShares, isPumping, SIM_PATH, startSecondRun, steerOnPath } from './path';
+import { avoidsAdsAllRun, avoidsOffPath, chooseOnPath, describeSpendingShares, isPumping, SIM_PATH, startSecondRun, steerOnPath } from './path';
 import type { ExtraAvoid, PlayerProfile } from './bot';
 
 
@@ -123,8 +123,15 @@ function decideOnPath(state: GameState, profile: PlayerProfile): GameState {
 }
 
 /** Only while pumping does the path hold other features back: building the economy first is the point. */
-function pathAvoids(state: GameState, path: readonly TreeSpecializationId[], pumping: boolean): ExtraAvoid {
+function avoidsWhilePumping(state: GameState, path: readonly TreeSpecializationId[], pumping: boolean): ExtraAvoid {
   return pumping ? avoidsOffPath(state, path) : () => false;
+}
+
+/** A path through the wiki never places an ad, all run; any path holds off what would spoil a lean while pumping. */
+function pathAvoids(state: GameState, path: readonly TreeSpecializationId[], pumping: boolean): ExtraAvoid {
+  const offPath = avoidsWhilePumping(state, path, pumping);
+  const isAdFree = avoidsAdsAllRun(path);
+  return (option) => (isAdFree && option.label === AD_LABEL) || offPath(option);
 }
 
 function chooseAlongPath(state: GameState, now: number, log: Log, name: string): GameState {

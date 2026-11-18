@@ -70,7 +70,6 @@ export interface ConditionProgress {
 
 const YES = 1;
 const NO = 0;
-const MS_PER_MINUTE = 60_000;
 
 function towards(current: number, target: number): number {
   return target <= 0 ? YES : Math.min(YES, Math.max(NO, current / target));
@@ -109,6 +108,11 @@ function measureAds(state: GameState, condition: SpecializationCondition, count:
   return { condition, label, unit: 'ads', current: state.adCount, target: count, isMet, ratio: isMet ? YES : towards(count + 1, state.adCount + 1) };
 }
 
+/** Never placed an ad this run, and none on the page (a playtest jump can put some there without placing them). */
+function hasNeverRunAnAd(state: GameState): boolean {
+  return !state.runStats.hasPlacedAd && state.adCount === 0;
+}
+
 /** Faster is the goal: the page on a phone loads within this many seconds. */
 function measurePhoneLoad(state: GameState, condition: SpecializationCondition, seconds: number): ConditionProgress {
   const current = calculatePhoneLoadTimeSeconds(state);
@@ -125,7 +129,7 @@ const MEASURES: Measures = {
     progress(condition, `${Math.round(condition.share * 100)}% of what you build this era into ${FEATURES_BY_ID[condition.featureId].name}`, 'share', calculateSpendingShare(state, condition.featureId), condition.share),
   'switched-off': (state, condition) => flag(condition, `${FEATURES_BY_ID[condition.featureId].name} switched off`, isFeatureSwitchedOff(state, condition.featureId)),
   'max-ads': (state, condition) => measureAds(state, condition, condition.count),
-  'ad-free-minutes': (state, condition) => progress(condition, `No ads for ${condition.minutes} minutes in a row`, 'minutes', state.eraStats.adFreeMs / MS_PER_MINUTE, condition.minutes),
+  'never-an-ad': (state, condition) => flag(condition, 'Never an ad, all run', hasNeverRunAnAd(state)),
   consent: (state, condition) => flag(condition, `${CONSENT_BANNERS_BY_ID[condition.banner].name} on the site`, state.consentBanner === condition.banner),
   'era-stat': (state, condition) => progress(condition, STAT_LABELS[condition.stat], 'count', readStat(state, condition.stat), condition.count),
   'mobile-friendly': (state, condition) => flag(condition, 'Works on phones', isMobileFriendly(state)),
