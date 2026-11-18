@@ -241,13 +241,19 @@ function groupByKind(effects: readonly UpgradeEffect[]): ReadonlyMap<UpgradeEffe
 
 type EffectOfKind<K extends UpgradeEffect['kind']> = Extract<UpgradeEffect, { readonly kind: K }>;
 
-function isOfKind<K extends UpgradeEffect['kind']>(kind: K): (effect: UpgradeEffect) => effect is EffectOfKind<K> {
-  return (effect): effect is EffectOfKind<K> => effect.kind === kind;
+const NO_EFFECTS: readonly UpgradeEffect[] = [];
+
+/**
+ * Every working effect of one kind: what the site has bought, its perks and its specializations. The summary groups
+ * them by kind, so every effect in a group is of that kind: no filtering on the way out, read as often as it is.
+ */
+export function listEffectsOfKind<K extends UpgradeEffect['kind']>(state: GameState, kind: K): readonly EffectOfKind<K>[] {
+  return (getEffectSummary(state).byKind.get(kind) ?? NO_EFFECTS) as readonly EffectOfKind<K>[];
 }
 
-/** Every working effect of one kind: what the site has bought, its perks and its specializations. */
-export function listEffectsOfKind<K extends UpgradeEffect['kind']>(state: GameState, kind: K): readonly EffectOfKind<K>[] {
-  return (getEffectSummary(state).byKind.get(kind) ?? []).filter(isOfKind(kind));
+function hasEffectOfKinds(state: GameState, kinds: readonly UpgradeEffect['kind'][]): boolean {
+  const present = getEffectSummary(state).kinds;
+  return kinds.some((kind) => present.has(kind));
 }
 
 type PerkLevels = GameState['legacyPerkLevels'];
@@ -291,11 +297,17 @@ function summaryKey(state: GameState): string {
   return `${state.eraId}|${state.runNumber}|${state.edition}|${state.specializationIds.join(',')}`;
 }
 
-function getEffectSummary(state: GameState): EffectSummary {
+function lookUpEffectSummary(state: GameState): EffectSummary {
   const byEra = findSummariesOf(state);
   const cached = byEra.get(summaryKey(state));
   return cached === undefined ? summarizePurchases(state, byEra) : cached;
 }
+
+/**
+ * Read for every feature, many times per state: remembered per state as well, so the second read is one lookup instead
+ * of building the era's key again. The specializations' mechanics read it a few times per feature.
+ */
+const getEffectSummary = memoizeByState(lookUpEffectSummary);
 
 function readFactor(state: GameState, kind: FactorKind): number {
   return getEffectSummary(state).factors[kind];
@@ -415,8 +427,11 @@ function calculateGrowthFactor(state: GameState, effect: EffectOfKind<'traffic-g
   return Math.min(effect.cap, NEUTRAL_FACTOR + effect.perMinute * (state.eraStats.elapsedMs / MS_PER_MINUTE));
 }
 
-/** What the moment and the era's long tail do to one feature's traffic. */
+const FEATURE_MOMENT_KINDS: readonly UpgradeEffect['kind'][] = ['moment-traffic', 'traffic-growth'];
+
+/** What the moment and the era's long tail do to one feature's traffic. Most sites have neither: a quick no. */
 function calculateFeatureMomentFactor(state: GameState, featureId: FeatureId): number {
+  if (!hasEffectOfKinds(state, FEATURE_MOMENT_KINDS)) return NEUTRAL_FACTOR;
   const moments = listEffectsOfKind(state, 'moment-traffic').filter((effect) => effect.featureId === featureId);
   const growth = listEffectsOfKind(state, 'traffic-growth').filter((effect) => effect.featureId === featureId);
   return multiplyAll([...moments.map((effect) => calculateMomentFactor(state, effect)), ...growth.map((effect) => calculateGrowthFactor(state, effect))]);
@@ -431,6 +446,7 @@ const findAlgorithmFavourite = memoizeByState((state: GameState): FeatureId | nu
 
 function calculateAlgorithmFactor(state: GameState, featureId: FeatureId): number {
   const favourite = findAlgorithmFavourite(state);
+  if (favourite === null) return NEUTRAL_FACTOR;
   return multiplyAll(listEffectsOfKind(state, 'algorithm').map((effect) => (featureId === favourite ? effect.topFactor : effect.restFactor)));
 }
 
@@ -616,10 +632,24 @@ function findEraBefore(eraId: EraId): EraId {
   return ERA_IDS[Math.max(0, getEraIndex(eraId) - 1)] ?? eraId;
 }
 
+/** Up and running: not infected, not switched off. */
+function isFeatureWorking(state: GameState, featureId: FeatureId): boolean {
+  return !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId);
+}
+
+/** Not left behind by its era: its plugin still runs, and it hasn't retired. */
+function isFeatureCurrent(state: GameState, featureId: FeatureId): boolean {
+  return !isFeaturePluginDead(state, featureId) && !isFeatureRetired(state, featureId);
+}
+
+/** Built, working and current. Most features aren't built at any one time: the level is checked first, and cheapest. */
+function isFeatureProducing(state: GameState, featureId: FeatureId): boolean {
+  return state.featureLevels[featureId] > 0 && isFeatureWorking(state, featureId) && isFeatureCurrent(state, featureId);
+}
+
 /** Visitors a feature brings before the algorithm picks its favourite. */
 function calculateRawFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
-  const isProducing = !isFeatureInfected(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId) && !isFeatureRetired(state, featureId);
-  return calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] * (isProducing ? NEUTRAL_FACTOR : NO_TRAFFIC);
+  return isFeatureProducing(state, featureId) ? calculateFeatureVisitorsPerLevel(state, featureId) * state.featureLevels[featureId] : NO_TRAFFIC;
 }
 
 export function calculateFeatureVisitorsPerSecond(state: GameState, featureId: FeatureId): number {
