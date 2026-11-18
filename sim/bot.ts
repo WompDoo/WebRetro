@@ -259,14 +259,9 @@ export function listOptions(state: GameState, profile: PlayerProfile, extraAvoid
   return [...features, ...skills, ...boosts, ...ops, ...ads, ...defenses, ...hosting, ...switches].filter((option) => !PLAYER_POLICIES[profile.policy].avoids(option, state) && !extraAvoids(option));
 }
 
-/** How much more the player earns a second once this is bought (and, for a first feature, its first ad). */
-function calculateIncomeGain(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
-  return effectiveIncome(option.valueApply({ ...state, money: option.valueCost }), profile) - effectiveIncome(state, profile);
-}
-
 export function scoreOption(state: GameState, option: PurchaseOption, profile: PlayerProfile): number {
   const income = effectiveIncome(state, profile);
-  const gain = calculateIncomeGain(state, option, profile);
+  const gain = effectiveIncome(option.valueApply({ ...state, money: option.valueCost }), profile) - income;
   const waitSeconds = Math.max(0, option.cost - state.money) / Math.max(income, Number.EPSILON);
   // Like a human reading the checklist, the bot buys what the gate requires even when it adds no income.
   const paybackSeconds = gain > 0 ? option.valueCost / gain : option.isRequiredForGate ? 0 : Number.POSITIVE_INFINITY;
@@ -285,12 +280,6 @@ export function improvesTimeToBudget(state: GameState, option: PurchaseOption, p
   return (remaining + option.cost) / effectiveIncome(after, profile) < remaining / income;
 }
 
-/** Bought while saving for something better: affordable, and pays for itself before the wait is over. */
-function isFiller(state: GameState, option: PurchaseOption, profile: PlayerProfile, waitSeconds: number): boolean {
-  const isAffordablePurchase = option.canApply(state) && option.cost > 0;
-  return isAffordablePurchase && calculateIncomeGain(state, option, profile) > 0 && scoreOption(state, option, profile) < waitSeconds;
-}
-
 function decideByPayback(state: GameState, profile: PlayerProfile, extraAvoids: ExtraAvoid): GameState {
   const savingOnly = isOnlySavingForMigration(state);
   const options = listOptions(state, profile, extraAvoids).filter(
@@ -300,10 +289,9 @@ function decideByPayback(state: GameState, profile: PlayerProfile, extraAvoids: 
   const best = ranked[0];
   if (best === undefined) return state;
   if (best.canApply(state)) return best.apply(state);
-  // Saving up for the best option: meanwhile buy anything that pays for itself before that is affordable. Only what
-  // earns: a gate item that adds nothing would spend the savings (a site that's down needs its server first).
+  // Saving up for the best option: meanwhile buy anything that pays for itself before that is affordable.
   const waitSeconds = Math.max(0, best.cost - state.money) / Math.max(effectiveIncome(state, profile), Number.EPSILON);
-  const filler = ranked.find((option) => isFiller(state, option, profile, waitSeconds));
+  const filler = ranked.find((option) => option.canApply(state) && option.cost > 0 && scoreOption(state, option, profile) < waitSeconds);
   return filler === undefined ? state : filler.apply(state);
 }
 
