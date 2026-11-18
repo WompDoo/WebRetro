@@ -9,6 +9,7 @@ import { siteBrand } from './site-context';
 import type { SiteContext } from './site-context';
 import { render2011Site } from './site-2011';
 import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass } from './specialization-look';
+import { renderSupportLinks } from './support-links';
 
 /** Under the hero: what the old site still has, as sections of the landing page. */
 const LANDING_SECTIONS: readonly FeatureId[] = [...SPECIALIZATION_FEATURE_IDS, 'video-player', 'blog', 'photo-gallery', 'activity-feed', 'community-chat', 'comments', 'map-mashup', 'guestbook', 'midi-player'];
@@ -163,7 +164,7 @@ function renderLandingPage(context: SiteContext, framework: FrameworkId): string
     ${renderFeatureBlocks(context, ['newsletter']).join('')}
     ${renderAccountBand(context)}
     ${renderAroundTheWeb(context)}
-    <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms${renderStatusLink(context.state)}</footer>
+    <footer class="lp-footer">© ${ERAS_BY_ID[context.eraId].year} ${escapeHtml(siteBrand(context.state))}, Inc. · Made with ❤️ in a co-working space · ${escapeHtml(describeBuiltWith(context.state))} · Privacy · Terms${renderStatusLink(context.state)}${renderSupportLinks(context.state, 'lp-support')}</footer>
     ${renderLegalWall(context)}
     ${renderCornerDock(context)}
   </div>`;

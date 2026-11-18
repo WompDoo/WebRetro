@@ -9,6 +9,7 @@ import { findHeroCopy, renderNavLinks, renderSignatureBlock, specializationClass
 import type { SiteContext } from './site-context';
 import { renderOldSchoolPage } from './site-1997';
 import type { HomepageContent, HomepageSkills } from './site-1997';
+import { renderSupportLinks } from './support-links';
 
 // 2011 features land here too while the 2011 site still wears its 2005 look.
 /**
@@ -86,7 +87,7 @@ function render2005DivSite(context: SiteContext): string {
   const main = renderFeatureBlocks(context, WEB2_MAIN_FEATURES).join('');
   const sidebar = renderFeatureBlocks(context, WEB2_SIDEBAR_FEATURES).join('');
   const intro = main === '' ? `<section class="feature-block w2-intro"><h2 class="feature-heading">Welcome to the new ${escapeHtml(siteBrand(context.state))}!</h2><p>We relaunched. Start a blog to fill this space.</p></section>` : main;
-  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span>${renderBetaBadge(context.state)}${renderTagline(context.state)}<nav class="w2-nav">${renderNavLinks(context.state, NAV_ITEMS, ' class="is-active"')}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}</header><div class="w2-columns"><div class="w2-main">${renderSignatureBlock(context.state)}${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)</footer></div>`;
+  return `<div class="${web2Classes(context.state)}"><header class="w2-header"><span class="w2-logo">${escapeHtml(siteBrand(context.state))}</span>${renderBetaBadge(context.state)}${renderTagline(context.state)}<nav class="w2-nav">${renderNavLinks(context.state, NAV_ITEMS, ' class="is-active"')}</nav>${renderFeatureBlocks(context, ['language-switcher']).join('')}</header><div class="w2-columns"><div class="w2-main">${renderSignatureBlock(context.state)}${intro}</div><aside class="w2-sidebar">${renderSponsoredLinks(context.state)}${sidebar}</aside></div><footer class="w2-footer">${renderStandardsBadges(context.state)}© 2005 ${escapeHtml(siteBrand(context.state))} · Powered by PHP · Valid XHTML 1.0 (mostly)${renderSupportLinks(context.state, 'w2-support')}</footer></div>`;
 }
 
 /** The relaunch keeps the old hand-written page until you learn CSS; then it becomes a div layout. */
