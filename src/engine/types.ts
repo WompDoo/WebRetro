@@ -727,10 +727,13 @@ export interface RunStats {
   readonly placedAdAfter1997: boolean;
   /** The longest the site ran without you, in one stretch. */
   readonly longestAwayMs: number;
+  /** Opened the browser's developer tools, or edited the page's numbers with them. */
+  readonly hasPokedWithDevTools: boolean;
 }
 
 /** What a player has done, across every run in this browser. */
 export type AchievementId =
+  | 'hackerman'
   | 'hello-world'
   | 'first-visitor'
   | 'visitor-1000'

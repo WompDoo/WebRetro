@@ -16,6 +16,7 @@ export const EMPTY_RUN_STATS: RunStats = {
   hazards: {},
   placedAdAfter1997: false,
   longestAwayMs: 0,
+  hasPokedWithDevTools: false,
 };
 
 /** One keystroke a tick is as fast as a hand types: anything faster is a script, and counts once. */
@@ -73,4 +74,9 @@ export function noteAdPlaced(state: GameState): GameState {
 
 export function noteTimeAway(state: GameState, awayMs: number): GameState {
   return awayMs > state.runStats.longestAwayMs ? withRunStats(state, { longestAwayMs: awayMs }) : state;
+}
+
+/** The developer tools opened, or a number on the page was edited with them. The game's own numbers don't change. */
+export function notePokedWithDevTools(state: GameState): GameState {
+  return state.runStats.hasPokedWithDevTools ? state : withRunStats(state, { hasPokedWithDevTools: true });
 }

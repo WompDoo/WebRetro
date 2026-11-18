@@ -1,5 +1,8 @@
-import { ACHIEVEMENTS_BY_ID, advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, recordAchievements, recordFoundSpecializations, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
-import type { AchievementId, Edition, SimulationMode } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, recordAchievements, recordFoundSpecializations, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, notePokedWithDevTools, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import type { Edition, SimulationMode } from '../engine';
+import { createAchievementToaster } from './achievement-toast';
+import { attachBadgeTooltip } from './badge-tooltip';
+import { greetInConsole, watchForDevTools } from './dev-tools-watch';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, introElements, minigameElements } from './elements';
@@ -34,6 +37,9 @@ declare global {
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 5_000;
+const EDITED_NUMBER_NOTE = 'Nice try. The number on the screen isn’t the number in the game.';
+
+const toaster = createAchievementToaster(elements.achievementToast);
 
 let lastTickAt = performance.now();
 /** Nothing runs behind the intro, so a reload in the middle of naming the site is still a new game. */
@@ -54,20 +60,34 @@ function tick(): void {
 
 /**
  * A specialization unlocked in any run stays in the collection, and an achievement once earned stays earned: both go
- * into the legacy as they happen. A newly earned achievement makes the news.
+ * into the legacy as they happen. A newly earned achievement pops up at the bottom of the screen.
  */
 function recordFound(): void {
   const found = recordFoundSpecializations(store.legacy, store.game.unlockedSpecializationIds);
   // Playtest jumps eras and hands out money: nothing it does counts as an achievement.
   const recorded = store.isPlaytestEnabled ? found : recordAchievements(found, store.game);
   if (recorded === store.legacy) return;
-  announceAchievements(recorded.achievementIds.filter((id) => !store.legacy.achievementIds.includes(id)));
+  toaster.announce(recorded.achievementIds.filter((id) => !store.legacy.achievementIds.includes(id)));
   store.legacy = recorded;
   writeLegacy();
+  showAchievementsButton();
 }
 
-function announceAchievements(earned: readonly AchievementId[]): void {
-  earned.forEach((id) => pushMessage(`🏆 Achievement: ${ACHIEVEMENTS_BY_ID[id].name}. ${ACHIEVEMENTS_BY_ID[id].description}`));
+/** The test build's achievements button shows once there's something in it: from the first achievement. */
+function showAchievementsButton(): void {
+  elements.achievementsButton.hidden = !isTestBuild(store.edition) || store.legacy.achievementIds.length === 0;
+}
+
+/** Opening the developer tools is a secret achievement; editing a number with them gets a word, too. */
+function watchDevTools(): void {
+  greetInConsole();
+  watchForDevTools([elements.statMoney, elements.statVisitors, elements.statIncome, elements.statBacklinks], {
+    onShortcut: () => updateGame(notePokedWithDevTools),
+    onEditedNumber: () => {
+      updateGame(notePokedWithDevTools);
+      pushMessage(EDITED_NUMBER_NOTE);
+    },
+  });
 }
 
 /** An offer's minigame: a fresh code in the era's format, whatever the difficulty. */
@@ -116,7 +136,6 @@ function readEditionMeta(): string | null {
 /** The test build says so, in the top bar and the tab title, so nobody mistakes it for the real game. */
 function showEdition(edition: Edition): void {
   elements.editionBadge.hidden = !isTestBuild(edition);
-  elements.achievementsButton.hidden = !isTestBuild(edition);
   if (isTestBuild(edition)) document.title = `${document.title} · Web specialization (test)`;
 }
 
@@ -128,6 +147,7 @@ function start(hotData: unknown): void {
   store.edition = parseEdition(readEditionMeta());
   showEdition(store.edition);
   store.legacy = readLegacy();
+  showAchievementsButton();
   store.game = startNextRun(store.legacy, store.game.randomSeed);
   restoreGame(hotData);
   store.game = withEdition(store.game, store.edition);
@@ -155,6 +175,8 @@ function start(hotData: unknown): void {
     },
   });
   installPhoneSwipe(elements.browserViewport, elements.site, installStoryChapters(elements.site));
+  attachBadgeTooltip(elements.achievementsCard, elements.badgeFloatTip);
+  watchDevTools();
   setPlaytestEnabled(isPlaytestRequested(window.location) || readPlaytestFlag());
   const countMoneyTap = createTapCounter(() => performance.now());
   elements.statMoney.addEventListener('pointerdown', () => {

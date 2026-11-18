@@ -237,7 +237,7 @@ function openAchievements(): void {
 /** Tapped or clicked: what the icon is, in the bar under the icons. A phone has no hover. */
 function showAchievementDetail(id: string): void {
   const detail = elements.achievementsCard.querySelector<HTMLElement>('[data-achievement-detail]');
-  if (detail !== null) detail.innerHTML = renderBadgeDetail(store.legacy, id);
+  if (detail !== null) detail.innerHTML = renderBadgeDetail(store.game, store.legacy, id);
 }
 
 export function createActionHandlers({ minigame, renderer, intro }: ActionDependencies): Readonly<Record<string, ActionHandler>> {

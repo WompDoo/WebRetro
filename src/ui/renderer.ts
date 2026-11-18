@@ -38,6 +38,7 @@ import { createCursorTrail } from './cursor-trail';
 import { describeIncomeSources, describeTypingBoost, isTypingIdle, readTypingIncomePerSecond, sumIncome } from './typing-income';
 import type { IncomeSources } from './typing-income';
 import { accrueAutoKeystrokes, describeHiredKeystroke } from './auto-typing';
+import { setWatchedText } from './dev-tools-watch';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countNewOnSiteSinceSeen, countUnreadNews, markNewsRead, markSiteSeen, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
@@ -133,8 +134,8 @@ function renderNewsList(): void {
 
 function renderStats(editor: CodeEditor): void {
   const economy = calculateEconomySnapshot(store.game);
-  setTextIfChanged(elements.statMoney, formatMoney(store.game.money));
-  setTextIfChanged(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
+  setWatchedText(elements.statMoney, formatMoney(store.game.money));
+  setWatchedText(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
   renderIncome({ site: economy.netRevenuePerSecond, hired: economy.hiredTypingPerSecond, typing: readTypingIncomePerSecond(store.typingIncomePool) });
   renderProjectedBacklinks();
   editor.updateRate(economy.keystrokeValue, economy.bugChance);
@@ -144,7 +145,7 @@ function renderStats(editor: CodeEditor): void {
 
 /** Income is everything coming in: the site's revenue, hired help, and what your typing paid over the last few seconds. */
 function renderIncome(sources: IncomeSources): void {
-  setTextIfChanged(elements.statIncome, `${formatMoney(sumIncome(sources))}/s`);
+  setWatchedText(elements.statIncome, `${formatMoney(sumIncome(sources))}/s`);
   setTextIfChanged(elements.statIncomeTyping, describeTypingBoost(sources));
   elements.statIncomeTyping.classList.toggle('is-idle', isTypingIdle(sources));
   elements.statIncomeBox.title = describeIncomeSources(sources);
@@ -170,7 +171,7 @@ function renderBuffs(): void {
 /** After the first finished run: what finishing this one now would earn. The first run is about the site. */
 function renderProjectedBacklinks(): void {
   elements.statBacklinksBox.hidden = !shouldProjectBacklinks(store.game);
-  setTextIfChanged(elements.statBacklinks, `+${calculateBacklinksEarned(store.game)}`);
+  setWatchedText(elements.statBacklinks, `+${calculateBacklinksEarned(store.game)}`);
 }
 
 function renderBrowserStatus(editor: CodeEditor): void {

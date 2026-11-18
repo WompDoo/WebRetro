@@ -15,7 +15,7 @@ import {
 import { listEraDurations } from './era-records';
 import { INFECTION_MINIGAMES } from './hazards';
 import { TREE_IDS } from './specializations';
-import type { AchievementId, AnyMinigameId, FeatureId, FrameworkId, GameState, HazardKind, LegacyState, SpecializationId, UpgradeEffect, UpgradeId } from './types';
+import type { AchievementId, AnyMinigameId, EraId, FeatureId, FrameworkId, GameState, HazardKind, LegacyState, SpecializationId, UpgradeEffect, UpgradeId } from './types';
 
 /**
  * Achievements: what a player has done, across every run in this browser. Each is checked against the game, its run
@@ -39,6 +39,15 @@ export const ACHIEVEMENT_CATEGORY_NAMES: Readonly<Record<AchievementCategory, st
   odd: 'Odds and ends',
 };
 
+/** A later run, counted from the first: what it unlocks (the tree, Backlinks) stays out of sight until then. */
+type RunReveal = 'start' | 'run-2' | 'run-3';
+
+/**
+ * When an achievement shows what it is: from the start, from a later run, or once a run reaches the era its mechanic
+ * belongs to. Before that it's a blurred tile, so the window doesn't spoil what's coming.
+ */
+export type AchievementReveal = RunReveal | EraId;
+
 export interface AchievementDefinition {
   readonly id: AchievementId;
   readonly category: AchievementCategory;
@@ -47,6 +56,7 @@ export interface AchievementDefinition {
   /** What it asks, once known: secret ones keep it to themselves until earned. */
   readonly description: string;
   readonly isSecret: boolean;
+  readonly reveal: AchievementReveal;
   readonly isEarned: (state: GameState, legacy: LegacyState) => boolean;
 }
 
@@ -151,6 +161,65 @@ function isHeldWithoutLineage(state: GameState, specializationId: Specialization
 
 const VIDEO_SITES: readonly SpecializationId[] = ['live-streaming', 'streaming-service', 'short-video'];
 
+/**
+ * What each mechanic waits for. Specializations, site colors, custom cursors and Backlinks come with the second run,
+ * the 2000 crash's leftovers with the third; everything an era brings, once a run has reached it. The rest show from
+ * the start.
+ */
+const REVEALS: Readonly<Partial<Record<AchievementId, AchievementReveal>>> = {
+  'sparkle-trail': 'run-2',
+  'hamster-dance': 'run-3',
+  'social-web': 'web2-2005',
+  'platform-play': 'social-2011',
+  'now-with-ai': 'platform-2018',
+  'second-site': 'run-2',
+  'serial-webmaster': 'run-2',
+  'rode-it-out': 'web2-2005',
+  slashdotted: 'web2-2005',
+  'fail-whale': 'social-2011',
+  'bobby-tables': 'web2-2005',
+  pwned: 'social-2011',
+  'denial-of-fun': 'social-2011',
+  'works-on-my-machine': 'platform-2018',
+  'not-private': 'web2-2005',
+  'glue-on-pizza': 'ai-2024',
+  'robots-txt': 'ai-2024',
+  'accept-all': 'platform-2018',
+  'do-not-track': 'platform-2018',
+  'cookie-monster': 'platform-2018',
+  enshittification: 'ai-2024',
+  'own-metal': 'web2-2005',
+  'someone-elses-computer': 'social-2011',
+  'yaml-engineer': 'platform-2018',
+  'gpu-rich': 'ai-2024',
+  'page-bloat': 'web2-2005',
+  'lighthouse-100': 'platform-2018',
+  'pinch-to-zoom-no-more': 'social-2011',
+  'heaviest-object': 'platform-2018',
+  'hydration-error': 'platform-2018',
+  'renews-itself': 'platform-2018',
+  web3: 'platform-2018',
+  'prompt-engineer': 'ai-2024',
+  'ai-slop': 'ai-2024',
+  'react-developer': 'platform-2018',
+  'angular-developer': 'platform-2018',
+  'vue-developer': 'platform-2018',
+  'framework-wars-veteran': 'run-2',
+  'jquery-forever': 'platform-2018',
+  specialist: 'run-2',
+  explorer: 'run-2',
+  'full-stack': 'run-2',
+  collector: 'run-2',
+  'just-a-homepage': 'run-2',
+  'pivot-to-video': 'run-2',
+  'move-fast': 'run-2',
+  'secret-door': 'run-2',
+  'serial-founder': 'run-2',
+  'broken-combo': 'run-2',
+  'make-it-pop': 'run-2',
+  'link-farm': 'run-2',
+};
+
 function achievement(
   id: AchievementId,
   category: AchievementCategory,
@@ -160,7 +229,7 @@ function achievement(
   isEarned: Check,
   isSecret = false,
 ): AchievementDefinition {
-  return { id, category, icon, name, description, isEarned, isSecret };
+  return { id, category, icon, name, description, isEarned, isSecret, reveal: REVEALS[id] ?? 'start' };
 }
 
 const ACHIEVEMENTS: readonly AchievementDefinition[] = [
@@ -281,8 +350,50 @@ const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   achievement('sponsored-content', 'odd', '🤝', 'Sponsored content', 'Win a sponsor’s offer.', (state) => state.runStats.minigamesWon.includes('code-entry')),
   achievement('ship-it', 'odd', '🚢', 'Ship it', 'Hit the launch window.', (state) => state.runStats.minigamesWon.includes('launch-window')),
   achievement('link-farm', 'odd', '🕸️', 'Link farm', 'Hold 100 Backlinks at once.', (_state, legacy) => legacy.backlinks >= 100),
+  achievement('hackerman', 'odd', '🕶️', 'Hackerman', 'Open the developer tools. The money on the screen was never the money in the game.', (state) => state.runStats.hasPokedWithDevTools, true),
 ];
 
 export const ACHIEVEMENT_IDS: readonly AchievementId[] = ACHIEVEMENTS.map((definition) => definition.id);
 
+/** A kind whose name is itself a spoiler: the tree's row says "???" until the run that brings specializations. */
+export const ACHIEVEMENT_CATEGORY_REVEALS: Readonly<Partial<Record<AchievementCategory, AchievementReveal>>> = { tree: 'run-2' };
+
 export const ACHIEVEMENTS_BY_ID = Object.fromEntries(ACHIEVEMENTS.map((definition) => [definition.id, definition])) as Readonly<Record<AchievementId, AchievementDefinition>>;
+
+/** The run this player has got to, in this browser: the current one, or the one after the last finished. */
+function findFurthestRun(state: GameState, legacy: LegacyState): number {
+  return Math.max(state.runNumber, legacy.finishedRuns + 1);
+}
+
+const RUN_REVEALS: Readonly<Record<RunReveal, number>> = { start: 1, 'run-2': 2, 'run-3': 3 };
+
+/** Reaching an era records its achievement, so a later run's 1997 still knows 2018 was reached once. */
+const ERA_REACHED: Readonly<Partial<Record<EraId, AchievementId>>> = {
+  'web2-2005': 'web-2-0',
+  'social-2011': 'social-web',
+  'platform-2018': 'platform-play',
+  'ai-2024': 'now-with-ai',
+};
+
+function hasReachedEraBefore(legacy: LegacyState, eraId: EraId): boolean {
+  const reachedId = ERA_REACHED[eraId];
+  return reachedId !== undefined && legacy.achievementIds.includes(reachedId);
+}
+
+function hasSeenEra(state: GameState, legacy: LegacyState, eraId: EraId): boolean {
+  return yearOf(state) >= ERAS_BY_ID[eraId].year || hasReachedEraBefore(legacy, eraId);
+}
+
+function isRunReveal(reveal: AchievementReveal): reveal is RunReveal {
+  return reveal in RUN_REVEALS;
+}
+
+/** Whether what this reveal waits for has happened, in this run or an earlier one. */
+export function isRevealReached(reveal: AchievementReveal, state: GameState, legacy: LegacyState): boolean {
+  return isRunReveal(reveal) ? findFurthestRun(state, legacy) >= RUN_REVEALS[reveal] : hasSeenEra(state, legacy, reveal);
+}
+
+/** An earned achievement always shows; an unearned one once its mechanic has. */
+export function isAchievementRevealed(id: AchievementId, state: GameState, legacy: LegacyState): boolean {
+  return legacy.achievementIds.includes(id) || isRevealReached(ACHIEVEMENTS_BY_ID[id].reveal, state, legacy);
+}
