@@ -118,5 +118,5 @@ export function renderSiteColorsPanel(state: GameState): string {
 
 /** What the panel's markup depends on. */
 export function calculateColorsSignature(state: GameState, isOpen: boolean): string {
-  return isOpen ? `${state.eraId}|${state.specializationId}|${JSON.stringify(state.siteColors)}` : 'closed';
+  return isOpen ? `${state.eraId}|${state.specializationIds.join(",")}|${JSON.stringify(state.siteColors)}` : 'closed';
 }

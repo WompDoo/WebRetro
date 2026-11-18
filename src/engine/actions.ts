@@ -1,3 +1,5 @@
+import { countCleaned, EMPTY_ERA_STATS } from './era-stats';
+import { canSwitchAnyFeature, findAdLimit, isFeatureLockedOff } from './specializations';
 import { heatUp, startBuff } from './buffs';
 import { POPUP_SCAM_MONEY_SHARE, QUICK_FIX_TRAFFIC_FACTOR } from './constants';
 import { formatPercent } from './format';
@@ -113,10 +115,15 @@ export function upgradeHosting(state: GameState): GameState {
   return { ...spend(state, next.cost), hostingTier: state.hostingTier + 1 };
 }
 
-/** Switch a trade-off feature off or back on. It keeps its levels either way. */
+/** A trade-off feature, or from the second run of the test build any feature: the sacrifice some specializations ask for. */
+export function canSwitchFeature(state: GameState, featureId: FeatureId): boolean {
+  const isSwitchable = FEATURES_BY_ID[featureId].isSwitchable || canSwitchAnyFeature(state);
+  return isSwitchable && state.featureLevels[featureId] > 0 && !isFeatureLockedOff(state, featureId);
+}
+
+/** Switch a feature off or back on. It keeps its levels either way; a specialization's sacrifice stays off. */
 export function toggleFeature(state: GameState, featureId: FeatureId): GameState {
-  const canSwitch = FEATURES_BY_ID[featureId].isSwitchable && state.featureLevels[featureId] > 0;
-  if (!canSwitch) return state;
+  if (!canSwitchFeature(state, featureId)) return state;
   const isOff = state.switchedOffFeatureIds.includes(featureId);
   return {
     ...state,
@@ -126,8 +133,13 @@ export function toggleFeature(state: GameState, featureId: FeatureId): GameState
   };
 }
 
+/** The era's room for ads, or fewer if a specialization on the site keeps them few. */
+function findAdRoom(state: GameState): number {
+  return Math.min(ERAS_BY_ID[state.eraId].maxAds, findAdLimit(state) ?? Number.POSITIVE_INFINITY);
+}
+
 export function canPlaceAd(state: GameState): boolean {
-  return canUseAds(state) && state.adCount < ERAS_BY_ID[state.eraId].maxAds && state.money >= calculateNextAdCost(state);
+  return canUseAds(state) && state.adCount < findAdRoom(state) && state.money >= calculateNextAdCost(state);
 }
 
 export function placeAd(state: GameState): GameState {
@@ -268,7 +280,7 @@ function withQuickFixBonus(state: GameState, infection: Infection): GameStep {
 export function cleanInfection(state: GameState, infectionId: number): GameStep {
   const infection = findInfection(state, infectionId);
   if (infection === null) return { state, events: [] };
-  const cleaned = { ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) };
+  const cleaned = countCleaned({ ...state, infections: state.infections.filter((candidate) => candidate.id !== infectionId) }, infection.kind);
   const bonus = withQuickFixBonus(cleaned, infection);
   return { state: bonus.state, events: [describeCleanup(infection, state.eraId), ...bonus.events] };
 }
@@ -289,7 +301,7 @@ function enterEra(state: GameState, eraId: EraId): GameState {
 /** The relaunch pays for itself, and pays back a share of what the retiring features earned. */
 function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): GameState {
   const payout = calculateRetirementPayout(state, nextEraId);
-  return earn(enterEra(spend(state, migrationCost), nextEraId), payout);
+  return earn({ ...enterEra(spend(state, migrationCost), nextEraId), eraStats: EMPTY_ERA_STATS }, payout);
 }
 
 /**

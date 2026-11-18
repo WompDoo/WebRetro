@@ -1,4 +1,5 @@
 import {
+  findShownEraId,
   calculateAverageMsBetweenFines,
   calculateCertificateRenewalFee,
   canRenewCertificate,
@@ -218,7 +219,7 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView
 }
 
 function renderFeatureGroup(state: GameState, eraId: EraId, view: ShopView): string {
-  const featureIds = getUnlockedFeatureIds(state).filter((featureId) => FEATURES_BY_ID[featureId].eraId === eraId);
+  const featureIds = getUnlockedFeatureIds(state).filter((featureId) => findShownEraId(state, FEATURES_BY_ID[featureId].eraId) === eraId);
   const era = ERAS_BY_ID[eraId];
   return `<h3 class="shop-group-title">${era.year} · ${escapeHtml(era.name)}</h3>${featureIds.map((featureId) => renderFeatureRow(state, featureId, view)).join('')}`;
 }
@@ -232,7 +233,7 @@ function renderRetiredFeatures(state: GameState): string {
 }
 
 function renderBuildTab(state: GameState, view: ShopView): string {
-  const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId)).reverse();
+  const eras = ERA_IDS.filter((eraId) => isEraUnlocked(state, eraId) && findShownEraId(state, eraId) === eraId).reverse();
   return `${renderSpecializationPanel(state, view.isSpecializationsOpen)}${renderBuyAmountPicker(view.buyAmount)}${eras.map((eraId) => renderFeatureGroup(state, eraId, view)).join('')}${renderRetiredFeatures(state)}`;
 }
 
@@ -352,7 +353,7 @@ function renderVisitedGroup(state: GameState, eraId: EraId, upgradeIds: readonly
 function renderVisitedGroups(state: GameState, upgradeIds: readonly UpgradeId[]): string {
   return [...ERA_IDS]
     .reverse()
-    .map((eraId) => ({ eraId, ids: upgradeIds.filter((upgradeId) => UPGRADES_BY_ID[upgradeId].eraId === eraId) }))
+    .map((eraId) => ({ eraId, ids: upgradeIds.filter((upgradeId) => findShownEraId(state, UPGRADES_BY_ID[upgradeId].eraId) === eraId) }))
     .filter((group) => group.ids.length > 0)
     .map((group) => renderVisitedGroup(state, group.eraId, group.ids))
     .join('');

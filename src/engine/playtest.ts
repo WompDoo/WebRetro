@@ -18,7 +18,8 @@ import { getErasOfRun, isEraInRun } from './era-chain';
 import { calculateGateChecks } from './era-gate';
 import { createEraRecord } from './era-records';
 import { OPPORTUNITY_WINDOW_MS } from './opportunities';
-import { SPECIALIZATION_IDS } from './content/specializations';
+import { SPECIALIZATION_IDS, SPECIALIZATIONS_BY_ID } from './content/specializations';
+import { SPECIALIZATIONS_FROM_RUN } from './specializations';
 import { createInitialGameState } from './state';
 import type { EraId, FeatureId, FrameworkId, GameState, InfectionKind, MinigameId, OpportunityKind, SpecializationId, UpgradeId } from './types';
 
@@ -262,13 +263,24 @@ export function setPlaytestCursorLevel(state: GameState, level: number): GameSta
   return { ...state, runNumber, featureLevels: { ...state.featureLevels, 'custom-cursor': level } };
 }
 
-/** Every specialization unlocked, as if each had been built towards this run. */
-export function unlockPlaytestSpecializations(state: GameState): GameState {
-  return { ...state, unlockedSpecializationIds: SPECIALIZATION_IDS.filter((id) => id !== 'homepage') };
+/** At least the second run: specializations exist from there. */
+function withSpecializationsOn(state: GameState): GameState {
+  return { ...state, runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN) };
 }
 
-/** The site becomes this specialization now, unlocked or not: to see a route without building towards it. */
+/** Every specialization unlocked, as if each had been built towards this run. */
+export function unlockPlaytestSpecializations(state: GameState): GameState {
+  return { ...withSpecializationsOn(state), unlockedSpecializationIds: SPECIALIZATION_IDS.filter((id) => id !== 'homepage') };
+}
+
+/**
+ * The site takes this specialization now, unlocked or not, in place of whatever its era gave it: to see one without
+ * building towards it. The Homepage clears the site's specializations.
+ */
 export function setPlaytestSpecialization(state: GameState, specializationId: SpecializationId): GameState {
-  const unlocked = [...new Set([...state.unlockedSpecializationIds, specializationId])].filter((id) => id !== 'homepage');
-  return { ...state, specializationId, unlockedSpecializationIds: unlocked };
+  const eraId = SPECIALIZATIONS_BY_ID[specializationId].eraId;
+  const others = state.specializationIds.filter((id) => SPECIALIZATIONS_BY_ID[id].eraId !== eraId);
+  const stack = specializationId === 'homepage' ? [] : [...others, specializationId].sort((a, b) => ERA_IDS.indexOf(SPECIALIZATIONS_BY_ID[a].eraId) - ERA_IDS.indexOf(SPECIALIZATIONS_BY_ID[b].eraId));
+  const unlocked = [...new Set([...state.unlockedSpecializationIds, ...stack])];
+  return { ...withSpecializationsOn(state), specializationIds: stack, unlockedSpecializationIds: unlocked };
 }

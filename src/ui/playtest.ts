@@ -135,7 +135,7 @@ function renderCursors(state: GameState): string {
 /** The test build's specializations: unlock them all, or become one now (from 2011 on, it changes the page and the money). */
 function renderSpecializations(state: GameState): string {
   if (!areSpecializationsOn(state)) return '';
-  const routes = SPECIALIZATION_IDS.map((id) => button('playtest-specialization', id, `${SPECIALIZATIONS_BY_ID[id].icon} ${SPECIALIZATIONS_BY_ID[id].name}`, ` aria-pressed="${state.specializationId === id}"`)).join('');
+  const routes = SPECIALIZATION_IDS.map((id) => button('playtest-specialization', id, `${SPECIALIZATIONS_BY_ID[id].icon} ${SPECIALIZATIONS_BY_ID[id].name}`, ` aria-pressed="${state.specializationIds.includes(id)}"`)).join('');
   return `<h3 class="playtest-heading">Specializations</h3><p class="playtest-buttons">${button('playtest-unlock-specializations', 'all', 'Unlock every specialization')}</p><p class="playtest-buttons">${routes}</p>`;
 }
 

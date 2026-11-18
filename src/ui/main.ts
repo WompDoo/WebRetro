@@ -1,11 +1,11 @@
-import { advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, recordFoundSpecializations, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { Edition, SimulationMode } from '../engine';
 import { createActionHandlers, createClickHandler, createKeydownHandler, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
 import { editorElements, elements, introElements, minigameElements } from './elements';
 import { createIntro } from './intro';
 import { installJavaScriptEffects } from './javascript-effects';
-import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readLegacy, readPlaytestFlag, restoreGame, restorePreferences, writeSave } from './persistence';
+import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readLegacy, readPlaytestFlag, restoreGame, restorePreferences, writeLegacy, writeSave } from './persistence';
 import { createTapCounter, isPlaytestRequested } from './playtest';
 import { installPhoneSwipe } from './phone-swipe';
 import { installScrollDepth } from './scroll-depth';
@@ -49,6 +49,15 @@ function tick(): void {
   const mode: SimulationMode = elapsedMs > OFFLINE_THRESHOLD_MS ? 'offline' : 'live';
   // Playtest speed runs more game time per tick; live or offline still depends on real time.
   applyStep(advanceSimulation(store.game, elapsedMs * store.playtestSpeed, mode));
+  recordFound();
+}
+
+/** A specialization unlocked in any run stays in the collection: its card shows from the start next time. */
+function recordFound(): void {
+  const recorded = recordFoundSpecializations(store.legacy, store.game.unlockedSpecializationIds);
+  if (recorded === store.legacy) return;
+  store.legacy = recorded;
+  writeLegacy();
 }
 
 /** An offer's minigame: a fresh code in the era's format, whatever the difficulty. */

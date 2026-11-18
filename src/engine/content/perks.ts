@@ -12,6 +12,10 @@ export interface PerkDefinition {
   readonly maxLevel: number;
   /** What the perk does all the time, as effects. Perks that act when an era starts have none (see era-start.ts). */
   readonly effectsAt: (level: number) => readonly UpgradeEffect[];
+  /** A price of its own, for a perk that isn't bought level by level. */
+  readonly price?: number;
+  /** Only the web specialization test build has it. */
+  readonly isTestBuildOnly?: boolean;
 }
 
 /** Each level of Muscle memory: typing earns this much more. */
@@ -28,7 +32,10 @@ const UNCAPPED = Number.POSITIVE_INFINITY;
 const OPENING_PERK_CAP = 3;
 const NO_EFFECTS = (): readonly UpgradeEffect[] => [];
 
-export const PERK_IDS: readonly PerkId[] = ['muscle-memory', 'regulars', 'templates', 'ops-runbook', 'known-tags', 'early-warning', 'old-savings'];
+export const PERK_IDS: readonly PerkId[] = ['muscle-memory', 'regulars', 'templates', 'ops-runbook', 'known-tags', 'early-warning', 'old-savings', 'serial-founder'];
+
+/** A few runs of saving: by then a player has earned the right to break the tree. */
+const SERIAL_FOUNDER_PRICE = 50;
 
 export const PERKS_BY_ID: Readonly<Record<PerkId, PerkDefinition>> = {
   'muscle-memory': {
@@ -80,9 +87,18 @@ export const PERKS_BY_ID: Readonly<Record<PerkId, PerkDefinition>> = {
     description: 'Something put aside from the last site. A new site starts with $1,000 for each level.',
     effectsAt: NO_EFFECTS,
   },
+  'serial-founder': {
+    id: 'serial-founder',
+    maxLevel: 1,
+    name: 'Serial founder',
+    description: 'You’ve pivoted before. Any specialization can be taken in its era, whatever your site was before. Still one per era.',
+    effectsAt: NO_EFFECTS,
+    price: SERIAL_FOUNDER_PRICE,
+    isTestBuildOnly: true,
+  },
 };
 
-export const NO_PERKS: Readonly<Record<PerkId, number>> = { 'muscle-memory': 0, regulars: 0, templates: 0, 'ops-runbook': 0, 'known-tags': 0, 'early-warning': 0, 'old-savings': 0 };
+export const NO_PERKS: Readonly<Record<PerkId, number>> = { 'muscle-memory': 0, regulars: 0, templates: 0, 'ops-runbook': 0, 'known-tags': 0, 'early-warning': 0, 'old-savings': 0, 'serial-founder': 0 };
 
 /** Every perk's effects at the levels given: what a run started with them gets. */
 export function listPerkEffects(levels: Readonly<Record<PerkId, number>>): readonly UpgradeEffect[] {

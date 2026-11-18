@@ -433,10 +433,44 @@ export interface Infection {
  */
 export type Edition = 'classic' | 'webspecialization';
 
-/** What the site becomes, from the relaunch out of 2005 on. Homepage is no specialization: the classic game's only path. */
-export type SpecializationId = 'homepage' | 'photos' | 'video' | 'microblog' | 'news' | 'reviews' | 'social' | 'streaming' | 'shop';
-/** The eras a specialization shapes. */
-export type SpecializedEraId = 'social-2011' | 'platform-2018' | 'ai-2024';
+/** What the site becomes, era by era from 2005. Homepage is no specialization: the classic game's only path. */
+export type SpecializationId =
+  | 'homepage'
+  | 'blog-network'
+  | 'photos'
+  | 'video'
+  | 'forum'
+  | 'wiki'
+  | 'social'
+  | 'microblog'
+  | 'live-streaming'
+  | 'news'
+  | 'reviews'
+  | 'shop'
+  | 'stories'
+  | 'streaming-service'
+  | 'newsletter'
+  | 'marketplace'
+  | 'professional'
+  | 'chat-community'
+  | 'short-video'
+  | 'ai-answers'
+  | 'ai-studio'
+  | 'ai-companion'
+  | 'agent-store';
+/** The eras with specializations of their own, from 2005. */
+export type SpecializedEraId = 'web2-2005' | 'social-2011' | 'platform-2018' | 'ai-2024';
+
+/** What an era counts for unlocks that ask for something done rather than bought. Starts over at every relaunch. */
+export interface EraStats {
+  /** Times the editor caught fire. */
+  readonly onFireStarts: number;
+  /** Traffic spikes that ended with the site still up. */
+  readonly spikesRiddenOut: number;
+  readonly cleanedByKind: Readonly<Partial<Record<InfectionKind, number>>>;
+  /** How long the site has run without a single ad, right up to now. */
+  readonly adFreeMs: number;
+}
 
 /** Behind the page: plain white, a whisper of your accent color, or warm cream. Each keeps every era readable. */
 export type SiteBackground = 'white' | 'tint' | 'cream';
@@ -506,16 +540,17 @@ export interface GameState {
   /** This run's Backlinks are in the legacy already: a finished run pays out once. */
   readonly areBacklinksBanked: boolean;
   readonly edition: Edition;
-  /** What the site is now. Chosen at a relaunch from 2011 on, among the unlocked; a Homepage until then. */
-  readonly specializationId: SpecializationId;
-  /** Unlocked this run by what you've built: a new run starts with none. */
+  /** What the site has become, oldest first: at most one per era from 2005. Empty is a homepage. */
+  readonly specializationIds: readonly SpecializationId[];
+  /** Unlocked this run, each during its own era: a new run starts with none. */
   readonly unlockedSpecializationIds: readonly SpecializationId[];
+  readonly eraStats: EraStats;
   /** Null: the era's own look. The test build lets you pick; the classic game never does. */
   readonly siteColors: SiteColors | null;
 }
 
 /** Bought with Backlinks, kept across runs. */
-export type PerkId = 'muscle-memory' | 'regulars' | 'known-tags' | 'early-warning' | 'templates' | 'ops-runbook' | 'old-savings';
+export type PerkId = 'muscle-memory' | 'regulars' | 'known-tags' | 'early-warning' | 'templates' | 'ops-runbook' | 'old-savings' | 'serial-founder';
 
 /**
  * What survives from one site to the next: unspent Backlinks, the perks bought with them, and how many runs were
@@ -526,12 +561,14 @@ export interface LegacyState {
   readonly backlinks: number;
   readonly perkLevels: Readonly<Record<PerkId, number>>;
   readonly finishedRuns: number;
+  /** Every specialization ever unlocked, in any run: their cards show from the start next time. */
+  readonly foundSpecializationIds: readonly SpecializationId[];
 }
 
 /** The parts of the game that decide how the page looks: enough to show an old page again. */
 export type SiteSnapshot = Pick<
   GameState,
-  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors' | 'specializationId' | 'siteColors'
+  'featureLevels' | 'purchasedUpgradeIds' | 'switchedOffFeatureIds' | 'ownedDefenseIds' | 'enabledDefenseIds' | 'adCount' | 'hostingTier' | 'consentBanner' | 'lifetimeVisitors' | 'specializationIds' | 'siteColors'
 >;
 
 /** The site the day it left an era. */

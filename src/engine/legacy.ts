@@ -4,7 +4,8 @@ import type { EraDuration } from './era-records';
 import { applyEraStartPerks, OLD_SAVINGS_PER_LEVEL } from './era-start';
 import { createInitialGameState } from './state';
 import { ERAS_BY_ID } from './content/eras';
-import type { GameState, LegacyState, PerkId } from './types';
+import { SPECIALIZATION_IDS } from './content/specializations';
+import type { GameState, LegacyState, PerkId, SpecializationId } from './types';
 
 /**
  * Prestige: the ending is a relaunch too, and 1997 is the next era. A finished run earns Backlinks, the legacy keeps
@@ -12,7 +13,7 @@ import type { GameState, LegacyState, PerkId } from './types';
  */
 
 export const LEGACY_VERSION = 1;
-export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0, perkLevels: NO_PERKS, finishedRuns: 0 };
+export const EMPTY_LEGACY: LegacyState = { version: LEGACY_VERSION, backlinks: 0, perkLevels: NO_PERKS, finishedRuns: 0, foundSpecializationIds: [] };
 
 /** Visitors below this many orders of magnitude earn nothing: one Backlink for each one past it. */
 const VISITOR_MAGNITUDE_THRESHOLD = 10;
@@ -39,19 +40,44 @@ export function calculateBacklinkSources(state: GameState): BacklinkSources {
   return { fromVisitors: Math.max(0, magnitude), fromFastEras: fastEras };
 }
 
-export function calculateBacklinksEarned(state: GameState): number {
-  const sources = calculateBacklinkSources(state);
-  return sources.fromVisitors + sources.fromFastEras;
+/**
+ * The test build opens one system per site: the second gets specializations, the third Backlinks and perks, paid in
+ * at the end of the second. The classic game pays them from the first.
+ */
+const TEST_BUILD_BACKLINKS_FROM_RUN = 2;
+
+export function areBacklinksOn(state: Pick<GameState, 'edition' | 'runNumber'>): boolean {
+  return state.edition === 'classic' || state.runNumber >= TEST_BUILD_BACKLINKS_FROM_RUN;
 }
 
-/** The first run is about the site: the count shows only once a run has been finished. */
+export function calculateBacklinksEarned(state: GameState): number {
+  const sources = calculateBacklinkSources(state);
+  return areBacklinksOn(state) ? sources.fromVisitors + sources.fromFastEras : 0;
+}
+
+/** The first run is about the site: the count shows only once a run has been finished, and Backlinks are on. */
 export function shouldProjectBacklinks(state: GameState): boolean {
-  return state.runNumber > 1 || state.isGameFinished;
+  return areBacklinksOn(state) && (state.runNumber > 1 || state.isGameFinished);
+}
+
+/** The perks this game offers: Serial founder only in the test build, where the specialization tree is. */
+export function listPerksOf(state: Pick<GameState, 'edition'>): readonly PerkId[] {
+  return PERK_IDS.filter((perkId) => state.edition !== 'classic' || PERKS_BY_ID[perkId].isTestBuildOnly !== true);
 }
 
 /** Each level costs twice the one before: 1, 2, 4, 8 Backlinks. */
 export function calculatePerkCost(legacy: LegacyState, perkId: PerkId): number {
-  return PERK_COST_BASE ** legacy.perkLevels[perkId];
+  return PERKS_BY_ID[perkId].price ?? PERK_COST_BASE ** legacy.perkLevels[perkId];
+}
+
+/** Specializations unlocked this run join the collection, for good: their cards show from the start next time. */
+export function recordFoundSpecializations(legacy: LegacyState, unlockedIds: readonly SpecializationId[]): LegacyState {
+  const newlyFound = unlockedIds.filter((id) => !legacy.foundSpecializationIds.includes(id));
+  return newlyFound.length === 0 ? legacy : { ...legacy, foundSpecializationIds: [...legacy.foundSpecializationIds, ...newlyFound] };
+}
+
+function readFoundSpecializations(value: unknown): readonly SpecializationId[] {
+  return Array.isArray(value) ? SPECIALIZATION_IDS.filter((id) => value.includes(id)) : [];
 }
 
 export function isPerkMaxed(legacy: LegacyState, perkId: PerkId): boolean {
@@ -101,5 +127,11 @@ function readPerkLevels(value: unknown): Readonly<Record<PerkId, number>> {
 /** A saved legacy of this version, or an empty one: a broken save loses perks, never crashes the game. */
 export function restoreLegacy(value: unknown): LegacyState {
   if (!isRecord(value) || value['version'] !== LEGACY_VERSION) return EMPTY_LEGACY;
-  return { version: LEGACY_VERSION, backlinks: readCount(value['backlinks']), perkLevels: readPerkLevels(value['perkLevels']), finishedRuns: readCount(value['finishedRuns']) };
+  return {
+    version: LEGACY_VERSION,
+    backlinks: readCount(value['backlinks']),
+    perkLevels: readPerkLevels(value['perkLevels']),
+    finishedRuns: readCount(value['finishedRuns']),
+    foundSpecializationIds: readFoundSpecializations(value['foundSpecializationIds']),
+  };
 }

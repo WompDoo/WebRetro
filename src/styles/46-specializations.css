@@ -1,46 +1,46 @@
-/* ---------- Specializations: the list at the top of the Build tab ---------- */
-.spec-panel { margin: 0; border-bottom: 2px solid var(--line); background: var(--panel-sunken); }
-.spec-summary { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 14px; cursor: pointer; list-style: none; }
-.spec-summary::-webkit-details-marker { display: none; }
-.spec-summary::before { content: "▸"; margin-right: 6px; color: var(--ink-soft); transition: transform 120ms ease; }
-.spec-panel[open] .spec-summary::before { transform: rotate(90deg); }
-.spec-title { flex: 1; font: 700 12px/1.3 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
-.spec-count { color: var(--ink-soft); font-size: 12px; font-weight: 600; white-space: nowrap; }
-.spec-intro { margin: 0; padding: 0 14px 8px; color: var(--ink-soft); font-size: 12.5px; line-height: 1.45; }
-.spec-list { display: grid; gap: 6px; margin: 0; padding: 0 10px 12px; list-style: none; }
-.spec-card { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 8px 10px; border: 2px solid var(--line-soft); border-radius: 8px; background: var(--panel); }
-.spec-card.is-unlocked { border-color: #3BD16F; }
-.spec-card.is-current { border-color: #FF8A1F; box-shadow: 0 0 0 3px rgba(255, 138, 31, 0.22); }
-.spec-icon { font-size: 20px; line-height: 1.2; text-align: center; }
-.spec-info { display: grid; gap: 2px; min-width: 0; }
-.spec-name { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
-.spec-badge { padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-.spec-badge.is-unlocked { background: #3BD16F; color: #052E14; }
-.spec-badge.is-current { background: #FF8A1F; color: #2A0E00; }
-.spec-badge.is-later { background: var(--panel-sunken); color: var(--ink-soft); border: 1px solid var(--line-soft); }
-.spec-badge.is-deadline { background: #FFE066; color: #3D2E00; }
-.spec-badge.is-missed { background: var(--panel-sunken); color: var(--ink-soft); text-decoration: line-through; }
-.spec-card:has(.is-missed) { opacity: 0.55; }
+/* ---------- The Specialize tab: how it works, the site's specializations, this era's in view ---------- */
+.spec-tab { display: grid; gap: 10px; padding: 12px 14px 16px; }
+.spec-tab-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.spec-tab-title { font: 700 13px/1.3 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
+.spec-found { color: var(--ink-soft); font: 700 12px/1.3 var(--font-numbers); white-space: nowrap; }
+.spec-intro { margin: 0; color: var(--ink-soft); font-size: 12.5px; line-height: 1.45; }
+.spec-stack { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: 13px; }
+.spec-stack.is-empty { color: var(--ink-soft); }
+.spec-stack-label { font-weight: 700; }
+.spec-stack-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.spec-stack-item { padding: 2px 9px; border: 2px solid #FF8A1F; border-radius: 999px; background: rgba(255, 138, 31, 0.12); font-weight: 600; }
+.spec-stack-year { color: var(--ink-soft); font: 600 11px/1 var(--font-numbers); }
+.spec-era-note { margin: 0; padding: 10px 12px; border: 2px dashed var(--line-soft); border-radius: 8px; color: var(--ink-soft); font-size: 13px; }
+
+.spec-card { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: start; gap: 8px 10px; padding: 10px; border: 2px solid var(--line-soft); border-radius: 8px; background: var(--panel); }
+.spec-card.is-unlocked { border-color: #3BD16F; box-shadow: 0 0 0 3px rgba(59, 209, 111, 0.18); }
+.spec-icon { font-size: 22px; line-height: 1.2; text-align: center; }
+.spec-info { display: grid; gap: 3px; min-width: 0; }
+.spec-name { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
 .spec-pitch { margin: 0; color: var(--ink); font-size: 12.5px; line-height: 1.4; }
 .spec-money { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.4; }
 .spec-money::before { content: "💰 "; }
-.spec-conditions { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 4px 0 0; }
-.spec-condition { padding: 1px 7px; border: 1px solid var(--line-soft); border-radius: 4px; background: var(--panel-sunken); color: var(--ink); font: 600 11.5px/1.5 var(--font-numbers); }
-.spec-condition.is-met { border-color: #3BD16F; background: rgba(59, 209, 111, 0.16); color: #12753A; }
-
-/* ---------- The choice, in the relaunch story ---------- */
-.spec-choices { margin: 0 0 14px; padding: 12px; border: 2px solid var(--line); border-radius: 10px; background: var(--panel-sunken); }
-.spec-choices-title { margin: 0 0 8px; font-size: 15px; font-weight: 700; }
-.spec-choice-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
-.spec-choice {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 2px 8px; padding: 8px 10px; border: 2px solid var(--line-soft);
-  border-radius: 8px; background: var(--panel); color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+.spec-lineage { margin: 0; color: var(--ink-soft); font-size: 11.5px; }
+.spec-conditions { display: grid; gap: 3px; margin: 4px 0 0; padding: 0; list-style: none; }
+.spec-condition {
+  display: flex; justify-content: space-between; gap: 8px; padding: 2px 7px; border: 1px solid var(--line-soft); border-radius: 4px;
+  background: var(--panel-sunken); color: var(--ink); font-size: 11.5px; line-height: 1.5;
 }
-.spec-choice:hover { border-color: var(--line); }
-.spec-choice.is-selected { border-color: #FF8A1F; box-shadow: 0 0 0 3px rgba(255, 138, 31, 0.3); }
-.spec-choice-icon { grid-row: span 2; font-size: 22px; }
-.spec-choice-money { color: var(--ink-soft); font-size: 11.5px; line-height: 1.35; }
-.spec-choice-note { margin: 8px 0 0; color: var(--ink-soft); font-size: 12px; }
+.spec-condition-amount { flex: none; font: 600 11.5px/1.5 var(--font-numbers); }
+.spec-condition.is-met { border-color: #3BD16F; background: rgba(59, 209, 111, 0.16); color: #12753A; }
+.spec-choose { align-self: center; }
+.spec-not-yet { align-self: center; color: var(--ink-soft); font-size: 12px; white-space: nowrap; }
+
+/* ---------- Asking before it's for good ---------- */
+.spec-choice-card { max-width: 560px; }
+.spec-choice-heading { margin: 12px 0 4px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.spec-choice-list { margin: 0; padding-left: 18px; line-height: 1.5; }
+.spec-alternatives { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.spec-alternative { padding: 8px 10px; border: 2px solid var(--line-soft); border-radius: 8px; background: var(--panel-sunken); }
+.spec-alternative-near { color: var(--ink-soft); font: 600 12px/1 var(--font-numbers); }
+
+/* ---------- The relaunch story: leaving a specialization unchosen ---------- */
+.spec-relaunch-warning { margin: 0 0 12px; padding: 10px 12px; border: 2px solid #FF8A1F; border-radius: 8px; background: rgba(255, 138, 31, 0.12); font-weight: 600; }
 
 /* ---------- The ending's line about what the homepage became ---------- */
 .ending-path { margin: 12px 0 0; font-weight: 700; text-align: center; }
