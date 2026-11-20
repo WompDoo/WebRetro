@@ -42,7 +42,6 @@ import { elements } from './elements';
 import { FRAMEWORK_PRESENTATION } from './framework-presentation';
 import { isEndingAct } from './ending';
 import { hideOverlay, renderStory, showArchiveYear, showEnding, showOverlay } from './overlays';
-import { isTestBuild } from './edition';
 import { clearSave, deleteStoredData, writeLegacy, writePreferences, writeSave } from './persistence';
 import { findPopupCopy } from './render-popups';
 import { BUY_AMOUNTS, SHOP_TABS } from './render-shop';
@@ -217,19 +216,19 @@ function resetGame(renderer: Renderer, intro: Intro): void {
   intro.show();
 }
 
-/** The test build's achievements button shows once there's something in it: from the first achievement. */
+/** The achievements button shows once there's something in it: from the first achievement. */
 export function showAchievementsButton(): void {
-  elements.achievementsButton.hidden = !isTestBuild(store.edition) || store.legacy.achievementIds.length === 0;
+  elements.achievementsButton.hidden = store.legacy.achievementIds.length === 0;
 }
 
 function showOptions(view: OptionsView): void {
-  const context = { state: store.game, legacy: store.legacy, isPlaytestEnabled: store.isPlaytestEnabled, isTestBuild: isTestBuild(store.edition) };
+  const context = { state: store.game, legacy: store.legacy, isPlaytestEnabled: store.isPlaytestEnabled };
   elements.optionsCard.innerHTML = renderOptions(context, view);
   showOverlay(elements.optionsOverlay);
 }
 
 /**
- * Delete all my data: this edition's storage goes, and the page starts over from nothing, as on a first visit. In
+ * Delete all my data: the game's storage goes, and the page starts over from nothing, as on a first visit. In
  * memory, not with a reload: a reload would save the old game on its way out.
  */
 function deleteAllData(renderer: Renderer, intro: Intro): void {

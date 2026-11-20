@@ -126,7 +126,7 @@ export function upgradeHosting(state: GameState): GameState {
   return { ...spend(state, next.cost), hostingTier: state.hostingTier + 1 };
 }
 
-/** A trade-off feature, or from the second run of the test build any feature: the sacrifice some specializations ask for. */
+/** A trade-off feature, or from the second run any feature: the sacrifice some specializations ask for. */
 export function canSwitchFeature(state: GameState, featureId: FeatureId): boolean {
   const isSwitchable = FEATURES_BY_ID[featureId].isSwitchable || canSwitchAnyFeature(state);
   return isSwitchable && state.featureLevels[featureId] > 0 && !isFeatureLockedOff(state, featureId);

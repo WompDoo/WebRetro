@@ -63,7 +63,7 @@ function findRouteColors(state: GameState): SiteColors | null {
   return accent === null ? null : { accent, background: STARTING_COLORS.background };
 }
 
-/** The colors the page wears: yours, else your specialization's, else none. Only the test build has any. */
+/** The colors the page wears: yours, else your specialization's, else none. A first site has none. */
 export function findEffectiveColors(state: GameState): SiteColors | null {
   if (!areSpecializationsOn(state)) return null;
   return state.siteColors ?? findRouteColors(state);
@@ -96,8 +96,9 @@ export function buildThemeVariables(colors: SiteColors): string {
 }
 
 /**
- * The page in its theme. The test build always wraps it, so the color picker can preview a color on the page before
- * it's picked; `is-themed` is what switches the era stylesheets over. The classic game's page is as it always was.
+ * The page in its theme. From the second site it's always wrapped, so the color picker can preview a color on the
+ * page before it's picked; `is-themed` is what switches the era stylesheets over. A first site's page is as it always
+ * was.
  */
 export function wrapInSiteTheme(state: GameState, html: string): string {
   if (!areSpecializationsOn(state)) return html;

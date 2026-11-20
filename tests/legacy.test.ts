@@ -38,7 +38,8 @@ const SEED = 57;
 const MS_PER_MINUTE = 60_000;
 const TOLERANCE = 1e-9;
 
-const finished = (): GameState => advanceEra(createPlaytestState('ai-2024', 'end', SEED, 'react'));
+/** A second site, finished: the first one earns no Backlinks, they open with the second. */
+const finished = (): GameState => advanceEra({ ...createPlaytestState('ai-2024', 'end', SEED, 'react'), runNumber: 2 });
 const withBacklinks = (backlinks: number): LegacyState => ({ ...EMPTY_LEGACY, backlinks });
 
 describe('Backlinks: what a finished run is worth', () => {
@@ -58,7 +59,7 @@ describe('Backlinks: what a finished run is worth', () => {
     assert.equal(calculateBacklinkSources(state).fromFastEras, 2);
   });
 
-  it('shows what finishing now would earn only after a first finished run', () => {
+  it('shows what finishing now would earn only once Backlinks are on, from the second site', () => {
     assert.ok(!shouldProjectBacklinks(createInitialGameState(SEED)));
     assert.ok(shouldProjectBacklinks(finished()));
     assert.ok(shouldProjectBacklinks(startNextRun({ ...EMPTY_LEGACY, finishedRuns: 1 }, SEED)));
@@ -177,7 +178,7 @@ describe('the second run: features the first never had', () => {
     const html = renderEndingAct(banked.state, 'legacy', null, banked.legacy);
     assert.match(html, /New on your next site/);
     RUN_TWO.forEach((featureId) => assert.ok(html.includes(FEATURES_BY_ID[featureId].name), featureId));
-    assert.match(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 2 }), /The dot-com crash<\/b>, a new era in 2000/);
+    assert.match(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 2 }), /the dot-com leftovers in 1997/);
     assert.doesNotMatch(renderEndingAct(banked.state, 'legacy', null, { ...banked.legacy, finishedRuns: 3 }), /New on your next site/);
   });
 });

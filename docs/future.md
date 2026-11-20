@@ -219,17 +219,21 @@ From the era notes that aren't built yet, and from what the player types ran int
   reduced motion everywhere (partly done). Necessary before anything public.
 - **Sound:** the MIDI player and the podcast player could actually play something, muted by default.
 
-## 5. Your site, your way: specializations and colors (built in the test build)
+## 5. Your site, your way: specializations and colors (built: the game)
 
 Every player used to build the same site: the archive at the end showed everyone the same five pages. The **web
-specialization test build** changes that, and runs beside the classic game so the two can be compared:
+specialization** changes that. It started as a test build beside the classic game, at its own address with its own
+saves, so the two could be compared. **Decided: it's the game.** One build, at https://wompdoo.github.io/WebRetro/;
+the classic game is retired, and the test build's old address forwards to the game.
 
-- **Classic:** https://wompdoo.github.io/WebRetro/ (unchanged).
-- **Test build:** https://wompdoo.github.io/WebRetro/webspecialization/, with its own saves and a "Test build" badge.
-
-One bundle serves both: the page's `game-edition` meta sets `state.edition`, and everything below checks
-`areSpecializationsOn(state)`. The classic game never sees a specialization, a route's money or a theme, whatever a
-save says.
+- **What the merged game plays by:** the test build's rules. Specializations, colors and achievements; one new system per
+  site (specializations with the second, Backlinks paid at the end of the second); the 2000 crash folded into a third
+  run's 1997, never an era of its own; Serial founder among the perks.
+- **Saves:** the game keeps the classic keys (`under-construction:save` and so on). On the first visit the test build's
+  save, legacy and settings move over and win over an older save there, since that's where the game was played lately.
+  A save that still carries the old `edition` field loses it on restore.
+- **Left for later:** the crash as a playable half-era (its story into 2000, its page, its 20-minute fast-era mark) is
+  unreachable now and can go in a cleanup.
 
 ### Specializations v2: the tree (decided, being built)
 

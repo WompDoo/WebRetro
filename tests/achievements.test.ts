@@ -28,7 +28,7 @@ import { QUIET_HAZARDS } from './quiet-hazards';
 const SEED = 21;
 const MIN_ACHIEVEMENTS = 60;
 const MAX_ACHIEVEMENTS = 100;
-const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization', hazardCountdownsMs: QUIET_HAZARDS });
+const testBuild = (state: GameState): GameState => ({ ...state, hazardCountdownsMs: QUIET_HAZARDS });
 const at = (eraId: Parameters<typeof createPlaytestState>[0], stage: 'start' | 'end' = 'end'): GameState => testBuild(createPlaytestState(eraId, stage, SEED, 'react'));
 const earnedBy = (state: GameState, legacy: LegacyState = EMPTY_LEGACY): readonly AchievementId[] => recordAchievements(legacy, state).achievementIds;
 const finished = (state: GameState): GameState => ({ ...state, isGameFinished: true });
@@ -50,10 +50,6 @@ describe('achievements', () => {
     assert.ok(recorded.achievementIds.includes('web-2-0'));
     assert.equal(recordAchievements(recorded, at('web2-2005')), recorded, 'nothing new, the same legacy');
     assert.ok(recordAchievements(recorded, at('homepage-1997', 'start')).achievementIds.includes('web-2-0'));
-  });
-
-  it('are a test-build system: the classic game records none', () => {
-    assert.equal(recordAchievements(EMPTY_LEGACY, { ...at('web2-2005'), edition: 'classic' }), EMPTY_LEGACY);
   });
 
   it('survive a reload, and forget ids that no longer exist', () => {

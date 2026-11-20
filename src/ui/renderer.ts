@@ -204,7 +204,7 @@ function renderDeviceView(issues: readonly Issue[]): void {
   });
 }
 
-/** The 🎨 button and its panel: the test build's, any time. */
+/** The 🎨 button and its panel: from the second site, any time. */
 function isColorsPanelOpen(state: GameState): boolean {
   return areSpecializationsOn(state) && store.isColorsOpen;
 }

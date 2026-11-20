@@ -580,13 +580,7 @@ export interface Infection {
   readonly minigameId: MinigameId;
 }
 
-/**
- * Which game this is: the classic one, or the test build where a site becomes something (routes, site colors). The
- * engine reads it where the two differ; the classic game never sees the test build's systems.
- */
-export type Edition = 'classic' | 'webspecialization';
-
-/** What the site becomes, era by era from 2005. Homepage is no specialization: the classic game's only path. */
+/** What the site becomes, era by era from 2005. Homepage is no specialization: the first site's only path. */
 export type SpecializationId =
   | 'homepage'
   | 'blog-network'
@@ -698,7 +692,6 @@ export interface GameState {
   readonly legacyPerkLevels: Readonly<Record<PerkId, number>>;
   /** This run's Backlinks are in the legacy already: a finished run pays out once. */
   readonly areBacklinksBanked: boolean;
-  readonly edition: Edition;
   /** What the site has become, oldest first: at most one per era from 2005. Empty is a homepage. */
   readonly specializationIds: readonly SpecializationId[];
   /** Unlocked this run, each during its own era: a new run starts with none. */
@@ -710,7 +703,7 @@ export interface GameState {
   readonly itemClocksMs: Readonly<Partial<Record<UpgradeId, number>>>;
   /** What subscribers pay a second. It follows the site slowly: up as it grows, down as subscribers churn. */
   readonly subscriptionRevenuePerSecond: number;
-  /** Null: the era's own look. The test build lets you pick; the classic game never does. */
+  /** Null: the era's own look. From the second site you can pick. */
   readonly siteColors: SiteColors | null;
 }
 

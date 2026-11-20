@@ -61,5 +61,5 @@ export const SIM_SPECIALIZATION: SpecializationId = readSimSpecialization(proces
 export function applySimSpecialization(state: GameState, specializationId: SpecializationId): GameState {
   const eraId = SPECIALIZATIONS_BY_ID[specializationId].eraId;
   const isDue = specializationId !== 'homepage' && getEraIndex(state.eraId) >= getEraIndex(eraId) && !state.specializationIds.includes(specializationId);
-  return isDue ? { ...state, edition: 'webspecialization', runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN), specializationIds: [specializationId] } : state;
+  return isDue ? { ...state, runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN), specializationIds: [specializationId] } : state;
 }

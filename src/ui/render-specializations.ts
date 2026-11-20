@@ -21,7 +21,7 @@ import type { ConditionProgress, EraId, GameState, SpecializationId } from '../e
 import { escapeHtml } from './dom';
 
 /**
- * Specializations on screen (test build, from the second run): the Specialize tab, from the start of 2005; the
+ * Specializations on screen (from the second run): the Specialize tab, from the start of 2005; the
  * screen that asks before you choose; a warning at the relaunch if you're leaving one unchosen; and in the ending,
  * what your site became.
  *

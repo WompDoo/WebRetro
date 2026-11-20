@@ -14,8 +14,6 @@ export interface PerkDefinition {
   readonly effectsAt: (level: number) => readonly UpgradeEffect[];
   /** A price of its own, for a perk that isn't bought level by level. */
   readonly price?: number;
-  /** Only the web specialization test build has it. */
-  readonly isTestBuildOnly?: boolean;
 }
 
 /** Each level of Muscle memory: typing earns this much more. */
@@ -94,7 +92,6 @@ export const PERKS_BY_ID: Readonly<Record<PerkId, PerkDefinition>> = {
     description: 'You’ve pivoted before. Any specialization can be taken in its era, whatever your site was before. Still one per era.',
     effectsAt: NO_EFFECTS,
     price: SERIAL_FOUNDER_PRICE,
-    isTestBuildOnly: true,
   },
 };
 

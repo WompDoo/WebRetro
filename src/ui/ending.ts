@@ -9,7 +9,7 @@ import {
   areBacklinksOn,
   calculateBacklinksEarned,
   isCrashFolded,
-  listPerksOf,
+  PERK_IDS,
   calculatePerkCost,
   canBuyPerk,
   isPerkMaxed,
@@ -117,7 +117,7 @@ export function calculateOfferAmount(state: GameState): number {
   return state.lifetimeEarnings * OFFER_EARNINGS_MULTIPLE;
 }
 
-/** The test build's line about what your homepage became, between the email and the choice. */
+/** The line about what your homepage became, between the email and the choice. */
 function renderPathLine(state: GameState): string {
   const path = describeSpecializationPath(state);
   return path === '' ? '' : `<p class="ending-path">${escapeHtml(path)}</p>`;
@@ -237,26 +237,26 @@ function renderPerkRow(legacy: LegacyState, perkId: PerkId): string {
 }
 
 /** What the next site gets that this one didn't: the reason to start it. Empty once every run's content is open. */
-/** What the test build opens with each new site, on top of the run's new features. */
-const TEST_BUILD_RUN_UNLOCKS: Readonly<Record<number, string>> = {
+/** What each new site opens, on top of the run's new features. */
+const RUN_UNLOCKS: Readonly<Record<number, string>> = {
   2: '<li><b>Specializations</b>: from 2005, each era can make your site something more. See the Specialize tab.</li>',
   3: '<li><b>Backlinks and perks</b>, Serial founder among them, and the dot-com leftovers in 1997: e-cards, free email, a donate button and more</li>',
 };
 
-function listTestBuildUnlocks(state: GameState, nextRun: number): readonly string[] {
-  const line = TEST_BUILD_RUN_UNLOCKS[nextRun];
-  return state.edition === 'classic' || line === undefined ? [] : [line];
+function listRunUnlocks(nextRun: number): readonly string[] {
+  const line = RUN_UNLOCKS[nextRun];
+  return line === undefined ? [] : [line];
 }
 
-function renderNextRunUnlocks(state: GameState, legacy: LegacyState): string {
+function renderNextRunUnlocks(legacy: LegacyState): string {
   const nextRun = legacy.finishedRuns + 1;
   const eras = listErasNewInRun(nextRun)
-    .filter((eraId) => !isCrashFolded(state, eraId))
+    .filter((eraId) => !isCrashFolded(eraId))
     .map((eraId) => `<li><b>${escapeHtml(ERAS_BY_ID[eraId].name)}</b>, a new era in ${eraYear(eraId)}</li>`);
   const features = FEATURE_IDS.filter((featureId) => getFeatureFirstRun(featureId) === nextRun).map(
     (featureId) => `<li><b>${escapeHtml(FEATURES_BY_ID[featureId].name)}</b> in ${eraYear(FEATURES_BY_ID[featureId].eraId)}</li>`,
   );
-  const items = [...listTestBuildUnlocks(state, nextRun), ...eras, ...features];
+  const items = [...listRunUnlocks(nextRun), ...eras, ...features];
   return items.length === 0 ? '' : `<h3 class="story-subheading">New on your next site</h3><ul class="next-run-unlocks">${items.join('')}</ul>`;
 }
 
@@ -266,12 +266,11 @@ function describeFastEraMark(state: GameState): string {
   return hasHalfEra ? 'under 45 minutes, or 20 for the crash' : 'under 45 minutes';
 }
 
-/** Prestige: what the run earned, the perks it buys, and the new site. */
-/** Before Backlinks open (the test build's first site): just what the next site brings. */
-function renderFirstLegacy(state: GameState, legacy: LegacyState): string {
+/** Before Backlinks open (the first site): just what the next site brings. */
+function renderFirstLegacy(legacy: LegacyState): string {
   return `<p class="story-year">Site number ${legacy.finishedRuns + 1}</p>
     <h2 id="end-heading">Your next site</h2>
-    ${renderNextRunUnlocks(state, legacy)}
+    ${renderNextRunUnlocks(legacy)}
     <p class="ending-epilogue">The new site starts in 1997 with a new name.</p>
     <div class="overlay-actions">
       <button type="button" class="ghost-button" data-action="ending-act" data-id="credits">Back to the credits</button>
@@ -280,7 +279,7 @@ function renderFirstLegacy(state: GameState, legacy: LegacyState): string {
 }
 
 function renderLegacy(state: GameState, legacy: LegacyState): string {
-  return areBacklinksOn(state) ? renderLegacyWithBacklinks(state, legacy) : renderFirstLegacy(state, legacy);
+  return areBacklinksOn(state) ? renderLegacyWithBacklinks(state, legacy) : renderFirstLegacy(legacy);
 }
 
 function renderLegacyWithBacklinks(state: GameState, legacy: LegacyState): string {
@@ -288,8 +287,8 @@ function renderLegacyWithBacklinks(state: GameState, legacy: LegacyState): strin
   return `<p class="story-year">Site number ${legacy.finishedRuns + 1}</p>
     <h2 id="end-heading">Your old site links to the new one</h2>
     <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in ${describeFastEraMark(state)}. You have <b>${pluralizeBacklinks(legacy.backlinks)}</b> to spend on perks every new site starts with.</p>
-    ${renderNextRunUnlocks(state, legacy)}
-    <ul class="perk-list">${listPerksOf(state).map((perkId) => renderPerkRow(legacy, perkId)).join('')}</ul>
+    ${renderNextRunUnlocks(legacy)}
+    <ul class="perk-list">${PERK_IDS.map((perkId) => renderPerkRow(legacy, perkId)).join('')}</ul>
     <p class="ending-epilogue">The new site starts in 1997 with a new name, and you start with everything above.</p>
     <div class="overlay-actions">
       <button type="button" class="ghost-button" data-action="ending-act" data-id="credits">Back to the credits</button>

@@ -23,8 +23,8 @@ import type { EraGateRequirement, EraId, FeatureId, GameEvent, GameState, GameSt
 /** The second run opens specializations; the first is the game as it has always been. */
 export const SPECIALIZATIONS_FROM_RUN = 2;
 
-export function areSpecializationsOn(state: GameState): boolean {
-  return state.edition !== 'classic' && state.runNumber >= SPECIALIZATIONS_FROM_RUN;
+export function areSpecializationsOn(state: Pick<GameState, 'runNumber'>): boolean {
+  return state.runNumber >= SPECIALIZATIONS_FROM_RUN;
 }
 
 export function isSpecializedEra(eraId: EraId): eraId is SpecializedEraId {
@@ -267,7 +267,7 @@ function isLaterUnreachable(state: GameState, parent: SpecializationId, eraId: E
 
 // ---------- What the site's specializations do ----------
 
-/** This era's plan of the newest specialization: its focus and its money. Null for a homepage, before 2005, or in the classic game. */
+/** This era's plan of the newest specialization: its focus and its money. Null for a homepage, or before 2005. */
 function findPlanIn(specializationId: SpecializationId, eraId: EraId): SpecializationEraPlan | null {
   return isSpecializedEra(eraId) ? SPECIALIZATIONS_BY_ID[specializationId].eras[eraId] ?? null : null;
 }
@@ -323,7 +323,7 @@ export function findAdLimit(state: GameState): number | null {
   return limits.length === 0 ? null : Math.min(...limits);
 }
 
-/** From the second run, in the test build, every feature can be switched off: the sacrifice some unlocks ask for. */
+/** From the second run, every feature can be switched off: the sacrifice some unlocks ask for. */
 export function canSwitchAnyFeature(state: GameState): boolean {
   return areSpecializationsOn(state);
 }

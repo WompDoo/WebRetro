@@ -463,7 +463,7 @@ function toShown(specializationId: SpecializationId, eraId: SpecializedEraId): S
   return specializationId === 'homepage' ? null : { specializationId, look: LOOKS[specializationId], eraId };
 }
 
-/** The look for this page: a specialized era of the test build, on anything but a Homepage. Archived pages keep theirs. */
+/** The look for this page: a specialized era, on anything but a Homepage. Archived pages keep theirs. */
 function findLook(state: GameState): ShownLook | null {
   const eraId = ERAS_BY_ID[state.eraId].baseEraId;
   return isLookShownIn(state, eraId) ? toShown(findCurrentSpecialization(state), eraId) : null;
