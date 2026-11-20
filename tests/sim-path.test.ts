@@ -12,16 +12,15 @@ const at2005 = (): GameState => startSecondRun({ ...createPlaytestState('web2-20
 const option = (label: string): PurchaseOption => ({ label, cost: 1, isRequiredForGate: false, apply: (state) => state, canApply: () => true, valueCost: 1, valueApply: (state) => state });
 
 describe('the sim player who chases a path', () => {
-  it('reads SIM_PATH: a path, natural play, or the classic game', () => {
+  it('reads SIM_PATH: a path, natural play, or a first run', () => {
     assert.deepEqual(readSimPath('photos, social,nonsense'), ['photos', 'social']);
     assert.deepEqual(readSimPath('natural'), []);
     assert.equal(readSimPath(undefined), null);
     assert.equal(readSimPath(''), null);
   });
 
-  it('plays the test build’s second run', () => {
+  it('plays the second run', () => {
     const state = startSecondRun(createPlaytestState('homepage-1997', 'start', SEED, 'react'));
-    assert.equal(state.edition, 'webspecialization');
     assert.equal(state.runNumber, 2);
   });
 

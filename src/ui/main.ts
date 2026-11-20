@@ -1,5 +1,5 @@
 import { advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, recordAchievements, recordFoundSpecializations, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, notePokedWithDevTools, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
-import type { Edition, SimulationMode } from '../engine';
+import type { SimulationMode } from '../engine';
 import { createAchievementToaster } from './achievement-toast';
 import { attachBadgeTooltip } from './badge-tooltip';
 import { greetInConsole, watchForDevTools } from './dev-tools-watch';
@@ -8,7 +8,7 @@ import { createCodeEditor } from './code-editor';
 import { editorElements, elements, introElements, minigameElements } from './elements';
 import { createIntro } from './intro';
 import { installJavaScriptEffects } from './javascript-effects';
-import { MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readLegacy, readPlaytestFlag, restoreGame, restorePreferences, writeLegacy, writeSave } from './persistence';
+import { adoptTestBuildDataHere, MAX_OFFLINE_MS, OFFLINE_THRESHOLD_MS, readLegacy, readPlaytestFlag, restoreGame, restorePreferences, writeLegacy, writeSave } from './persistence';
 import { createTapCounter, isPlaytestRequested } from './playtest';
 import { installPhoneSwipe } from './phone-swipe';
 import { installScrollDepth } from './scroll-depth';
@@ -18,7 +18,6 @@ import { createRenderer } from './renderer';
 import { createMinigameModal } from './minigames/minigame-modal';
 import type { MinigameTarget } from './minigames/types';
 import { applyStep, markSiteSeen, pickStartingMobileTab, pushMessage, store, updateGame } from './store';
-import { EDITION_META_NAME, isTestBuild, parseEdition, withEdition } from './edition';
 import { drainTypingIncome } from './typing-income';
 import { findPickerColors } from './render-site-colors';
 import { installSiteColorsPicker } from './site-colors-picker';
@@ -122,30 +121,16 @@ function nameSiteAndSave(name: string): void {
   writeSave();
 }
 
-/** The page's own edition tag. A page built without one is the classic game. */
-function readEditionMeta(): string | null {
-  const meta = document.querySelector<HTMLMetaElement>(`meta[name="${EDITION_META_NAME}"]`);
-  return meta === null ? null : meta.content;
-}
-
-/** The test build says so, in the top bar and the tab title, so nobody mistakes it for the real game. */
-function showEdition(edition: Edition): void {
-  elements.editionBadge.hidden = !isTestBuild(edition);
-  if (isTestBuild(edition)) document.title = `${document.title} · Web specialization (test)`;
-}
-
 function saveWhenHidden(): void {
   if (document.visibilityState === 'hidden') writeSave();
 }
 
 function start(hotData: unknown): void {
-  store.edition = parseEdition(readEditionMeta());
-  showEdition(store.edition);
+  adoptTestBuildDataHere();
   store.legacy = readLegacy();
   showAchievementsButton();
   store.game = startNextRun(store.legacy, store.game.randomSeed);
   restoreGame(hotData);
-  store.game = withEdition(store.game, store.edition);
   restorePreferences();
   store.mobileTab = pickStartingMobileTab(store.game);
   // A returning player's site is all seen: only what they add from now on is news.

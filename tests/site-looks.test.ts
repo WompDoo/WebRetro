@@ -11,7 +11,7 @@ import { QUIET_HAZARDS } from './quiet-hazards';
 
 const SEED = 31;
 const NOW = 0;
-const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization', runNumber: 2 });
+const testBuild = (state: GameState): GameState => ({ ...state, runNumber: 2 });
 const at = (eraId: EraId, stage: 'start' | 'end' = 'end'): GameState =>
   testBuild({ ...createPlaytestState(eraId, stage, SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [], isCookieBannerDismissed: true });
 const as = (state: GameState, specializationId: SpecializationId): GameState => ({ ...state, specializationIds: specializationId === 'homepage' ? [] : [specializationId] });
@@ -27,11 +27,11 @@ describe('a specialized site looks the part', () => {
     assert.doesNotMatch(page, /Hello, world!/);
   });
 
-  it('keeps the template on a Homepage, and the classic game never changes', () => {
+  it('keeps the template on a Homepage, and a first site never changes', () => {
     assert.match(renderSite(at('social-2011'), NOW), /Hello, world!/);
-    const classic: GameState = { ...as(at('social-2011'), 'video'), edition: 'classic' };
-    assert.match(renderSite(classic, NOW), /Hello, world!/);
-    assert.doesNotMatch(renderSite(classic, NOW), /spec-block|site-theme/);
+    const firstSite: GameState = { ...as(at('social-2011'), 'video'), runNumber: 1 };
+    assert.match(renderSite(firstSite, NOW), /Hello, world!/);
+    assert.doesNotMatch(renderSite(firstSite, NOW), /spec-block|site-theme/);
   });
 
   it('dresses the 2018 landing page and the 2024 AI page too, each with that era’s words', () => {
@@ -133,7 +133,7 @@ describe('the site’s colors', () => {
     assert.match(wrapInSiteTheme(chooseSiteColors(plain, OCEAN), '<p>'), /class="site-theme is-themed" style="--site-accent:#1864AB;/);
     assert.equal(findEffectiveColors(as(at('social-2011'), 'video'))?.accent, '#E03131');
     assert.equal(findEffectiveColors(chooseSiteColors(as(at('social-2011'), 'video'), OCEAN))?.accent, '#1864AB');
-    assert.equal(wrapInSiteTheme({ ...chooseSiteColors(plain, OCEAN), edition: 'classic' }, '<p>'), '<p>');
+    assert.equal(wrapInSiteTheme({ ...chooseSiteColors(plain, OCEAN), runNumber: 1 }, '<p>'), '<p>', 'colors come with the second site');
   });
 
   it('derive every shade the era stylesheets use', () => {

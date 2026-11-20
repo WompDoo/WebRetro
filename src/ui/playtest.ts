@@ -15,6 +15,7 @@ import {
   SPECIALIZATION_IDS,
   SPECIALIZATIONS_BY_ID,
   UPGRADES_BY_ID,
+  isCrashFolded,
 } from '../engine';
 import type { EraId, GameState, OpportunityKind } from '../engine';
 import { CURSOR_TIERS } from './cursors';
@@ -71,7 +72,8 @@ function renderEndJumps(eraId: EraId): string {
 }
 
 function renderEraJumps(state: GameState): string {
-  const rows = ERA_IDS.map((eraId) => {
+  // The eras the game plays: the crash is content folded into 1997, never a place to jump to.
+  const rows = ERA_IDS.filter((eraId) => !isCrashFolded(eraId)).map((eraId) => {
     const era = ERAS_BY_ID[eraId];
     const current = state.eraId === eraId ? ' <span class="playtest-here">you are here</span>' : '';
     return `<li class="playtest-era"><span><b>${era.year}</b> ${escapeHtml(era.name)}${current}</span><span class="playtest-buttons">${button('playtest-jump', `${eraId}:start`, 'Start')}${renderEndJumps(eraId)}</span></li>`;
@@ -131,10 +133,8 @@ function renderCursors(state: GameState): string {
   return `<h3 class="playtest-heading">Custom cursor</h3><p class="playtest-buttons">${renderCursorButton(NO_CURSOR, 'None', current)}${tiers}</p>`;
 }
 
-/** The test build's specializations: unlock them all, or become one now (from 2011 on, it changes the page and the money). */
-/** The test build's, in any run: picking one turns the second run on, so a first-run tester can see them too. */
+/** Specializations, in any run: picking one turns the second run on, so a first-run tester can see them too. */
 function renderSpecializations(state: GameState): string {
-  if (state.edition === 'classic') return '';
   const routes = SPECIALIZATION_IDS.map((id) => button('playtest-specialization', id, `${SPECIALIZATIONS_BY_ID[id].icon} ${SPECIALIZATIONS_BY_ID[id].name}`, ` aria-pressed="${state.specializationIds.includes(id)}"`)).join('');
   return `<h3 class="playtest-heading">Specializations</h3><p class="playtest-buttons">${button('playtest-unlock-specializations', 'all', 'Unlock every specialization')}</p><p class="playtest-buttons">${routes}</p>`;
 }

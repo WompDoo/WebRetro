@@ -38,9 +38,16 @@ function withKnownContent(record: EraRecord, emptyLevels: Readonly<Record<Featur
   return { ...record, site };
 }
 
+/** What a save may still carry from older versions of the game: the edition, from when there were two games. */
+const RETIRED_FIELDS: readonly string[] = ['edition'];
+
+function withoutRetiredFields(value: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(value).filter(([key]) => !RETIRED_FIELDS.includes(key)));
+}
+
 export function restoreGameState(value: unknown, fallbackSeed: number): GameState | null {
   if (!isRecord(value) || !hasCompatibleShape(value)) return null;
-  const restored: GameState = { ...createInitialGameState(fallbackSeed), ...(value as Partial<GameState>) };
+  const restored: GameState = { ...createInitialGameState(fallbackSeed), ...(withoutRetiredFields(value) as Partial<GameState>) };
   const initial = createInitialGameState(fallbackSeed);
   return {
     ...restored,

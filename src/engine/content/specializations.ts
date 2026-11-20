@@ -16,7 +16,7 @@ import type { ConsentBanner, FeatureId, SpecializationId, SpecializedEraId, Upgr
  *
  * The first condition is the lean, or what stands for it: halfway there, the specialization comes into view.
  *
- * Only the web specialization test build has them; the classic game is always a Homepage, with no specialization.
+ * They open with the second site; the first is always a Homepage, with no specialization.
  */
 
 /** What a run counts per era, for unlocks that ask for something done rather than bought. */
@@ -137,8 +137,8 @@ export const SPECIALIZATIONS_BY_ID: Readonly<Record<SpecializationId, Specializa
     id: 'homepage',
     name: 'Homepage',
     icon: '🏠',
-    pitch: 'A bit of everything, the way it’s always been: the classic game’s path.',
-    money: 'No specialization: ads, steady all the way, like the classic game.',
+    pitch: 'A bit of everything, the way it’s always been: your first site’s path.',
+    money: 'No specialization: ads, steady all the way, as on your first site.',
     eraId: 'web2-2005',
     parents: [],
     isSecret: false,

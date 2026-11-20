@@ -44,12 +44,12 @@ jobs:
         run: npm run build
 
       # preview.html is the full document (doctype, charset, viewport); the other build is the bare page body.
-      # The web specialization test build runs beside the classic game, at /webspecialization/.
+      # One game, at the root. The web specialization test build's old address forwards to it.
       - name: Assemble the site
         run: |
           mkdir -p site/webspecialization
           cp dist/preview.html site/index.html
-          cp dist/webspecialization-preview.html site/webspecialization/index.html
+          cp pages/webspecialization/index.html site/webspecialization/index.html
 
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 

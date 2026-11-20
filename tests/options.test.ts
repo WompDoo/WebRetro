@@ -7,14 +7,12 @@ import { renderOptions } from '../src/ui/render-options';
 import type { OptionsContext } from '../src/ui/render-options';
 
 const SEED = 31;
-const testBuild = (state: GameState): GameState => ({ ...state, edition: 'webspecialization' });
-const at2005 = (): GameState => testBuild(createPlaytestState('web2-2005', 'end', SEED, 'react'));
+const at2005 = (): GameState => createPlaytestState('web2-2005', 'end', SEED, 'react');
 const legacyWith = (backlinks: number, achievements: LegacyState['achievementIds']): LegacyState => ({ ...EMPTY_LEGACY, backlinks, achievementIds: achievements });
 const context = (overrides: Partial<OptionsContext> = {}): OptionsContext => ({
   state: at2005(),
   legacy: legacyWith(12, ['hello-world', 'on-fire']),
   isPlaytestEnabled: false,
-  isTestBuild: true,
   ...overrides,
 });
 
@@ -28,7 +26,7 @@ describe('playtest and achievements', () => {
   });
 
   it('the next run starts clean', () => {
-    const next = testBuild(startNextRun(EMPTY_LEGACY, SEED));
+    const next = startNextRun(EMPTY_LEGACY, SEED);
     assert.equal(next.runStats.usedPlaytest, false);
   });
 
@@ -54,10 +52,8 @@ describe('the options window', () => {
     assert.match(page, /data-action="cancel-delete-data">Keep my data<\/button><button type="button" class="danger-button" data-action="confirm-delete-data"/);
   });
 
-  it('shows the playtest switch only while the tools are on, and no achievements in the classic game', () => {
+  it('shows the playtest switch only while the tools are on', () => {
     assert.doesNotMatch(renderOptions(context(), 'menu'), /Playtest tools/);
     assert.match(renderOptions(context({ isPlaytestEnabled: true }), 'menu'), /data-action="options-playtest-off">Turn off/);
-    const classic = renderOptions(context({ isTestBuild: false }), 'menu');
-    assert.doesNotMatch(classic, /achievements/);
   });
 });

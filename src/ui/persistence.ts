@@ -1,6 +1,5 @@
 import { advanceSimulation, EMPTY_LEGACY, formatMoney, restoreGameState, restoreLegacy } from '../engine';
 import type { LegacyState } from '../engine';
-import { editionStorageKey } from './edition';
 import { applyStep, createSeed, pushMessage, store } from './store';
 
 interface StoredSave {
@@ -10,9 +9,8 @@ interface StoredSave {
 
 const SAVE_STORAGE_KEY = 'under-construction:save';
 
-/** This page's key for a save: the classic game's as it always was, the test build's apart. */
 function storageKey(key: string): string {
-  return editionStorageKey(store.edition, key);
+  return key;
 }
 /** A gap longer than this counts as time away: it runs as an offline catch-up, without hazards. */
 export const OFFLINE_THRESHOLD_MS = 5_000;
@@ -140,11 +138,45 @@ export function writePreferences(): void {
 
 const BACKUP_STORAGE_KEY = 'under-construction:save-backup';
 const PLAYTEST_FLAG_KEY = 'under-construction:playtest';
+const STORAGE_PREFIX = 'under-construction:';
+const TEST_BUILD_KEY_PART = 'webspecialization:';
 
-/** Everything this edition keeps in the browser. The other edition's keys are its own, and stay. */
+/** Everything the game keeps in the browser. */
 const ALL_STORAGE_KEYS: readonly string[] = [SAVE_STORAGE_KEY, LEGACY_STORAGE_KEY, PREFERENCES_STORAGE_KEY, BACKUP_STORAGE_KEY, PLAYTEST_FLAG_KEY];
 
-/** Options, Delete all my data: this edition's save, legacy, settings, playtest backup and flag. */
+/** Where the web specialization test build kept the same things, back when it was a second game beside this one. */
+export function findTestBuildKey(key: string): string {
+  return key.replace(STORAGE_PREFIX, `${STORAGE_PREFIX}${TEST_BUILD_KEY_PART}`);
+}
+
+/** The storage a move needs: a page's localStorage, or a stand-in in tests. */
+export type KeyValueStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+
+function adoptTestBuildKey(storage: KeyValueStore, key: string): void {
+  const kept = storage.getItem(findTestBuildKey(key));
+  if (kept === null) return;
+  storage.setItem(key, kept);
+  storage.removeItem(findTestBuildKey(key));
+}
+
+/**
+ * The test build is the game now. Its save, legacy and settings move to the game's own keys, once: they win over an
+ * older save there, since the test build is where the game has been played lately.
+ */
+export function adoptTestBuildData(storage: KeyValueStore): void {
+  ALL_STORAGE_KEYS.forEach((key) => adoptTestBuildKey(storage, key));
+}
+
+/** At startup, before anything is read. */
+export function adoptTestBuildDataHere(): void {
+  try {
+    adoptTestBuildData(window.localStorage);
+  } catch {
+    // Storage can be blocked (private windows, previews): there's nothing kept to move.
+  }
+}
+
+/** Options, Delete all my data: the save, legacy, settings, playtest backup and flag. */
 export function deleteStoredData(): void {
   try {
     ALL_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(storageKey(key)));

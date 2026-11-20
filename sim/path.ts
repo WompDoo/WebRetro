@@ -29,7 +29,7 @@ import type { PurchaseOption } from './bot';
  * SIM_PATH=photos,social,stories,short-video plays the test build's second run chasing that path: in each era it
  * steers its spending at the path's next specialization, chooses it the moment it can, and buys its items first.
  * SIM_PATH=natural plays the second run with no path at all: what a player who never aims at one unlocks anyway.
- * Unset, the sim plays the classic game.
+ * Unset, the sim plays a first run.
  */
 export function readSimPath(value: string | undefined): readonly TreeSpecializationId[] | null {
   if (value === undefined || value === '') return null;
@@ -40,7 +40,7 @@ export const SIM_PATH: readonly TreeSpecializationId[] | null = readSimPath(proc
 
 /** The test build's second run: specializations are on from 2005. */
 export function startSecondRun(state: GameState): GameState {
-  return { ...state, edition: 'webspecialization', runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN) };
+  return { ...state, runNumber: Math.max(state.runNumber, SPECIALIZATIONS_FROM_RUN) };
 }
 
 function isOfEra(id: TreeSpecializationId, state: GameState): boolean {

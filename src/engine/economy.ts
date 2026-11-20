@@ -22,7 +22,7 @@ import { UPGRADE_IDS, UPGRADE_SUNSETS, UPGRADES_BY_ID } from './content/upgrades
 import { listPerkEffects } from './content/perks';
 import { calculateBuffFactor, isBuffActive } from './buffs';
 import { findItemOwner } from './content/specialization-items';
-import { isCrashFolded, isEraInRun } from './era-chain';
+import { findShownEraId, isEraInRun } from './era-chain';
 import { areSpecializationsOn, listSpecializationEffects } from './specializations';
 import type {
   DefenseDefinition,
@@ -294,7 +294,7 @@ function summarizePurchases(state: GameState, byEra: Map<string, EffectSummary>)
 
 /** The era and the run: what has retired depends on both, since a run that skips the crash never unlocks it. */
 function summaryKey(state: GameState): string {
-  return `${state.eraId}|${state.runNumber}|${state.edition}|${state.specializationIds.join(',')}`;
+  return `${state.eraId}|${state.runNumber}|${state.specializationIds.join(',')}`;
 }
 
 function lookUpEffectSummary(state: GameState): EffectSummary {
@@ -327,14 +327,12 @@ export function getEraIndex(eraId: EraId): number {
   return ERA_IDS.indexOf(eraId);
 }
 
-/** The era has arrived in this run: a half-era the run skips never unlocks, so nothing of it shows up later. */
-/** The crash's content, in the test build, belongs to 1997: it arrives from the third run on, with nothing to relaunch into. */
-function findContentEraId(state: GameState, eraId: EraId): EraId {
-  return isCrashFolded(state, eraId) ? 'homepage-1997' : eraId;
-}
-
+/**
+ * The era has arrived in this run: a half-era the run skips never unlocks, so nothing of it shows up later. The crash's
+ * content belongs to 1997: it arrives from the third run on, with nothing to relaunch into.
+ */
 export function isEraUnlocked(state: GameState, eraId: EraId): boolean {
-  return isEraInRun(eraId, state.runNumber) && getEraIndex(findContentEraId(state, eraId)) <= getEraIndex(state.eraId);
+  return isEraInRun(eraId, state.runNumber) && getEraIndex(findShownEraId(eraId)) <= getEraIndex(state.eraId);
 }
 
 function calculateKeystrokeRevenueShare(state: GameState): number {

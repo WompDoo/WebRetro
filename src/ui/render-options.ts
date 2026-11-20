@@ -15,18 +15,13 @@ export interface OptionsContext {
   readonly state: GameState;
   readonly legacy: LegacyState;
   readonly isPlaytestEnabled: boolean;
-  readonly isTestBuild: boolean;
 }
 
 function renderRow(title: string, text: string, action: string): string {
   return `<section class="options-row"><div class="options-text"><h3>${title}</h3><p>${text}</p></div>${action}</section>`;
 }
 
-function describeStartOver(context: OptionsContext): string {
-  return context.isTestBuild
-    ? 'A new site, back in 1997. Your Backlinks, perks and achievements stay.'
-    : 'A new site, back in 1997. Your Backlinks and perks stay.';
-}
+const START_OVER_TEXT = 'A new site, back in 1997. Your Backlinks, perks and achievements stay.';
 
 function renderPlaytestRow(context: OptionsContext): string {
   if (!context.isPlaytestEnabled) return '';
@@ -44,8 +39,7 @@ function pluralizeAchievements(count: number): string {
 /** What deleting takes with it, in this player's own numbers. */
 function describeWhatGoes(context: OptionsContext): string {
   const backlinks = context.legacy.backlinks + calculateBacklinksEarned(context.state);
-  const achievements = context.isTestBuild ? `, ${pluralizeAchievements(context.legacy.achievementIds.length)}` : '';
-  return `Your site, ${pluralizeBacklinks(backlinks)}, every perk${achievements} and your settings: everything this game keeps in this browser.`;
+  return `Your site, ${pluralizeBacklinks(backlinks)}, every perk, ${pluralizeAchievements(context.legacy.achievementIds.length)} and your settings: everything this game keeps in this browser.`;
 }
 
 function renderDeleteRow(context: OptionsContext): string {
@@ -67,7 +61,7 @@ const DELETE_ROWS: Readonly<Record<OptionsView, (context: OptionsContext) => str
 };
 
 export function renderOptions(context: OptionsContext, view: OptionsView): string {
-  const startOver = renderRow('Start over', describeStartOver(context), '<button type="button" class="ghost-button" data-action="open-reset">Start over…</button>');
+  const startOver = renderRow('Start over', START_OVER_TEXT, '<button type="button" class="ghost-button" data-action="open-reset">Start over…</button>');
   return `<header class="options-head"><h2 id="options-heading">Options</h2><button type="button" class="ghost-button" data-action="close-options">Close</button></header>
     ${startOver}${renderPlaytestRow(context)}${DELETE_ROWS[view](context)}`;
 }

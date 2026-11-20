@@ -42,13 +42,13 @@ export function calculateBacklinkSources(state: GameState): BacklinkSources {
 }
 
 /**
- * The test build opens one system per site: the second gets specializations, the third Backlinks and perks, paid in
- * at the end of the second. The classic game pays them from the first.
+ * One new system per site: the second gets specializations, the third Backlinks and perks, paid in at the end of the
+ * second.
  */
-const TEST_BUILD_BACKLINKS_FROM_RUN = 2;
+const BACKLINKS_FROM_RUN = 2;
 
-export function areBacklinksOn(state: Pick<GameState, 'edition' | 'runNumber'>): boolean {
-  return state.edition === 'classic' || state.runNumber >= TEST_BUILD_BACKLINKS_FROM_RUN;
+export function areBacklinksOn(state: Pick<GameState, 'runNumber'>): boolean {
+  return state.runNumber >= BACKLINKS_FROM_RUN;
 }
 
 export function calculateBacklinksEarned(state: GameState): number {
@@ -59,11 +59,6 @@ export function calculateBacklinksEarned(state: GameState): number {
 /** The first run is about the site: the count shows only once a run has been finished, and Backlinks are on. */
 export function shouldProjectBacklinks(state: GameState): boolean {
   return areBacklinksOn(state) && (state.runNumber > 1 || state.isGameFinished);
-}
-
-/** The perks this game offers: Serial founder only in the test build, where the specialization tree is. */
-export function listPerksOf(state: Pick<GameState, 'edition'>): readonly PerkId[] {
-  return PERK_IDS.filter((perkId) => state.edition !== 'classic' || PERKS_BY_ID[perkId].isTestBuildOnly !== true);
 }
 
 /** Each level costs twice the one before: 1, 2, 4, 8 Backlinks. */
@@ -87,14 +82,9 @@ export function bankHandTyped(legacy: LegacyState, state: GameState): BankedRun 
   return { legacy: { ...legacy, handTypedKeystrokes: legacy.handTypedKeystrokes + typed }, state: { ...state, runStats: { ...state.runStats, handTypedKeystrokes: 0 } } };
 }
 
-/** Achievements are a test-build system for now: the classic game neither checks nor shows them. */
-export function areAchievementsOn(state: GameState): boolean {
-  return state.edition !== 'classic';
-}
-
 /** A run the playtest tools changed (an era jumped, money handed out) earns nothing: the next one does. */
 export function canEarnAchievements(state: GameState): boolean {
-  return areAchievementsOn(state) && !state.runStats.usedPlaytest;
+  return !state.runStats.usedPlaytest;
 }
 
 /** Whatever the game has just earned joins the legacy, for good. The same legacy back when nothing new was earned. */

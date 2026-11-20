@@ -1,9 +1,8 @@
 import { createInitialGameState, EMPTY_LEGACY, ERAS_BY_ID, startNextRun } from '../engine';
-import type { Edition, GameEvent, GameState, GameStep, LegacyState } from '../engine';
+import type { GameEvent, GameState, GameStep, LegacyState } from '../engine';
 import type { DeviceView } from './browser-chrome';
 import type { PlaytestSpeed } from './playtest';
 import type { ShopTab } from './render-shop';
-import { withEdition } from './edition';
 import { captureSiteSeen, countNewOnSite } from './site-news';
 import type { SiteSeen } from './site-news';
 
@@ -19,8 +18,6 @@ export const MOBILE_TABS: readonly MobileTab[] = ['site', 'code', 'shop', 'inbox
 
 interface UiStore {
   game: GameState;
-  /** This page's game: set once at startup from the page, and stamped on every game it starts or swaps in. */
-  edition: Edition;
   /** Backlinks and perks from finished runs. Saved apart from the game. */
   legacy: LegacyState;
   shopTab: ShopTab;
@@ -64,7 +61,6 @@ export function createSeed(): number {
  */
 export const store: UiStore = {
   game: createInitialGameState(createSeed()),
-  edition: 'classic',
   legacy: EMPTY_LEGACY,
   shopTab: 'learn',
   editorFile: null,
@@ -108,7 +104,7 @@ export function pickStartingMobileTab(game: GameState): MobileTab {
 
 /** Swaps in another game (a new one, a playtest preset, a restored backup) and resets what the UI remembers. */
 export function replaceGame(game: GameState): void {
-  store.game = withEdition(game, store.edition);
+  store.game = game;
   store.news = [];
   store.editorFile = null;
   store.deviceView = 'desktop';

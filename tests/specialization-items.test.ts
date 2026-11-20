@@ -64,10 +64,9 @@ const PRECISION = 6;
 const MINUTE_MS = 60_000;
 const NO_VIEW = { isScrollJackingOn: false, foundSpecializationIds: [] } as const;
 
-/** The test build's second site, quiet: no hazards, no buffs, no spike. */
+/** A second site, quiet: no hazards, no buffs, no spike. */
 const at = (eraId: EraId): GameState => ({
   ...createPlaytestState(eraId, 'end', SEED, 'react'),
-  edition: 'webspecialization',
   runNumber: 2,
   hazardCountdownsMs: QUIET_HAZARDS,
   infections: [],
@@ -222,7 +221,7 @@ describe('each specialization’s own items', () => {
     });
   });
 
-  it('are offered only to a site that holds the specialization, and never in the classic game', () => {
+  it('are offered only to a site that holds the specialization, and never on a first site', () => {
     const video = holding('video');
     assert.ok(getAvailableSkillIds(withoutUpgrade(video, 'learn-flash-video')).includes('learn-flash-video'));
     assert.ok(isFeatureBuildable(video, 'channels'));
@@ -231,9 +230,9 @@ describe('each specialization’s own items', () => {
     assert.ok(!getAvailableSkillIds(withoutUpgrade(homepage, 'learn-flash-video')).includes('learn-flash-video'));
     assert.ok(!getUnlockedFeatureIds(homepage).includes('channels'));
     assert.ok(!isUpgradeAvailable(homepage, 'going-viral'));
-    const classic: GameState = { ...video, edition: 'classic' };
-    assert.ok(!getUnlockedFeatureIds(classic).includes('channels'));
-    assert.ok(!isUpgradeAvailable(classic, 'going-viral'));
+    const firstSite: GameState = { ...video, runNumber: 1 };
+    assert.ok(!getUnlockedFeatureIds(firstSite).includes('channels'));
+    assert.ok(!isUpgradeAvailable(firstSite, 'going-viral'));
   });
 
   it('stay for good once held: a later specialization keeps the earlier one’s items', () => {

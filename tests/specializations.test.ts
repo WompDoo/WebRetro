@@ -32,7 +32,7 @@ import {
   listGateRequirements,
   listOpenedBy,
   listOutOfReach,
-  listPerksOf,
+  PERK_IDS,
   listSpecializationEffects,
   recordFoundSpecializations,
   SPECIALIZATIONS_BY_ID,
@@ -55,7 +55,7 @@ const MIN_FOCUS_LEVEL = 5;
 const MAX_FOCUS_LEVEL = 30;
 
 /** The test build's second site: specializations are on. */
-const secondRun = (state: GameState): GameState => ({ ...state, edition: 'webspecialization', runNumber: 2 });
+const secondRun = (state: GameState): GameState => ({ ...state, runNumber: 2 });
 const at = (eraId: EraId, stage: 'start' | 'end' = 'end'): GameState =>
   secondRun({ ...createPlaytestState(eraId, stage, SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, infections: [], popups: [] });
 const holding = (state: GameState, ids: readonly SpecializationId[]): GameState => ({ ...state, specializationIds: ids });
@@ -70,10 +70,9 @@ const spending = (state: GameState, byFeature: Partial<Record<FeatureId, number>
 const photosReady = (): GameState => switchedOff(spending(leaning(at('web2-2005'), { 'photo-gallery': 40, 'tag-cloud': 3, 'flash-intro': 1, blog: 16 }), { 'photo-gallery': 5e8, blog: 5e8 }), ['flash-intro']);
 
 describe('the specialization tree: when it opens', () => {
-  it('is the second site’s draw: off in the first run and in the classic game', () => {
+  it('is the second site’s draw: off in the first run', () => {
     assert.ok(isSpecializationOpen(at('web2-2005'), 'photos'));
     assert.ok(!isSpecializationOpen({ ...at('web2-2005'), runNumber: 1 }, 'photos'));
-    assert.ok(!isSpecializationOpen({ ...at('web2-2005'), edition: 'classic' }, 'photos'));
   });
 
   it('shows its tab from the start of 2005, not in 1997', () => {
@@ -239,17 +238,17 @@ describe('what a specialization does', () => {
 });
 
 describe('staying a homepage', () => {
-  const classic = (state: GameState): GameState => ({ ...state, edition: 'classic' });
+  const firstRun = (state: GameState): GameState => ({ ...state, runNumber: 1 });
   const shapedEras = ['web2-2005', 'social-2011', 'platform-2018', 'ai-2024'] as const;
 
-  it('is the classic game: the same checklist, the same money and the same page', () => {
+  it('is the first site’s game: the same checklist, the same money and the same page', () => {
     shapedEras.forEach((eraId) => {
       const homepage = at(eraId);
       assert.deepEqual(listGateRequirements(homepage), ERAS_BY_ID[eraId].gateRequirements, eraId);
       assert.deepEqual(listSpecializationEffects(homepage), [], eraId);
-      assert.equal(calculateVisitorsPerSecond(homepage), calculateVisitorsPerSecond(classic(homepage)), eraId);
-      assert.equal(calculateServerLoad(homepage), calculateServerLoad(classic(homepage)), eraId);
-      assert.equal(renderSite(homepage, 0), `<div class="site-theme">${renderSite(classic(homepage), 0)}</div>`, `${eraId}: the page, unthemed`);
+      assert.equal(calculateVisitorsPerSecond(homepage), calculateVisitorsPerSecond(firstRun(homepage)), eraId);
+      assert.equal(calculateServerLoad(homepage), calculateServerLoad(firstRun(homepage)), eraId);
+      assert.equal(renderSite(homepage, 0), `<div class="site-theme">${renderSite(firstRun(homepage), 0)}</div>`, `${eraId}: the page, unthemed`);
     });
   });
 });
@@ -270,28 +269,24 @@ describe('the Specialize tab', () => {
   });
 });
 
-describe('the test build’s runs', () => {
+describe('one new system per site', () => {
   it('skips the 2000 crash and brings its content into 1997 from the third run', () => {
-    const third = { ...createInitialGameState(SEED), edition: 'webspecialization' as const, runNumber: 3 };
+    const third = { ...createInitialGameState(SEED), runNumber: 3 };
     assert.equal(findNextEraId(third), 'web2-2005');
     assert.ok(isEraUnlocked(third, 'crash-2000'));
     assert.ok(getUnlockedFeatureIds(third).includes('e-cards'));
-    const classicThird = { ...third, edition: 'classic' as const };
-    assert.equal(findNextEraId(classicThird), 'crash-2000');
   });
 
   it('opens Backlinks with the third site: nothing earned at the end of the first', () => {
     const finished = { ...createPlaytestState('ai-2024', 'end', SEED, 'react'), isGameFinished: true };
-    assert.ok(!areBacklinksOn({ ...finished, edition: 'webspecialization', runNumber: 1 }));
-    assert.equal(calculateBacklinksEarned({ ...finished, edition: 'webspecialization', runNumber: 1 }), 0);
-    assert.ok(areBacklinksOn({ ...finished, edition: 'webspecialization', runNumber: 2 }));
-    assert.ok(areBacklinksOn({ ...finished, edition: 'classic', runNumber: 1 }));
+    assert.ok(!areBacklinksOn({ ...finished, runNumber: 1 }));
+    assert.equal(calculateBacklinksEarned({ ...finished, runNumber: 1 }), 0);
+    assert.ok(areBacklinksOn({ ...finished, runNumber: 2 }));
   });
 
-  it('sells Serial founder for its own price, in the test build only', () => {
+  it('sells Serial founder for its own price', () => {
     assert.equal(calculatePerkCost(EMPTY_LEGACY, 'serial-founder'), 50);
-    assert.ok(listPerksOf({ edition: 'webspecialization' }).includes('serial-founder'));
-    assert.ok(!listPerksOf({ edition: 'classic' }).includes('serial-founder'));
+    assert.ok(PERK_IDS.includes('serial-founder'));
   });
 
   it('keeps its specializations in the Web Attic', () => {
