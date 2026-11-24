@@ -101,6 +101,9 @@ const WEB2_CODE: EraCode = {
     'ssl-certificate': {
       'ssl.conf': ['<VirtualHost *:443>', '  ServerName www.{site}.com', '  SSLEngine on', '  SSLCertificateFile /etc/ssl/certs/www.{site}.com.crt  # valid for one year. set a reminder?', '</VirtualHost>'],
     },
+    'web-analytics': {
+      'footer.php': ['<!-- stats: free, and it counts everything -->', '<script src="http://stats.searchly.com/track.js"></script>', '<script>track("UA-104729-1");</script>', '<!-- 4 in 5 visitors never scroll past the photo albums -->'],
+    },
     'database-indexes': {
       'schema.sql': ['EXPLAIN SELECT * FROM comments WHERE post_id = 42;', '-- type: ALL   rows: 48213', 'CREATE INDEX idx_comments_post ON comments (post_id);', '-- type: ref   rows: 12'],
     },
@@ -165,6 +168,12 @@ const SOCIAL_CODE: EraCode = {
     'uptime-monitoring': {
       'monitor.js': ['setInterval(function () {', '  http.get("http://www.{site}.com/health", function (res) {', '    if (res.statusCode !== 200) sms.send(ME, "{site} is down"); // yes, at 3am', '  });', '}, 60 * 1000);'],
     },
+    'unit-tests': {
+      'spec/guestbook.spec.js': ["describe('guestbook', function () {", "  it('adds an entry when you sign it', function () {", "    guestbook.sign('Pixel Palace', 'cool site!!!');", '    expect(guestbook.entries.length).toBe(1);', '  });', '});', '// 48 specs, 0 failures'],
+    },
+    'code-review': {
+      'PULL_REQUEST.md': ['Refactor the photo albums into a jQuery plugin', '', 'reviewer: this drops the old lightbox. Did you try it in IE8?', 'you: ...no', 'reviewer: LGTM once IE8 works 👍'],
+    },
     'staging-environment': {
       'deploy.sh': ['#!/bin/sh', 'git push staging master     # staging.{site}.com: try it here first', 'git push production master  # only once staging looks right'],
     },
@@ -206,6 +215,12 @@ const PLATFORM_SHARED_FILES: Readonly<Partial<Record<UpgradeId, Readonly<Record<
   },
   'certificate-automation': {
     terminal: ['$ crontab -l', '0 */12 * * * certbot renew --quiet   # free certificates, renewed twice a day', '$ certbot certificates', '  Expiry Date: in 89 days (VALID)'],
+  },
+  'e2e-tests': {
+    'cypress/integration/signup.spec.js': ["describe('sign up', () => {", "  it('lands on the dashboard', () => {", "    cy.visit('/');", "    cy.contains('Start free trial').click();", "    cy.get('input[name=email]').type('ada@example.com');", "    cy.get('form').submit();", "    cy.url().should('include', '/dashboard');", '  });', '});'],
+  },
+  'ai-written-tests': {
+    'checkout.test.ts': ['// generated overnight: 1,204 tests, all passing', "test('checkout works', () => {", '  expect(true).toBe(true);', '});', "test('the price is right', () => {", '  expect(price(cart)).toBe(price(cart)); // checks the code against itself', '});'],
   },
   'blue-green-deploys': {
     terminal: ['$ kubectl apply -f deploy-green.yaml', 'deployment.apps/{site}-green created', '$ kubectl patch service {site} -p \'{"spec":{"selector":{"slot":"green"}}}\'', 'service/{site} patched   # blue stays warm: rolling back is the same command'],

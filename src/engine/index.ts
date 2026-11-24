@@ -19,6 +19,7 @@ export * from './legacy';
 export * from './era-start';
 export * from './content/perks';
 export * from './actions';
+export * from './feature-weight';
 export * from './hazards';
 export * from './milestones';
 export * from './simulation';

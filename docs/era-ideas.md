@@ -79,6 +79,20 @@ Done (4.2 s) · 182 KB · Server ▮▮▮▮▮▮▯▯ 74%
 ```
 
 - **Page weight** (KB) comes from what you've built. A Flash intro is enormous.
+- **Too heavy? Sunset a level, or refactor.** Every level adds weight, so a big feature slows the whole page. When a
+  feature at level 5 or more gets the card's red line (its next level would cost more visitors in load time than it
+  brings), its ways out appear with its buy buttons, and the red line ends in an i that says what each would do
+  overall (`feature-weight.ts`):
+  - **Sunset a level** (from 2005, once you've learned web analytics and can see what nobody uses): it leaves the
+    page with its visitors and pays half of what it costs back, a trade-in like a retiring feature's. In 2005 that's
+    mostly the 1997 leftovers: the MIDI player, the guestbook, the under-construction sign.
+  - **Refactor** (from 2011) costs developer time: three of the feature's next level, doubling with each refactor.
+    Every level stays and weighs half, but a rewrite ships bugs, and 20% of the feature's users hit one and leave for
+    good.
+  - **QA** in the Ops tab cuts the churn: unit tests and code review (2011), end-to-end tests (2018) and AI-written
+    tests (2024, which help less). They count for refactors already done, and unlike other Ops multipliers they keep
+    working in later eras: a test suite is resilience, not an edge that becomes the baseline.
+  - The slow-page tips name the feature whose refactor would help most. The sim bot refactors; it never sunsets.
 - **Load time** = page weight on the era's connection. From 2011 desktops and phones differ: broadband 700 KB/s
   but 3G 90 KB/s (2011), fiber 3,000 KB/s but "slow 4G" 200 KB/s (2018, what the speed test throttles itself to).
   The desktop view's status bar names both ("Done (0.2 s · 3.2 s on phones)"); the phone view shows the phone's.

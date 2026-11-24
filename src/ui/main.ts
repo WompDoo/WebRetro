@@ -2,6 +2,7 @@ import { advanceSimulation, calculateInfectionDifficulty, closeOpportunity, open
 import type { SimulationMode } from '../engine';
 import { createAchievementToaster } from './achievement-toast';
 import { attachBadgeTooltip } from './badge-tooltip';
+import { attachInfoTips } from './info-tip';
 import { greetInConsole, watchForDevTools } from './dev-tools-watch';
 import { createActionHandlers, createClickHandler, createKeydownHandler, showAchievementsButton, writeCodeKeystroke } from './actions';
 import { createCodeEditor } from './code-editor';
@@ -158,6 +159,7 @@ function start(hotData: unknown): void {
   });
   installPhoneSwipe(elements.browserViewport, elements.site, installStoryChapters(elements.site));
   attachBadgeTooltip(elements.achievementsCard, elements.badgeFloatTip);
+  attachInfoTips(document.body, elements.infoFloatTip);
   watchDevTools();
   setPlaytestEnabled(isPlaytestRequested(window.location) || readPlaytestFlag());
   const countMoneyTap = createTapCounter(() => performance.now());

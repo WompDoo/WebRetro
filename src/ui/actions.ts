@@ -28,6 +28,8 @@ import {
   renewCertificate,
   toggleDefense,
   toggleFeature,
+  refactorFeature,
+  sunsetLevel,
   upgradeHosting,
   UPGRADE_IDS,
   writeCode,
@@ -282,6 +284,8 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
     'buy-defense': withId(isDefenseId, (id) => updateGame((state) => buyDefense(state, id))),
     'toggle-defense': withId(isDefenseId, (id) => updateGame((state) => toggleDefense(state, id))),
     'toggle-feature': withId(isFeatureId, (id) => updateGame((state) => toggleFeature(state, id))),
+    'refactor-feature': withId(isFeatureId, (id) => updateGame((state) => refactorFeature(state, id))),
+    'sunset-level': withId(isFeatureId, (id) => updateGame((state) => sunsetLevel(state, id))),
     'choose-consent-banner': withId(isConsentBanner, (id) => updateGame((state) => chooseConsentBanner(state, id))),
     'dismiss-cookie-banner': () => updateGame(dismissCookieBanner),
     'toggle-scroll-jacking': () => {
