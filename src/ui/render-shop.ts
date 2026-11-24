@@ -68,7 +68,8 @@ import {
   calculateSunsetTradeIn,
   isFeatureTooHeavy,
   REFACTOR_WEIGHT_FACTOR,
-  calculateFeatureContentShare,
+  isRefactorOffered,
+  isSunsetOffered,
 } from '../engine';
 import type {
   BuffId,
@@ -155,20 +156,14 @@ function renderBuildableEffect(state: GameState, featureId: FeatureId): string {
   return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${describeAddedWeight(state, weightKb, '')}</p>${describeNetLoss(state, featureId)}`;
 }
 
-/** A heavy feature's share of the first load, said with the i, when its next level isn't yet a net loss. */
-function renderHeavyShare(state: GameState, featureId: FeatureId, infoTip: string): string {
-  const share = formatPercent(calculateFeatureContentShare(state, featureId));
-  return infoTip === '' ? '' : `<p class="shop-effect weight-note">Its levels are ${share} of the first load${infoTip}</p>`;
-}
-
 /**
- * Said out loud when it happens: more of this feature now costs more visitors in load time than it brings. On a heavy
- * feature the line ends in an i that says what the Refactor and Sunset buttons would do about it.
+ * Said out loud when it happens: more of this feature now costs more visitors in load time than it brings. From level 5
+ * the line ends in an i that says what to do about it: the Sunset and Refactor buttons, or how to get them.
  */
 function describeNetLoss(state: GameState, featureId: FeatureId): string {
   const net = calculateFeatureLevelsNetVisitors(state, featureId, 1);
   const infoTip = isFeatureTooHeavy(state, featureId) ? renderHeavyInfoTip(state, featureId) : '';
-  return net < 0 ? `<p class="shop-effect is-tradeoff weight-note">But its weight slows the page: −${formatCompactNumber(-net)} visitors/s overall${infoTip}</p>` : renderHeavyShare(state, featureId, infoTip);
+  return net < 0 ? `<p class="shop-effect is-tradeoff weight-note">But its weight slows the page: −${formatCompactNumber(-net)} visitors/s overall${infoTip}</p>` : '';
 }
 
 /** Several levels in one click: offered once you could pay for them, so the early game keeps one button per row. */
@@ -272,7 +267,7 @@ function describeRefactor(state: GameState, featureId: FeatureId): string {
 function describeSunset(state: GameState, featureId: FeatureId): string {
   const weightKb = formatKb(calculateFeatureWeightPerLevelKb(state, featureId));
   const net = formatSignedVisitors(calculateSunsetNetVisitors(state, featureId));
-  return `Or sunset a level: it leaves the page with its visitors (−${weightKb}) and pays ${formatMoney(calculateSunsetTradeIn(state, featureId))} back. ${net} overall.`;
+  return `Sunset a level: it leaves the page with its visitors (−${weightKb}) and pays ${formatMoney(calculateSunsetTradeIn(state, featureId))} back. ${net} overall.`;
 }
 
 function renderSunsetButton(state: GameState, featureId: FeatureId): string {
@@ -280,21 +275,40 @@ function renderSunsetButton(state: GameState, featureId: FeatureId): string {
   return `<button type="button" class="ghost-button sunset-button" data-action="sunset-level" data-id="${featureId}">Sunset +${tradeIn}</button>`;
 }
 
-const HEAVY_FEATURE_KEY = 'Too heavy? The Refactor and Sunset buttons make it lighter:';
+const HEAVY_FEATURE_KEY = 'Too heavy? Ways to make it lighter:';
 const HEAVY_FEATURE_QA = 'Tests and reviews in the Ops tab cut the users a refactor loses, past refactors too.';
+const SUNSET_HINT = 'Learn web analytics (Learn tab) to see what nobody uses: then you can sunset a level of it for money back.';
 
 /**
  * A slow page gets lighter without selling what you built: a heavy feature's card offers a refactor (every level
  * kept, some users lost to its bugs) or to sunset a level (money back, that level's visitors gone): two more small
  * buttons with its other ones. The i that says what each would do sits on the line that names the problem.
  */
+function describeSunsetOrHow(state: GameState, featureId: FeatureId): string {
+  return isSunsetOffered(state, featureId) ? describeSunset(state, featureId) : SUNSET_HINT;
+}
+
+/** Refactoring arrives in 2011, with its QA; before then the note doesn't mention it. */
+function describeRefactorLines(state: GameState, featureId: FeatureId): readonly string[] {
+  return isRefactorOffered(state, featureId) ? [describeRefactor(state, featureId), HEAVY_FEATURE_QA] : [];
+}
+
 function renderHeavyInfoTip(state: GameState, featureId: FeatureId): string {
-  return renderInfoTip([HEAVY_FEATURE_KEY, describeRefactor(state, featureId), describeSunset(state, featureId), HEAVY_FEATURE_QA]);
+  return renderInfoTip([HEAVY_FEATURE_KEY, describeSunsetOrHow(state, featureId), ...describeRefactorLines(state, featureId)]);
+}
+
+function renderRefactorButton(state: GameState, featureId: FeatureId): string {
+  const cost = calculateRefactorCost(state, featureId);
+  return isRefactorOffered(state, featureId) ? buyButton('refactor-feature', featureId, cost, `Refactor ${formatMoney(cost)}`) : '';
+}
+
+function renderSunsetButtonIfOffered(state: GameState, featureId: FeatureId): string {
+  return isSunsetOffered(state, featureId) ? renderSunsetButton(state, featureId) : '';
 }
 
 function renderHeavyFeature(state: GameState, featureId: FeatureId): string {
-  const refactorCost = calculateRefactorCost(state, featureId);
-  return `<div class="heavy-actions">${buyButton('refactor-feature', featureId, refactorCost, `Refactor ${formatMoney(refactorCost)}`)}${renderSunsetButton(state, featureId)}</div>`;
+  const buttons = renderRefactorButton(state, featureId) + renderSunsetButtonIfOffered(state, featureId);
+  return buttons === '' ? '' : `<div class="heavy-actions">${buttons}</div>`;
 }
 
 const ORIGINAL_WEIGHT = 1;

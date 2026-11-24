@@ -82,6 +82,7 @@ export type UpgradeId =
   | 'learn-url-rewriting'
   | 'learn-jquery'
   | 'learn-web-apis'
+  | 'web-analytics'
   | 'prepared-statements'
   | 'learn-ajax'
   | 'learn-rss'

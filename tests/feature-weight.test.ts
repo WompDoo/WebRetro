@@ -11,7 +11,12 @@ import {
   createPlaytestState,
   FEATURES_BY_ID,
   HEAVY_FEATURE_FROM_LEVEL,
+  calculateFeatureLevelsNetVisitors,
+  FEATURE_IDS,
   isFeatureTooHeavy,
+  isRefactorOffered,
+  isSunsetOffered,
+  SUNSET_SKILL,
   REFACTOR_CHURN_SHARE,
   REFACTOR_WEIGHT_FACTOR,
   refactorFeature,
@@ -101,20 +106,41 @@ describe('sunsetting a level', () => {
 });
 
 describe('when a feature counts as too heavy', () => {
-  it('needs more than a first screen of it, a real share of the page, and an era that weighs pages', () => {
-    assert.ok(isFeatureTooHeavy(heavy(), GALLERY));
-    assert.equal(isFeatureTooHeavy(withGallery('social-2011', HEAVY_FEATURE_FROM_LEVEL - 1), GALLERY), false, 'all of it fits on the first screen');
-    const shareButtons: FeatureId = 'share-buttons';
-    const light = { ...heavy(), featureLevels: { ...heavy().featureLevels, [shareButtons]: HEAVY_FEATURE_FROM_LEVEL * 4 } };
-    assert.equal(isFeatureTooHeavy(light, shareButtons), false, 'a few KB of buttons');
+  it('is exactly when its card says its weight slows the page, from level 5, in eras that weigh pages', () => {
+    const state = heavy();
+    assert.ok(isFeatureTooHeavy(state, GALLERY));
+    FEATURE_IDS.filter((id) => state.featureLevels[id] >= HEAVY_FEATURE_FROM_LEVEL).forEach((id) => {
+      assert.equal(isFeatureTooHeavy(state, id), calculateFeatureLevelsNetVisitors(state, id, 1) < 0, id);
+    });
+    assert.equal(isFeatureTooHeavy(withGallery('social-2011', HEAVY_FEATURE_FROM_LEVEL - 1), GALLERY), false, 'too little of it to bother');
     const homepage = createPlaytestState('homepage-1997', 'end', SEED, 'react');
-    assert.ok(Object.values(FEATURES_BY_ID).every((feature) => !isFeatureTooHeavy(homepage, feature.id)), '1997 never weighed a page');
+    assert.ok(FEATURE_IDS.every((id) => !isFeatureTooHeavy(homepage, id)), '1997 never weighed a page');
   });
 
   it('offers neither refactor nor sunset on a light feature', () => {
     const light = withGallery('social-2011', HEAVY_FEATURE_FROM_LEVEL - 1);
     assert.equal(refactorFeature(light, GALLERY), light);
     assert.equal(sunsetLevel(light, GALLERY), light);
+  });
+});
+
+describe('when the ways out arrive', () => {
+  /** In 2005 the 1997 leftovers are what slows the page: a MIDI player brings next to nobody and still weighs. */
+  const MIDI_PLAYER: FeatureId = 'midi-player';
+  const in2005 = { ...createPlaytestState('web2-2005', 'end', SEED, 'react'), hazardCountdownsMs: QUIET_HAZARDS, money: RICH };
+  const withoutAnalytics = { ...in2005, purchasedUpgradeIds: in2005.purchasedUpgradeIds.filter((id) => id !== SUNSET_SKILL) };
+
+  it('lets you sunset from 2005, once web analytics shows what nobody uses', () => {
+    assert.ok(isFeatureTooHeavy(in2005, MIDI_PLAYER));
+    assert.ok(isSunsetOffered(in2005, MIDI_PLAYER));
+    assert.equal(isSunsetOffered(withoutAnalytics, MIDI_PLAYER), false);
+    assert.equal(sunsetLevel(withoutAnalytics, MIDI_PLAYER), withoutAnalytics);
+  });
+
+  it('keeps refactoring for 2011', () => {
+    assert.equal(isRefactorOffered(in2005, MIDI_PLAYER), false);
+    assert.equal(refactorFeature(in2005, MIDI_PLAYER), in2005);
+    assert.ok(isRefactorOffered(heavy(), GALLERY));
   });
 });
 

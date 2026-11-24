@@ -31,6 +31,7 @@ export const LEARN_LINKS: Readonly<Record<UpgradeId, string | null>> = {
   'learn-url-rewriting': 'https://httpd.apache.org/docs/current/rewrite/',
   'learn-jquery': 'https://learn.jquery.com/',
   'learn-web-apis': `${MDN}/Web/API/Fetch_API/Using_Fetch`,
+  'web-analytics': 'https://en.wikipedia.org/wiki/Web_analytics',
   'prepared-statements': 'https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html',
   'learn-ajax': `${MDN}/Glossary/AJAX`,
   'learn-rss': `${WIKIPEDIA}/RSS`,

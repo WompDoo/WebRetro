@@ -59,7 +59,7 @@ import {
   type UpgradeId,
   calculateRefactorCost,
   canRefactorFeature,
-  isFeatureTooHeavy,
+  isRefactorOffered,
   refactorFeature,
 } from '../src/engine';
 import { isSwitchedOffPurchase, SWITCHED_OFF } from './switches';
@@ -261,7 +261,7 @@ export function listOptions(state: GameState, profile: PlayerProfile, extraAvoid
     return { label: `switch:${featureId}`, cost: 0, isRequiredForGate: false, apply, canApply: () => true, valueCost: 0, valueApply: apply };
   });
   // A heavy feature can be refactored: lighter, every level kept, some of its users lost to the bugs. Valued as is.
-  const refactors = FEATURE_IDS.filter((featureId) => isFeatureTooHeavy(state, featureId)).map<PurchaseOption>((featureId) => {
+  const refactors = FEATURE_IDS.filter((featureId) => isRefactorOffered(state, featureId)).map<PurchaseOption>((featureId) => {
     const apply = (current: GameState): GameState => refactorFeature(current, featureId);
     const cost = calculateRefactorCost(state, featureId);
     return { label: `refactor:${featureId}`, cost, isRequiredForGate: false, apply, canApply: (current) => canRefactorFeature(current, featureId), valueCost: cost, valueApply: apply };

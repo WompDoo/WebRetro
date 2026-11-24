@@ -47,6 +47,7 @@ export const elements = {
   optionsCard: requireElement<HTMLElement>('#options-card'),
   achievementToast: requireElement<HTMLElement>('#achievement-toast'),
   badgeFloatTip: requireElement<HTMLElement>('#badge-float-tip'),
+  infoFloatTip: requireElement<HTMLElement>('#info-float-tip'),
   achievementsOverlay: requireElement<HTMLElement>('#achievements-overlay'),
   achievementsCard: requireElement<HTMLElement>('#achievements-card'),
   specOverlay: requireElement<HTMLElement>('#spec-overlay'),

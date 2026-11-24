@@ -891,11 +891,6 @@ function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): n
   return isFeatureLoading(state, featureId) ? FEATURES_BY_ID[featureId].pageWeightKb + calculateFeatureContentKb(state, featureId) : 0;
 }
 
-/** How much of the first load is this feature's levels. */
-export function calculateFeatureContentShare(state: GameState, featureId: FeatureId): number {
-  const contentKb = calculateFeatureContentKb(state, featureId) * readFactor(state, 'page-weight-multiplier');
-  return contentKb / Math.max(calculatePageWeightKb(state), Number.EPSILON);
-}
 
 export const calculatePageWeightKb = memoizeByState((state: GameState): number => {
   const era = ERAS_BY_ID[state.eraId];

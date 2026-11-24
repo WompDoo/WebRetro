@@ -101,8 +101,8 @@ const WEB2_CODE: EraCode = {
     'ssl-certificate': {
       'ssl.conf': ['<VirtualHost *:443>', '  ServerName www.{site}.com', '  SSLEngine on', '  SSLCertificateFile /etc/ssl/certs/www.{site}.com.crt  # valid for one year. set a reminder?', '</VirtualHost>'],
     },
-    'unit-tests': {
-      'tests/GuestbookTest.php': ['class GuestbookTest extends PHPUnit_Framework_TestCase {', '  public function testSigningAddsAnEntry() {', '    $book = new Guestbook();', '    $book->sign("Pixel Palace", "cool site!!!");', '    $this->assertEquals(1, $book->count());', '  }', '}', '// $ phpunit tests/   OK (48 tests, 112 assertions)'],
+    'web-analytics': {
+      'footer.php': ['<!-- stats: free, and it counts everything -->', '<script src="http://stats.searchly.com/track.js"></script>', '<script>track("UA-104729-1");</script>', '<!-- 4 in 5 visitors never scroll past the photo albums -->'],
     },
     'database-indexes': {
       'schema.sql': ['EXPLAIN SELECT * FROM comments WHERE post_id = 42;', '-- type: ALL   rows: 48213', 'CREATE INDEX idx_comments_post ON comments (post_id);', '-- type: ref   rows: 12'],
@@ -167,6 +167,9 @@ const SOCIAL_CODE: EraCode = {
     },
     'uptime-monitoring': {
       'monitor.js': ['setInterval(function () {', '  http.get("http://www.{site}.com/health", function (res) {', '    if (res.statusCode !== 200) sms.send(ME, "{site} is down"); // yes, at 3am', '  });', '}, 60 * 1000);'],
+    },
+    'unit-tests': {
+      'spec/guestbook.spec.js': ["describe('guestbook', function () {", "  it('adds an entry when you sign it', function () {", "    guestbook.sign('Pixel Palace', 'cool site!!!');", '    expect(guestbook.entries.length).toBe(1);', '  });', '});', '// 48 specs, 0 failures'],
     },
     'code-review': {
       'PULL_REQUEST.md': ['Refactor the photo albums into a jQuery plugin', '', 'reviewer: this drops the old lightbox. Did you try it in IE8?', 'you: ...no', 'reviewer: LGTM once IE8 works 👍'],

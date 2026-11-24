@@ -28,7 +28,7 @@ import {
   formatPercent,
   FRAMEWORKS_BY_ID,
   calculateRefactorNetVisitors,
-  isFeatureTooHeavy,
+  isRefactorOffered,
 } from '../engine';
 import type { FeatureId, FrameworkId, GameState, GateCheck, GateRequirementKind } from '../engine';
 import { escapeHtml } from './dom';
@@ -59,7 +59,7 @@ function isSlowOnPhones(state: GameState): boolean {
 }
 
 function isWorthRefactoring(state: GameState, featureId: FeatureId): boolean {
-  return isFeatureTooHeavy(state, featureId) && calculateRefactorNetVisitors(state, featureId) > 0;
+  return isRefactorOffered(state, featureId) && calculateRefactorNetVisitors(state, featureId) > 0;
 }
 
 /** The heavy feature whose refactor would bring back the most visitors overall, if any would bring some. */
@@ -70,7 +70,7 @@ function findBestRefactor(state: GameState): FeatureId | null {
 }
 
 const SLOW_PAGE_LEVERS =
-  'Fewer ads help. Once a feature is level 5 and a tenth of the page, its Build card offers to refactor it (lighter, but its bugs cost some users) or to sunset a level (lighter, with money back).';
+  'Fewer ads help. When a feature’s card says its weight slows the page, its i says what to do: sunset a level once you know web analytics, and from 2011 refactor it.';
 
 /** A slow page's fix, named: the refactor that would help most, or where the buttons will be. */
 function describeSlowPageFix(state: GameState): string {
