@@ -25,6 +25,9 @@
 /* Your framework took something off the price. */
 .shop-effect.is-discount { color: var(--money); font-weight: 600; }
 .shop-effect.is-muted { color: var(--ink-soft); font-weight: 500; }
+/* The verdict on one more banner: worth it, or not. */
+.shop-effect.is-gain { color: var(--money); font-weight: 700; }
+.shop-effect.is-loss { color: var(--hazard); font-weight: 700; }
 .shop-empty { margin: 0; padding: 10px 14px; color: var(--ink-soft); font-size: 13.5px; }
 .ad-row { align-items: start; }
 .ad-row .shop-info { grid-column: 2 / -1; }

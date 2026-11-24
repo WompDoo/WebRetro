@@ -53,6 +53,7 @@ import { renderAchievementsPage, renderBadgeDetail } from './render-achievements
 import { renderSpecializationChoiceScreen } from './render-specializations';
 import { findPickerColors } from './render-site-colors';
 import { SITE_PALETTES } from './site-theme';
+import { scrollSiteTo } from './site-nav';
 import { flashMoneyLoss } from './renderer';
 import { describeRetirement } from './retirement';
 import type { Renderer } from './renderer';
@@ -235,6 +236,7 @@ function deleteAllData(renderer: Renderer, intro: Intro): void {
   deleteStoredData();
   store.legacy = EMPTY_LEGACY;
   store.isScrollJackingOn = true;
+  store.seenShopKeys = new Set();
   setPlaytestEnabled(false);
   startNewGame();
   renderer.forgetRenderedState();
@@ -343,6 +345,7 @@ export function createActionHandlers({ minigame, renderer, intro }: ActionDepend
       updateGame((state) => chooseSiteColors(state, { ...findPickerColors(state), background }));
     }),
     'site-colors-reset': () => updateGame((state) => chooseSiteColors(state, null)),
+    'site-nav': (target) => scrollSiteTo(elements.site, readId(target)),
     'browser-reload': () => renderer.reloadSite(),
     'browser-home': () => renderer.goHome(),
     'open-achievements': openAchievements,
@@ -393,8 +396,19 @@ export function createKeydownHandler(minigame: MinigameModal): (event: KeyboardE
       event.preventDefault();
       return;
     }
-    if (event.key !== 'Escape') return;
-    const topPopup = store.game.popups[store.game.popups.length - 1];
-    if (topPopup !== undefined) updateGame((state) => closePopup(state, topPopup.id));
+    if (event.key === 'Escape') handleEscape();
   };
+}
+
+/** The windows Esc closes: the ones with a Close or a Cancel. The ending, the intro and minigames have their own way out. */
+function findDismissibleOverlay(): HTMLElement | undefined {
+  return [elements.achievementsOverlay, elements.optionsOverlay, elements.resetOverlay, elements.playtestOverlay, elements.specOverlay].find((overlay) => !overlay.hidden);
+}
+
+/** Esc closes the open window, else the top pop-up. */
+function handleEscape(): void {
+  const overlay = findDismissibleOverlay();
+  if (overlay !== undefined) return hideOverlay(overlay);
+  const topPopup = store.game.popups[store.game.popups.length - 1];
+  if (topPopup !== undefined) updateGame((state) => closePopup(state, topPopup.id));
 }

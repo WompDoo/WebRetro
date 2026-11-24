@@ -259,7 +259,7 @@ export function startPlaytestTrafficSpike(state: GameState): GameState {
 
 /** An offer at the door now, not in three minutes: its chip shows, and clicking it plays the minigame. */
 export function offerPlaytestOpportunity(state: GameState, kind: OpportunityKind): GameState {
-  const opportunity = { id: state.nextEntityId, kind, remainingMs: OPPORTUNITY_WINDOW_MS };
+  const opportunity = { id: state.nextEntityId, kind, remainingMs: OPPORTUNITY_WINDOW_MS, isOpen: false };
   return { ...state, opportunity, nextEntityId: state.nextEntityId + 1 };
 }
 

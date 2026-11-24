@@ -152,3 +152,6 @@ button.browser-button:hover { filter: brightness(0.94); }
 }
 @keyframes phone-popup-in { from { transform: translateY(100%); } }
 @keyframes phone-notification-in { from { transform: translateY(-120%); } }
+
+/* The site's own menu scrolls the page: it looks clickable. */
+.site [data-action="site-nav"] { cursor: pointer; }

@@ -32,6 +32,10 @@ export interface MinigameModalCallbacks {
   readonly onWin: (infectionId: number) => void;
   /** Lost, or left once the clock was running. An infection waits for a retry; an offer goes. */
   readonly onLose: (infectionId: number) => void;
+  /** The window opened on this target: an offer stops counting down while it's open. */
+  readonly onShow: (infectionId: number) => void;
+  /** The window closed, whatever the outcome: an offer still there counts down again. */
+  readonly onHide: (infectionId: number) => void;
 }
 
 export interface MinigameModal {
@@ -102,6 +106,7 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
     stopFrames();
     session?.destroy();
     session = null;
+    if (infectionId !== null) callbacks.onHide(infectionId);
     infectionId = null;
     elements.overlay.hidden = true;
   };
@@ -182,6 +187,7 @@ export function createMinigameModal(elements: MinigameModalElements, callbacks: 
   return {
     open: (id: number) => {
       infectionId = id;
+      callbacks.onShow(id);
       elements.overlay.hidden = false;
       startAttempt();
     },

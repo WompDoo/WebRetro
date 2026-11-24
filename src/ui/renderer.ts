@@ -39,6 +39,8 @@ import { describeIncomeSources, describeTypingBoost, isTypingIdle, readTypingInc
 import type { IncomeSources } from './typing-income';
 import { accrueAutoKeystrokes, describeHiredKeystroke } from './auto-typing';
 import { setWatchedText } from './dev-tools-watch';
+import { writePreferences } from './persistence';
+import { createShopSeenWatcher } from './shop-seen';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countNewOnSiteSinceSeen, countUnreadNews, markNewsRead, markSiteSeen, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
@@ -255,7 +257,7 @@ function renderMobileChrome(): void {
 }
 
 function countAffordableNewPurchases(): number {
-  return NEW_PURCHASE_TABS.reduce((total, tab) => total + countAffordable(store.game, tab), 0);
+  return NEW_PURCHASE_TABS.reduce((total, tab) => total + countAffordable(store.game, tab, store.seenShopKeys), 0);
 }
 
 interface TabBadge {
@@ -296,9 +298,17 @@ function readShopView(): ShopView {
   return { isScrollJackingOn: store.isScrollJackingOn, foundSpecializationIds: store.legacy.foundSpecializationIds };
 }
 
+/** A card seen while affordable stops counting on its tab's badge, for good: kept with the preferences. */
+const shopSeen = createShopSeenWatcher((key) => {
+  if (store.seenShopKeys.has(key)) return;
+  store.seenShopKeys.add(key);
+  writePreferences();
+});
+
 function renderShop(): void {
   setHtmlIfChanged(elements.shopTabs, renderShopTabs(store.shopTab, store.game));
   elements.shopBody.innerHTML = renderShopBody(store.game, store.shopTab, readShopView());
+  shopSeen.watch(elements.shopBody);
 }
 
 /**
@@ -321,10 +331,11 @@ function updateShopAffordability(): void {
     // Bulk buttons show only while you could pay for them.
     if (button.dataset['bulk'] !== undefined) button.hidden = button.disabled;
   });
+  shopSeen.markAffordableInView();
   SHOP_TABS.forEach((tab) => {
     const badge = elements.shopTabs.querySelector<HTMLElement>(`[data-tab-badge="${tab}"]`);
     if (badge === null) return;
-    const count = countAffordable(store.game, tab);
+    const count = countAffordable(store.game, tab, store.seenShopKeys);
     badge.hidden = count === 0 || tab === store.shopTab;
     setTextIfChanged(badge, String(count));
   });

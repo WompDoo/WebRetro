@@ -96,6 +96,8 @@ const PREFERENCES_STORAGE_KEY = 'under-construction:preferences';
 /** The player's own settings. They aren't part of any game: a new game, a playtest jump or a backup keeps them. */
 interface StoredPreferences {
   readonly isScrollJackingOn: boolean;
+  /** Shop cards seen while affordable. Older preferences have none. */
+  readonly seenShopKeys?: readonly string[];
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
@@ -122,14 +124,21 @@ function readPreferences(): StoredPreferences | null {
   }
 }
 
+function readSeenShopKeys(stored: StoredPreferences): Set<string> {
+  const keys = Array.isArray(stored.seenShopKeys) ? stored.seenShopKeys : [];
+  return new Set(keys.filter((key): key is string => typeof key === 'string'));
+}
+
 export function restorePreferences(): void {
   const stored = readPreferences();
-  if (stored !== null) store.isScrollJackingOn = stored.isScrollJackingOn;
+  if (stored === null) return;
+  store.isScrollJackingOn = stored.isScrollJackingOn;
+  store.seenShopKeys = readSeenShopKeys(stored);
 }
 
 export function writePreferences(): void {
   try {
-    const preferences: StoredPreferences = { isScrollJackingOn: store.isScrollJackingOn };
+    const preferences: StoredPreferences = { isScrollJackingOn: store.isScrollJackingOn, seenShopKeys: [...store.seenShopKeys] };
     window.localStorage.setItem(storageKey(PREFERENCES_STORAGE_KEY), JSON.stringify(preferences));
   } catch {
     // Storage can be blocked (private windows, previews). The switch still works until the page closes.

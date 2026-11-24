@@ -68,7 +68,7 @@ function offer(state: GameState): GameState {
   const draws = drawRandoms(state.randomSeed, 1);
   const kind = useful[Math.floor((draws.values[0] ?? 0) * useful.length)];
   if (kind === undefined) return drawGap(state);
-  const opportunity: Opportunity = { id: state.nextEntityId, kind, remainingMs: OPPORTUNITY_WINDOW_MS };
+  const opportunity: Opportunity = { id: state.nextEntityId, kind, remainingMs: OPPORTUNITY_WINDOW_MS, isOpen: false };
   return drawGap({ ...state, opportunity, nextEntityId: state.nextEntityId + 1, randomSeed: draws.nextSeed });
 }
 
@@ -78,7 +78,9 @@ function countDownToOffer(state: GameState, deltaMs: number): GameStep {
   return { state: countdown > 0 ? { ...state, opportunityCountdownMs: countdown } : offer(state), events: [] };
 }
 
+/** An offer waits out its window, unless its minigame is open: nobody loses a sponsor while typing the code. */
 function waitForPlayer(state: GameState, opportunity: Opportunity, deltaMs: number): GameStep {
+  if (opportunity.isOpen) return { state, events: [] };
   const remainingMs = opportunity.remainingMs - deltaMs;
   if (remainingMs > 0) return { state: { ...state, opportunity: { ...opportunity, remainingMs } }, events: [] };
   const missed: GameEvent = { kind: 'opportunity', message: OPPORTUNITIES_BY_KIND[opportunity.kind].missed };
@@ -92,6 +94,21 @@ export function advanceOpportunities(state: GameState, deltaMs: number): GameSte
 
 export function findOpportunity(state: GameState, opportunityId: number): Opportunity | null {
   return state.opportunity?.id === opportunityId ? state.opportunity : null;
+}
+
+function withOfferOpen(state: GameState, opportunityId: number, isOpen: boolean): GameState {
+  const opportunity = findOpportunity(state, opportunityId);
+  return opportunity === null ? state : { ...state, opportunity: { ...opportunity, isOpen } };
+}
+
+/** Its window opened: the offer's clock stops. Anything that isn't this offer (an infection) is left alone. */
+export function openOpportunity(state: GameState, opportunityId: number): GameState {
+  return withOfferOpen(state, opportunityId, true);
+}
+
+/** Its window closed without winning or losing it: the clock runs again. */
+export function closeOpportunity(state: GameState, opportunityId: number): GameState {
+  return withOfferOpen(state, opportunityId, false);
 }
 
 /** Lost its minigame: the offer goes to someone else, the same as letting it run out. No second try. */

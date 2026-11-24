@@ -163,7 +163,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
     musicTracks: ['Ep. 12: Is AJAX a fad?', 'Ep. 13: Tags vs folders', 'Ep. 14: Rounded corners explained'],
     entryStory: {
       heading: 'The bubble bursts',
-      hook: 'The dot-com bubble burst and took the ad money with it. Then someone coined “Web 2.0”, and sites became places where people post.',
+      hook: 'The dot-com bubble burst and ad rates crashed. Then someone coined “Web 2.0”, and sites became places where people post.',
       paragraphs: [
         'March 2000. The dot-com bubble bursts. Ad rates crash and half your webring goes offline overnight.',
         'Then somebody coins “Web 2.0”. Websites stop being pages you read and turn into places where people post.',
@@ -173,7 +173,7 @@ export const ERA_PRESENTATION: Readonly<Record<EraId, EraPresentation>> = {
         { icon: '🎨', title: 'Rebuild with CSS', text: 'Your 1997 look stays until you learn CSS. Then go glossy.' },
         { icon: '📝', title: 'Blogs and comments', text: 'Blogs, comments and tag clouds, each unlocked by a skill.' },
         { icon: '🏷️', title: 'New names', text: 'The guestbook becomes a shoutbox, the webring a blogroll.' },
-        { icon: '💸', title: 'Ads pay less', text: 'Ad rates crashed, but there’s room for more ads.' },
+        { icon: '💸', title: 'Ads still pay', text: 'Less per banner than in 1997, but there’s room for more.' },
         { icon: '🤖', title: 'Spam bots', text: 'Bots start spamming your comments.' },
       ],
       confirmLabel: 'Relaunch as Web 2.0',

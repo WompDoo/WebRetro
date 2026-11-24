@@ -165,3 +165,34 @@
 /* ---------- Specializations' own features: a list that grows with the level (shared by every era's page) ---------- */
 .spec-feature-list { display: grid; gap: 4px; margin: 0 0 6px; padding: 0; list-style: none; }
 .spec-feature-list li { padding: 4px 8px; border: 1px solid rgba(127, 127, 127, 0.3); border-radius: 6px; font-size: 13.5px; overflow-wrap: anywhere; }
+
+/*
+ * The 2024 phone: nearly no bezel, rounder corners, a titanium edge, and the camera in a floating pill instead of a
+ * notch. A bar along the bottom in place of a home button.
+ */
+@media (min-width: 781px) {
+  [data-era="2024"] [data-device="phone"] .device-frame {
+    padding: 7px; border-radius: 58px; background: #0B0B0C;
+    box-shadow: 0 0 0 2px #9A9BA0, 0 0 0 4px #55565B, 0 22px 48px rgba(0, 0, 0, 0.3);
+  }
+  /* The action button on the side. */
+  [data-era="2024"] [data-device="phone"] .device-frame::before {
+    content: ""; position: absolute; top: 22%; left: -6px; width: 4px; height: 64px; border-radius: 2px 0 0 2px; background: #8A8B90;
+  }
+  /* The home bar, over the bottom of the screen. */
+  [data-era="2024"] [data-device="phone"] .device-frame::after {
+    content: ""; position: absolute; bottom: 15px; left: 50%; z-index: 5; width: 128px; height: 5px; border-radius: 3px;
+    background: rgba(0, 0, 0, 0.78); transform: translateX(-50%);
+  }
+  /* The camera, floating in a pill below the top edge. */
+  [data-era="2024"] [data-device="phone"] .device-earpiece { top: 19px; width: 31%; height: 26px; border-radius: 999px; background: #000000; }
+  /* The status bar wears the page's colour, the way it does on a phone now. The clip keeps animated blocks in the round
+     corners too: a rounded overflow alone lets them paint past it. */
+  [data-era="2024"] [data-device="phone"] .device-screen { --status-bar: 50px; border-radius: 51px; background: #FAFAFB; clip-path: inset(0 round 51px); }
+  [data-era="2024"] [data-device="phone"] .device-screen:has(.site-2024.is-dark) { background: #0A0A0F; }
+  [data-era="2024"] [data-device="phone"] .device-screen:has(.site-2024.is-dark)::before,
+  [data-era="2024"] [data-device="phone"] .device-screen:has(.site-2024.is-dark)::after { color: #FFFFFF; }
+  [data-era="2024"] [data-device="phone"] .device-screen::before, [data-era="2024"] [data-device="phone"] .device-screen::after { top: 20px; font-size: 14px; }
+  [data-era="2024"] [data-device="phone"] .device-screen::before { left: 38px; }
+  [data-era="2024"] [data-device="phone"] .device-screen::after { right: 32px; font-size: 11px; }
+}

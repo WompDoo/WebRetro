@@ -145,11 +145,6 @@ export function renderSpecializeTab(state: GameState, foundIds: readonly Special
   </section>`;
 }
 
-/** Unlocked and not yet chosen: the tab's badge. */
-export function countChoosable(state: GameState): number {
-  return TREE_IDS.filter((id) => canChooseSpecialization(state, id)).length;
-}
-
 /** What the tab's markup depends on: what's in view and roughly how far along, so it redraws as you get closer. */
 export function calculateSpecializeTabSignature(state: GameState, foundIds: readonly SpecializationId[]): string {
   if (!isSpecializeTabShown(state)) return 'hidden';
