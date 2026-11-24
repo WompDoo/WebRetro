@@ -1011,10 +1011,19 @@ export const isAdLosingMoney = memoizeByState((state: GameState): boolean => {
  * What one more banner would change your income by, a second, on a usual day: what it pays, less the visitors it
  * drives away. The shop says it outright, so a player can see a banner is worth it instead of only what it costs.
  */
-export const calculateNextAdGain = memoizeByState((state: GameState): number => {
+/** What this many more banners add to the income on a usual day, after the visitors and supporters they drive away. */
+export function calculateAdsGain(state: GameState, count: number): number {
   const usual = toUsualDay(state);
-  return calculateNetRevenuePerSecond({ ...usual, adCount: state.adCount + 1 }) - calculateNetRevenuePerSecond(usual);
-});
+  return calculateNetRevenuePerSecond({ ...usual, adCount: state.adCount + count }) - calculateNetRevenuePerSecond(usual);
+}
+
+export const calculateNextAdGain = memoizeByState((state: GameState): number => calculateAdsGain(state, 1));
+
+/** Supporters still giving who'd leave as banners arrive: each banner drives a share of them off. */
+export function hasSupportersToLose(state: GameState): boolean {
+  const effects = [...listEffectsOfKind(state, 'support'), ...listEffectsOfKind(state, 'donations')];
+  return effects.some((effect) => keepSupportShare(effect.lostSharePerAd, state.adCount) > 0);
+}
 
 /** What defenses and the ops you run cost, as a share of revenue. */
 export function calculateUpkeepShare(state: GameState): number {

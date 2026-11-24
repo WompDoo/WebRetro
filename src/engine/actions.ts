@@ -146,7 +146,7 @@ export function toggleFeature(state: GameState, featureId: FeatureId): GameState
 }
 
 /** The era's room for ads, or fewer if a specialization on the site keeps them few. */
-function findAdRoom(state: GameState): number {
+export function findAdRoom(state: GameState): number {
   return Math.min(ERAS_BY_ID[state.eraId].maxAds, findAdLimit(state) ?? Number.POSITIVE_INFINITY);
 }
 
