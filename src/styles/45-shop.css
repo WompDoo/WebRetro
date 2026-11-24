@@ -84,12 +84,12 @@
 .buy-bulk-row { display: flex; gap: 4px; }
 .buy-button.buy-bulk { min-width: 0; padding: 2px 8px; font-size: 12px; }
 .buy-button.buy-bulk[hidden] { display: none; }
-/* A heavy feature's two ways to get lighter sit with its other buttons. The i's note hangs from the whole card, not the narrow button column. */
+/* A heavy feature's two ways to get lighter sit with its other buttons. The i on its weight line explains them; its note hangs from the whole card. */
 .shop-row:has(.heavy-actions) { position: relative; }
 .heavy-actions { display: grid; justify-items: end; gap: 4px; margin-top: 2px; }
-.heavy-actions-row { display: flex; align-items: center; gap: 3px; }
 .heavy-actions .buy-button, .heavy-actions .sunset-button { min-width: 0; padding: 2px 6px; font: 700 11px/1.3 var(--font-body); white-space: nowrap; }
-.heavy-actions .info-tip-text { left: 14px; right: 14px; top: calc(100% - 6px); }
+.weight-note .info-tip { margin-left: 5px; vertical-align: -2px; color: var(--ink-soft); }
+.shop-row:has(.heavy-actions) .weight-note .info-tip-text { left: 14px; right: 14px; top: calc(100% - 6px); }
 .refactored-note .info-tip-text { left: 0; right: 0; }
 .refactored-note { position: relative; display: flex; align-items: center; gap: 6px; }
 /* The cookie banner: three ways to ask, one chosen. A choice, not a purchase, so no price. */
