@@ -70,6 +70,12 @@ import {
   REFACTOR_WEIGHT_FACTOR,
   isRefactorOffered,
   isSunsetOffered,
+  calculateAdsGain,
+  findAdRoom,
+  hasSupportersToLose,
+  SUPPORT_LOST_PER_AD,
+  findSpecializationOfEra,
+  isSpecializationInView,
 } from '../engine';
 import type {
   BuffId,
@@ -90,6 +96,7 @@ import type {
   UpgradeId,
 } from '../engine';
 import { escapeHtml } from './dom';
+import { baseOfShopKey, instanceKey } from './shop-seen';
 import { LEARN_LINKS } from './learn-links';
 import { calculateSpecializeTabSignature, isSpecializeTabShown, renderSpecializeTab } from './render-specializations';
 import { describeTradeIn } from './retirement';
@@ -742,11 +749,33 @@ function renderDefenseRow(state: GameState, defenseId: DefenseId): string {
  * says so plainly; one that wouldn't says why. None at all on a page that's full.
  */
 function renderNextAdVerdict(state: GameState): string {
-  if (state.adCount >= ERAS_BY_ID[state.eraId].maxAds) return '';
+  const room = findAdRoom(state) - state.adCount;
+  if (room <= 0) return '';
   const gain = calculateNextAdGain(state);
-  return gain > 0
-    ? `<p class="shop-effect is-gain">Next banner: +${formatMoney(gain)}/s, after the visitors it costs</p>`
-    : `<p class="shop-effect is-loss">Next banner: −${formatMoney(-gain)}/s: it would drive away more than it pays</p>`;
+  return gain > 0 ? renderAdGain(gain) : renderAdLoss(state, gain, room);
+}
+
+function renderAdGain(gain: number): string {
+  return `<p class="shop-effect is-gain">Next banner: +${formatMoney(gain)}/s, after the visitors it costs</p>`;
+}
+
+/** Why the next one loses: the visitors it annoys away, or, while supporters still give, the supporters it costs. */
+function describeAdLossCause(state: GameState): string {
+  return hasSupportersToLose(state) ? `each one drives off ${formatPercent(SUPPORT_LOST_PER_AD)} of your supporters` : 'it would drive away more than it pays';
+}
+
+function formatSignedMoney(perSecond: number): string {
+  return `${perSecond >= 0 ? '+' : '−'}${formatMoney(Math.abs(perSecond))}`;
+}
+
+/**
+ * One banner losing isn't the whole story: once the supporters have gone, more banners pay again. The full page's
+ * total says whether the ad path pays off from here.
+ */
+function renderAdLoss(state: GameState, gain: number, room: number): string {
+  const fullPage = calculateAdsGain(state, room);
+  return `<p class="shop-effect is-loss">Next banner: −${formatMoney(-gain)}/s: ${describeAdLossCause(state)}</p>
+      <p class="shop-effect ${fullPage > 0 ? 'is-gain' : 'is-loss'}">A full page (${room} more): ${formatSignedMoney(fullPage)}/s overall</p>`;
 }
 
 /** The first banner costs nothing: say so, rather than "$0". */
@@ -893,9 +922,14 @@ export function renderShopTabs(activeTab: ShopTab, state: GameState): string {
 
 /**
  * What a tab has that you could buy right now, each as its card's key: the buy button's action and id (shop-seen.ts
- * reads the same from the page). The badges count these, less the ones you've already seen.
+ * reads the same from the page), and for what can be bought again and again, which one this is. The badges count
+ * these, less the ones you've already seen.
  */
 const keysOf = (action: string, ids: readonly string[]): readonly string[] => ids.map((id) => `${action}:${id}`);
+/** A specialization card coming into view, keyed like a button: shop-seen.ts reads the card's data-specialization. */
+const SPECIALIZATION_CARD = 'spec-card';
+/** Cards in view with nothing found in earlier runs: only what this run brings into view is news. */
+const NOTHING_FOUND: readonly SpecializationId[] = [];
 
 function listAffordableDefenses(state: GameState): readonly string[] {
   const ids = getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost);
@@ -912,18 +946,36 @@ function listAffordableHosting(state: GameState): readonly string[] {
   return next !== null && canUpgradeHosting(state) ? [`upgrade-hosting:${next.id}`] : [];
 }
 
-/** The one-off buttons of the Ops tab: the next banner and a certificate renewal. */
+/** The one-off buttons of the Ops tab: the next banner (which one it is) and a certificate renewal. */
 function listAffordableOneOffs(state: GameState): readonly string[] {
-  return [...(canPlaceAd(state) ? ['place-ad:ad'] : []), ...(canRenewCertificate(state) ? ['renew-certificate:certificate'] : [])];
+  return [...(canPlaceAd(state) ? [instanceKey('place-ad:ad', state.adCount)] : []), ...(canRenewCertificate(state) ? ['renew-certificate:certificate'] : [])];
+}
+
+function isFeatureAffordable(state: GameState, featureId: FeatureId): boolean {
+  return isFeatureBuildable(state, featureId) && state.money >= calculateNextFeatureCost(state, featureId);
+}
+
+/** Every level of a feature is a new purchase: the next one counts again once the last is bought. */
+function listAffordableFeatures(state: GameState): readonly string[] {
+  return getUnlockedFeatureIds(state).filter((featureId) => isFeatureAffordable(state, featureId)).map((featureId) => instanceKey(`buy-feature:${featureId}`, state.featureLevels[featureId]));
+}
+
+/** This era's specialization cards, while it hasn't chosen one: a card coming into view is news too. */
+function listSpecializationCards(state: GameState): readonly SpecializationId[] {
+  const hasChosen = findSpecializationOfEra(state, ERAS_BY_ID[state.eraId].baseEraId) !== null;
+  return hasChosen ? [] : TREE_IDS.filter((id) => isSpecializationInView(state, id, NOTHING_FOUND));
+}
+
+function listSpecializeNews(state: GameState): readonly string[] {
+  return [...keysOf(SPECIALIZATION_CARD, listSpecializationCards(state)), ...keysOf('open-specialization', TREE_IDS.filter((id) => canChooseSpecialization(state, id)))];
 }
 
 const AFFORDABLE_KEYS: Readonly<Record<ShopTab, (state: GameState) => readonly string[]>> = {
   learn: (state) => keysOf('buy-upgrade', getAvailableSkillIds(state).filter((skillId) => state.money >= calculateUpgradeCost(state, skillId))),
-  build: (state) =>
-    keysOf('buy-feature', getUnlockedFeatureIds(state).filter((featureId) => isFeatureBuildable(state, featureId) && state.money >= calculateNextFeatureCost(state, featureId))),
+  build: listAffordableFeatures,
   upgrades: (state) => keysOf('buy-upgrade', getRevealedBoostIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId))),
   security: (state) => [...listAffordableDefenses(state), ...listAffordableOps(state), ...listAffordableHosting(state), ...listAffordableOneOffs(state)],
-  specialize: (state) => keysOf('open-specialization', TREE_IDS.filter((id) => canChooseSpecialization(state, id))),
+  specialize: listSpecializeNews,
 };
 
 export function listAffordableKeys(state: GameState, tab: ShopTab): readonly string[] {
@@ -931,6 +983,14 @@ export function listAffordableKeys(state: GameState, tab: ShopTab): readonly str
 }
 
 const NOTHING_SEEN: ReadonlySet<string> = new Set();
+
+/**
+ * What a card on screen has just been seen as: its tab's keys for that card, among what can be bought right now. A
+ * card you can't afford, or a specialization you can't choose yet, isn't news yet, and stays counted for when it is.
+ */
+export function findSeenKeys(state: GameState, tab: ShopTab, cardKeys: readonly string[]): readonly string[] {
+  return listAffordableKeys(state, tab).filter((key) => cardKeys.includes(baseOfShopKey(key)));
+}
 
 /** What the tab's badge says: what you could buy and haven't yet seen while you could. */
 export function countAffordable(state: GameState, tab: ShopTab, seen: ReadonlySet<string> = NOTHING_SEEN): number {

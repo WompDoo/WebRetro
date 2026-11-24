@@ -26,7 +26,7 @@ import { calculateBootMs, resolveTyping } from './framework-presentation';
 import { ERA_PRESENTATION } from './presentation';
 import { calculateGoalSignature, renderGoal, renderTip, updateGoalProgress } from './render-goal';
 import { calculatePopupSignature, syncPopups } from './render-popups';
-import { calculateShopSignature, countAffordable, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
+import { calculateShopSignature, countAffordable, findSeenKeys, renderShopBody, renderShopTabs, SHOP_TABS } from './render-shop';
 import type { ShopView } from './render-shop';
 import { listIssues } from './issues';
 import type { Issue } from './issues';
@@ -40,7 +40,7 @@ import type { IncomeSources } from './typing-income';
 import { accrueAutoKeystrokes, describeHiredKeystroke } from './auto-typing';
 import { setWatchedText } from './dev-tools-watch';
 import { writePreferences } from './persistence';
-import { createShopSeenWatcher } from './shop-seen';
+import { createShopSeenWatcher, rememberSeenKey } from './shop-seen';
 import { calculateSiteSignature, renderSite, updateLiveSlots } from './sites';
 import { countNewOnSiteSinceSeen, countUnreadNews, markNewsRead, markSiteSeen, MOBILE_TABS, store } from './store';
 import type { MobileTab } from './store';
@@ -303,11 +303,11 @@ function readShopView(): ShopView {
   return { isScrollJackingOn: store.isScrollJackingOn, foundSpecializationIds: store.legacy.foundSpecializationIds };
 }
 
-/** A card seen while affordable stops counting on its tab's badge, for good: kept with the preferences. */
-const shopSeen = createShopSeenWatcher((key) => {
-  if (store.seenShopKeys.has(key)) return;
-  store.seenShopKeys.add(key);
-  writePreferences();
+/** A card seen while you could buy it stops counting on its tab's badge: kept with the preferences. */
+const shopSeen = createShopSeenWatcher((cardKeys) => {
+  const seen = findSeenKeys(store.game, store.shopTab, cardKeys);
+  const isChanged = seen.reduce((changed, key) => rememberSeenKey(store.seenShopKeys, key) || changed, false);
+  if (isChanged) writePreferences();
 });
 
 function renderShop(): void {
@@ -336,7 +336,7 @@ function updateShopAffordability(): void {
     // Bulk buttons show only while you could pay for them.
     if (button.dataset['bulk'] !== undefined) button.hidden = button.disabled;
   });
-  shopSeen.markAffordableInView();
+  shopSeen.reportInView();
   SHOP_TABS.forEach((tab) => {
     const badge = elements.shopTabs.querySelector<HTMLElement>(`[data-tab-badge="${tab}"]`);
     if (badge === null) return;

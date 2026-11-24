@@ -151,7 +151,8 @@ export const UPGRADE_IDS: readonly UpgradeId[] = [
  * or the other. Four ads and the support is gone; a site without any is slower than one with a full ad wall, but it
  * gets to the end.
  */
-const SUPPORT_LOST_PER_AD = 0.25;
+/** Every banner drives off this share of the supporters: four, and they're gone. */
+export const SUPPORT_LOST_PER_AD = 0.25;
 
 export const UPGRADES_BY_ID: Readonly<Record<UpgradeId, UpgradeDefinition>> = {
   // ---------- 1997 skills: each one changes the page, the code you type, and what you can build ----------
