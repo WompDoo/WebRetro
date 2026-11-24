@@ -43,6 +43,7 @@
 .relaunch-retiring-label { font-weight: 700; }
 .retiring-chip { padding: 2px 8px; border-radius: 999px; background: var(--paper); text-decoration: line-through 2px; text-decoration-color: transparent; animation: retire-strike 400ms ease-in calc(var(--index) * 150ms + 2350ms) forwards; }
 @keyframes retire-strike { to { text-decoration-color: var(--hazard); color: var(--ink-soft); } }
+.relaunch-money { margin: 0 0 12px; font-size: 13.5px; color: var(--ink-soft); animation: relaunch-rise 450ms ease-out 1950ms both; }
 .relaunch-trade-in { margin-left: auto; font-family: var(--font-numbers); font-weight: 600; color: var(--money); }
 
 .relaunch-story { margin: 0 0 8px; color: var(--ink-soft); font-size: 14px; animation: relaunch-rise 450ms ease-out 1950ms both; }

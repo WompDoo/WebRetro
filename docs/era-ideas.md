@@ -34,7 +34,14 @@ Everything on the page is site dressing: fake content and simple loops, never a 
   pages from filling up with dead trends and doubles as balance: old traffic makes way for the new era's.
   **Trade-in:** the relaunch pays back half of what the retiring features earned in their lifetime. Every
   feature keeps a tally (`featureEarnings`): visitor revenue, split by the visitors each feature brings in.
-  In 2011 that is $160–200M, about half the price of Bootstrap: a head start, not a shortcut.
+  It isn't a lump: the retired features' old links redirect to the new site, and the trade-in arrives over the
+  new era's first ten minutes, as an "Old links redirect" chip and a line in the income tooltip
+  (`relaunch-money.ts`). A relaunch soon after another adds whatever the redirects still owed.
+- **Starting money.** A playtester found the first minutes of an era were a shopping spree: the relaunch kept
+  everything saved past the target plus the trade-in, up to ten minutes of the new era's income. Now you start
+  with at most 80% of the new era's cheapest new skill ("most of the way there"). Migrations run over budget:
+  savings past that go into the move, and the relaunch card says so before you go ("You start 2011 with $6.2M"),
+  so you can spend them first. In the sims a relaunch now carries 0–1 s of the new income, down from 33–580 s.
 - **The phone follows the era.** From the first era with phone visitors, the browser has a Desktop/Phone
   switch. Phone view draws the real page on a phone of the era (2011: black glass slab, round home button):
   laid out at desktop width and shrunk until the page is responsive, reflowed after. Later eras restyle the

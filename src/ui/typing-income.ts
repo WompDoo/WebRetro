@@ -31,10 +31,12 @@ export interface IncomeSources {
   readonly hired: number;
   /** You, over the last few seconds. */
   readonly typing: number;
+  /** The last relaunch's retired features, redirecting their visitors here for a while. */
+  readonly redirects: number;
 }
 
 export function sumIncome(sources: IncomeSources): number {
-  return sources.site + sources.hired + sources.typing;
+  return sources.site + sources.hired + sources.typing + sources.redirects;
 }
 
 export function isTypingIdle(sources: IncomeSources): boolean {
@@ -46,8 +48,13 @@ export function describeTypingBoost(sources: IncomeSources): string {
   return isTypingIdle(sources) ? IDLE_TYPING_BOOST : `⌨ +${formatMoney(sources.typing)}`;
 }
 
-/** The tooltip: where the money comes from. Hired help only once there is some. */
+/** A source that isn't always there: said only while it pays. */
+function describeOccasionalSource(label: string, perSecond: number): string {
+  return perSecond > 0 ? ` · ${label}: ${formatMoney(perSecond)}/s` : '';
+}
+
+/** The tooltip: where the money comes from. Hired help and redirects only while there are some. */
 export function describeIncomeSources(sources: IncomeSources): string {
-  const hired = sources.hired > 0 ? ` · Your hires: ${formatMoney(sources.hired)}/s` : '';
-  return `Your site: ${formatMoney(sources.site)}/s${hired} · Your typing: ${formatMoney(sources.typing)}/s`;
+  const occasional = describeOccasionalSource('Your hires', sources.hired) + describeOccasionalSource('Old links redirecting', sources.redirects);
+  return `Your site: ${formatMoney(sources.site)}/s${occasional} · Your typing: ${formatMoney(sources.typing)}/s`;
 }

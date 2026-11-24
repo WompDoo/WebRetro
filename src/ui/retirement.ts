@@ -1,4 +1,6 @@
-import { calculateRetirementPayout, formatMoney, formatPercent, getFeaturesRetiringIn, getRetiredFeatureName, paysTradeIn, RETIREMENT_PAYOUT_SHARE } from '../engine';
+import { calculateRetirementPayout, formatMoney, formatPercent, getFeaturesRetiringIn, getRetiredFeatureName, MS_PER_SECOND, paysTradeIn, REDIRECT_MS, RETIREMENT_PAYOUT_SHARE } from '../engine';
+
+const SECONDS_PER_MINUTE = 60;
 import type { EraId, GameState } from '../engine';
 
 /** The wording for features that go out of fashion at a relaunch: the story, the news and the shop all say it. */
@@ -8,9 +10,11 @@ export function describeRetiring(state: GameState, eraId: EraId): string {
   return getFeaturesRetiringIn(state, eraId).map(getRetiredFeatureName).join(', ');
 }
 
-/** "Trade-in: $180M (50% of what they earned)." */
+const REDIRECT_MINUTES = REDIRECT_MS / MS_PER_SECOND / SECONDS_PER_MINUTE;
+
+/** "Trade-in: $180M (50% of what they earned), paid over 10 minutes as their old links redirect." */
 export function describeTradeIn(amount: number): string {
-  return `Trade-in: ${formatMoney(amount)} (${formatPercent(RETIREMENT_PAYOUT_SHARE)} of what they earned).`;
+  return `Trade-in: ${formatMoney(amount)} (${formatPercent(RETIREMENT_PAYOUT_SHARE)} of what they earned), paid over ${REDIRECT_MINUTES} minutes as their old links redirect.`;
 }
 
 /** True when the crash's stopgaps retire too: they pay nothing back, and the news says so. */

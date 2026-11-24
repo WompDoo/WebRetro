@@ -12,6 +12,7 @@ import {
   advanceSimulation,
   creditFeatureEarnings,
   formatMoney,
+  REDIRECT_MS,
   RETIREMENT_PAYOUT_SHARE,
   formatPercent,
   getFeaturesRetiringIn,
@@ -191,10 +192,11 @@ describe('2011: a trade-in for what retires', () => {
     };
     const relaunched = advanceEra(finished2005);
     const tradeIn = (1e8 + 2e7) * RETIREMENT_PAYOUT_SHARE;
-    assert.equal(relaunched.money, finished2005.money - ERAS_BY_ID['web2-2005'].migrationCost + tradeIn);
+    // Paid as the old links redirect, over the new era's first minutes (relaunch-money.ts).
+    assert.ok(Math.abs(relaunched.redirects.perSecond * (REDIRECT_MS / 1000) - tradeIn) < tradeIn * 1e-9);
     const news = describeRetirement(finished2005, 'social-2011');
     assert.ok(news.includes('Blogroll'), news);
-    assert.ok(news.includes(`Trade-in: ${formatMoney(tradeIn)} (50% of what they earned).`), news);
+    assert.ok(news.includes(`Trade-in: ${formatMoney(tradeIn)} (50% of what they earned), paid over 10 minutes as their old links redirect.`), news);
   });
 
   it('pays nothing when nothing retires: 2005 retired nothing from 1997', () => {

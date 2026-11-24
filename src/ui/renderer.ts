@@ -1,4 +1,4 @@
-import { areSpecializationsOn, calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks } from '../engine';
+import { areSpecializationsOn, calculateEconomySnapshot, findChosenFramework, formatCompactNumber, formatMoney, isMobileFriendly, isRenderedOnlyInBrowser, calculateBacklinksEarned, shouldProjectBacklinks, calculateRedirectIncomePerSecond } from '../engine';
 import { calculateBuffChipsSignature, findFireRemainingMs, isTargetBuffed, listChipTimes, renderBuffChips } from './render-buffs';
 import type { GameState } from '../engine';
 import {
@@ -138,7 +138,12 @@ function renderStats(editor: CodeEditor): void {
   const economy = calculateEconomySnapshot(store.game);
   setWatchedText(elements.statMoney, formatMoney(store.game.money));
   setWatchedText(elements.statVisitors, `${formatCompactNumber(economy.visitorsPerSecond)}/s`);
-  renderIncome({ site: economy.netRevenuePerSecond, hired: economy.hiredTypingPerSecond, typing: readTypingIncomePerSecond(store.typingIncomePool) });
+  renderIncome({
+    site: economy.netRevenuePerSecond,
+    hired: economy.hiredTypingPerSecond,
+    typing: readTypingIncomePerSecond(store.typingIncomePool),
+    redirects: calculateRedirectIncomePerSecond(store.game),
+  });
   renderProjectedBacklinks();
   editor.updateRate(economy.keystrokeValue, economy.bugChance);
   editor.updateHeat(store.game.typingHeat, findFireRemainingMs(store.game));
