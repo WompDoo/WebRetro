@@ -1,4 +1,4 @@
-import { calculateRetirementPayout, formatMoney, getFeaturesRetiringIn, getRetiredFeatureName } from '../engine';
+import { advanceEra, calculateRetirementPayout, ERAS_BY_ID, formatMoney, getFeaturesRetiringIn, getRetiredFeatureName, MS_PER_SECOND, REDIRECT_MS } from '../engine';
 import type { EraId, GameState } from '../engine';
 import { escapeHtml } from './dom';
 import { ERA_PRESENTATION } from './presentation';
@@ -40,7 +40,24 @@ function renderRetiring(state: GameState, nextEraId: EraId): string {
 
 /** Nothing to show when only the crash's stopgaps retire: they pay no trade-in. */
 function renderTradeIn(payout: number): string {
-  return payout > 0 ? `<span class="relaunch-trade-in">Trade-in ${formatMoney(payout)}</span>` : '';
+  return payout > 0 ? `<span class="relaunch-trade-in" title="Paid over the new era’s first minutes, as their old links redirect">Trade-in ${formatMoney(payout)} ↪</span>` : '';
+}
+
+/** Saved beyond what the relaunch keeps: it goes into the move. */
+function isSavingTooMuch(state: GameState, kept: number): boolean {
+  return state.money - ERAS_BY_ID[state.eraId].migrationCost > kept;
+}
+
+const OVER_BUDGET_NOTE = ' Migrations run over budget: what you’ve saved past that goes into the move, so spend it first if you’d rather keep it.';
+const SECONDS_PER_MINUTE = 60;
+const REDIRECT_NOTE = ` The trade-in arrives over the first ${REDIRECT_MS / MS_PER_SECOND / SECONDS_PER_MINUTE} minutes, as the old links redirect.`;
+
+/** What you'll start the new era with, said before you go, so nothing you saved disappears by surprise. */
+function renderStartingMoney(state: GameState, nextEraId: EraId): string {
+  const kept = advanceEra(state).money;
+  const overBudget = isSavingTooMuch(state, kept) ? OVER_BUDGET_NOTE : '';
+  const redirects = calculateRetirementPayout(state, nextEraId) > 0 ? REDIRECT_NOTE : '';
+  return `<p class="relaunch-money">You start ${ERA_PRESENTATION[nextEraId].year} with ${formatMoney(kept)}.${escapeHtml(redirects + overBudget)}</p>`;
 }
 
 function renderFullStory(story: EraStory): string {
@@ -58,6 +75,7 @@ export function renderRelaunchStory(state: GameState, nextEraId: EraId, story: E
       <ul class="relaunch-cards">${story.highlights.map(renderHighlight).join('')}</ul>
       ${choice}
       ${renderRetiring(state, nextEraId)}
+      ${renderStartingMoney(state, nextEraId)}
       ${renderFullStory(story)}
     </div>
     <div class="relaunch-actions">

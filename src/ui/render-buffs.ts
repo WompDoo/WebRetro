@@ -1,4 +1,4 @@
-import { BUFFS_BY_ID, calculateBuffFactor, formatPercent, MS_PER_SECOND, OPPORTUNITIES_BY_KIND } from '../engine';
+import { BUFFS_BY_ID, calculateBuffFactor, calculateRedirectIncomePerSecond, formatMoney, formatPercent, MS_PER_SECOND, OPPORTUNITIES_BY_KIND } from '../engine';
 import type { ActiveBuff, BuffTarget, GameState, Opportunity } from '../engine';
 import { escapeHtml } from './dom';
 
@@ -33,9 +33,20 @@ function renderOffer(opportunity: Opportunity): string {
   return `<button type="button" class="buff-chip is-offer" data-action="open-minigame" data-id="${opportunity.id}"><span class="buff-icon" aria-hidden="true">${definition.icon}</span><b>${escapeHtml(definition.offer)}</b> · <span data-buff-time="offer">${seconds} s</span></button>`;
 }
 
+/** After a relaunch, the retired features' old links still send their visitors: the trade-in, paid as it comes. */
+function renderRedirectChip(state: GameState): string {
+  const perSecond = formatMoney(calculateRedirectIncomePerSecond(state));
+  return `<span class="buff-chip is-redirect" title="The trade-in for what retired, paid as their old links redirect here"><span class="buff-icon" aria-hidden="true">↪</span><b>Old links redirect</b> +${perSecond}/s · <span data-buff-time="redirects">${formatClock(state.redirects.remainingMs)}</span></span>`;
+}
+
+function hasRedirects(state: GameState): boolean {
+  return calculateRedirectIncomePerSecond(state) > 0;
+}
+
 export function renderBuffChips(state: GameState): string {
   const offer = state.opportunity === null ? '' : renderOffer(state.opportunity);
-  return `${offer}${state.buffs.map(renderChip).join('')}`;
+  const redirects = hasRedirects(state) ? renderRedirectChip(state) : '';
+  return `${offer}${redirects}${state.buffs.map(renderChip).join('')}`;
 }
 
 /**
@@ -44,17 +55,27 @@ export function renderBuffChips(state: GameState): string {
  */
 export function calculateBuffChipsSignature(state: GameState): string {
   const offerId = state.opportunity === null ? '' : String(state.opportunity.id);
-  return [offerId, ...state.buffs.map((buff) => buff.id)].join('|');
+  return [offerId, hasRedirects(state), ...state.buffs.map((buff) => buff.id)].join('|');
 }
 
 /** Each chip's countdown, by the key its time slot carries. */
 export function listChipTimes(state: GameState): readonly (readonly [string, string])[] {
   const offer: readonly (readonly [string, string])[] = state.opportunity === null ? [] : [['offer', formatSeconds(state.opportunity.remainingMs)]];
-  return [...offer, ...state.buffs.map((buff): readonly [string, string] => [buff.id, formatSeconds(buff.remainingMs)])];
+  const redirects: readonly (readonly [string, string])[] = hasRedirects(state) ? [['redirects', formatClock(state.redirects.remainingMs)]] : [];
+  return [...offer, ...redirects, ...state.buffs.map((buff): readonly [string, string] => [buff.id, formatSeconds(buff.remainingMs)])];
 }
 
 function formatSeconds(ms: number): string {
   return `${Math.ceil(ms / MS_PER_SECOND)} s`;
+}
+
+const SECONDS_PER_MINUTE = 60;
+const CLOCK_DIGITS = 2;
+
+/** "9:41": minutes and seconds, for what lasts minutes. */
+function formatClock(ms: number): string {
+  const seconds = Math.ceil(ms / MS_PER_SECOND);
+  return `${Math.floor(seconds / SECONDS_PER_MINUTE)}:${String(seconds % SECONDS_PER_MINUTE).padStart(CLOCK_DIGITS, '0')}`;
 }
 
 /** Whether this number is being boosted right now: its stat burns along with the chip. */

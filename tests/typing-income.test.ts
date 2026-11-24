@@ -10,6 +10,7 @@ import {
   sumIncome,
   TYPING_INCOME_FADE_MS,
 } from '../src/ui/typing-income';
+import type { IncomeSources } from '../src/ui/typing-income';
 
 const KEYSTROKES_PER_SECOND = 6;
 const PAY_PER_KEYSTROKE = 10;
@@ -42,7 +43,7 @@ describe('typing income', () => {
 });
 
 describe('the Income stat', () => {
-  const sources = (site: number, typing: number, hired = 0): { site: number; hired: number; typing: number } => ({ site, hired, typing });
+  const sources = (site: number, typing: number, hired = 0, redirects = 0): IncomeSources => ({ site, hired, typing, redirects });
 
   it('adds up the site, hired help and your typing', () => {
     assert.equal(sumIncome(sources(100, 60, 40)), 200);
@@ -62,5 +63,10 @@ describe('the Income stat', () => {
   it('says where the money comes from, hired help once there is some', () => {
     assert.equal(describeIncomeSources(sources(100, 60)), 'Your site: $100/s · Your typing: $60/s');
     assert.equal(describeIncomeSources(sources(100, 60, 40)), 'Your site: $100/s · Your hires: $40/s · Your typing: $60/s');
+  });
+
+  it('counts a relaunch’s redirects while they pay, and names them', () => {
+    assert.equal(sumIncome(sources(100, 60, 40, 25)), 225);
+    assert.equal(describeIncomeSources(sources(100, 60, 0, 25)), 'Your site: $100/s · Old links redirecting: $25/s · Your typing: $60/s');
   });
 });

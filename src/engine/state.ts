@@ -86,6 +86,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     purchasedUpgradeIds: [],
     switchedOffFeatureIds: [],
     refactorCounts: EMPTY_FEATURE_LEVELS,
+    redirects: { perSecond: 0, remainingMs: 0 },
     ownedDefenseIds: [],
     enabledDefenseIds: [],
     popups: [],

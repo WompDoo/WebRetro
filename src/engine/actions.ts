@@ -32,6 +32,7 @@ import { isEraGateComplete } from './era-gate';
 import { findNextEraId } from './era-chain';
 import { recordEra } from './era-records';
 import { applyEraStartPerks } from './era-start';
+import { keepStartingFund, startRedirects } from './relaunch-money';
 import { findInfection } from './hazards';
 import { drawRandoms } from './random';
 import type {
@@ -311,11 +312,14 @@ function enterEra(state: GameState, eraId: EraId): GameState {
   });
 }
 
-/** The relaunch pays for itself, and pays back a share of what the retiring features earned. */
+/**
+ * The relaunch pays for itself and takes whatever was saved beyond a start: migrations run over budget. What the
+ * retiring features earned pays back as they redirect to the new site, over its first minutes, not all at once.
+ */
 function relaunch(state: GameState, migrationCost: number, nextEraId: EraId): GameState {
-  const payout = calculateRetirementPayout(state, nextEraId);
+  const tradeIn = calculateRetirementPayout(state, nextEraId);
   const entered = enterEra(spend(state, migrationCost), nextEraId);
-  return earn(startEraStats(entered, calculateBaseVisitorsPerSecond(entered)), payout);
+  return startRedirects(keepStartingFund(startEraStats(entered, calculateBaseVisitorsPerSecond(entered))), tradeIn);
 }
 
 /**

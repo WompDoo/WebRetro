@@ -2,6 +2,7 @@ import { coolDown, tickBuffs, withoutBuffs } from './buffs';
 import { MS_PER_SECOND } from './constants';
 import { calculateHiredTypingPerSecond, calculateNetRevenuePerSecond, calculateVisitorsPerSecond, creditFeatureEarnings } from './economy';
 import { advanceHazards } from './hazards';
+import { payRedirects } from './relaunch-money';
 import { advanceOpportunities } from './opportunities';
 import { checkMilestones } from './milestones';
 import { tickAdFree, tickEraClock } from './era-stats';
@@ -10,13 +11,18 @@ import { noteTimeAway } from './run-stats';
 import { checkSpecializationUnlocks } from './specializations';
 import type { GameState, GameStep, SimulationMode } from './types';
 
-/** The site's revenue, and what hired help types: both keep coming while you're away. Only the site's is the features'. */
+/**
+ * The site's revenue, what hired help types, and the last relaunch's redirects: all keep coming while you're away.
+ * Only the site's is the features'.
+ */
 function applyProduction(state: GameState, deltaMs: number): GameState {
   const seconds = deltaMs / MS_PER_SECOND;
   const siteEarned = calculateNetRevenuePerSecond(state) * seconds;
-  const earned = siteEarned + calculateHiredTypingPerSecond(state) * seconds;
+  const redirected = payRedirects(state, deltaMs);
+  const earned = siteEarned + calculateHiredTypingPerSecond(state) * seconds + redirected.earned;
   return {
     ...state,
+    redirects: redirected.redirects,
     money: state.money + earned,
     lifetimeEarnings: state.lifetimeEarnings + earned,
     featureEarnings: creditFeatureEarnings(state, siteEarned),

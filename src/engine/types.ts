@@ -661,6 +661,8 @@ export interface GameState {
   readonly switchedOffFeatureIds: readonly FeatureId[];
   /** How many times each feature has been refactored: each halves its weight per level, and costs it some users (feature-weight.ts). */
   readonly refactorCounts: Readonly<Record<FeatureId, number>>;
+  /** What the last relaunch's retired features still pay, and for how long (relaunch-money.ts). */
+  readonly redirects: Redirects;
   readonly ownedDefenseIds: readonly DefenseId[];
   readonly enabledDefenseIds: readonly DefenseId[];
   readonly popups: readonly Popup[];
@@ -859,6 +861,12 @@ export interface LegacyState {
   readonly achievementIds: readonly AchievementId[];
   /** Keystrokes typed by hand before 2024, in the runs before this one. */
   readonly handTypedKeystrokes: number;
+}
+
+/** A relaunch's retired features, their old addresses redirecting to the new site: the trade-in, paid as it comes. */
+export interface Redirects {
+  readonly perSecond: number;
+  readonly remainingMs: number;
 }
 
 /** The parts of the game that decide how the page looks: enough to show an old page again. */
