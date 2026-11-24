@@ -140,9 +140,13 @@ function renderHomepageFooter(skills: HomepageSkills, state: GameState): string 
   return `${footer}${renderBadges(state)}`;
 }
 
+/** Text until you learn links; then each one scrolls the page to what it names (see site-nav.ts). */
+function renderNavLink(link: string, isLink: boolean): string {
+  return isLink ? `<li><span class="fake-link" data-action="site-nav" data-id="${link}">${link}</span></li>` : `<li><span class="plain-link">${link}</span></li>`;
+}
+
 function renderNavLinks(skills: HomepageSkills): string {
-  const linkClass = skills.links ? 'fake-link' : 'plain-link';
-  return NAV_LINKS.map((link) => `<li><span class="${linkClass}">${link}</span></li>`).join('');
+  return NAV_LINKS.map((link) => renderNavLink(link, skills.links)).join('');
 }
 
 function renderBanner(ads: readonly string[], index: number): string {

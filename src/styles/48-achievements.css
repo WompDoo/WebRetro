@@ -41,22 +41,29 @@
   .badge-detail { position: sticky; bottom: 0; z-index: 6; margin-top: 10px; border-style: solid; background: var(--panel); box-shadow: 0 -8px 12px var(--panel); }
 }
 
-/* ---------- The pop-up: a medal slides up from the bottom middle, opens into a pill with the name, then goes ---------- */
+/* ---------- The pop-up: a medal slides up from the bottom middle, opens on the name, then says what you did ---------- */
 .achievement-toast { position: fixed; left: 50%; bottom: 28px; z-index: 70; transform: translate(-50%, calc(100% + 48px)); transition: transform 320ms cubic-bezier(0.2, 0.9, 0.3, 1.15); }
 .achievement-toast.is-in { transform: translate(-50%, 0); }
+/* One width, revealed from the medal outwards: the description wraps inside it instead of stretching the card. */
 .toast-card {
-  display: flex; align-items: center; gap: 14px; max-width: 68px; padding: 8px; overflow: hidden; border: 0; border-radius: 999px;
-  background: #17181F; color: #FFFFFF; white-space: nowrap; text-align: left; cursor: pointer;
+  display: flex; align-items: center; gap: 14px; width: min(440px, calc(100vw - 32px)); max-width: 68px; padding: 8px; overflow: hidden; border: 0;
+  border-radius: 36px; background: #17181F; color: #FFFFFF; white-space: nowrap; text-align: left; cursor: pointer;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.08); transition: max-width 420ms ease-in-out;
 }
-.achievement-toast.is-open .toast-card { max-width: 520px; }
+.achievement-toast.is-open .toast-card { max-width: min(440px, calc(100vw - 32px)); }
 .toast-icon {
   flex: none; display: grid; place-items: center; width: 52px; height: 52px; border: 3px solid #FFB020; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #3A3C4A, #20212B); font-size: 26px; line-height: 1;
 }
-.toast-text { display: grid; gap: 2px; padding-right: 22px; opacity: 0; transition: opacity 200ms ease 160ms; }
+.toast-text { display: grid; gap: 2px; min-width: 0; padding-right: 22px; opacity: 0; transition: opacity 200ms ease 160ms; }
 .achievement-toast.is-open .toast-text { opacity: 1; }
 .toast-kicker { color: #FFD27A; font: 700 12px/1.2 var(--font-body); letter-spacing: 0.02em; }
-.toast-name { font: 700 16px/1.25 var(--font-body); }
+.toast-name { overflow: hidden; text-overflow: ellipsis; font: 700 16px/1.25 var(--font-body); }
+/* What you did: slides in under the name once it has been read. */
+.toast-description {
+  max-height: 0; overflow: hidden; color: rgba(255, 255, 255, 0.82); font: 400 13px/1.35 var(--font-body); white-space: normal; opacity: 0;
+  transition: max-height 380ms ease, opacity 300ms ease 120ms;
+}
+.achievement-toast.is-described .toast-description { max-height: 56px; opacity: 1; }
 /* Above the phone layout's tab bar. */
 @media (max-width: 780px) { .achievement-toast { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); } .toast-name { font-size: 15px; } }

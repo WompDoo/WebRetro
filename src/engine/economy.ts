@@ -968,6 +968,15 @@ export const isAdLosingMoney = memoizeByState((state: GameState): boolean => {
   return state.adCount > 0 && calculateNetRevenuePerSecond({ ...usual, adCount: state.adCount - 1 }) > calculateNetRevenuePerSecond(usual);
 });
 
+/**
+ * What one more banner would change your income by, a second, on a usual day: what it pays, less the visitors it
+ * drives away. The shop says it outright, so a player can see a banner is worth it instead of only what it costs.
+ */
+export const calculateNextAdGain = memoizeByState((state: GameState): number => {
+  const usual = toUsualDay(state);
+  return calculateNetRevenuePerSecond({ ...usual, adCount: state.adCount + 1 }) - calculateNetRevenuePerSecond(usual);
+});
+
 /** What defenses and the ops you run cost, as a share of revenue. */
 export function calculateUpkeepShare(state: GameState): number {
   return sumAll(getEnabledDefenses(state).map((defense) => defense.revenueUpkeepShare)) + getEffectSummary(state).upkeepShare;

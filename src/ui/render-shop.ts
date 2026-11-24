@@ -17,6 +17,7 @@ import {
   calculateAdAnnoyancePerAd,
   calculateAdTrafficFactor,
   calculateAdValuePerAd,
+  calculateNextAdGain,
   calculateFeatureVisitorsPerLevel,
   calculateFeatureVisitorsPerSecond,
   calculateGlobalTrafficFactor,
@@ -57,6 +58,8 @@ import {
   isFeatureSwitchedOff,
   MS_PER_SECOND,
   UPGRADES_BY_ID,
+  canChooseSpecialization,
+  TREE_IDS,
 } from '../engine';
 import type {
   BuffId,
@@ -78,7 +81,7 @@ import type {
 } from '../engine';
 import { escapeHtml } from './dom';
 import { LEARN_LINKS } from './learn-links';
-import { calculateSpecializeTabSignature, countChoosable, isSpecializeTabShown, renderSpecializeTab } from './render-specializations';
+import { calculateSpecializeTabSignature, isSpecializeTabShown, renderSpecializeTab } from './render-specializations';
 import { describeTradeIn } from './retirement';
 import { AD_ICON, CODE_ICON, COOKIE_ICON, DEFENSE_ICONS, FEATURE_ICONS, LEARN_ICON, LOCK_ICON, OPS_ICON, SERVER_ICON, UPGRADE_ICON } from './icons';
 
@@ -632,6 +635,18 @@ function renderDefenseRow(state: GameState, defenseId: DefenseId): string {
   </article>`;
 }
 
+/**
+ * The verdict on one more banner: what it adds to your income, after the visitors it drives away. A banner that pays
+ * says so plainly; one that wouldn't says why. None at all on a page that's full.
+ */
+function renderNextAdVerdict(state: GameState): string {
+  if (state.adCount >= ERAS_BY_ID[state.eraId].maxAds) return '';
+  const gain = calculateNextAdGain(state);
+  return gain > 0
+    ? `<p class="shop-effect is-gain">Next banner: +${formatMoney(gain)}/s, after the visitors it costs</p>`
+    : `<p class="shop-effect is-loss">Next banner: −${formatMoney(-gain)}/s: it would drive away more than it pays</p>`;
+}
+
 /** The first banner costs nothing: say so, rather than "$0". */
 function describeAdPrice(cost: number): string {
   return cost === 0 ? '+ Free' : `+ ${formatMoney(cost)}`;
@@ -645,6 +660,7 @@ function renderAdControls(state: GameState): string {
     : buyButton('place-ad', 'ad', calculateNextAdCost(state), describeAdPrice(calculateNextAdCost(state)));
   const removeButton = `<button type="button" class="ghost-button" data-action="remove-ad" ${state.adCount === 0 ? 'disabled' : ''}>Remove one</button>`;
   return `<p class="shop-effect">Each ad: +$${calculateAdValuePerAd(state).toFixed(PER_VISITOR_DECIMALS)} per visitor, −${formatPercent(calculateAdAnnoyancePerAd(state))} visitors</p>
+      ${renderNextAdVerdict(state)}
       <p class="shop-effect is-muted">Now: $${calculateRevenuePerVisitor(state).toFixed(PER_VISITOR_DECIMALS)} per visitor · ads cost you ${formatPercent(NEUTRAL_FACTOR - calculateAdTrafficFactor(state))} of visitors</p>
       <div class="ad-controls">${removeButton}${placeButton}</div>`;
 }
@@ -773,30 +789,50 @@ export function renderShopTabs(activeTab: ShopTab, state: GameState): string {
     .join('');
 }
 
-function countAffordableDefenses(state: GameState): number {
-  return getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost).length;
+/**
+ * What a tab has that you could buy right now, each as its card's key: the buy button's action and id (shop-seen.ts
+ * reads the same from the page). The badges count these, less the ones you've already seen.
+ */
+const keysOf = (action: string, ids: readonly string[]): readonly string[] => ids.map((id) => `${action}:${id}`);
+
+function listAffordableDefenses(state: GameState): readonly string[] {
+  const ids = getUnlockedDefenseIds(state).filter((defenseId) => !state.ownedDefenseIds.includes(defenseId) && state.money >= DEFENSES_BY_ID[defenseId].cost);
+  return keysOf('buy-defense', ids);
 }
 
-function countAffordableOps(state: GameState): number {
-  return getAvailableOpsIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)).length;
+function listAffordableOps(state: GameState): readonly string[] {
+  return keysOf('buy-upgrade', getAvailableOpsIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)));
 }
 
-const AFFORDABLE_COUNTERS: Readonly<Record<ShopTab, (state: GameState) => number>> = {
-  learn: (state) => getAvailableSkillIds(state).filter((skillId) => state.money >= calculateUpgradeCost(state, skillId)).length,
+/** The next hosting tier, when you can pay for it. */
+function listAffordableHosting(state: GameState): readonly string[] {
+  const next = getNextHostingTier(state);
+  return next !== null && canUpgradeHosting(state) ? [`upgrade-hosting:${next.id}`] : [];
+}
+
+/** The one-off buttons of the Ops tab: the next banner and a certificate renewal. */
+function listAffordableOneOffs(state: GameState): readonly string[] {
+  return [...(canPlaceAd(state) ? ['place-ad:ad'] : []), ...(canRenewCertificate(state) ? ['renew-certificate:certificate'] : [])];
+}
+
+const AFFORDABLE_KEYS: Readonly<Record<ShopTab, (state: GameState) => readonly string[]>> = {
+  learn: (state) => keysOf('buy-upgrade', getAvailableSkillIds(state).filter((skillId) => state.money >= calculateUpgradeCost(state, skillId))),
   build: (state) =>
-    getUnlockedFeatureIds(state).filter((featureId) => isFeatureBuildable(state, featureId) && state.money >= calculateNextFeatureCost(state, featureId)).length,
-  upgrades: (state) => getRevealedBoostIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId)).length,
-  security: (state) =>
-    countAffordableDefenses(state) +
-    countAffordableOps(state) +
-    Number(canPlaceAd(state)) +
-    Number(canUpgradeHosting(state)) +
-    Number(canRenewCertificate(state)),
-  specialize: countChoosable,
+    keysOf('buy-feature', getUnlockedFeatureIds(state).filter((featureId) => isFeatureBuildable(state, featureId) && state.money >= calculateNextFeatureCost(state, featureId))),
+  upgrades: (state) => keysOf('buy-upgrade', getRevealedBoostIds(state).filter((upgradeId) => state.money >= calculateUpgradeCost(state, upgradeId))),
+  security: (state) => [...listAffordableDefenses(state), ...listAffordableOps(state), ...listAffordableHosting(state), ...listAffordableOneOffs(state)],
+  specialize: (state) => keysOf('open-specialization', TREE_IDS.filter((id) => canChooseSpecialization(state, id))),
 };
 
-export function countAffordable(state: GameState, tab: ShopTab): number {
-  return AFFORDABLE_COUNTERS[tab](state);
+export function listAffordableKeys(state: GameState, tab: ShopTab): readonly string[] {
+  return AFFORDABLE_KEYS[tab](state);
+}
+
+const NOTHING_SEEN: ReadonlySet<string> = new Set();
+
+/** What the tab's badge says: what you could buy and haven't yet seen while you could. */
+export function countAffordable(state: GameState, tab: ShopTab, seen: ReadonlySet<string> = NOTHING_SEEN): number {
+  return listAffordableKeys(state, tab).filter((key) => !seen.has(key)).length;
 }
 
 export function calculateShopSignature(state: GameState, tab: ShopTab, view: ShopView): string {

@@ -537,6 +537,9 @@ export function renderSignatureBlock(state: GameState): string {
 }
 
 /** The navigation's links, the first marked as the page you're on. */
+/** The menu: each item scrolls the page to what it names (see site-nav.ts). */
 export function renderNavLinks(state: GameState, eraItems: readonly string[], activeClass: string): string {
-  return pickNavItems(state, eraItems).map((item, index) => `<span${index === 0 ? activeClass : ''}>${escapeHtml(item)}</span>`).join('');
+  return pickNavItems(state, eraItems)
+    .map((item, index) => `<span${index === 0 ? activeClass : ''} data-action="site-nav" data-id="${escapeHtml(item)}">${escapeHtml(item)}</span>`)
+    .join('');
 }

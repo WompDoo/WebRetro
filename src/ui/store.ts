@@ -33,6 +33,8 @@ interface UiStore {
    * over the page's scrolling. Saved apart from the game, so a new game or a playtest jump keeps it.
    */
   isScrollJackingOn: boolean;
+  /** Shop cards seen while affordable: the tab badges stop counting them. Kept with the preferences. */
+  seenShopKeys: Set<string>;
   news: readonly NewsItem[];
   newsCounter: number;
   /** The newest news item seen on the phone's Inbox tab; anything newer counts as unread. */
@@ -68,6 +70,7 @@ export const store: UiStore = {
   deviceView: 'desktop',
   isGoalOpen: false,
   isScrollJackingOn: true,
+  seenShopKeys: new Set(),
   news: [],
   newsCounter: 0,
   lastSeenNewsId: 0,

@@ -89,7 +89,7 @@ describe('the crash, folded into 1997', () => {
   });
 
   it('tells 2005’s story the way the game is played: straight from 1997', () => {
-    assert.match(findEntryStory('homepage-1997', 'web2-2005')?.hook ?? '', /took the ad money with it/);
+    assert.match(findEntryStory('homepage-1997', 'web2-2005')?.hook ?? '', /ad rates crashed/);
   });
 
   it('puts its features on the 1997 page', () => {

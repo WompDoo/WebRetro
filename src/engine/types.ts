@@ -901,6 +901,8 @@ export interface Opportunity {
   readonly id: number;
   readonly kind: OpportunityKind;
   readonly remainingMs: number;
+  /** Its minigame's window is open: the clock stops until it closes. */
+  readonly isOpen: boolean;
 }
 
 export interface ActiveBuff {

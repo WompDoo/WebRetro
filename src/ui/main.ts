@@ -1,4 +1,4 @@
-import { advanceSimulation, calculateInfectionDifficulty, chooseSiteColors, recordAchievements, recordFoundSpecializations, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, notePokedWithDevTools, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
+import { advanceSimulation, calculateInfectionDifficulty, closeOpportunity, openOpportunity, chooseSiteColors, recordAchievements, recordFoundSpecializations, claimOpportunity, cleanInfection, findChosenFramework, findInfection, findOpportunity, loseOpportunity, notePokedWithDevTools, OPPORTUNITIES_BY_KIND, getBaseEraId, getFeatureDisplayName, nameSite, startNextRun } from '../engine';
 import type { SimulationMode } from '../engine';
 import { createAchievementToaster } from './achievement-toast';
 import { attachBadgeTooltip } from './badge-tooltip';
@@ -141,6 +141,8 @@ function start(hotData: unknown): void {
     onWin: (id) => applyStep(findInfection(store.game, id) === null ? claimOpportunity(store.game, id) : cleanInfection(store.game, id)),
     // An infection is still there to retry; an offer is gone. Losing an infection's minigame costs nothing more.
     onLose: (id) => applyStep(loseOpportunity(store.game, id)),
+    onShow: (id) => updateGame((state) => openOpportunity(state, id)),
+    onHide: (id) => updateGame((state) => closeOpportunity(state, id)),
   });
   const renderer = createRenderer(editor);
   const intro = createIntro(introElements, nameSiteAndSave);

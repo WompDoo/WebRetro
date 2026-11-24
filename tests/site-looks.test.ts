@@ -17,9 +17,12 @@ const at = (eraId: EraId, stage: 'start' | 'end' = 'end'): GameState =>
 const as = (state: GameState, specializationId: SpecializationId): GameState => ({ ...state, specializationIds: specializationId === 'homepage' ? [] : [specializationId] });
 const OCEAN: SiteColors = { accent: '#1864AB', background: 'white' };
 
+/** The menu's items, without the attributes that make each one scroll the page (site-nav.ts). */
+const navOnly = (html: string): string => html.replace(/ data-action="site-nav" data-id="[^"]*"/g, '');
+
 describe('a specialized site looks the part', () => {
   it('leads 2011’s Bootstrap page with what it is: its own navigation, hero and block', () => {
-    const page = renderSite(as(at('social-2011'), 'video'), NOW);
+    const page = navOnly(renderSite(as(at('social-2011'), 'video'), NOW));
     assert.match(page, /<h1>Upload\. Watch\. Repeat\.<\/h1>/);
     assert.match(page, /<span class="is-active">Home<\/span><span>Trending<\/span><span>Library<\/span>/);
     assert.match(page, /spec-block--video[\s\S]*Trending now[\s\S]*Cat plays the keyboard/);
@@ -38,7 +41,7 @@ describe('a specialized site looks the part', () => {
     const shop2018 = renderSite(as(at('platform-2018'), 'shop'), NOW);
     assert.match(shop2018, /One click, and it’s yours\./);
     assert.match(shop2018, /Today’s deals[\s\S]*Rubber duck/);
-    const news2024 = renderSite(as(at('ai-2024'), 'news'), NOW);
+    const news2024 = navOnly(renderSite(as(at('ai-2024'), 'news'), NOW));
     assert.match(news2024, /<span class="ai-gradient">The news, summarized\.<\/span>/);
     assert.match(news2024, /<nav class="ai-links"><span>Latest<\/span>/);
   });
@@ -56,13 +59,13 @@ describe('a specialized site looks the part', () => {
 
   it('says what it is under the 2005 logo, in that year’s words', () => {
     assert.match(renderSite(as(at('web2-2005'), 'forum'), NOW), /<span class="w2-tagline">The community for people like you\.<\/span>/);
-    assert.match(renderSite(as(at('web2-2005'), 'forum'), NOW), /<nav class="w2-nav"><span class="is-active">Forums<\/span>/);
+    assert.match(navOnly(renderSite(as(at('web2-2005'), 'forum'), NOW)), /<nav class="w2-nav"><span class="is-active">Forums<\/span>/);
     assert.doesNotMatch(renderSite(at('web2-2005'), NOW), /w2-tagline/);
   });
 
   it('is led by the newest specialization, and keeps a link and a shorter block for each earlier one', () => {
     const stacked = { ...at('platform-2018'), specializationIds: ['video', 'social', 'stories'] as const };
-    const page = renderSite(stacked, NOW);
+    const page = navOnly(renderSite(stacked, NOW));
     assert.match(page, /<nav class="lp-links"><span>Stories<\/span><span>Camera<\/span><span>Friends<\/span><span>Videos<\/span><\/nav>/);
     assert.match(page, /spec-block--stories spec-block--tiles"[\s\S]*spec-block--social spec-block--list is-earlier[\s\S]*spec-block--video spec-block--tiles is-earlier/);
     const earlierVideos = page.split('spec-block--video')[1] ?? '';
@@ -73,7 +76,7 @@ describe('a specialized site looks the part', () => {
 
   it('keeps the newest’s own link when an earlier one shares its name', () => {
     const stacked = { ...at('platform-2018'), specializationIds: ['social', 'chat-community'] as const };
-    assert.match(renderSite(stacked, NOW), /<nav class="lp-links"><span>Servers<\/span><span>Friends<\/span><span>Events<\/span><span>Download<\/span><\/nav>/);
+    assert.match(navOnly(renderSite(stacked, NOW)), /<nav class="lp-links"><span>Servers<\/span><span>Friends<\/span><span>Events<\/span><span>Download<\/span><\/nav>/);
   });
 
   it('is a homepage like everyone’s in 1997', () => {
