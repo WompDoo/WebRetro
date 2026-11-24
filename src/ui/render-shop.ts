@@ -171,7 +171,8 @@ function renderBulkButton(state: GameState, featureId: FeatureId, amount: BuyAmo
 
 function renderFeatureBuyButtons(state: GameState, featureId: FeatureId): string {
   const single = buyButton('buy-feature', featureId, calculateFeatureLevelsCost(state, featureId, 1));
-  return `<div class="buy-group">${single}<div class="buy-bulk-row">${BULK_AMOUNTS.map((amount) => renderBulkButton(state, featureId, amount)).join('')}</div></div>`;
+  const bulk = BULK_AMOUNTS.map((amount) => renderBulkButton(state, featureId, amount)).join('');
+  return `<div class="buy-group">${single}<div class="buy-bulk-row">${bulk}</div>${renderHeavyFeatureIfHeavy(state, featureId)}</div>`;
 }
 
 function toggleButtonClass(isOn: boolean): string {
@@ -263,30 +264,23 @@ function describeSunset(state: GameState, featureId: FeatureId): string {
   return `Or sunset a level: it leaves the page with its visitors (−${weightKb}) and pays ${formatMoney(calculateSunsetTradeIn(state, featureId))} back. ${net} overall.`;
 }
 
-/** ▲ more visitors overall, ▼ fewer: the one thing to see at a glance; the i says how many. */
-function formatNetMark(visitorsPerSecond: number): string {
-  return visitorsPerSecond >= 0 ? '▲' : '▼';
-}
-
 function renderSunsetButton(state: GameState, featureId: FeatureId): string {
-  const mark = formatNetMark(calculateSunsetNetVisitors(state, featureId));
   const tradeIn = formatMoney(calculateSunsetTradeIn(state, featureId));
-  return `<button type="button" class="ghost-button sunset-button" data-action="sunset-level" data-id="${featureId}">${mark} Sunset +${tradeIn}</button>`;
+  return `<button type="button" class="ghost-button sunset-button" data-action="sunset-level" data-id="${featureId}">Sunset +${tradeIn}</button>`;
 }
 
-const HEAVY_FEATURE_KEY = 'Too heavy? Two ways to make it lighter. ▲ brings more visitors overall, ▼ fewer.';
+const HEAVY_FEATURE_KEY = 'Too heavy? Two ways to make it lighter:';
 const HEAVY_FEATURE_QA = 'Tests and reviews in the Ops tab cut the users a refactor loses, past refactors too.';
 
 /**
  * A slow page gets lighter without selling what you built: a heavy feature's card offers a refactor (every level
- * kept, some users lost to its bugs) or to sunset a level (money back, that level's visitors gone). One row under
- * the card, across the text and the price, so the card barely grows: the buttons say which way each goes, the i how far.
+ * kept, some users lost to its bugs) or to sunset a level (money back, that level's visitors gone). Two more small
+ * buttons with its other ones, and an i that says what each would do overall.
  */
 function renderHeavyFeature(state: GameState, featureId: FeatureId): string {
   const refactorCost = calculateRefactorCost(state, featureId);
-  const refactorMark = formatNetMark(calculateRefactorNetVisitors(state, featureId));
   const details = [HEAVY_FEATURE_KEY, describeRefactor(state, featureId), describeSunset(state, featureId), HEAVY_FEATURE_QA];
-  return `<div class="heavy-feature">${buyButton('refactor-feature', featureId, refactorCost, `${refactorMark} Refactor ${formatMoney(refactorCost)}`)}${renderSunsetButton(state, featureId)}${renderInfoTip(details)}</div>`;
+  return `<div class="heavy-actions">${buyButton('refactor-feature', featureId, refactorCost, `Refactor ${formatMoney(refactorCost)}`)}<div class="heavy-actions-row">${renderSunsetButton(state, featureId)}${renderInfoTip(details)}</div></div>`;
 }
 
 const ORIGINAL_WEIGHT = 1;
@@ -327,7 +321,6 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView
       ${toggle}
     </div>
     ${button}
-    ${renderHeavyFeatureIfHeavy(state, featureId)}
   </article>`;
 }
 
