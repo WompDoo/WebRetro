@@ -27,13 +27,16 @@ import {
   isVisitorsGoalBlockedByAds,
   formatPercent,
   FRAMEWORKS_BY_ID,
+  calculateRefactorNetVisitors,
+  isFeatureTooHeavy,
 } from '../engine';
-import type { FrameworkId, GameState, GateCheck, GateRequirementKind } from '../engine';
+import type { FeatureId, FrameworkId, GameState, GateCheck, GateRequirementKind } from '../engine';
 import { escapeHtml } from './dom';
 
 interface HintRule {
   readonly applies: (state: GameState) => boolean;
-  readonly text: string;
+  /** Most say the same thing every time; a few name what to do on this site. */
+  readonly text: string | ((state: GameState) => string);
 }
 
 const FIRST_KEYSTROKES = 8;
@@ -53,6 +56,27 @@ const AI_ANSWER_NAG_SHARE = 0.2;
 function isSlowOnPhones(state: GameState): boolean {
   const era = ERAS_BY_ID[state.eraId];
   return era.mobileShare > 0 && calculatePhoneLoadTimeSeconds(state) > era.patienceSeconds;
+}
+
+function isWorthRefactoring(state: GameState, featureId: FeatureId): boolean {
+  return isFeatureTooHeavy(state, featureId) && calculateRefactorNetVisitors(state, featureId) > 0;
+}
+
+/** The heavy feature whose refactor would bring back the most visitors overall, if any would bring some. */
+function findBestRefactor(state: GameState): FeatureId | null {
+  const worth = FEATURE_IDS.filter((featureId) => isWorthRefactoring(state, featureId));
+  const ranked = [...worth].sort((first, second) => calculateRefactorNetVisitors(state, second) - calculateRefactorNetVisitors(state, first));
+  return ranked[0] ?? null;
+}
+
+const SLOW_PAGE_LEVERS =
+  'Fewer ads help. Once a feature is level 5 and a tenth of the page, its Build card offers to refactor it (lighter, but its bugs cost some users) or to sunset a level (lighter, with money back).';
+
+/** A slow page's fix, named: the refactor that would help most, or where the buttons will be. */
+function describeSlowPageFix(state: GameState): string {
+  const featureId = findBestRefactor(state);
+  if (featureId === null) return SLOW_PAGE_LEVERS;
+  return `Refactor your ${getFeatureDisplayName(featureId, state.eraId)}: the button is on its Build card. Every level stays and weighs half, though the new bugs cost it some users (tests in the Ops tab catch most).`;
 }
 
 function hasDeadFeature(state: GameState): boolean {
@@ -120,11 +144,11 @@ const HINT_RULES: readonly HintRule[] = [
   },
   {
     applies: isSlowOnPhones,
-    text: 'Your page is slow on phones: their mobile networks are far slower than a desktop’s line, and phone visitors give up first. Flip the browser to Phone to see the load time there. Lighter pages load faster everywhere.',
+    text: (state) => `Your page is slow on phones: their networks are far slower than a desktop’s, and phone visitors give up first. ${describeSlowPageFix(state)}`,
   },
   {
     applies: (state) => calculatePerformanceTrafficFactor(state) < SLOW_PAGE_FACTOR,
-    text: 'Every second your page takes to load costs visitors, and yours has become slow enough to notice. Make it lighter (fewer ads, smaller files) or faster.',
+    text: (state) => `Every second your page takes to load costs visitors, and yours has become slow enough to notice. ${describeSlowPageFix(state)}`,
   },
   {
     applies: (state) => state.popups.length >= POPUP_NAG_COUNT,
@@ -186,9 +210,13 @@ function describeGoal(state: GameState): string {
   return findNextEraId(state) === null ? 'Finish the checklist to finish the game.' : `Finish the checklist to relaunch your site for ${next.year}: ${next.name}.`;
 }
 
+function readHintText(rule: HintRule, state: GameState): string {
+  return typeof rule.text === 'string' ? rule.text : rule.text(state);
+}
+
 function findHint(state: GameState): string {
   const rule = HINT_RULES.find((candidate) => candidate.applies(state));
-  return rule === undefined ? describeGoal(state) : rule.text;
+  return rule === undefined ? describeGoal(state) : readHintText(rule, state);
 }
 
 const VALUE_FORMATTERS: Readonly<Record<GateRequirementKind, (value: number) => string>> = {

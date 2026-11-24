@@ -98,6 +98,7 @@ type FactorKind =
   | 'ad-value-multiplier'
   | 'ad-annoyance-multiplier'
   | 'page-weight-multiplier'
+  | 'refactor-churn-multiplier'
   | 'load-time-multiplier'
   | 'server-load-multiplier'
   | 'feature-cost-multiplier'
@@ -110,6 +111,7 @@ const FACTOR_KINDS: readonly FactorKind[] = [
   'ad-value-multiplier',
   'ad-annoyance-multiplier',
   'page-weight-multiplier',
+  'refactor-churn-multiplier',
   'load-time-multiplier',
   'server-load-multiplier',
   'feature-cost-multiplier',
@@ -150,13 +152,20 @@ function isFactorEffect(effect: UpgradeEffect): effect is FactorEffect {
   return FACTOR_KINDS.some((kind) => kind === effect.kind);
 }
 
+/** Resilience that stays: a test suite keeps catching a refactor's bugs in every era after the one you wrote it in. */
+const LASTING_OPS_FACTORS: readonly FactorKind[] = ['refactor-churn-multiplier'];
+
+function isLastingFactor(effect: UpgradeEffect): boolean {
+  return LASTING_OPS_FACTORS.some((kind) => kind === effect.kind);
+}
+
 /**
  * Ops multipliers are an edge for the era you set them up in: by the next relaunch everyone has a domain, https and
  * indexes, and what set you apart is the baseline. What ops keep doing for good is the resilience: https itself,
- * backups, monitoring, the process manager.
+ * backups, monitoring, the process manager, and the tests.
  */
 export function isEraBoundEffect(upgradeId: UpgradeId, effect: UpgradeEffect): boolean {
-  return UPGRADES_BY_ID[upgradeId].kind === 'ops' && isFactorEffect(effect);
+  return UPGRADES_BY_ID[upgradeId].kind === 'ops' && isFactorEffect(effect) && !isLastingFactor(effect);
 }
 
 /** Bought for this era's big era: in the 2000 crash, 1997's editor, typing skills and ops still count. */
@@ -569,12 +578,26 @@ export function calculateFeatureLevelsNetVisitors(state: GameState, featureId: F
   return calculateVisitorsPerSecond(after) - calculateVisitorsPerSecond(state);
 }
 
+/** Every refactor ships bugs, and this share of the feature's users hit one and leave for good, before QA. */
+export const REFACTOR_CHURN_SHARE = 0.2;
+
+/** The share of its users a refactor costs a feature, with the QA you have. */
+export function calculateRefactorChurnShare(state: GameState): number {
+  return REFACTOR_CHURN_SHARE * readFactor(state, 'refactor-churn-multiplier');
+}
+
+/** What's left of a feature's users after every refactor it's had. QA bought later wins some of them back. */
+function calculateRefactorChurnFactor(state: GameState, featureId: FeatureId): number {
+  return (NEUTRAL_FACTOR - calculateRefactorChurnShare(state)) ** state.refactorCounts[featureId];
+}
+
 export function calculateFeatureVisitorsPerLevel(state: GameState, featureId: FeatureId): number {
   const definition = FEATURES_BY_ID[featureId];
   return (
     definition.visitorsPerSecondPerLevel *
     calculateFeatureUpgradeFactor(state, featureId) *
-    calculateSynergyFactor(state, definition)
+    calculateSynergyFactor(state, definition) *
+    calculateRefactorChurnFactor(state, featureId)
   );
 }
 
@@ -846,11 +869,32 @@ export const calculateServerLoad = memoizeByState((state: GameState): number => 
   return ERAS_BY_ID[state.eraId].hasServerLoad ? calculateServerDemand(state) / calculateHostingCapacity(state, getHostingTier(state)) : 0;
 });
 
+/** Each refactor halves what a level of the feature weighs. */
+export const REFACTOR_WEIGHT_FACTOR = 0.5;
+
+/** What one more level adds to the first load. */
+export function calculateFeatureWeightPerLevelKb(state: GameState, featureId: FeatureId): number {
+  return FEATURES_BY_ID[featureId].pageWeightKbPerLevel * REFACTOR_WEIGHT_FACTOR ** state.refactorCounts[featureId];
+}
+
+/** On the page and loading: not switched off, not a dead plugin's empty box. */
+function isFeatureLoading(state: GameState, featureId: FeatureId): boolean {
+  return isFeatureOnPage(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
+}
+
+/** What the feature's levels add to the first load, before page-wide savings like compression. */
+function calculateFeatureContentKb(state: GameState, featureId: FeatureId): number {
+  return isFeatureLoading(state, featureId) ? calculateFeatureWeightPerLevelKb(state, featureId) * state.featureLevels[featureId] : 0;
+}
+
 function calculateFeaturePageWeightKb(state: GameState, featureId: FeatureId): number {
-  const definition = FEATURES_BY_ID[featureId];
-  const level = state.featureLevels[featureId];
-  const isOnPage = isFeatureOnPage(state, featureId) && !isFeatureSwitchedOff(state, featureId) && !isFeaturePluginDead(state, featureId);
-  return isOnPage ? definition.pageWeightKb + definition.pageWeightKbPerLevel * level : 0;
+  return isFeatureLoading(state, featureId) ? FEATURES_BY_ID[featureId].pageWeightKb + calculateFeatureContentKb(state, featureId) : 0;
+}
+
+/** How much of the first load is this feature's levels. */
+export function calculateFeatureContentShare(state: GameState, featureId: FeatureId): number {
+  const contentKb = calculateFeatureContentKb(state, featureId) * readFactor(state, 'page-weight-multiplier');
+  return contentKb / Math.max(calculatePageWeightKb(state), Number.EPSILON);
 }
 
 export const calculatePageWeightKb = memoizeByState((state: GameState): number => {

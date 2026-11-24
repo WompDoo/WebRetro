@@ -151,6 +151,10 @@ export type UpgradeId =
   | 'learn-ftp'
   | 'nightly-backups'
   | 'database-indexes'
+  | 'unit-tests'
+  | 'code-review'
+  | 'e2e-tests'
+  | 'ai-written-tests'
   | 'ssl-certificate'
   | 'staging-environment'
   | 'uptime-monitoring'
@@ -355,6 +359,8 @@ export type UpgradeEffect =
   | { readonly kind: 'ad-value-multiplier'; readonly factor: number }
   | { readonly kind: 'ad-annoyance-multiplier'; readonly factor: number }
   | { readonly kind: 'page-weight-multiplier'; readonly factor: number }
+  /** QA: the share of users a refactor's bugs drive off. Counts for every refactor, past ones too. */
+  | { readonly kind: 'refactor-churn-multiplier'; readonly factor: number }
   | { readonly kind: 'load-time-multiplier'; readonly factor: number }
   /** Share of each visit that still reaches your server; caches and CDNs answer the rest. */
   | { readonly kind: 'server-load-multiplier'; readonly factor: number }
@@ -652,6 +658,8 @@ export interface GameState {
   readonly purchasedUpgradeIds: readonly UpgradeId[];
   /** Built features the player has switched off. They keep their levels. */
   readonly switchedOffFeatureIds: readonly FeatureId[];
+  /** How many times each feature has been refactored: each halves its weight per level, and costs it some users (feature-weight.ts). */
+  readonly refactorCounts: Readonly<Record<FeatureId, number>>;
   readonly ownedDefenseIds: readonly DefenseId[];
   readonly enabledDefenseIds: readonly DefenseId[];
   readonly popups: readonly Popup[];

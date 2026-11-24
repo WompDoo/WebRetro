@@ -60,6 +60,14 @@ import {
   UPGRADES_BY_ID,
   canChooseSpecialization,
   TREE_IDS,
+  calculateFeatureWeightPerLevelKb,
+  calculateRefactorChurnShare,
+  calculateRefactorCost,
+  calculateRefactorNetVisitors,
+  calculateSunsetNetVisitors,
+  calculateSunsetTradeIn,
+  isFeatureTooHeavy,
+  REFACTOR_WEIGHT_FACTOR,
 } from '../engine';
 import type {
   BuffId,
@@ -142,7 +150,7 @@ function renderBuildableEffect(state: GameState, featureId: FeatureId): string {
   const currentLine = state.featureLevels[featureId] > 0 ? ` · now ${formatCompactNumber(calculateFeatureVisitorsPerSecond(state, featureId))}/s` : '';
   const definition = FEATURES_BY_ID[featureId];
   // Page weight is the base weight once the feature exists, plus its per-level weight for every level.
-  const weightKb = definition.pageWeightKbPerLevel + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
+  const weightKb = calculateFeatureWeightPerLevelKb(state, featureId) + (state.featureLevels[featureId] > 0 ? 0 : definition.pageWeightKb);
   return `<p class="shop-effect">+${formatCompactNumber(perLevel)} visitors/s${currentLine}${describeAddedWeight(state, weightKb, '')}</p>${describeNetLoss(state, featureId)}`;
 }
 
@@ -234,6 +242,72 @@ function renderSpecializationBadge(itemId: FeatureId | UpgradeId): string {
   return ` <span class="spec-item-badge" title="Only for a ${escapeHtml(specialization.name.toLowerCase())}">${specialization.icon} ${escapeHtml(specialization.name)}</span>`;
 }
 
+function formatSignedVisitors(visitorsPerSecond: number): string {
+  return `${visitorsPerSecond >= 0 ? '+' : '−'}${formatCompactNumber(Math.abs(visitorsPerSecond))} visitors/s`;
+}
+
+function formatKb(kb: number): string {
+  return `${formatCompactNumber(kb)} KB`;
+}
+
+function describeRefactor(state: GameState, featureId: FeatureId): string {
+  const weightKb = calculateFeatureWeightPerLevelKb(state, featureId);
+  const churn = formatPercent(calculateRefactorChurnShare(state));
+  const net = formatSignedVisitors(calculateRefactorNetVisitors(state, featureId));
+  return `Refactor it: every level stays and weighs half (${formatKb(weightKb)} → ${formatKb(weightKb * REFACTOR_WEIGHT_FACTOR)}), but the new bugs drive off ${churn} of its users. ${net} overall.`;
+}
+
+function describeSunset(state: GameState, featureId: FeatureId): string {
+  const weightKb = formatKb(calculateFeatureWeightPerLevelKb(state, featureId));
+  const net = formatSignedVisitors(calculateSunsetNetVisitors(state, featureId));
+  return `Or sunset a level: it leaves the page with its visitors (−${weightKb}) and pays ${formatMoney(calculateSunsetTradeIn(state, featureId))} back. ${net} overall.`;
+}
+
+/** ▲ more visitors overall, ▼ fewer: the one thing to see at a glance; the i says how many. */
+function formatNetMark(visitorsPerSecond: number): string {
+  return visitorsPerSecond >= 0 ? '▲' : '▼';
+}
+
+function renderSunsetButton(state: GameState, featureId: FeatureId): string {
+  const mark = formatNetMark(calculateSunsetNetVisitors(state, featureId));
+  const tradeIn = formatMoney(calculateSunsetTradeIn(state, featureId));
+  return `<button type="button" class="ghost-button sunset-button" data-action="sunset-level" data-id="${featureId}">${mark} Sunset +${tradeIn}</button>`;
+}
+
+const HEAVY_FEATURE_KEY = 'Too heavy? Two ways to make it lighter. ▲ brings more visitors overall, ▼ fewer.';
+const HEAVY_FEATURE_QA = 'Tests and reviews in the Ops tab cut the users a refactor loses, past refactors too.';
+
+/**
+ * A slow page gets lighter without selling what you built: a heavy feature's card offers a refactor (every level
+ * kept, some users lost to its bugs) or to sunset a level (money back, that level's visitors gone). One row under
+ * the card, across the text and the price, so the card barely grows: the buttons say which way each goes, the i how far.
+ */
+function renderHeavyFeature(state: GameState, featureId: FeatureId): string {
+  const refactorCost = calculateRefactorCost(state, featureId);
+  const refactorMark = formatNetMark(calculateRefactorNetVisitors(state, featureId));
+  const details = [HEAVY_FEATURE_KEY, describeRefactor(state, featureId), describeSunset(state, featureId), HEAVY_FEATURE_QA];
+  return `<div class="heavy-feature">${buyButton('refactor-feature', featureId, refactorCost, `${refactorMark} Refactor ${formatMoney(refactorCost)}`)}${renderSunsetButton(state, featureId)}${renderInfoTip(details)}</div>`;
+}
+
+const ORIGINAL_WEIGHT = 1;
+
+/** What its refactors did, so far: kept on the card after it stops being heavy. */
+function describeRefactored(state: GameState, featureId: FeatureId): string {
+  const count = state.refactorCounts[featureId];
+  const weightShare = formatPercent(REFACTOR_WEIGHT_FACTOR ** count);
+  const lostShare = formatPercent(ORIGINAL_WEIGHT - (ORIGINAL_WEIGHT - calculateRefactorChurnShare(state)) ** count);
+  return `Its levels weigh ${weightShare} of what they did before its ${count === 1 ? 'refactor' : `${count} refactors`}, and ${lostShare} of its users left over the bugs.`;
+}
+
+function renderRefactored(state: GameState, featureId: FeatureId): string {
+  const count = state.refactorCounts[featureId];
+  return count > 0 ? `<p class="shop-effect is-tradeoff refactored-note">Refactored ${count}×${renderInfoTip([describeRefactored(state, featureId)])}</p>` : '';
+}
+
+function renderHeavyFeatureIfHeavy(state: GameState, featureId: FeatureId): string {
+  return isFeatureTooHeavy(state, featureId) ? renderHeavyFeature(state, featureId) : '';
+}
+
 function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView): string {
   const level = state.featureLevels[featureId];
   const isBuildable = isFeatureBuildable(state, featureId);
@@ -249,9 +323,11 @@ function renderFeatureRow(state: GameState, featureId: FeatureId, view: ShopView
       <h3 class="shop-name">${escapeHtml(getFeatureDisplayName(featureId, state.eraId))} ${levelChip}${renderSpecializationBadge(featureId)}</h3>
       <p class="shop-desc">${escapeHtml(FEATURES_BY_ID[featureId].description)}</p>
       ${effect}
+      ${renderRefactored(state, featureId)}
       ${toggle}
     </div>
     ${button}
+    ${renderHeavyFeatureIfHeavy(state, featureId)}
   </article>`;
 }
 
@@ -289,6 +365,7 @@ const EFFECT_DESCRIPTIONS: { readonly [K in UpgradeEffect['kind']]: (effect: Ext
   'ad-value-multiplier': (effect) => `Ads pay ${formatFactor(effect.factor)}`,
   'ad-annoyance-multiplier': (effect) => `Ads annoy visitors ${formatFactor(effect.factor)}`,
   'page-weight-multiplier': (effect) => `Page weight ${formatFactor(effect.factor)}`,
+  'refactor-churn-multiplier': (effect) => `Users a refactor’s bugs drive off ${formatFactor(effect.factor)}, past refactors too`,
   'load-time-multiplier': (effect) => `Load time ${formatFactor(effect.factor)}`,
   'feature-cost-multiplier': (effect) => `Features cost ${formatFactor(effect.factor)}`,
   'ops-cost-multiplier': (effect) => `Ops items cost ${formatFactor(effect.factor)}`,
@@ -422,9 +499,13 @@ const VISITED_LISTS: Readonly<Record<VisitedList, VisitedListCopy>> = {
   },
 };
 
-/** A small i beside a heading: hover it, or tap it on a phone, for the note. Anchored to the heading so the panel's edge can't cut it off. */
-function renderInfoTip(text: string): string {
-  return `<span class="info-tip" tabindex="0" aria-label="${escapeHtml(text)}">i<span class="info-tip-text" role="tooltip">${escapeHtml(text)}</span></span>`;
+/**
+ * A small i: hover it, or tap it on a phone, for the note, one paragraph a line. The note hangs from the i's row, not
+ * the i, so the panel's edge can't cut it off.
+ */
+function renderInfoTip(lines: readonly string[]): string {
+  const paragraphs = lines.map((line) => `<span class="info-tip-line">${escapeHtml(line)}</span>`).join('');
+  return `<span class="info-tip" tabindex="0" aria-label="${escapeHtml(lines.join(' '))}">i<span class="info-tip-text" role="tooltip">${paragraphs}</span></span>`;
 }
 
 /**
@@ -465,7 +546,7 @@ function renderVisitedGroups(state: GameState, upgradeIds: readonly UpgradeId[])
 function renderVisitedList(state: GameState, upgradeIds: readonly UpgradeId[], list: VisitedList): string {
   if (upgradeIds.length === 0) return '';
   const copy = VISITED_LISTS[list];
-  return `<h3 class="shop-group-title has-info">${escapeHtml(copy.title)}${renderInfoTip(copy.info)}</h3><div class="visited-groups">${renderVisitedGroups(state, upgradeIds)}</div>`;
+  return `<h3 class="shop-group-title has-info">${escapeHtml(copy.title)}${renderInfoTip([copy.info])}</h3><div class="visited-groups">${renderVisitedGroups(state, upgradeIds)}</div>`;
 }
 
 // ---------- Learn ----------
@@ -851,6 +932,7 @@ export function calculateShopSignature(state: GameState, tab: ShopTab, view: Sho
     state.ownedDefenseIds.join(','),
     state.enabledDefenseIds.join(','),
     state.switchedOffFeatureIds.join(','),
+    Object.values(state.refactorCounts).join(','),
     state.consentBanner,
     state.hostingTier,
     ERAS_BY_ID[state.eraId].hasServerLoad ? Math.round(calculateServerLoad(state) * 20) : 0,

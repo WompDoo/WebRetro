@@ -85,6 +85,7 @@ export function createInitialGameState(randomSeed: number): GameState {
     adCount: 0,
     purchasedUpgradeIds: [],
     switchedOffFeatureIds: [],
+    refactorCounts: EMPTY_FEATURE_LEVELS,
     ownedDefenseIds: [],
     enabledDefenseIds: [],
     popups: [],
