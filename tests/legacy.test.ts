@@ -28,6 +28,7 @@ import {
   restoreLegacy,
   SAVE_VERSION,
   shouldProjectBacklinks,
+  areBacklinksKnown,
   startNextRun,
 } from '../src/engine';
 import type { EraRecord, FeatureId, GameState, LegacyState, PerkId } from '../src/engine';
@@ -59,10 +60,15 @@ describe('Backlinks: what a finished run is worth', () => {
     assert.equal(calculateBacklinkSources(state).fromFastEras, 2);
   });
 
-  it('shows what finishing now would earn only once Backlinks are on, from the second site', () => {
+  it('counts from the second site but shows the count from the third, and at the second one’s ending', () => {
     assert.ok(!shouldProjectBacklinks(createInitialGameState(SEED)));
-    assert.ok(shouldProjectBacklinks(finished()));
-    assert.ok(shouldProjectBacklinks(startNextRun({ ...EMPTY_LEGACY, finishedRuns: 1 }, SEED)));
+    const secondSite = startNextRun({ ...EMPTY_LEGACY, finishedRuns: 1 }, SEED);
+    assert.equal(secondSite.runNumber, 2);
+    assert.ok(!shouldProjectBacklinks(secondSite), 'the second site is about specializations');
+    assert.ok(shouldProjectBacklinks(finished()), 'its ending pays them in');
+    assert.ok(shouldProjectBacklinks(startNextRun({ ...EMPTY_LEGACY, finishedRuns: 2 }, SEED)));
+    assert.ok(!areBacklinksKnown(secondSite, { finishedRuns: 1 }));
+    assert.ok(areBacklinksKnown(secondSite, { finishedRuns: 2 }), 'met at an earlier second run’s ending');
   });
 });
 

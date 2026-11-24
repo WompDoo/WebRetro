@@ -56,9 +56,20 @@ export function calculateBacklinksEarned(state: GameState): number {
   return areBacklinksOn(state) ? sources.fromVisitors + sources.fromFastEras : 0;
 }
 
-/** The first run is about the site: the count shows only once a run has been finished, and Backlinks are on. */
+/**
+ * Counted from the second run and paid in at its end, but shown from the third: the second run is about specializations,
+ * and Backlinks arrive with its ending, where they're paid in.
+ */
+const BACKLINKS_SHOWN_FROM_RUN = 3;
+
+/** The top bar's "Backlinks +N": from the third run, and on the second run's ending. */
 export function shouldProjectBacklinks(state: GameState): boolean {
-  return areBacklinksOn(state) && (state.runNumber > 1 || state.isGameFinished);
+  return areBacklinksOn(state) && (state.runNumber >= BACKLINKS_SHOWN_FROM_RUN || state.isGameFinished);
+}
+
+/** Whether the player has met Backlinks: from the second run's ending on. Until then nothing names them. */
+export function areBacklinksKnown(state: GameState, legacy: Pick<LegacyState, 'finishedRuns'>): boolean {
+  return shouldProjectBacklinks(state) || legacy.finishedRuns >= BACKLINKS_FROM_RUN;
 }
 
 /** Each level costs twice the one before: 1, 2, 4, 8 Backlinks. */
