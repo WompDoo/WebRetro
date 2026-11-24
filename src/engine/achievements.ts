@@ -162,9 +162,9 @@ function isHeldWithoutLineage(state: GameState, specializationId: Specialization
 const VIDEO_SITES: readonly SpecializationId[] = ['live-streaming', 'streaming-service', 'short-video'];
 
 /**
- * What each mechanic waits for. Specializations, site colors, custom cursors and Backlinks come with the second run,
- * the 2000 crash's leftovers with the third; everything an era brings, once a run has reached it. The rest show from
- * the start.
+ * What each mechanic waits for. Specializations, site colors and custom cursors come with the second run; Backlinks
+ * (shown from the third) and the 2000 crash's leftovers with the third; everything an era brings, once a run has
+ * reached it. The rest show from the start.
  */
 const REVEALS: Readonly<Partial<Record<AchievementId, AchievementReveal>>> = {
   'sparkle-trail': 'run-2',
@@ -214,10 +214,10 @@ const REVEALS: Readonly<Partial<Record<AchievementId, AchievementReveal>>> = {
   'pivot-to-video': 'run-2',
   'move-fast': 'run-2',
   'secret-door': 'run-2',
-  'serial-founder': 'run-2',
+  'serial-founder': 'run-3',
   'broken-combo': 'run-2',
   'make-it-pop': 'run-2',
-  'link-farm': 'run-2',
+  'link-farm': 'run-3',
 };
 
 function achievement(

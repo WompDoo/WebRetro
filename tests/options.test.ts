@@ -8,7 +8,8 @@ import type { OptionsContext } from '../src/ui/render-options';
 
 const SEED = 31;
 const at2005 = (): GameState => createPlaytestState('web2-2005', 'end', SEED, 'react');
-const legacyWith = (backlinks: number, achievements: LegacyState['achievementIds']): LegacyState => ({ ...EMPTY_LEGACY, backlinks, achievementIds: achievements });
+/** Two finished runs: Backlinks have been paid in, so the options name them. */
+const legacyWith = (backlinks: number, achievements: LegacyState['achievementIds']): LegacyState => ({ ...EMPTY_LEGACY, backlinks, achievementIds: achievements, finishedRuns: 2 });
 const context = (overrides: Partial<OptionsContext> = {}): OptionsContext => ({
   state: at2005(),
   legacy: legacyWith(12, ['hello-world', 'on-fire']),
@@ -44,6 +45,12 @@ describe('the options window', () => {
     assert.match(page, /data-action="ask-delete-data">Delete all my data…/);
     assert.match(page, /2 achievements/);
     assert.doesNotMatch(page, /data-action="confirm-delete-data"/, 'one click can’t delete anything');
+  });
+
+  it('doesn’t name Backlinks or perks before the player has met them', () => {
+    const firstRun = renderOptions(context({ legacy: { ...EMPTY_LEGACY, achievementIds: ['hello-world'] } }), 'menu');
+    assert.match(firstRun, /Your achievements stay/);
+    assert.doesNotMatch(firstRun, /Backlink|perk/);
   });
 
   it('asks a second time before deleting, with keeping the data first', () => {

@@ -1,4 +1,4 @@
-import { calculateBacklinksEarned } from '../engine';
+import { areBacklinksKnown, calculateBacklinksEarned } from '../engine';
 import type { GameState, LegacyState } from '../engine';
 import { pluralizeBacklinks } from './ending';
 
@@ -21,7 +21,11 @@ function renderRow(title: string, text: string, action: string): string {
   return `<section class="options-row"><div class="options-text"><h3>${title}</h3><p>${text}</p></div>${action}</section>`;
 }
 
-const START_OVER_TEXT = 'A new site, back in 1997. Your Backlinks, perks and achievements stay.';
+/** Backlinks and perks are named only once the player has met them, at the second run's ending. */
+function describeWhatStays(context: OptionsContext): string {
+  const legacy = areBacklinksKnown(context.state, context.legacy) ? 'Your Backlinks, perks and achievements stay.' : 'Your achievements stay.';
+  return `A new site, back in 1997. ${legacy}`;
+}
 
 function renderPlaytestRow(context: OptionsContext): string {
   if (!context.isPlaytestEnabled) return '';
@@ -36,10 +40,14 @@ function pluralizeAchievements(count: number): string {
   return count === 1 ? '1 achievement' : `${count} achievements`;
 }
 
+function describeBacklinksThatGo(context: OptionsContext): string {
+  const backlinks = context.legacy.backlinks + calculateBacklinksEarned(context.state);
+  return areBacklinksKnown(context.state, context.legacy) ? `${pluralizeBacklinks(backlinks)}, every perk, ` : '';
+}
+
 /** What deleting takes with it, in this player's own numbers. */
 function describeWhatGoes(context: OptionsContext): string {
-  const backlinks = context.legacy.backlinks + calculateBacklinksEarned(context.state);
-  return `Your site, ${pluralizeBacklinks(backlinks)}, every perk, ${pluralizeAchievements(context.legacy.achievementIds.length)} and your settings: everything this game keeps in this browser.`;
+  return `Your site, ${describeBacklinksThatGo(context)}${pluralizeAchievements(context.legacy.achievementIds.length)} and your settings: everything this game keeps in this browser.`;
 }
 
 function renderDeleteRow(context: OptionsContext): string {
@@ -61,7 +69,7 @@ const DELETE_ROWS: Readonly<Record<OptionsView, (context: OptionsContext) => str
 };
 
 export function renderOptions(context: OptionsContext, view: OptionsView): string {
-  const startOver = renderRow('Start over', START_OVER_TEXT, '<button type="button" class="ghost-button" data-action="open-reset">Start over…</button>');
+  const startOver = renderRow('Start over', describeWhatStays(context), '<button type="button" class="ghost-button" data-action="open-reset">Start over…</button>');
   return `<header class="options-head"><h2 id="options-heading">Options</h2><button type="button" class="ghost-button" data-action="close-options">Close</button></header>
     ${startOver}${renderPlaytestRow(context)}${DELETE_ROWS[view](context)}`;
 }

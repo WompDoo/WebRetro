@@ -159,14 +159,16 @@ describe('what the window gives away', () => {
     assert.ok(!revealed('fail-whale', inRun(first1997, 2)), 'a second run that never got there');
   });
 
-  it('keeps the tree and the second run’s things hidden until the second run, the crash’s until the third', () => {
+  it('keeps the tree and the second run’s things hidden until the second run, Backlinks and the crash’s until the third', () => {
     const first = at('web2-2005');
-    (['specialist', 'serial-founder', 'make-it-pop', 'link-farm', 'second-site'] as const).forEach((id) => {
+    (['specialist', 'make-it-pop', 'second-site'] as const).forEach((id) => {
       assert.ok(!revealed(id, first), id);
       assert.ok(revealed(id, inRun(first, 2)), id);
     });
-    assert.ok(!revealed('hamster-dance', inRun(first, 2)));
-    assert.ok(revealed('hamster-dance', inRun(first, 3)));
+    (['hamster-dance', 'link-farm', 'serial-founder'] as const).forEach((id) => {
+      assert.ok(!revealed(id, inRun(first, 2)), id);
+      assert.ok(revealed(id, inRun(first, 3)), id);
+    });
     assert.ok(revealed('specialist', first, { ...EMPTY_LEGACY, finishedRuns: 1 }), 'after a finished run');
   });
 
@@ -189,7 +191,7 @@ describe('the achievements window', () => {
 
   it('keeps secrets: a secret tile is a "?" until earned, a secret specialization isn’t there until found', () => {
     const secondRun = inRun(at('web2-2005'), 2);
-    const page = renderAchievementsPage(secondRun, EMPTY_LEGACY);
+    const page = renderAchievementsPage(inRun(at('web2-2005'), 3), EMPTY_LEGACY);
     assert.match(page, /class="badge is-secret" data-action="achievement-detail" data-id="serial-founder"><span class="badge-icon" aria-hidden="true">\?<\/span><span class="badge-tip" hidden><b>Secret<\/b> \?\?\?/);
     assert.doesNotMatch(page, /data-id="spec:wiki"/);
     assert.match(renderAchievementsPage(secondRun, { ...EMPTY_LEGACY, foundSpecializationIds: ['wiki'] }), /data-id="spec:wiki"/);

@@ -74,8 +74,11 @@ Each unlock is announced in the credits ("Next run: a wiki in 2005, a live cam i
 what the new site gets, not only how many Backlinks. Unlocks come from finished runs, not from Backlinks, so nobody
 has to choose between content and perks.
 
-**Projected Backlinks:** after the first finish, the stats strip shows "Backlinks if you finish now: N". The first
-run never shows it, so it stays about the site.
+**Projected Backlinks:** from the third site, the stats strip shows "Backlinks if you finish now: N". The first site
+never shows it, so it stays about the site, and neither does the second, which is about specializations: its
+Backlinks are counted but first appear on its ending ("Start a new site (+N Backlinks)"), when they're paid in. Until
+then nothing names Backlinks or perks: not the options menu, not the achievements (Link farm and Serial founder reveal
+with the third site).
 
 **Target pacing:** first run 4–5 h, second ~3 h, third ~2.5 h, then flat. Diminishing perk prices
 (`cost = 2^level`) and log-scale income make the curve level off by itself.
