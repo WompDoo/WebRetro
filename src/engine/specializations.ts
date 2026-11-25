@@ -8,6 +8,7 @@ import { UPGRADES_BY_ID } from './content/upgrades';
 import {
   calculateAiAnswerShare,
   calculatePhoneLoadTimeSeconds,
+  isFeatureRetired,
   isFeatureSwitchedOff,
   isMobileFriendly,
 } from './economy';
@@ -80,6 +81,18 @@ function progress(condition: SpecializationCondition, label: string, unit: Condi
   return { condition, label, unit, current, target, isMet, ratio: isMet ? YES : towards(current, target) };
 }
 
+/**
+ * Given up: switched off, or retired by the era (2024 retires the live chat its AI companion asks you to give up). A
+ * retired feature can't be switched off any more, and it's more gone than off.
+ */
+function isGivenUp(state: GameState, featureId: FeatureId): boolean {
+  return isFeatureSwitchedOff(state, featureId) || isFeatureRetired(state, featureId);
+}
+
+function describeSwitchedOff(state: GameState, featureId: FeatureId): string {
+  return `${FEATURES_BY_ID[featureId].name} ${isFeatureRetired(state, featureId) ? 'retired' : 'switched off'}`;
+}
+
 function flag(condition: SpecializationCondition, label: string, isMet: boolean): ConditionProgress {
   return progress(condition, label, 'flag', isMet ? YES : NO, YES);
 }
@@ -127,7 +140,7 @@ const MEASURES: Measures = {
   skill: (state, condition) => flag(condition, UPGRADES_BY_ID[condition.upgradeId].name, state.purchasedUpgradeIds.includes(condition.upgradeId)),
   'spending-share': (state, condition) =>
     progress(condition, `${Math.round(condition.share * 100)}% of what you build this era into ${FEATURES_BY_ID[condition.featureId].name}`, 'share', calculateSpendingShare(state, condition.featureId), condition.share),
-  'switched-off': (state, condition) => flag(condition, `${FEATURES_BY_ID[condition.featureId].name} switched off`, isFeatureSwitchedOff(state, condition.featureId)),
+  'switched-off': (state, condition) => flag(condition, describeSwitchedOff(state, condition.featureId), isGivenUp(state, condition.featureId)),
   'max-ads': (state, condition) => measureAds(state, condition, condition.count),
   'never-an-ad': (state, condition) => flag(condition, 'Never an ad, all run', hasNeverRunAnAd(state)),
   consent: (state, condition) => flag(condition, `${CONSENT_BANNERS_BY_ID[condition.banner].name} on the site`, state.consentBanner === condition.banner),

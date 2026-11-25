@@ -60,6 +60,8 @@
 }
 
 /* The legacy: what the run earned, and the perks it buys. */
+/* What's left to spend, pinned above the perks while you scroll and buy. */
+.backlinks-balance { position: sticky; top: -1px; z-index: 2; margin: 14px 0 0; padding: 8px 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 15px; }
 .perk-list { display: grid; gap: 10px; margin: 14px 0; padding: 0; list-style: none; }
 .perk { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 2px solid var(--line-soft); border-radius: 6px; background: var(--paper); }
 .perk-info { flex: 1; min-width: 0; }

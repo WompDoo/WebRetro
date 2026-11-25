@@ -288,8 +288,9 @@ function renderLegacyWithBacklinks(state: GameState, legacy: LegacyState): strin
   const sources = calculateBacklinkSources(state);
   return `<p class="story-year">Site number ${legacy.finishedRuns + 1}</p>
     <h2 id="end-heading">Your old site links to the new one</h2>
-    <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in ${describeFastEraMark(state)}. You have <b>${pluralizeBacklinks(legacy.backlinks)}</b> to spend on perks every new site starts with.</p>
+    <p>This run earned <b>${pluralizeBacklinks(sources.fromVisitors + sources.fromFastEras)}</b>: ${sources.fromVisitors} for its visitors, ${sources.fromFastEras} for eras finished in ${describeFastEraMark(state)}. Spend them on perks: every new site starts with them.</p>
     ${renderNextRunUnlocks(legacy)}
+    <p class="backlinks-balance">🔗 <b>${pluralizeBacklinks(legacy.backlinks)}</b> left to spend</p>
     <ul class="perk-list">${PERK_IDS.map((perkId) => renderPerkRow(legacy, perkId)).join('')}</ul>
     <p class="ending-epilogue">The new site starts in 1997 with a new name, and you start with everything above.</p>
     <div class="overlay-actions">

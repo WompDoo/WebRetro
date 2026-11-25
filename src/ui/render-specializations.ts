@@ -64,7 +64,14 @@ function renderCondition(progress: ConditionProgress): string {
   return `<li class="spec-condition${progress.isMet ? ' is-met' : ''}"><span>${escapeHtml(progress.label)}</span><span class="spec-condition-amount">${escapeHtml(amount)}</span></li>`;
 }
 
+const UNLOCKED_NOTE = '<p class="spec-unlocked-note">✓ Unlocked. It stays yours to choose this era, whatever you build next.</p>';
+
+/**
+ * The conditions while you work toward them. Once they've all been met the specialization is unlocked for the era, and
+ * the card says so: a share that slips later, as you build other things, doesn't take it back.
+ */
 function renderConditions(state: GameState, specializationId: SpecializationId): string {
+  if (isSpecializationUnlocked(state, specializationId)) return UNLOCKED_NOTE;
   return `<ul class="spec-conditions">${calculateSpecializationProgress(state, specializationId).map(renderCondition).join('')}</ul>`;
 }
 
