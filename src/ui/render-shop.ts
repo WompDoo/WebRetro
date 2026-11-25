@@ -756,12 +756,12 @@ function renderNextAdVerdict(state: GameState): string {
 }
 
 function renderAdGain(gain: number): string {
-  return `<p class="shop-effect is-gain">Next banner: +${formatMoney(gain)}/s, after the visitors it costs</p>`;
+  return `<p class="shop-effect is-gain">Next banner: +${formatMoney(gain)}/s overall, counting the visitors it drives away</p>`;
 }
 
 /** Why the next one loses: the visitors it annoys away, or, while supporters still give, the supporters it costs. */
 function describeAdLossCause(state: GameState): string {
-  return hasSupportersToLose(state) ? `each one drives off ${formatPercent(SUPPORT_LOST_PER_AD)} of your supporters` : 'it would drive away more than it pays';
+  return hasSupportersToLose(state) ? `each one drives off ${formatPercent(SUPPORT_LOST_PER_AD)} of your supporters` : 'the visitors it drives away cost more than it pays';
 }
 
 function formatSignedMoney(perSecond: number): string {
@@ -774,7 +774,7 @@ function formatSignedMoney(perSecond: number): string {
  */
 function renderAdLoss(state: GameState, gain: number, room: number): string {
   const fullPage = calculateAdsGain(state, room);
-  return `<p class="shop-effect is-loss">Next banner: −${formatMoney(-gain)}/s: ${describeAdLossCause(state)}</p>
+  return `<p class="shop-effect is-loss">Next banner: −${formatMoney(-gain)}/s overall: ${describeAdLossCause(state)}</p>
       <p class="shop-effect ${fullPage > 0 ? 'is-gain' : 'is-loss'}">A full page (${room} more): ${formatSignedMoney(fullPage)}/s overall</p>`;
 }
 
