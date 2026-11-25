@@ -1,6 +1,7 @@
 import { areBacklinksKnown, calculateBacklinksEarned } from '../engine';
 import type { GameState, LegacyState } from '../engine';
 import { pluralizeBacklinks } from './ending';
+import { renderSupportLink } from './support-link';
 
 /**
  * The options window: the game's settings in one place. Start over (a new site, the legacy kept), the playtest tools
@@ -68,8 +69,11 @@ const DELETE_ROWS: Readonly<Record<OptionsView, (context: OptionsContext) => str
   'confirm-delete': renderDeleteConfirm,
 };
 
+const SUPPORT_TEXT = 'Under Construction is free, with no real ads. If you’re enjoying it, you can buy its developer a coffee.';
+
 export function renderOptions(context: OptionsContext, view: OptionsView): string {
   const startOver = renderRow('Start over', describeWhatStays(context), '<button type="button" class="ghost-button" data-action="open-reset">Start over…</button>');
+  const support = renderRow('Support the game', SUPPORT_TEXT, renderSupportLink('☕ Ko-fi', 'ghost-button support-link'));
   return `<header class="options-head"><h2 id="options-heading">Options</h2><button type="button" class="ghost-button" data-action="close-options">Close</button></header>
-    ${startOver}${renderPlaytestRow(context)}${DELETE_ROWS[view](context)}`;
+    ${startOver}${support}${renderPlaytestRow(context)}${DELETE_ROWS[view](context)}`;
 }

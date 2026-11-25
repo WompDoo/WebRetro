@@ -7,6 +7,7 @@ import { renderOptions } from '../src/ui/render-options';
 import type { OptionsContext } from '../src/ui/render-options';
 
 const SEED = 31;
+const KO_FI_LINK = /<a class="[^"]*support-link[^"]*" href="https:\/\/ko-fi\.com\/wompdoo" target="_blank" rel="noopener noreferrer">/;
 const at2005 = (): GameState => createPlaytestState('web2-2005', 'end', SEED, 'react');
 /** Two finished runs: Backlinks have been paid in, so the options name them. */
 const legacyWith = (backlinks: number, achievements: LegacyState['achievementIds']): LegacyState => ({ ...EMPTY_LEGACY, backlinks, achievementIds: achievements, finishedRuns: 2 });
@@ -45,6 +46,12 @@ describe('the options window', () => {
     assert.match(page, /data-action="ask-delete-data">Delete all my data…/);
     assert.match(page, /2 achievements/);
     assert.doesNotMatch(page, /data-action="confirm-delete-data"/, 'one click can’t delete anything');
+  });
+
+  it('has a way to support the game: a plain link to Ko-fi in a new tab', () => {
+    const page = renderOptions(context(), 'menu');
+    assert.match(page, /Support the game/);
+    assert.match(page, KO_FI_LINK);
   });
 
   it('doesn’t name Backlinks or perks before the player has met them', () => {
