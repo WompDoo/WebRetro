@@ -40,6 +40,9 @@
 .ending-small-web .site.attic-site { height: 260px; }
 
 /* The credits. */
+/* After the thanks, the real tip jar. */
+.ending-support { margin: -4px 0 12px; font-size: 14px; color: var(--ink-soft); }
+.ending-support .support-link { font-weight: 700; }
 .credits-table { width: 100%; margin: 6px 0 4px; border-collapse: collapse; font-size: 13px; }
 .credits-table :is(th, td) { padding: 6px 8px; border-bottom: 1px solid var(--line-soft); text-align: right; }
 .credits-table :is(thead th, tbody th) { text-align: left; }

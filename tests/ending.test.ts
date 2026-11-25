@@ -17,6 +17,7 @@ import { calculateOfferAmount, ENDING_ACTS, isEndingAct, renderEndingAct } from 
 import { renderGoal } from '../src/ui/render-goal';
 
 const SEED = 2025;
+const KO_FI_LINK = /<a class="[^"]*support-link[^"]*" href="https:\/\/ko-fi\.com\/wompdoo" target="_blank" rel="noopener noreferrer">/;
 const MS_PER_MINUTE = 60_000;
 /** The presets are first runs: no 2000 crash. */
 const FIRST_RUN_ERAS = getErasOfRun(1);
@@ -124,6 +125,13 @@ describe('the ending: the offer, and how it ends', () => {
     const html = renderEndingAct(finished(), 'credits', null);
     assert.equal(html.split('<tr><th scope="row">').length - 1, FIRST_RUN_ERAS.length);
     ['data-id="archive"', 'data-action="keep-playing"', 'data-action="open-legacy"'].forEach((button) => assert.ok(html.includes(button), button));
+  });
+
+  it('thanks you, then offers the real tip jar: a plain link to Ko-fi in a new tab, no script', () => {
+    const html = renderEndingAct(finished(), 'credits', null);
+    assert.match(html, /Enjoyed it\? /);
+    assert.match(html, KO_FI_LINK);
+    assert.doesNotMatch(html, /<script/);
   });
 
   it('knows its acts by name', () => {

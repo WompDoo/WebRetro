@@ -27,6 +27,7 @@ import {
 import type { EraId, EraRecord, GameState, LegacyState, PerkId } from '../engine';
 import { buildSiteUrl } from './browser-chrome';
 import { escapeHtml } from './dom';
+import { renderSupportLink } from './support-link';
 import { describeSpecializationPath } from './render-specializations';
 import { ERA_PRESENTATION } from './presentation';
 import { renderSite } from './sites';
@@ -202,6 +203,7 @@ function renderCredits(state: GameState): string {
     <table class="credits-table"><thead><tr><th scope="col">Era</th><th scope="col">Played</th><th scope="col">Visitors at the end</th><th scope="col">Earning</th></tr></thead><tbody>${renderCreditRows(records)}</tbody></table>
     <ul class="end-stats"><li><b>${formatMinutes(state.playTimeMs)}</b> played</li><li><b>${formatCompactNumber(state.lifetimeVisitors)}</b> visitors</li><li><b>${formatMoney(state.lifetimeEarnings)}</b> earned</li><li><b>${formatWholeNumber(state.keystrokes)}</b> keystrokes</li></ul>
     <p class="ending-epilogue">Written, designed, hosted, debugged and relaunched by you. Thanks for playing Under Construction.</p>
+    <p class="ending-support">Enjoyed it? ${renderSupportLink('Buy me a coffee on Ko-fi ☕', 'support-link')}</p>
     <div class="overlay-actions">
       <button type="button" class="ghost-button" data-action="ending-act" data-id="archive">Back to the attic</button>
       <button type="button" class="ghost-button" data-action="keep-playing">Keep playing</button>
